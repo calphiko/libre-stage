@@ -1,0 +1,50 @@
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Database (production data – never commit!)
+*.db
+backend/db/
+# Exception: demo database for new installations
+!backend/db/demo.db
+
+# Logs
+backend/log/*.log
+*.log
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Legacy frontend
+API.log
+/frontend/src/routes/setlist_editor_test/
+/frontend/package-lock.json
+/frontend/.npmrc
+/frontend/src/routes/page_old.svelte

@@ -1,0 +1,31 @@
+{
+  "app_name": "Libre Stage",
+  "app_name_short": "LS",
+  "app_title": "Band Internal Management",
+  "app_description": "Internal documentation and management platform.",
+  "copyright_holder": "Your Name or Organization",
+  "copyright_url": "https://example.com",
+  "ical_domain": "example.com",
+  "ical_prodid": "-//Band Calendar//EN",
+  "ical_calendar_name": "Band Termine",
+  "ical_rehearsal_prefix": "[Probe]",
+  "ical_gig_prefix": "[Gig]",
+  "timezone": "Europe/Berlin",
+  "default_break_seconds": 30,
+  "genres": [
+    "Pop", "Rock", "Schlager", "Oldies", "Party",
+    "Karneval", "Elektro", "80s", "90s", "Disco"
+  ],
+  "gig_types": [
+    "Schützenfest", "Karnevalssitzung", "Stadtfest",
+    "Privatveranstaltung", "andere Veranstaltung"
+  ],
+  "song_statuses": [
+    "vorschlag", "angenommen", "proben", "spielbar",
+    "bedarfsweise_proben", "retired"
+  ],
+  "gig_statuses": [
+    "anfrage", "angenommen", "abgelehnt"
+  ]
+}
+

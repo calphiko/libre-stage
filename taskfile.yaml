@@ -1,0 +1,28 @@
+version: '3'
+
+vars:
+  PYTHON:
+    sh: |
+      if [ "{{OS}}" = "windows" ]; then
+        echo ".venv/Scripts/python"
+      else
+        echo ".venv/bin/python3"
+      fi
+
+tasks:
+  frontend-dev:
+    env:
+      VITE_API_URL: "http://localhost:8000"
+    cmds:
+      - echo "Starting Frontend Server..."
+      - cd frontend && npm run dev
+    desc: "Start the frontend development server"
+  backend-dev:
+    #env:
+     # CORS_ORIGINS: "http://localhost:5173"
+     # DOCS_URL: "/docs"
+     # OPENAPI_URL: "/openapi.json"
+    cmds:
+      - echo "Starting Frontend Server..."
+      - '{{.PYTHON}} -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug --log-config ./backend/log_conf.json'
+    desc: "Start the backend development server"

@@ -1,0 +1,10 @@
+steps:
+  - name: test-and-coverage
+    image: python:3.11
+    commands:
+      - pwd
+      - pip install -r backend/requirements.txt
+      - pip install pytest pytest-cov coverage-badge
+      - pytest --cov=dein_package --cov-report=xml --cov-report=term
+      - coverage report --fail-under=75
+      - coverage-badge -o coverage.svg

@@ -1,0 +1,188 @@
+<script>
+  import { getModalStore } from '@skeletonlabs/skeleton';
+  import { songFields, songFieldsDetails } from '$lib/songFields.js';
+  import { updateSong, deleteSong } from '$lib/api.js';
+  import { createMessageHelpers } from '$lib/Messages.svelte';
+  import { getToastStore } from '@skeletonlabs/skeleton';
+  import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+
+  const modalStore = getModalStore();
+  const { showError, showSuccess } = createMessageHelpers(getToastStore());
+
+  export let parent;
+
+  let tabSet = 0;
+
+  const { song, canEdit } = $modalStore[0].meta;
+
+  let isEditing = false;
+  let editBuffer = { ...song };
+
+  function startEdit() {
+    isEditing = true;
+    editBuffer = { ...song };
+  }
+
+  function cancelEdit() {
+    isEditing = false;
+    editBuffer = { ...song };
+  }
+
+  let isSaving = false;
+
+  async function saveEdit() {
+      if (isSaving) return;
+      isSaving = true;
+      try {
+        const updatedSong = await updateSong(song.id, editBuffer, null);
+        showSuccess('Song erfolgreich aktualisiert');
+        isEditing = false;
+
+        const songData = updatedSong || editBuffer;
+        Object.assign(song, songData);
+
+        // Response-Callback triggern
+        if ($modalStore[0]?.response) {
+          $modalStore[0].response({
+            action: 'updated',
+            data: { ...songData, id: song.id }
+          });
+        }
+
+        // Modal schließen
+        modalStore.close();
+      } catch (e) {
+        showError(e.message ?? 'Update fehlgeschlagen');
+      } finally {
+        isSaving = false;
+      }
+  }
+
+  async function handleDelete() {
+    const songName = song.interpret ? `${song.interpret} - ${song.title}` : song.title;
+
+    // Speichere die Response-Funktion des aktuellen Modals
+    const parentResponse = $modalStore[0]?.response;
+    const songId = song.id;
+
+    // Schließe zuerst das SongDetailsModal
+    modalStore.close();
+
+    // Öffne dann das ConfirmModal (nach kurzer Verzögerung für saubere Animation)
+    setTimeout(() => {
+      modalStore.trigger({
+        type: 'component',
+        component: { ref: ConfirmModal },
+        meta: {
+          title: 'Song löschen',
+          message: `Möchten Sie den Song "${songName}" wirklich löschen? Der Song wird als "retired" markiert und aus der aktiven Liste entfernt.`,
+          confirmText: 'Löschen',
+          cancelText: 'Abbrechen',
+          confirmButtonClass: 'btn variant-filled-error',
+          cancelButtonClass: 'btn variant-outline-secondary'
+        },
+        response: async (confirmed) => {
+          if (confirmed) {
+            try {
+              await deleteSong(songId, null);
+              showSuccess('Song erfolgreich gelöscht');
+
+              // Rufe die Response-Funktion des Parent-Modals auf
+              if (parentResponse) {
+                parentResponse({ action: 'delete' });
+              }
+            } catch (e) {
+              showError(e.message ?? 'Löschen fehlgeschlagen');
+            }
+          }
+        }
+      });
+    }, 200);
+  }
+</script>
+<div class="card p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-4 flex-shrink-0">
+    <h2 class="h2">{song.title}</h2>
+    <button class="btn-icon btn-icon-sm variant-ghost" on:click={parent.onClose}>✕</button>
+  </header>
+
+  <!-- Manuell gebaute Tabs (kein Skeleton TabGroup, um Layout-Kontrolle zu behalten) -->
+  <div class="flex gap-1 mb-4 flex-shrink-0 border-b border-surface-300">
+    <button
+      class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 0 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+      on:click={() => tabSet = 0}
+    >Details</button>
+    <button
+      class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 1 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+      on:click={() => tabSet = 1}
+    >Statistik</button>
+  </div>
+
+  <!-- Panel: wächst, scrollt, aber nie über max-h -->
+  {#if tabSet === 0}
+    <div class="flex flex-col min-h-0 flex-grow">
+
+      {#if isEditing}
+        <!-- Edit Mode: scrollbares Formular -->
+        <div class="overflow-y-auto flex-grow min-h-0">
+          <form class="space-y-3 pr-1" on:submit|preventDefault={saveEdit}>
+            {#each songFieldsDetails as songField}
+              <div class="flex items-center gap-2">
+                <label class="flex-shrink-0 w-36 text-sm font-medium">
+                  {songField.label}
+                  {#if songField.required}<span class="text-error-500">*</span>{/if}
+                </label>
+                {#if songField.type === 'option' && Array.isArray(songField.options)}
+                  <select class="input flex-grow" bind:value={editBuffer[songField.key]} required={songField.required}>
+                    {#each songField.options as o}
+                      <option value={o.key}>{o.label}</option>
+                    {/each}
+                  </select>
+                {:else if songField.type === 'time'}
+                  <input type="time" step="1" class="input flex-grow" bind:value={editBuffer[songField.key]} />
+                {:else if songField.type === 'date'}
+                  <input type="date" class="input flex-grow" bind:value={editBuffer[songField.key]} required={songField.required} />
+                {:else}
+                  <input type="text" class="input flex-grow" bind:value={editBuffer[songField.key]} placeholder={songField.label} required={songField.required} maxlength="255" />
+                {/if}
+              </div>
+            {/each}
+          </form>
+        </div>
+        <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
+          <button class="btn variant-filled-primary" disabled={isSaving} on:click={saveEdit}>
+            {isSaving ? 'Wird gespeichert...' : 'Speichern'}
+          </button>
+          <button class="btn variant-ghost" on:click={cancelEdit}>Abbrechen</button>
+        </footer>
+
+      {:else}
+        <!-- Detail View: scrollbare Liste -->
+        <div class="overflow-y-auto flex-grow min-h-0">
+          {#each songFieldsDetails as f}
+            <div class="flex justify-between py-2 border-b border-surface-300 text-sm">
+              <span class="font-semibold text-on-surface-variant">{f.label}</span>
+              <span class="text-right ml-4">{song[f.key] ?? '–'}</span>
+            </div>
+          {/each}
+        </div>
+        <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
+          {#if canEdit}
+            <button class="btn variant-filled-primary" on:click={startEdit}>Bearbeiten</button>
+            <button class="btn variant-filled-error" on:click={handleDelete}>Löschen</button>
+          {/if}
+          <button class="btn variant-ghost" on:click={parent.onClose}>Schließen</button>
+        </footer>
+      {/if}
+
+    </div>
+
+  {:else if tabSet === 1}
+    <div class="overflow-y-auto flex-grow min-h-0 p-2">
+      <p class="text-on-surface-variant">Statistik-Funktionalität ist derzeit nicht verfügbar.</p>
+    </div>
+  {/if}
+
+</div>
