@@ -282,7 +282,8 @@ pytest backend/tests/test_gigs.py -v
 
 ## 📄 License
 
-[MIT License](LICENSE) – see LICENSE file for details.
+libreStage is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License Version 3](LICENSE).
 
 ## 📧 Contact
 
