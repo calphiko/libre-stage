@@ -1,4 +1,4 @@
-# Band Manager
+# libreStage
 
 **A comprehensive internal management platform for bands and music ensembles**
 
