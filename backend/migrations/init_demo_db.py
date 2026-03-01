@@ -340,7 +340,7 @@ def run():
 
     # ── UMFRAGE ──────────────────────────────────────────────────────────────
     survey = Surveys(
-        kind_of_survey="Songvorschlag-Abstimmung",
+        kind_of_survey="Meinungsumfrage",
         rf_survey="Welche neuen Songs sollen wir ins Repertoire aufnehmen?",
         released=True,
         closed=False,
