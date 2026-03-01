@@ -26,7 +26,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, auth
 from datetime import datetime, timezone
@@ -45,10 +45,6 @@ import asyncio
 
 # Limiter initialisieren
 limiter = Limiter(key_func=get_remote_address)
-
-app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 api_prefix = ""
 assert type(api_prefix) is str
@@ -85,6 +81,9 @@ app = FastAPI(
     title=version_dict.get("title", "Band Manager"),
     description=version_dict.get("Description", "")
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ===== EXCEPTION HANDLERS =====
 from fastapi.responses import JSONResponse
@@ -322,10 +321,10 @@ def logout(
 @app.get("/me", response_model=schemas.UserOut)
 def get_me(current = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
     user = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
-    if user.musician == None:
-        user.musician = 0
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if user.musician == None:
+        user.musician = 0
     return user
 
 @app.put("/update_user", response_model=schemas.UserOut)
@@ -417,7 +416,7 @@ def health_check(db: Session = Depends(auth.get_db)):
     """Überprüft ob API und DB erreichbar sind"""
     try:
         # Einfache DB-Query zum Testen
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {
             "status": "ok",
             "database": "connected",
