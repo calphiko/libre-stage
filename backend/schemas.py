@@ -325,6 +325,7 @@ class SongInSetOut(BaseModel):
     title: str
     duration: Optional[str]
     singer_lead: Optional[str]
+    singer_background: Optional[str]
     interpret: Optional[str]
     genre: Optional[str] = None
     tone_key: Optional[str] = None
