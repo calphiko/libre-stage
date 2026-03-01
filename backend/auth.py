@@ -18,7 +18,8 @@ import base64
 import hashlib
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from fastapi.security import OAuth2PasswordBearer
 from backend import database, models
 from datetime import datetime, timezone, timedelta
@@ -169,7 +170,7 @@ def revoke_refresh_token(token: str, db: Session):
 def blacklist_access_token(token: str, db: Session):
     """Fügt ein Access Token zur Blacklist hinzu"""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)
         exp = payload.get("exp")
         if not exp:
             return
