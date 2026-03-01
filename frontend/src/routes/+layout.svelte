@@ -176,8 +176,8 @@
             <svelte:fragment slot="pageFooter">
                 {#if user.user_name}
                 <footer class="bg-surface-500/5 p-4 text-center text-sm text-surface-600-300-token">
-                    <span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span> • <span>© {new Date().getFullYear()} Band Manager</span><br>
-                    <span>{version_description}</span>
+                    <span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span><br>
+                    <span>{version_description} • <span>© {new Date().getFullYear()} <a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="anchor">Pakled's Patent Office</a></span></span>
                 </footer>
                 {/if}
             </svelte:fragment>
