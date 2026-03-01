@@ -82,7 +82,7 @@ Edit `.env` with your values. See [Configuration](#-configuration) for details.
 5. **Customize your instance**
 
 Edit `app.config.json` to set your band name, genres, gig types, and other options.
-Edit `frontend2/src/lib/appConfig.js` to match for the frontend.
+Edit `frontend/src/lib/appConfig.js` to match for the frontend.
 
 ### Running the Application
 
@@ -164,7 +164,7 @@ Customize band-specific values without touching code:
 }
 ```
 
-### Frontend Config (`frontend2/src/lib/appConfig.js`)
+### Frontend Config (`frontend/src/lib/appConfig.js`)
 
 Mirror the same options for the frontend (genres, gig types, statuses, tone keys).
 
@@ -195,7 +195,7 @@ band-manager/
 │   ├── pdf/                 # PDF generation
 │   ├── migrations/          # Database migration scripts
 │   └── tests/               # Pytest test suite
-├── frontend2/
+├── frontend/
 │   ├── src/
 │   │   ├── lib/
 │   │   │   ├── api.js       # API client
@@ -282,7 +282,8 @@ pytest backend/tests/test_gigs.py -v
 
 ## 📄 License
 
-[MIT License](LICENSE) – see LICENSE file for details.
+libreStage is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License Version 3](LICENSE).
 
 ## 📧 Contact
 
