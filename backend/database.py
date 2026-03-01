@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./backend/db/demo.db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./backend/db/app.db")
 
 # SQLite-spezifische Konfiguration mit größerem Pool
 # check_same_thread=False erlaubt Multi-Threading (notwendig für FastAPI)
