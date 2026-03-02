@@ -1,0 +1,13 @@
+IMAGE_NAME=libre-stage
+
+docker rmi $IMAGE_NAME
+
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+
+export SSH_AUTH_SOCK
+
+DOCKER_BUILDKIT=1 docker build --ssh default --rm --no-cache --build-arg VITE_API_URL=https://api.brandstifter.band -t $IMAGE_NAME .
+
+
+ssh-agent -k
