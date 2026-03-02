@@ -114,7 +114,7 @@
           button.className = 'btn btn-sm variant-filled-warning';
           button.addEventListener('click', async () => {
             try {
-              await triggerSendPwResetToken(null, params.data.id);
+              await triggerSendPwResetToken(params.data.id);
               showSuccess(`Passwort-Reset-Link an ${params.data.email} gesendet`);
             } catch (e) {
               showError('Passwort-Reset konnte nicht gesendet werden' + (e.message ? `: ${e.message}` : ''));

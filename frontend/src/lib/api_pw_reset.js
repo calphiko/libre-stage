@@ -1,18 +1,6 @@
 export const API_URL = import.meta.env.VITE_API_URL;
 
-export async function triggerSendPwResetToken(token, user_id) {
-  // Note: token parameter is ignored, using cookies now
-  const res = await fetch(`${API_URL}/admin/trigger_password_reset/${user_id}`, {
-      method: 'PUT',
-      credentials: 'include',  // Send cookies
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    });
-    console.log(res)
-    if (!res.ok) throw new Error('Senden des Reset-Links fehlgeschlagen');
-    return res.json();
-}
+export { triggerSendPwResetToken } from '$lib/api.js';
 
 export async function verifyPwResetToken(reset_token) {
   const res = await fetch(`${API_URL}/password_reset/verify_reset_token`, {
