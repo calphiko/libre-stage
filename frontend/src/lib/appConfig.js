@@ -1,90 +1,41 @@
 // src/lib/appConfig.js
-// Zentrale Konfiguration für anpassbare Werte.
-// Diese Datei kann bei Deployment/Fork angepasst werden,
-// ohne den restlichen Code zu ändern.
+// Zentrale Konfiguration – wird vom Backend über /public/app_config geladen.
+// Nach npm build kann die Konfiguration über appConfig.json im Projekt-Root
+// geändert werden, ohne neu zu bauen.
 
-export const appConfig = {
-  // Genres für Songs
-  genres: [
-    { key: 'Pop', label: 'Pop' },
-    { key: 'Rock', label: 'Rock' },
-    { key: 'Schlager', label: 'Schlager' },
-    { key: 'Oldies', label: 'Oldies' },
-    { key: 'Party', label: 'Party' },
-    { key: 'Karneval', label: 'Karneval' },
-    { key: 'Elektro', label: 'Elektro' },
-    { key: '80s', label: '80s' },
-    { key: '90s', label: '90s' },
-    { key: 'Disco', label: 'Disco' },
-  ],
+import { writable, get } from 'svelte/store';
+import { getAppConfig } from '$lib/api.js';
 
-  // Veranstaltungsarten
-  gigTypes: [
-    { key: 'Schützenfest', label: 'Schützenfest' },
-    { key: 'Karnevalssitzung', label: 'Karnevalssitzung' },
-    { key: 'Stadtfest', label: 'Stadtfest' },
-    { key: 'Privatveranstaltung', label: 'Privatveranstaltung' },
-    { key: 'andere Veranstaltung', label: 'andere Veranstaltung' },
-  ],
+/**
+ * Svelte Store für die App-Konfiguration.
+ * Wird initial mit null befüllt und nach loadAppConfig() mit den Daten vom Backend.
+ */
+export const appConfig = writable(null);
 
-  // Song-Statuses
-  songStatuses: [
-    { key: 'vorschlag', label: 'vorschlag' },
-    { key: 'angenommen', label: 'angenommen' },
-    { key: 'proben', label: 'proben' },
-    { key: 'spielbar', label: 'spielbar' },
-    { key: 'bedarfsweise_proben', label: 'bedarfsweise_proben' },
-  ],
+let _loaded = false;
+let _loadPromise = null;
 
-  // Gig-Anfrage-Statuses
-  gigStatuses: [
-    { key: 'anfrage', label: 'anfrage' },
-    { key: 'angenommen', label: 'angenommen' },
-    { key: 'abgelehnt', label: 'abgelehnt' },
-  ],
+/**
+ * Lädt die App-Konfiguration vom Backend und setzt den Store.
+ * Wird nur einmal ausgeführt (Singleton). Kann von mehreren Stellen aufgerufen werden.
+ * @returns {Promise<object>} Die geladene Konfiguration
+ */
+export async function loadAppConfig() {
+  if (_loaded) return get(appConfig);
 
-  // Tonarten (musikalische Tonarten – universell, keine Anpassung nötig)
-  toneKeys: [
-    { key: null, label: '' },
-    { key: 'C', label: 'C' },
-    { key: 'C#', label: 'C#' },
-    { key: 'Db', label: 'Db' },
-    { key: 'D', label: 'D' },
-    { key: 'D#', label: 'D#' },
-    { key: 'Eb', label: 'Eb' },
-    { key: 'E', label: 'E' },
-    { key: 'F', label: 'F' },
-    { key: 'F#', label: 'F#' },
-    { key: 'Gb', label: 'Gb' },
-    { key: 'G', label: 'G' },
-    { key: 'G#', label: 'G#' },
-    { key: 'Ab', label: 'Ab' },
-    { key: 'A', label: 'A' },
-    { key: 'A#', label: 'A#' },
-    { key: 'Bb', label: 'Bb' },
-    { key: 'H', label: 'H' },
-    { key: 'B', label: 'B' },
-    { key: 'Cm', label: 'Cm' },
-    { key: 'C#m', label: 'C#m' },
-    { key: 'Dbm', label: 'Dbm' },
-    { key: 'Dm', label: 'Dm' },
-    { key: 'D#m', label: 'D#m' },
-    { key: 'Ebm', label: 'Ebm' },
-    { key: 'Em', label: 'Em' },
-    { key: 'Fm', label: 'Fm' },
-    { key: 'F#m', label: 'F#m' },
-    { key: 'Gbm', label: 'Gbm' },
-    { key: 'Gm', label: 'Gm' },
-    { key: 'G#m', label: 'G#m' },
-    { key: 'Abm', label: 'Abm' },
-    { key: 'Am', label: 'Am' },
-    { key: 'A#m', label: 'A#m' },
-    { key: 'Bbm', label: 'Bbm' },
-    { key: 'Hm', label: 'Hm' },
-    { key: 'Bm', label: 'Bm' },
-  ],
+  if (_loadPromise) return _loadPromise;
 
-  // Proben-Song-Statuses (inkl. retired)
-  rehearsalSongStatuses: ['vorschlag', 'angenommen', 'proben', 'spielbar', 'retired'],
-};
+  _loadPromise = (async () => {
+    try {
+      const config = await getAppConfig();
+      appConfig.set(config);
+      _loaded = true;
+      return config;
+    } catch (e) {
+      console.error('App-Konfiguration konnte nicht geladen werden:', e);
+      throw e;
+    }
+  })();
 
+  return _loadPromise;
+}
