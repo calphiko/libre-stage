@@ -812,3 +812,39 @@ export async function getSingers(token){
 
       return response.json();
     }
+
+// ===== APP CONFIG API =====
+
+let _appConfigCache = null;
+let _appConfigPromise = null;
+
+/**
+ * Lädt die App-Konfiguration vom Backend (öffentlicher Endpoint, kein Auth).
+ * Das Ergebnis wird im Speicher gecached, sodass nur ein Request pro Seitenladen erfolgt.
+ */
+export async function getAppConfig() {
+  if (_appConfigCache) return _appConfigCache;
+  if (_appConfigPromise) return _appConfigPromise;
+
+  _appConfigPromise = (async () => {
+    const res = await fetch(`${API_URL}/public/app_config`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) throw new Error('App-Konfiguration konnte nicht geladen werden');
+    _appConfigCache = await res.json();
+    return _appConfigCache;
+  })();
+
+  return _appConfigPromise;
+}
+
+
+export async function getAppLogo() {
+    const response = await fetch(`${API_URL}/public/logo`, {
+        method: 'GET',
+    });
+    if (!response.ok) throw new Error('Getting app logo failed');
+
+    return response.blob();
+}

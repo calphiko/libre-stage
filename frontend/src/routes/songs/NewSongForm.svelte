@@ -18,13 +18,16 @@
 
 <script>
   import { getModalStore } from '@skeletonlabs/skeleton';
-  import { songFieldsDetails } from '$lib/songFields.js';
+  import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { appConfig } from '$lib/appConfig.js';
 
   // Diese Props werden vom Modal übergeben
   export let response = () => {};
   export let parent;
 
   const modalStore = getModalStore();
+
+  $: songFieldsDetails = getSongFieldsDetails($appConfig);
 
   let song = {};
 

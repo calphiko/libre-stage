@@ -18,7 +18,8 @@
 
 <script>
   import { getModalStore } from '@skeletonlabs/skeleton';
-  import { gigFieldsDetails, kindOfGigOptions } from '$lib/songFields.js';
+  import { getGigFieldsDetails, getKindOfGigOptions } from '$lib/songFields.js';
+  import { appConfig } from '$lib/appConfig.js';
 
   // Diese Props werden vom Modal übergeben
   export let response = () => {};
@@ -26,7 +27,8 @@
 
   const modalStore = getModalStore();
 
-
+  $: gigFieldsDetails = getGigFieldsDetails($appConfig);
+  $: kindOfGigOptions = getKindOfGigOptions($appConfig);
 
   let gig = {};
 

@@ -19,7 +19,8 @@
 <script>
   import { onMount } from 'svelte';
   import { getModalStore } from '@skeletonlabs/skeleton';
-  import { songFieldsDetails } from '$lib/songFields.js';
+  import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { appConfig } from '$lib/appConfig.js';
   import { getSong, getUser, updateSong, deleteSong, getSingers, getSongRehearsalHistory, getUserList, getSongStatistics } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { getToastStore } from '@skeletonlabs/skeleton';
@@ -48,6 +49,8 @@
   let historyLoading = false;
   let statistics = null;
   let statsLoading = false;
+
+  $: songFieldsDetails = getSongFieldsDetails($appConfig);
 
   function statsEnabled() {
     if (song.status == 'vorschlag') return false;

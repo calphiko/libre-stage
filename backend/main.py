@@ -29,6 +29,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, auth
+from backend.app_config import app_config  # Validiert appConfig.json beim Startup
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 

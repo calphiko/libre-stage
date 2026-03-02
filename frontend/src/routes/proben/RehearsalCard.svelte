@@ -32,7 +32,7 @@
   export let expanded = false;
   export let expandedSongId = null;
 
-  const statusOptions = appConfig.rehearsalSongStatuses;
+  $: statusOptions = $appConfig?.rehearsalSongStatuses ?? [];
 
   const dateOptions = {
     weekday: 'long',

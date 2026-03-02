@@ -22,7 +22,8 @@
   import { onMount } from 'svelte';
   import { getUser, getGigs, updateGig, getSetlistPDF, addNewGig, delGig, getGigSetlistAvailability, getGemaListFile, logout as apiLogout, getLiveModeAvailability, getLiveModeAvailabilityBatch} from '$lib/api.js';
   import { formatTime } from '$lib/common.js';
-  import { gigFields, gigFieldsDetails } from '$lib/songFields.js';
+  import { gigFields, getGigFieldsDetails } from '$lib/songFields.js';
+  import { appConfig } from '$lib/appConfig.js';
   import { gigIdForEditor } from '$lib/stores.js';
 
   import { getToastStore } from '@skeletonlabs/skeleton';
@@ -50,6 +51,8 @@
   let editGigId = null;
   let liveModeStatus = {}; // Key: gigId, Value: { available, can_force, forced, reason }
   let editBuffer = {};
+
+  $: gigFieldsDetails = getGigFieldsDetails($appConfig);
 
   let forceUnlocked = false;
 
