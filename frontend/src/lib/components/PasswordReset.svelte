@@ -20,23 +20,20 @@
     import { resetPassword } from '$lib/api_pw_reset.js';
     import { onMount } from 'svelte';
 
-    export let token = '';
-    export let user;
+  let { token = '', user } = $props();
 
-    let newPassword1 = '';
-    let newPassword2 = '';
-    let showPassword = false;
-    let passwordErrors = [];
-    let errorMsg = '';
-    let successMsg = '';
-    let loading = false;
+    let newPassword1 = $state('');
+    let newPassword2 = $state('');
+    let showPassword = $state(false);
+    let errorMsg = $state('');
+    let successMsg = $state('');
+    let loading = $state(false);
 
     onMount(() => {
         // Reset form state when component mounts
         newPassword1 = '';
         newPassword2 = '';
         showPassword = false;
-        passwordErrors = [];
         errorMsg = '';
         successMsg = '';
         loading = false;
@@ -64,16 +61,16 @@
     return p1 === p2;
   }
 
-  $: canSubmit = (() => {
+  let canSubmit = $derived((() => {
         const result = passwordsMatch(newPassword1, newPassword2) &&
             isLongEnough(newPassword1) &&
             hasUpper(newPassword1) &&
             hasNumber(newPassword1) &&
             hasSpecial(newPassword1);
         return result;
-    })();
+    })());
 
-  $: passwordErrors = (() => {
+  let passwordErrors = $derived((() => {
       const errors = [];
       if (newPassword1 || newPassword2) {
         if (!passwordsMatch(newPassword1, newPassword2)) {
@@ -93,7 +90,7 @@
         }
       }
       return errors;
-  })();
+  })());
 
     async function handlePasswordChange() {
        errorMsg = "";
@@ -137,7 +134,7 @@
           <button
             type="button"
             class="absolute right-2 top-1/2 -translate-y-1/2 text-lg text-outline-variant opacity-90 hover:opacity-100"
-            on:click={togglePasswordVisibility}
+            onclick={togglePasswordVisibility}
             aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}>
             {showPassword ? '🙈' : '👁️'}
           </button>
@@ -165,7 +162,7 @@
         <button
           class="btn variant-filled-primary rounded-lg px-5 py-2 font-semibold text-base"
           disabled={!canSubmit || loading}
-          on:click={handlePasswordChange}>
+          onclick={handlePasswordChange}>
           Passwort ändern
         </button>
         {#if errorMsg}

@@ -28,14 +28,14 @@
 
 
 
-  export let data;
+  let { data } = $props();
   console.log(data);
 
-  let songs = [];
-  let setlist = null;
-  let error = '';
-  let user = null;
-  let showHelp = false;
+  let songs = $state([]);
+  let setlist = $state(null);
+  let error = $state('');
+  let user = $state(null);
+  let showHelp = $state(false);
 
 
 
@@ -124,7 +124,7 @@
       </h1>
       <button
         class="btn variant-ghost-surface btn-sm"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

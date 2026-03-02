@@ -21,22 +21,21 @@
   import { getFirstSinger, getColorBySinger } from '$lib/common.js';
 
 
-  export let songs = [];
-  export let addSongToSetListEnd;
+  let { songs = [], addSongToSetListEnd } = $props();
 
 
-  let genreFilter = '';
-  let statusFilter = ['spielbar', 'proben'];
-  let singerFilter = '';
-  let searchFilter = '';
-  let showFilters = false;
-  let open = new Set();
+  let genreFilter = $state('');
+  let statusFilter = $state(['spielbar', 'proben']);
+  let singerFilter = $state('');
+  let searchFilter = $state('');
+  let showFilters = $state(false);
+  let open = $state(new Set());
 
-  $: genres = Array.from(new Set(songs.map(s => s.genre))).sort();
-  $: statuses = Array.from(new Set(songs.map(s => s.status))).sort();
-  $: singers = Array.from(new Set(songs.map(s => s.singer_lead_short))).sort();
+  let genres = $derived(Array.from(new Set(songs.map(s => s.genre))).sort());
+  let statuses = $derived(Array.from(new Set(songs.map(s => s.status))).sort());
+  let singers = $derived(Array.from(new Set(songs.map(s => s.singer_lead_short))).sort());
 
-  $: filtered = songs.filter(song =>
+  let filtered = $derived(songs.filter(song =>
     (!genreFilter || song.genre === genreFilter) &&
     (!statusFilter.length || statusFilter.includes(song.status)) &&
     (!singerFilter || song.singer_lead_short === singerFilter) &&
@@ -44,7 +43,7 @@
       (song.title && song.title.toLowerCase().includes(searchFilter.trim().toLowerCase())) ||
       (song.interpret && song.interpret.toLowerCase().includes(searchFilter.trim().toLowerCase()))
     )
-  );
+  ));
 
   function toggleOpen(id) {
     if (open.has(id)) open.delete(id);
@@ -102,12 +101,12 @@
       style="flex: 1; min-width: 240px;"
       placeholder="🔍 Suche Titel, Interpret..."
       bind:value={searchFilter}
-      on:keydown={handleSearchKeydown}
+      onkeydown={handleSearchKeydown}
     />
     <button
       class="btn variant-filled-surface"
       type="button"
-      on:click={() => showFilters = !showFilters}
+      onclick={() => showFilters = !showFilters}
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -172,7 +171,7 @@
         <button
           type="button"
           draggable="true"
-          on:dragstart={(event) => event.dataTransfer.setData('text/plain', song.id)}
+          ondragstart={(event) => event.dataTransfer.setData('text/plain', song.id)}
           class="card rounded-sm song-item w-full text-surface-900 dark:text-surface-950  transition-all duration-200 hover:scale-[1.01] cursor-grab active:cursor-grabbing {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
           style="background-color:{getColorBySinger(song.singer_lead_short)}"
 
@@ -185,12 +184,12 @@
                 <p class=" text-base leading-tight">{song.title} - <span class="text-sm opacity-70">{song.interpret}</span></p>
 
               </div>
-              <div class=" btn btn-sm variant-filled-primary flex-shrink-0 py-0" on:click={() => addSongToSetListEnd(song.id)}>
+              <div class=" btn btn-sm variant-filled-primary flex-shrink-0 py-0" onclick={() => addSongToSetListEnd(song.id)}>
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                     </svg>
               </div>
-              <div class=" btn btn-sm py-0 variant-filled-secondary flex-shrink-0 transition-transform duration-200 {open.has(song.id) ? 'rotate-180' : ''}" on:click={() => toggleOpen(song.id)}>
+              <div class=" btn btn-sm py-0 variant-filled-secondary flex-shrink-0 transition-transform duration-200 {open.has(song.id) ? 'rotate-180' : ''}" onclick={() => toggleOpen(song.id)}>
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                 </svg>

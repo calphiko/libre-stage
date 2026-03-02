@@ -18,19 +18,16 @@
 
 <script>
   import { createEventDispatcher, onMount } from 'svelte';
-  export let options = [];            // Array von Vorschlägen, z.B. ['Apfel','Banane']
-  export let selected = [];           // auswählbare Werte, bindbar: <TagInput bind:selected />
-  export let placeholder = 'Tippe und drücke Enter';
-  export let name = 'choices';        // optionaler Name für hidden input im Formular
+  let { options = [], selected = [], placeholder = 'Tippe und drücke Enter', name = 'choices' } = $props();
   const dispatch = createEventDispatcher();
 
-  let input = '';
-  let open = false;
-  let activeIndex = -1;
+  let input = $state('');
+  let open = $state(false);
+  let activeIndex = $state(-1);
 
-  $: available = options
+  let available = $derived(options
     .filter(o => !selected.includes(o))
-    .filter(o => o.toLowerCase().includes(input.trim().toLowerCase()));
+    .filter(o => o.toLowerCase().includes(input.trim().toLowerCase())));
 
   function addTag(value) {
   value = value?.trim();
@@ -101,7 +98,7 @@
         <button
           type="button"
           class="chip-close"
-          on:click={() => removeTag(idx)}
+          onclick={() => removeTag(idx)}
           aria-label="Remove {tag}"
         >
             ✕
@@ -117,8 +114,8 @@
     type="text"
     bind:value={input}
     placeholder={placeholder}
-    on:input={() => { open = input.trim() !== ''; activeIndex = 0; }}
-    on:keydown={onKeyDown}
+    oninput={() => { open = input.trim() !== ''; activeIndex = 0; }}
+    onkeydown={onKeyDown}
     aria-autocomplete="list"
     aria-expanded={open}
     aria-controls="suggestions"
@@ -132,7 +129,7 @@
           role="option"
           class:active={idx === activeIndex}
           aria-selected={idx === activeIndex}
-          on:mousedown|preventDefault={() => addTag(item)}
+          onmousedown={(e) => { e.preventDefault(); addTag(item); }}
         >
           {item}
         </li>

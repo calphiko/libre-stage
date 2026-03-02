@@ -24,13 +24,11 @@
     ModuleRegistry.registerModules([AllCommunityModule]);
   }
 
-  export let rowData = [];
-  export let columnDefs = [];
-  export let onRowClicked = null;
+  let { rowData = [], columnDefs = [], onRowClicked = null } = $props();
 
   let gridDiv;
   let gridApi;
-  let isDark = false;
+  let isDark = $state(false);
 
   function updateTheme() {
     isDark = document.documentElement.classList.contains('dark') ||
@@ -129,13 +127,17 @@
     }
   });
 
-  $: if (gridApi) {
-    gridApi.setGridOption('rowData', rowData);
-  }
+  $effect(() => {
+    if (gridApi) {
+      gridApi.setGridOption('rowData', rowData);
+    }
+  });
 
-  $: if (gridApi) {
-    gridApi.setGridOption('columnDefs', columnDefs);
-  }
+  $effect(() => {
+    if (gridApi) {
+      gridApi.setGridOption('columnDefs', columnDefs);
+    }
+  });
 </script>
 
 <div bind:this={gridDiv} style="height: 600px; width: 100%;"></div>

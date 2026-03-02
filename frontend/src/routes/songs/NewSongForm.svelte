@@ -17,26 +17,25 @@
 -->
 
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { modalState } from '$lib/modalState.js';
+import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
 
   // Diese Props werden vom Modal übergeben
-  export let response = () => {};
-  export let parent;
+  let { response = () => {}, parent } = $props();
 
-  const modalStore = getModalStore();
+  
 
-  $: songFieldsDetails = getSongFieldsDetails($appConfig);
+  let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
-  let song = {};
+  let song = $state({});
 
   function submit() {
     //console.log("Song: ", song);
 
-    if ($modalStore[0].response) $modalStore[0].response(song)
+    modalState.close(song)
     //response({ datum, name });
-    modalStore.close();
+    modalState.close();
   }
 
 </script>
@@ -46,7 +45,7 @@
       <h4 class="h5 mb-3">Neuer Song</h4>
     </header>
     <div class="overflow-y-auto flex-grow">
-        <form class=" card bg-surface-1 p-4 rounded shadow mb-4" on:submit|preventDefault={submit}>
+        <form class=" card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
           {#each songFieldsDetails as songField}
             {#if songField.type != "singer_list"}
                 <div class="mb-3 d-flex align-items-center gap-2 flex-nowrap">
@@ -101,7 +100,7 @@
           {/each}
 
           <div class="flex justify-end gap-2 mt-2">
-            <button class="btn btn-secondary border" type="button" on:click={modalStore.close}>Abbrechen</button>
+            <button class="btn btn-secondary border" type="button" onclick={modalState.close}>Abbrechen</button>
             <button class="btn btn-primary border" type="submit">Erstellen</button>
           </div>
         </form>

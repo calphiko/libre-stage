@@ -18,102 +18,36 @@
 
 <script>
 	// --- Props ---
+	let { roles = ['User', 'Editor', 'Admin'], schema = [
+		{ category: 'Gigs', actions: ['Gigs anzeigen', 'Gigs erstellen', 'Gigs bearbeiten', 'Gigs löschen'] },
+		{ category: 'Setlisten', actions: ['Setlist anzeigen', 'Setlist bearbeiten', 'Setlist PDF erstellen', 'GEMA-Liste generieren'] },
+		{ category: 'Songs', actions: ['Songs anzeigen', 'Songs bearbeiten', 'Songs vorschlagen', 'Songs löschen'] },
+		{ category: 'Proben', actions: ['Proben anzeigen', 'Proben bearbeiten', 'Proben erstellen', 'Proben löschen'] },
+		{ category: 'Umfragen', actions: ['Umfragen anzeigen', 'Umfragen bearbeiten', 'Umfragen erstellen', 'Umfragen löschen'] },
+		{ category: 'System', actions: ['User hinzufügen', 'User löschen', 'Neues Passwort antriggern'] }
+	], permissions = {
+		'User': [
+			'Gigs anzeigen', 'Setlist anzeigen', 'Setlist PDF erstellen', 'GEMA-Liste generieren',
+			'Songs anzeigen', 'Songs vorschlagen', 'Proben anzeigen', 'Proben bearbeiten',
+			'Umfragen anzeigen', 'Umfragen erstellen', 'Umfragen bearbeiten', 'Umfragen löschen'
+		],
+		'Editor': [
+			'Gigs anzeigen', 'Gigs erstellen', 'Gigs bearbeiten', 'Gigs löschen',
+			'Setlist anzeigen', 'Setlist bearbeiten', 'Setlist PDF erstellen', 'GEMA-Liste generieren',
+			'Songs anzeigen', 'Songs vorschlagen', 'Songs bearbeiten', 'Songs löschen',
+			'Proben anzeigen', 'Proben erstellen', 'Proben bearbeiten',
+			'Umfragen anzeigen', 'Umfragen erstellen', 'Umfragen bearbeiten', 'Umfragen löschen'
+		],
+		'Admin': [
+			'Gigs anzeigen', 'Gigs erstellen', 'Gigs bearbeiten', 'Gigs löschen',
+			'Setlist anzeigen', 'Setlist bearbeiten', 'Setlist PDF erstellen', 'GEMA-Liste generieren',
+			'Songs anzeigen', 'Songs vorschlagen', 'Songs bearbeiten', 'Songs löschen',
+			'Proben anzeigen', 'Proben erstellen', 'Proben bearbeiten', 'Proben löschen',
+			'Umfragen anzeigen', 'Umfragen erstellen', 'Umfragen bearbeiten', 'Umfragen löschen',
+			'User hinzufügen', 'User löschen', 'Neues Passwort antriggern'
+		]
+	} } = $props();
 
-	// Definition der Rollen
-	export let roles = ['User', 'Editor', 'Admin'];
-
-	// Definition der Struktur: Kategorien und ihre zugehörigen Aktionen
-	export let schema = [
-		{
-			category: 'Gigs',
-			actions: ['Gigs anzeigen', 'Gigs erstellen', 'Gigs bearbeiten', 'Gigs löschen']
-		},
-		{
-			category: 'Setlisten',
-			actions: ['Setlist anzeigen', 'Setlist bearbeiten', 'Setlist PDF erstellen','GEMA-Liste generieren']
-		},
-		{
-			category: 'Songs',
-			actions: ['Songs anzeigen', 'Songs bearbeiten', 'Songs vorschlagen', 'Songs löschen']
-		},
-		{
-			category: 'Proben',
-			actions: ['Proben anzeigen', 'Proben bearbeiten', 'Proben erstellen', 'Proben löschen']
-		},
-		{
-			category: 'Umfragen',
-			actions: ['Umfragen anzeigen', 'Umfragen bearbeiten', 'Umfragen erstellen', 'Umfragen löschen']
-		},
-		{
-			category: 'System',
-			actions: ['User hinzufügen', 'User löschen', 'Neues Passwort antriggern']
-		}
-
-	];
-
-	// Die effektiven Berechtigungen pro Rolle
-	export let permissions = {
-	'User': [
-		'Gigs anzeigen',
-		'Setlist anzeigen',
-		'Setlist PDF erstellen',
-		'GEMA-Liste generieren',
-		'Songs anzeigen',
-		'Songs vorschlagen',
-		'Proben anzeigen',
-		'Proben bearbeiten',
-		'Umfragen anzeigen',
-		'Umfragen erstellen',
-		'Umfragen bearbeiten',
-		'Umfragen löschen'
-	],
-	'Editor': [
-		'Gigs anzeigen',
-		'Gigs erstellen',
-		'Gigs bearbeiten',
-		'Gigs löschen',
-		'Setlist anzeigen',
-		'Setlist bearbeiten',
-		'Setlist PDF erstellen',
-		'GEMA-Liste generieren',
-		'Songs anzeigen',
-		'Songs vorschlagen',
-		'Songs bearbeiten',
-		'Songs löschen',
-		'Proben anzeigen',
-		'Proben erstellen',
-		'Proben bearbeiten',
-		'Umfragen anzeigen',
-		'Umfragen erstellen',
-		'Umfragen bearbeiten',
-		'Umfragen löschen'
-	],
-	'Admin': [
-		'Gigs anzeigen',
-		'Gigs erstellen',
-		'Gigs bearbeiten',
-		'Gigs löschen',
-		'Setlist anzeigen',
-		'Setlist bearbeiten',
-		'Setlist PDF erstellen',
-		'GEMA-Liste generieren',
-		'Songs anzeigen',
-		'Songs vorschlagen',
-		'Songs bearbeiten',
-		'Songs löschen',
-		'Proben anzeigen',
-		'Proben erstellen',
-		'Proben bearbeiten',
-		'Proben löschen',
-		'Umfragen anzeigen',
-		'Umfragen erstellen',
-		'Umfragen bearbeiten',
-		'Umfragen löschen',
-		'User hinzufügen',
-		'User löschen',
-		'Neues Passwort antriggern'
-	]
-};
 
 	// Helper: Check permission
 	function can(role, action) {

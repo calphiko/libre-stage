@@ -17,24 +17,13 @@
 -->
 
 <script>
-  import { AccordionItem } from '@skeletonlabs/skeleton';
-  import { createEventDispatcher } from 'svelte';
-
-  import { getModalStore  } from '@skeletonlabs/skeleton';
+  import { modalState } from '$lib/modalState.js';
   import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
 
+  let { song, users = [], expanded = false, statusOptions = [], ontoggle, onremove, ondone, onstatuschange, onupdate, onaddtodo } = $props();
 
-  const dispatch = createEventDispatcher();
-
-  export let song;
-  export let users = [];
-  export let expanded = false;
-  export let statusOptions = [];
-
-  let newTodoUserId = '';
-  let newTodoText = '';
-
-  const modalStore = getModalStore();
+  let newTodoUserId = $state('');
+  let newTodoText = $state('');
 
   function getStatusButtonClass(currentStatus, buttonStatus) {
     if (currentStatus === buttonStatus) {
@@ -46,29 +35,29 @@
   }
 
   function handleToggle() {
-    dispatch('toggle', { id: song.id });
+    ontoggle?.({ id: song.id });
     console.log(song)
   }
 
   function handleRemove() {
-    dispatch('remove', { id: song.id });
+    onremove?.({ id: song.id });
   }
 
   function handleDone() {
-    dispatch('done', { song });
+    ondone?.({ song });
   }
 
   function handleStatusChange(status) {
-    dispatch('statuschange', { status, song });
+    onstatuschange?.({ status, song });
   }
 
   function handleBlur() {
-    dispatch('update');
+    onupdate?.();
   }
 
   function handleAddTodo() {
     if (newTodoUserId && newTodoText) {
-      dispatch('addtodo', {
+      onaddtodo?.({
         song,
         userId: Number(newTodoUserId),
         todoText: newTodoText
@@ -79,9 +68,8 @@
   }
 
   function openModal(id) {
-    modalStore.trigger({
-    type: 'component',
-    component: { ref: SongDetailsModal },
+    modalState.trigger({
+    component: SongDetailsModal,
     meta: {
       songId: id
     },
@@ -96,37 +84,37 @@
   }
 </script>
 
-<AccordionItem
+<details 
   open={expanded}
-  on:toggle={handleToggle}
+  ontoggle={handleToggle}
   class="border border-outline-variant rounded-lg mb-2 bg-surface-1"
 >
-  <svelte:fragment slot="lead">
+  <div>
     {#if song.done}
       <span style="color: lightgreen;">✔</span>
     {:else}
       <span>♪</span>
     {/if}
-  </svelte:fragment>
+  </div>
 
-  <svelte:fragment slot="summary">
+  <div class="font-semibold">
     <span class="font-bold text-base">{song.interpret} - {song.title}</span>
-  </svelte:fragment>
+  </div>
 
-  <svelte:fragment slot="content">
+  <div>
     <div class="flex justify-between items-center mb-2 gap-2">
       <button
         class="btn variant-filled-error border btn-sm"
         title="Song entfernen"
-        on:click|stopPropagation={handleRemove}
+        onclick={handleRemove}
       >✖</button>
       <button
         class="btn variant-filled-primary btn-sm"
-        on:click|stopPropagation={() => openModal(song.id_song)}
+        onclick={() => openModal(song.id_song)}
       >Details</button>
       <button
         class="btn variant-filled-success btn-sm"
-        on:click|stopPropagation={handleDone}
+        onclick={handleDone}
       >erledigt</button>
     </div>
 
@@ -137,7 +125,7 @@
           {#each statusOptions as status}
             <button
               class="btn btn-sm {getStatusButtonClass(song.status, status)}"
-              on:click|stopPropagation={() => handleStatusChange(status)}
+              onclick={() => handleStatusChange(status)}
             >{status}</button>
           {/each}
         </div>
@@ -147,8 +135,8 @@
         <input
           class="input w-full" type="text"
           bind:value={song.todo}
-          on:blur|stopPropagation={handleBlur}
-          on:focus|stopPropagation on:click|stopPropagation
+          onblur={handleBlur}
+          
         />
       </div>
       <div>
@@ -156,8 +144,8 @@
         <input
           class="input w-full" type="text"
           bind:value={song.setlist_comment}
-          on:blur|stopPropagation={handleBlur}
-          on:focus|stopPropagation on:click|stopPropagation
+          onblur={handleBlur}
+          
         />
       </div>
       <div>
@@ -165,8 +153,8 @@
         <textarea
           class="input w-full" rows="2"
           bind:value={song.comment}
-          on:blur|stopPropagation={handleBlur}
-          on:focus|stopPropagation on:click|stopPropagation
+          onblur={handleBlur}
+          
         />
       </div>
     </div>
@@ -183,11 +171,11 @@
           </span>
         {/each}
       </div>
-      <form class="flex gap-2 mt-2 flex-wrap" on:submit|preventDefault={handleAddTodo}>
+      <form class="flex gap-2 mt-2 flex-wrap" onsubmit={handleAddTodo}>
         <select
           bind:value={newTodoUserId}
           class="input w-full max-w-xs" required
-          on:focus|stopPropagation on:click|stopPropagation
+          
         >
           <option value="" disabled selected>Wer?</option>
           {#each users as u}
@@ -199,16 +187,16 @@
           bind:value={newTodoText}
           class="input w-full max-w-xs"
           placeholder="Was soll getan werden?" required
-          on:focus|stopPropagation on:click|stopPropagation
-          on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTodo(); } }}
+          
+          onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTodo(); } }}
         />
         <button type="submit" class="btn variant-filled-primary btn-outline btn-sm">
           Todo hinzufügen
         </button>
       </form>
     </div>
-  </svelte:fragment>
-</AccordionItem>
+  </div>
+</details>
 
 <style>
   :global(.btn-status-success) {
@@ -233,4 +221,3 @@
     color: orange;
   }
 </style>
-

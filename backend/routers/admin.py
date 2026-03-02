@@ -25,6 +25,11 @@ import os
 from dotenv import load_dotenv
 from backend.utils.check_permissions import check_admin
 
+logger = logging.getLogger("uvicorn.error")
+# suppress progress polls to reduce log clutter
+block_endpoints = ["/admin/log"]
+load_dotenv(".env")
+
 async def user_is_admin(request: Request, db: Session = Depends(auth.get_db)):
     """Check if current user is admin - for router-level dependencies"""
     logger.info(f"[Admin-Check] Request Path: {request.url.path}")
@@ -53,10 +58,7 @@ router = APIRouter(
     prefix="/admin", tags=["admin"], dependencies=[Depends(user_is_admin)]
 )
 
-logger = logging.getLogger("uvicorn.error")
-# suppress progress polls to reduce log clutter
-block_endpoints = ["/admin/log"]
-load_dotenv(".env")
+
 
 
 class LogFilter(logging.Filter):  # pragma: no cover
@@ -117,7 +119,7 @@ def update_user(
                 test_status = send_mm_message(f"Dein Mattermost Nutzername wurde von '{user_db.mm_username}' zu '{data.mm_username}' geändert.", channel=f"@{data.mm_username}")
             except Exception as e:
                 logger.error(f"Fehler beim Senden der Testnachricht an neuen Mattermost Nutzernamen '{data.mm_username}': {e}. Wird nicht geändet")
-                raise HTTPException(status_code=400, detail="Error sending test message to new Mattermost username. Change not applied.")
+                raise HTTPException(status_code=400, detail=f"Error sending test message to new Mattermost @{data.mm_username}'. Change not applied.")
             if test_status:
                 changes.append(f"Mattermost Nutzername: {user_db.mm_username} → {data.mm_username}")
 

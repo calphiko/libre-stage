@@ -18,39 +18,38 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { modalState } from '$lib/modalState.js';
+import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
   import { getSong, getUser, updateSong, deleteSong, getSingers, getSongRehearsalHistory, getUserList, getSongStatistics } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import SingersList from '$lib/components/SingersList.svelte';
 
-  const modalStore = getModalStore();
-  const { showError, showSuccess } = createMessageHelpers(getToastStore());
+  
+  const { showError, showSuccess } = createMessageHelpers();
 
-  export let parent;
+  let { parent = {}, meta = {} } = $props();
 
   // Nur songId wird übergeben
-  const { songId } = $modalStore[0].meta;
+  const { songId } = meta;
 
-  let song = null;
-  let loading = true;
-  let error = '';
-  let canEdit = false;
-  let tabSet = 0;
-  let isEditing = false;
-  let editBuffer = {};
-  let singers = [];
-  let isSaving = false;
-  let rehearsalHistory = [];
-  let users = [];
-  let historyLoading = false;
-  let statistics = null;
-  let statsLoading = false;
+  let song = $state(null);
+  let loading = $state(true);
+  let error = $state('');
+  let canEdit = $state(false);
+  let tabSet = $state(0);
+  let isEditing = $state(false);
+  let editBuffer = $state({});
+  let singers = $state([]);
+  let isSaving = $state(false);
+  let rehearsalHistory = $state([]);
+  let users = $state([]);
+  let historyLoading = $state(false);
+  let statistics = $state(null);
+  let statsLoading = $state(false);
 
-  $: songFieldsDetails = getSongFieldsDetails($appConfig);
+  let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
   function statsEnabled() {
     if (song.status == 'vorschlag') return false;
@@ -104,7 +103,8 @@
   }
 
   // Lade History wenn Tab 2 geöffnet wird
-  $: if (tabSet === 2) loadRehearsalHistory();
+  $effect(() => { if (tabSet === 2) loadRehearsalHistory();
+  });
 
   async function loadStatistics() {
     if (statistics) return;
@@ -119,7 +119,8 @@
   }
 
   // Lade Statistiken wenn Tab 1 geöffnet wird
-  $: if (tabSet === 1) loadStatistics();
+  $effect(() => { if (tabSet === 1) loadStatistics();
+  });
 
   const feedbackEmoji = { 1: '😞', 2: '😐', 3: '😊' };
   const feedbackLabel = { 1: 'Schwach', 2: 'OK', 3: 'Super' };
@@ -161,11 +162,11 @@
       song = { ...song, ...songData };
       editBuffer = { ...song };
 
-      if ($modalStore[0]?.response) {
-        $modalStore[0].response({ action: 'updated', data: { ...song } });
+      if (true) {
+        modalState.close({ action: 'updated', data: { ...song } });
+      } else {
+        modalState.close();
       }
-
-      modalStore.close();
     } catch (e) {
       showError(e.message ?? 'Update fehlgeschlagen');
     } finally {
@@ -175,31 +176,24 @@
 
   async function handleDelete() {
     const songName = song.interpret ? `${song.interpret} - ${song.title}` : song.title;
-    const parentResponse = $modalStore[0]?.response;
     const id = song.id;
 
-    modalStore.close();
+    modalState.close();
 
     setTimeout(() => {
-      modalStore.trigger({
-        type: 'component',
-        component: { ref: ConfirmModal },
+      modalState.trigger({
+        component: ConfirmModal,
         meta: {
           title: 'Song löschen',
           message: `Möchten Sie den Song "${songName}" wirklich löschen? Der Song wird als "retired" markiert und aus der aktiven Liste entfernt.`,
           confirmText: 'Löschen',
           cancelText: 'Abbrechen',
-          confirmButtonClass: 'btn variant-filled-error',
-          cancelButtonClass: 'btn variant-outline-secondary'
         },
         response: async (confirmed) => {
           if (confirmed) {
             try {
               await deleteSong(id, null);
               showSuccess('Song erfolgreich gelöscht');
-              if (parentResponse) {
-                parentResponse({ action: 'delete' });
-              }
             } catch (e) {
               showError(e.message ?? 'Löschen fehlgeschlagen');
             }
@@ -214,7 +208,7 @@
   <!-- Header -->
   <header class="flex justify-between items-center mb-4 flex-shrink-0">
     <h2 class="h2">{song?.title ?? 'Song laden...'}</h2>
-    <button class="btn-icon btn-icon-sm variant-ghost" on:click={parent.onClose}>✕</button>
+    <button class="btn-icon btn-icon-sm variant-ghost" onclick={parent.onClose}>✕</button>
   </header>
 
   {#if loading}
@@ -229,22 +223,22 @@
       <p>{error}</p>
     </div>
     <footer class="flex gap-2 justify-end pt-4 flex-shrink-0">
-      <button class="btn variant-ghost" on:click={parent.onClose}>Schließen</button>
+      <button class="btn variant-ghost" onclick={parent.onClose}>Schließen</button>
     </footer>
   {:else if song}
     <!-- Manuell gebaute Tabs -->
     <div class="flex gap-1 mb-4 flex-shrink-0 border-b border-surface-300">
       <button
         class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 0 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
-        on:click={() => tabSet = 0}
+        onclick={() => tabSet = 0}
       >Details</button>
       <button
         class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 1 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
-        on:click={() => tabSet = 1} disabled={!statsEnabled()}
+        onclick={() => tabSet = 1} disabled={!statsEnabled()}
       >Statistik</button>
       <button
         class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 2 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
-        on:click={() => tabSet = 2} disabled={!statsEnabled()}
+        onclick={() => tabSet = 2} disabled={!statsEnabled()}
       >Proben</button>
     </div>
 
@@ -254,7 +248,7 @@
         {#if isEditing}
           <!-- Edit Mode -->
           <div class="overflow-y-auto flex-grow min-h-0">
-            <form class="space-y-3 pr-1" on:submit|preventDefault={saveEdit}>
+            <form class="space-y-3 pr-1" onsubmit={saveEdit}>
               {#each songFieldsDetails as songField}
                 <div class="mb-3 flex items-center gap-2 flex-nowrap">
                   <label class="flex-shrink-0 w-36 text-sm font-medium">
@@ -286,10 +280,10 @@
             </form>
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
-            <button type="button" class="btn variant-filled-primary" disabled={isSaving} on:click={saveEdit}>
+            <button type="button" class="btn variant-filled-primary" disabled={isSaving} onclick={saveEdit}>
               {isSaving ? 'Wird gespeichert...' : 'Speichern'}
             </button>
-            <button type="button" class="btn variant-ghost" on:click={cancelEdit}>Abbrechen</button>
+            <button type="button" class="btn variant-ghost" onclick={cancelEdit}>Abbrechen</button>
           </footer>
 
         {:else}
@@ -304,12 +298,12 @@
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
             {#if canEdit}
-              <button class="btn variant-filled-primary" on:click={startEdit}>Bearbeiten</button>
+              <button class="btn variant-filled-primary" onclick={startEdit}>Bearbeiten</button>
             {/if}
             {#if song.status !== 'retired' && canEdit}
-              <button class="btn variant-filled-error" on:click={handleDelete}>Löschen</button>
+              <button class="btn variant-filled-error" onclick={handleDelete}>Löschen</button>
             {/if}
-            <button class="btn variant-ghost" on:click={parent.onClose}>Schließen</button>
+            <button class="btn variant-ghost" onclick={parent.onClose}>Schließen</button>
           </footer>
         {/if}
       </div>

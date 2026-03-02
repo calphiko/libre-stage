@@ -24,47 +24,39 @@
            deleteRehearsal,
            getUser } from '$lib/api.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { popup } from '@skeletonlabs/skeleton';
   import { InfoIcon } from 'lucide-svelte';
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   import NewRehearsalForm from './NewRehearsalForm.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import RehearsalCard from './RehearsalCard.svelte';
 
   import { onMount, tick } from 'svelte';
-  import { Accordion,
-            TabGroup,
-            Tab,
-            getModalStore
-          } from '@skeletonlabs/skeleton';
+  
 
-  const modalStore = getModalStore();
+  let rehearsals = $state([]);
+  let songs = $state([]);
+  let users = $state([]);
+  let user = $state(null);
+  let songsForSearch = $state([]);
 
-  let rehearsals = [];
-  let songs = [];
-  let users = [];
-  let user = null;
-  let songsForSearch = [];
+  let error = $state('');
+  let showHelp = $state(false);
+  let tabSet = $state(0);
+  let expandedRehId = $state(null);
+  let expandedSongId = $state(null);
+  let isUpdating = $state(false);
 
-  let error = '';
-  let showHelp = false;
-  let tabSet = 0;
-  let expandedRehId = null;
-  let expandedSongId = null;
-  let isUpdating = false;
+  let isEditor = $derived(user && (user.user_group === 'admin' || user.user_group === 'editor'));
 
-  $: isEditor = user && (user.user_group === 'admin' || user.user_group === 'editor');
-
-  $: now = new Date();
-  $: upcomingRehearsals = rehearsals
+  let now = $derived(new Date());
+  let upcomingRehearsals = $derived(rehearsals
     .filter(r => new Date(r.begin) >= now)
-    .sort((a, b) => new Date(a.begin) - new Date(b.begin));
-  $: pastRehearsals = rehearsals
+    .sort((a, b) => new Date(a.begin) - new Date(b.begin)));
+  let pastRehearsals = $derived(rehearsals
     .filter(r => new Date(r.begin) < now)
-    .sort((a, b) => new Date(b.begin) - new Date(a.begin));
+    .sort((a, b) => new Date(b.begin) - new Date(a.begin)));
 
 
   function buildSongsForSearch() {
@@ -134,9 +126,8 @@
   }
 
   async function delRehearsal(rehId, rehDate) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Probe löschen',
         message: `Möchten Sie die Probe vom ${rehDate} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
@@ -161,9 +152,8 @@
   }
 
   function openNewRehearsalModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewRehearsalForm },
+    modalState.trigger({
+      component: NewRehearsalForm,
       title: 'Neue Probe erstellen',
       body: 'complete the form below and then press submit!',
       response: (r) => r && addRehearsal(r)
@@ -171,15 +161,15 @@
   }
 
   function handleCardUpdate(e) {
-    updateRehearsal(e.detail.reh, e.detail.songId);
+    updateRehearsal(e.reh, e.songId);
   }
 
   function handleCardDelete(e) {
-    delRehearsal(e.detail.id, e.detail.date);
+    delRehearsal(e.id, e.date);
   }
 
   function handleCardSongToggle(e) {
-    expandedSongId = expandedSongId !== e.detail.id ? e.detail.id : null;
+    expandedSongId = expandedSongId !== e.id ? e.id : null;
   }
 </script>
 
@@ -190,7 +180,7 @@
         <h2 class="h2 text-on-surface">Proben</h2>
         <button
           class="btn variant-ghost-surface btn-sm"
-          on:click={() => showHelp = !showHelp}
+          onclick={() => showHelp = !showHelp}
           aria-label="Hilfe anzeigen"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,13 +249,12 @@
         <div class="inline-flex items-center gap-2">
           <button
             class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4"
-            on:click={openNewRehearsalModal}
+            onclick={openNewRehearsalModal}
           >
             Neue Probe hinzufügen
           </button>
           <span
             class="inline-block align-super cursor-help"
-            use:popup={{ event: 'click', target: 'rehearsalInfo', placement: 'top' }}
           >
             <InfoIcon class="w-4 h-4 text-primary-500" />
           </span>
@@ -279,24 +268,24 @@
       </div>
 
       {#if rehearsals.length > 0}
-        <TabGroup>
-          <Tab bind:group={tabSet} name="upcoming" value={0} class={upcomingRehearsals.length > 0 ? 'font-bold' : ''}>
+        <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+          <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {upcomingRehearsals.length > 0 ? 'font-bold' : ''}">
             <span class="hidden md:inline">Bevorstehende Proben ({upcomingRehearsals.length})</span>
             <span class="md:hidden">📅 ({upcomingRehearsals.length})</span>
-          </Tab>
-          <Tab bind:group={tabSet} name="past" value={1}>
+          </button>
+          <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
             <span class="hidden md:inline">Vergangene Proben ({pastRehearsals.length})</span>
             <span class="md:hidden">🕐 ({pastRehearsals.length})</span>
-          </Tab>
+          </button>
 
-          <svelte:fragment slot="panel">
+          <div class="mt-4">
             {#if tabSet === 0}
               {#if upcomingRehearsals.length === 0}
                 <div class="rounded-xl bg-success-100 text-success-900 p-4 mt-6 shadow text-center">
                   Keine bevorstehenden Proben geplant. 🎉
                 </div>
               {:else}
-                <Accordion class="mt-4">
+                <div  class="mt-4">
                   {#each upcomingRehearsals as reh (reh.id)}
                     <RehearsalCard
                       {reh}
@@ -306,16 +295,16 @@
                       {isEditor}
                       expanded={expandedRehId === reh.id}
                       {expandedSongId}
-                      on:toggle={() => toggleExpand(reh.id)}
-                      on:update={handleCardUpdate}
-                      on:delete={handleCardDelete}
-                      on:songtoggle={handleCardSongToggle}
-                      on:error={(e) => showError(e.detail.message)}
-                      on:warning={(e) => showWarning(e.detail.message)}
-                      on:success={(e) => showSuccess(e.detail.message)}
+                      ontoggle={() => toggleExpand(reh.id)}
+                      onupdate={handleCardUpdate}
+                      ondelete={handleCardDelete}
+                      onsongtoggle={handleCardSongToggle}
+                      onerror={(e) => showError(e.message)}
+                      onwarning={(e) => showWarning(e.message)}
+                      onsuccess={(e) => showSuccess(e.message)}
                     />
                   {/each}
-                </Accordion>
+                </div>
               {/if}
             {:else}
               {#if pastRehearsals.length === 0}
@@ -323,7 +312,7 @@
                   Keine vergangenen Proben vorhanden.
                 </div>
               {:else}
-                <Accordion class="mt-4">
+                <div  class="mt-4">
                   {#each pastRehearsals as reh (reh.id)}
                     <RehearsalCard
                       {reh}
@@ -333,20 +322,19 @@
                       {isEditor}
                       expanded={expandedRehId === reh.id}
                       {expandedSongId}
-                      on:toggle={() => toggleExpand(reh.id)}
-                      on:update={handleCardUpdate}
-                      on:delete={handleCardDelete}
-                      on:songtoggle={handleCardSongToggle}
-                      on:error={(e) => showError(e.detail.message)}
-                      on:warning={(e) => showWarning(e.detail.message)}
-                      on:success={(e) => showSuccess(e.detail.message)}
+                      ontoggle={() => toggleExpand(reh.id)}
+                      onupdate={handleCardUpdate}
+                      ondelete={handleCardDelete}
+                      onsongtoggle={handleCardSongToggle}
+                      onerror={(e) => showError(e.message)}
+                      onwarning={(e) => showWarning(e.message)}
+                      onsuccess={(e) => showSuccess(e.message)}
                     />
                   {/each}
-                </Accordion>
+                </div>
               {/if}
             {/if}
-          </svelte:fragment>
-        </TabGroup>
+          </div></div>
       {/if}
 
 

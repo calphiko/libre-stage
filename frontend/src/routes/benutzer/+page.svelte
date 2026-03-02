@@ -26,22 +26,22 @@
   import PasswordChange from '$lib/components/PasswordChange.svelte';
 
 
-    let user = {};
-  let showHelp = false;
+    let user = $state({});
+  let showHelp = $state(false);
 
-  let edit = {
+  let edit = $state({
     user_name: false,
     clear_name: false,
     user_group: false,
     email: false,
-  };
+  });
 
-  let temp = {
+  let temp = $state({
     user_name: "",
     clear_name: "",
     user_group: "",
     email: "",
-  };
+  });
 
    // API-Update-Funktion (Beispiel: anpassen für echte API-Aufrufe)
   async function updateUserField(field) {
@@ -79,7 +79,7 @@
   });
 
 
-  $: isAdmin = user && (user.user_group === 'admin');
+  let isAdmin = $derived(user && (user.user_group === 'admin'));
 
 </script>
 
@@ -88,7 +88,7 @@
     <h2 class="h2 text-on-surface">Benutzerverwaltung</h2>
     <button
       class="btn variant-ghost-surface btn-sm"
-      on:click={() => showHelp = !showHelp}
+      onclick={() => showHelp = !showHelp}
       aria-label="Hilfe anzeigen"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@
              class="input flex-1 rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
              bind:value={temp.user_name}
              disabled={!edit.user_name}
-             on:keydown={(e) => e.key === 'Enter' && updateUserField('user_name')}
+             onkeydown={(e) => e.key === 'Enter' && updateUserField('user_name')}
       />
     </div>
 
@@ -173,9 +173,9 @@
               class="input w-full rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface text-on-surface"
               bind:value={temp.clear_name}
               disabled={!edit.clear_name}
-              on:keydown={(e) => e.key === 'Enter' && updateUserField('clear_name')}
+              onkeydown={(e) => e.key === 'Enter' && updateUserField('clear_name')}
         />
-        <button class="btn btn-outline-primary btn-sm self-center" on:click={() => toggleEdit('clear_name')}>
+        <button class="btn btn-outline-primary btn-sm self-center" onclick={() => toggleEdit('clear_name')}>
           {#if edit.clear_name}✔{:else}✎{/if}
         </button>
       </div>
@@ -188,7 +188,7 @@
              class="input flex-1 rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
              bind:value={temp.user_group}
              disabled={!edit.user_group}
-             on:keydown={(e) => e.key === 'Enter' && updateUserField('user_group')}
+             onkeydown={(e) => e.key === 'Enter' && updateUserField('user_group')}
       />
     </div>
 
@@ -200,9 +200,9 @@
               class="input w-full rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
               bind:value={temp.email}
               disabled={!edit.email}
-              on:keydown={(e) => e.key === 'Enter' && updateUserField('email')}
+              onkeydown={(e) => e.key === 'Enter' && updateUserField('email')}
         />
-        <button class="btn btn-outline-primary btn-sm self-center" on:click={() => toggleEdit('email')}>
+        <button class="btn btn-outline-primary btn-sm self-center" onclick={() => toggleEdit('email')}>
           {#if edit.email}✔{:else}✎{/if}
         </button>
       </div>

@@ -18,16 +18,14 @@
 
 <script>
   import { changePasswordByUser, updateUser } from '$lib/api.js';
-  let oldPassword = "";
-  let newPassword1 = "";
-  let newPassword2 = "";
-  let errorMsg = "";
-  let successMsg = "";
-  let loading = false;
-  let showPassword = false;
-
-  // token not needed anymore (cookie-based auth)
-  export let user;
+  let oldPassword = $state("");
+  let newPassword1 = $state("");
+  let newPassword2 = $state("");
+  let errorMsg = $state("");
+  let successMsg = $state("");
+  let loading = $state(false);
+  let showPassword = $state(false); // token not needed anymore (cookie-based auth)
+  let { user } = $props();
 
   function togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -49,7 +47,7 @@
     return p1 === p2;
   }
 
-  $: canSubmit = (() => {
+  let canSubmit = $derived((() => {
         const result = !!oldPassword &&
             passwordsMatch(newPassword1, newPassword2) &&
             isLongEnough(newPassword1) &&
@@ -57,9 +55,9 @@
             hasNumber(newPassword1) &&
             hasSpecial(newPassword1);
         return result;
-    })();
+    })());
 
-  $: passwordErrors = (() => {
+  let passwordErrors = $derived((() => {
       const errors = [];
       if (newPassword1 || newPassword2) {
         if (!passwordsMatch(newPassword1, newPassword2)) {
@@ -79,7 +77,7 @@
         }
       }
       return errors;
-  })();
+  })());
 
   async function handlePasswordChange() {
     errorMsg = "";
@@ -90,7 +88,7 @@
         user_id: user.id,
         old_password: oldPassword,
         new_password: newPassword1,
-      }
+      };
 
       let res = await changePasswordByUser(null, data);
       successMsg = "Passwort erfolgreich geändert!";
@@ -141,7 +139,7 @@
           <button
             type="button"
             class="absolute right-2 top-1/2 -translate-y-1/2 text-lg text-outline-variant opacity-90 hover:opacity-100"
-            on:click={togglePasswordVisibility}
+            onclick={togglePasswordVisibility}
             aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}>
             {showPassword ? '🙈' : '👁️'}
           </button>
@@ -169,7 +167,7 @@
         <button
           class="btn variant-filled-primary rounded-lg px-5 py-2 font-semibold text-base"
           disabled={!canSubmit || loading}
-          on:click={handlePasswordChange}>
+          onclick={handlePasswordChange}>
           Passwort ändern
         </button>
         {#if errorMsg}

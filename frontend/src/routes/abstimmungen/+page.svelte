@@ -23,44 +23,36 @@
   import { getUser, getSurveys, getSurveyDetails, getUserList, updateSurveyFeedback, createSurvey, deleteSurvey, archiveSurvey, logout as apiLogout} from '$lib/api.js';
   import { shortFormatGermanDate } from '$lib/common.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { TabGroup, Tab } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
-
-  import { Accordion,
-            AccordionItem,
-            Autocomplete,
-            ProgressRadial
-          } from '@skeletonlabs/skeleton';
 
   import TerminfindungView from './TerminfindungView.svelte';
   import MeinungsumfrageView from './MeinungsumfrageView.svelte';
   import AuftrittsanfrageView from './AuftrittsanfrageView.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
-  let user = null;
-  let error = '';
-  let rulesVisible = false;
-  let showHelp = false;
-  let tabSet = 0; // Tab-Steuerung
-  let closedSurveysFilter = ''; // Filter für abgeschlossene Umfragen
+  let user = $state(null);
+  let error = $state('');
+  let rulesVisible = $state(false);
+  let showHelp = $state(false);
+  let tabSet = $state(0); // Tab-Steuerung
+  let closedSurveysFilter = $state(''); // Filter für abgeschlossene Umfragen
 
-  let surveys = [];
-  export let users = [];
+  let surveys = $state([]);
+  let { users = [] } = $props();
 
-  let openValue = [];
-  let loading = {};
-  let details = {};
+  let openValue = $state([]);
+    let loading = $state({});
+    let details = $state({});
 
-  $: userById = new Map(users.map(u => [u.id, u]));
-  $: activeSurveys = surveys.filter(s => !s.closed);
-  $: closedSurveys = surveys.filter(s => s.closed);
+  let userById = $derived(new Map(users.map(u => [u.id, u])));
+  let activeSurveys = $derived(surveys.filter(s => !s.closed));
+  let closedSurveys = $derived(surveys.filter(s => s.closed));
 
   // Gefilterte abgeschlossene Umfragen
-  $: filteredClosedSurveys = closedSurveys.filter(survey => {
+  let filteredClosedSurveys = $derived(closedSurveys.filter(survey => {
     if (!closedSurveysFilter.trim()) return true;
 
     const searchLower = closedSurveysFilter.toLowerCase();
@@ -68,15 +60,12 @@
     const creatorMatch = userById.get(survey.user_created)?.user_name?.toLowerCase().includes(searchLower);
 
     return titleMatch || creatorMatch;
-  });
+  }));
 
-  import {
-    getModalStore
-  } from '@skeletonlabs/skeleton';
+  import { modalState } from '$lib/modalState.js';
+import NewPollForm from './NewPollForm.svelte';
 
-  import NewPollForm from './NewPollForm.svelte';
-
-  const modalStore = getModalStore();
+  
 
 
   onMount(async () => {
@@ -111,14 +100,13 @@
   }
 
   function openNewModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewPollForm },
+    modalState.trigger({
+      component: NewPollForm,
       title: 'Neue Abstimmung erstellen',
       response: (r) => {
         if (r) addSurvey(r);
       },
-      close: modalStore.close
+      close: modalState.close
     });
   }
 
@@ -172,9 +160,8 @@
   }
 
   async function removeSurvey(surveyId, surveyName) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Abstimmung löschen',
         message: `Möchten Sie die Abstimmung "${surveyName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
@@ -197,9 +184,8 @@
     });
   }
   async function closeSurvey(surveyId, surveyName) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Abstimmung archivieren',
         message: `Möchten Sie die Abstimmung "${surveyName}" wirklich archivieren? Archivierte Abstimmungen können nicht mehr bearbeitet werden.`,
@@ -235,7 +221,7 @@
       <h2 class="h2 text-on-surface">Abstimmungen</h2>
       <button
         class="btn variant-ghost-surface btn-sm"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,7 +302,7 @@
       </div>
     {/if}
 
-    <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" on:click={openNewModal}>
+    <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewModal}>
           Neue Abstimmung
     </button>
 
@@ -325,7 +311,7 @@
       <button
         type="button"
         class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
-        on:click={toggleRules}
+        onclick={toggleRules}
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -379,24 +365,24 @@
       {/if}
     </div>
 
-    <TabGroup>
-        <Tab bind:group={tabSet} name="active" value={0} class={activeSurveys.length > 0 ? 'font-bold' : ''}>
+    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+        <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {activeSurveys.length > 0 ? 'font-bold' : ''}">
           <span>Laufende Umfragen ({activeSurveys.length})</span>
-        </Tab>
-        <Tab bind:group={tabSet} name="closed" value={1}>
+        </button>
+        <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
           <span>Abgeschlossene Umfragen ({closedSurveys.length})</span>
-        </Tab>
+        </button>
 
-      <svelte:fragment slot="panel">
+      <div class="mt-4">
         {#if tabSet === 0}
             <!-- Laufende Umfragen -->
             {#if activeSurveys.length === 0}
                 <p class="text-on-surface-variant italic mt-4">Keine laufenden Umfragen</p>
               {:else}
-                <Accordion class="space-y-3 mt-4">
+                <div  class="space-y-3 mt-4">
                   {#each activeSurveys as survey (survey.id)}
-                    <AccordionItem on:toggle={(event) => handleItemToggle(event, survey.id)} class="survey-item" data-survey-id={survey.id}>
-                      <svelte:fragment slot="summary">
+                    <details  ontoggle={(event) => handleItemToggle(event, survey.id)} class="survey-item" data-survey-id={survey.id}>
+                      <div class="font-semibold">
                         <div class="flex justify-between items-center w-full p-2">
                           <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
                           <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
@@ -406,7 +392,7 @@
                               <button
                                 type="button"
                                 class="md:ml-2 btn variant-filled-warning btn-sm py-0"
-                                on:click|stopPropagation={() => {
+                                onclick={() => {
                                   closeSurvey(survey.id, survey.rf_survey);
                                 }}>
                                 Archivieren
@@ -414,7 +400,7 @@
                               <button
                                 type="button"
                                 class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                on:click|stopPropagation={() => {
+                                onclick={() => {
                                   removeSurvey(survey.id, survey.rf_survey);
                                 }}
                                 >
@@ -423,9 +409,9 @@
                             {/if}
                           </span>
                         </div>
-                      </svelte:fragment>
+                      </div>
 
-                      <svelte:fragment slot="content">
+                      <div>
                         {#if loading[survey.id]}
                           <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
                             <ProgressRadial
@@ -455,10 +441,10 @@
                             {/if}
                           </div>
                         {/if}
-                      </svelte:fragment>
-                    </AccordionItem>
+                      </div>
+                    </details>
                   {/each}
-                </Accordion>
+                </div>
               {/if}
 
         {:else if tabSet === 1}
@@ -492,10 +478,10 @@
                 {#if filteredClosedSurveys.length === 0}
                   <p class="text-on-surface-variant italic mt-4">Keine Umfragen gefunden</p>
                 {:else}
-                <Accordion class="space-y-3 mt-4">
+                <div  class="space-y-3 mt-4">
                   {#each filteredClosedSurveys as survey (survey.id)}
-                    <AccordionItem on:toggle={(event) => handleItemToggle(event, survey.id)} class="survey-item survey-item-closed" data-survey-id={survey.id}>
-                      <svelte:fragment slot="summary">
+                    <details  ontoggle={(event) => handleItemToggle(event, survey.id)} class="survey-item survey-item-closed" data-survey-id={survey.id}>
+                      <div class="font-semibold">
                         <div class="flex justify-between items-center w-full p-2">
                           <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
                           <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
@@ -506,7 +492,7 @@
                               <button
                                 type="button"
                                 class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                on:click|stopPropagation={() => {
+                                onclick={() => {
                                   removeSurvey(survey.id, survey.rf_survey);
                                 }}
                                 >
@@ -515,9 +501,9 @@
                             {/if}
                           </span>
                         </div>
-                      </svelte:fragment>
+                      </div>
 
-                      <svelte:fragment slot="content">
+                      <div>
                         {#if loading[survey.id]}
                           <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
                             <ProgressRadial
@@ -547,15 +533,14 @@
                             {/if}
                           </div>
                         {/if}
-                      </svelte:fragment>
-                    </AccordionItem>
+                      </div>
+                    </details>
                   {/each}
-                </Accordion>
+                </div>
                 {/if}
               {/if}
         {/if}
-      </svelte:fragment>
-    </TabGroup>
+      </div></div>
 
 
     {#if error}

@@ -24,10 +24,11 @@ colorMode.subscribe(value => {
 function applyTheme() {
     if (!browser) return;
 
-    const theme = localStorage.getItem('selectedTheme') || 'modern';
+    const theme = localStorage.getItem('selectedTheme') || 'wintry';
     const mode = localStorage.getItem('colorMode') || 'auto';
 
-    document.body.setAttribute('data-theme', theme);
+    // Skeleton 4: data-theme on <html>
+    document.documentElement.setAttribute('data-theme', theme);
 
     if (mode === 'auto') {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -46,17 +47,15 @@ if (browser) {
     });
 }
 
+// Skeleton 4 available themes
 export const availableThemes = [
-    { value: 'skeleton', label: 'Skeleton' },
-    { value: 'wintry', label: 'Wintry' },
-    { value: 'modern', label: 'Modern' },
-    { value: 'hamlindigo', label: 'Hamlindigo' },
-    { value: 'rocket', label: 'Rocket' },
-    { value: 'sahara', label: 'Sahara' },
-    { value: 'gold-nouveau', label: 'Gold Nouveau' },
+    { value: 'cerberus', label: 'Cerberus' },
+    { value: 'catppuccin', label: 'Catppuccin' },
+    { value: 'pine', label: 'Pine' },
+    { value: 'rose', label: 'Rose' },
+    { value: 'terminus', label: 'Terminus' },
     { value: 'vintage', label: 'Vintage' },
-    { value: 'seafoam', label: 'Seafoam' },
-    { value: 'crimson', label: 'Crimson' }
+    { value: 'wintry', label: 'Wintry' }
 ];
 
 export const colorModes = [

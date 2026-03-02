@@ -17,29 +17,28 @@
 -->
 
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  import { getGigFieldsDetails, getKindOfGigOptions } from '$lib/songFields.js';
+  import { modalState } from '$lib/modalState.js';
+import { getGigFieldsDetails, getKindOfGigOptions } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
 
   // Diese Props werden vom Modal übergeben
-  export let response = () => {};
-  export let parent;
+    let { response = () => {}, parent } = $props();
 
-  const modalStore = getModalStore();
+  
 
-  $: gigFieldsDetails = getGigFieldsDetails($appConfig);
-  $: kindOfGigOptions = getKindOfGigOptions($appConfig);
+  let gigFieldsDetails = $derived(getGigFieldsDetails($appConfig));
+  let kindOfGigOptions = $derived(getKindOfGigOptions($appConfig));
 
-  let gig = {};
+  let gig = $state({});
 
-  let error = '';
+  let error = $state('');
 
   function submit() {
     console.log("Gig: ", gig);
 
-    if ($modalStore[0].response) $modalStore[0].response(gig)
+    modalState.close(gig)
     //response({ datum, name });
-    modalStore.close();
+    modalState.close();
   }
 </script>
 
@@ -49,7 +48,7 @@
         <h2 class="h5 mb-3">Neuer Gig</h2>
     </header>
     <div class="overflow-y-auto flex-grow">
-        <form class=" card bg-surface-1 p-4 rounded shadow mb-4" on:submit|preventDefault={submit}>
+        <form class=" card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
         {#each gigFieldsDetails as gigField}
           <div class="mb-3 d-flex align-items-center gap-2 flex-nowrap">
             <label>{gigField.label}
@@ -97,7 +96,7 @@
         {/each}
 
       <div class="flex justify-end gap-2 mt-2">
-        <button class="btn variant-outline-secondary border" type="button" on:click={modalStore.close}>Abbrechen</button>
+        <button class="btn variant-outline-secondary border" type="button" onclick={modalState.close}>Abbrechen</button>
         <button class="btn variant-filled-success border" type="submit">Erstellen</button>
       </div>
     </form>

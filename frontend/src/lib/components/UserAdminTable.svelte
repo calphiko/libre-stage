@@ -23,12 +23,11 @@
   import { createGrid, ModuleRegistry, AllCommunityModule, themeQuartz } from 'ag-grid-community';
   import { getUser, adminUpdateUser, adminGetAllUsers, logout as apiLogout} from '$lib/api.js';
   import { triggerSendPwResetToken } from '$lib/api_pw_reset.js';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
   // Toast Store initialisieren
   const toastStore = getToastStore();
-  const { showError, showSuccess, showWarning } = createMessageHelpers(toastStore);
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
 
   if (!ModuleRegistry.__registeredModules) {
@@ -230,9 +229,10 @@
     }
   });
 
-  $: if (gridApi && users.length > 0) {
+  $effect(() => { if (gridApi && users.length > 0) {
     gridApi.setGridOption('rowData', users);
   }
+  });
 </script>
 
 <div bind:this={gridDiv} style="height: 500px; width: 100%;"></div>

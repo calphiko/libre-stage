@@ -24,19 +24,16 @@
   import { writable } from 'svelte/store';
 
 
-  export let survey;  // Termin-Umfrage mit fields[]
-  export let users = [];
-  export let user = {};    // aktueller User
-  export let updateFeedback; // function({ field, user, value })
+    let { survey, users = [], user = {}, updateFeedback } = $props();
 
-  let hoveredFieldId = null;
+  let hoveredFieldId = $state(null);
 
   // Helper: Map User-ID → User
-  $: userById = new Map(users.map(u => [Number(u.id), u]));
+  let userById = $derived(new Map(users.map(u => [Number(u.id), u])));
 
-  $: sortedFields = [...survey.fields].sort((a, b) =>
+  let sortedFields = $derived([...survey.fields].sort((a, b) =>
     new Date(a.field_text) - new Date(b.field_text)
-  );
+  ));
 
 
   // Create a reactive dark mode store
@@ -154,7 +151,7 @@
     return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`;
   };
 
-  $: heatmapStyles = new Map(
+  let heatmapStyles = $derived(new Map(
       sortedFields.map(field => {
         const yesCount = field.feedbacks?.filter(fb => fb.value === 'a').length ?? 0;
         if (yesCount === 0) return [field.id, 'background-color: rgba(0,0,0,0);'];
@@ -175,7 +172,7 @@
 
         return [field.id, `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`];
       })
-  );
+  ));
 
 </script>
 
@@ -225,8 +222,8 @@
               class="border border-gray-300 dark:border-gray-600 rotated-header transition-colors"
               class:bg-primary={hoveredFieldId === field.id}
               class:bg-opacity-80={hoveredFieldId === field.id}
-              on:mouseenter={() => hoveredFieldId = field.id}
-              on:mouseleave={() => hoveredFieldId = null}
+              onmouseenter={() => hoveredFieldId = field.id}
+              onmouseleave={() => hoveredFieldId = null}
             >
               <span
                     class:font-bold={hoveredFieldId === field.id}
@@ -254,9 +251,9 @@
                   class:ring-2={hoveredFieldId === field.id}
                   class:ring-secondary={hoveredFieldId === field.id}
                   class:brightness-110={hoveredFieldId === field.id}
-                  on:mouseenter={() => hoveredFieldId = field.id}
-                  on:mouseleave={() => hoveredFieldId = null}
-                  on:click={() => {
+                  onmouseenter={() => hoveredFieldId = field.id}
+                  onmouseleave={() => hoveredFieldId = null}
+                  onclick={() => {
                     if (survey.closed) return;
                     const next = nextFeedbackValue(getFeedbackFor(field, u.id)?.value);
                     setNewFeedback(field, u.id, next);
@@ -279,8 +276,8 @@
                   class:ring-4={hoveredFieldId === field.id}
                   class:ring-secondary={hoveredFieldId === field.id}
                   class:brightness-110={hoveredFieldId === field.id}
-                  on:mouseenter={() => hoveredFieldId = field.id}
-                  on:mouseleave={() => hoveredFieldId = null}
+                  onmouseenter={() => hoveredFieldId = field.id}
+                  onmouseleave={() => hoveredFieldId = null}
                 >
                 </td>
               {/each}
@@ -300,8 +297,8 @@
               class:ring-primary={hoveredFieldId === field.id}
               class:brightness-110={hoveredFieldId === field.id}
               style={heatmapStyles.get(field.id)}
-              on:mouseenter={() => hoveredFieldId = field.id}
-              on:mouseleave={() => hoveredFieldId = null}
+              onmouseenter={() => hoveredFieldId = field.id}
+              onmouseleave={() => hoveredFieldId = null}
             >
               <div class="font-semibold text-lg">{yesCount}</div>
               <div class="text-xs opacity-80">({maybeCount})</div>
@@ -328,7 +325,7 @@
             <button
               class={`w-full p-3 rounded-lg text-left ${feedbackClass(feedback?.value)} ${!survey.closed ? 'active:scale-95' : 'opacity-50'}`}
               disabled={survey.closed}
-              on:click={() => {
+              onclick={() => {
                 if (survey.closed) return;
                 const next = nextFeedbackValue(feedback?.value);
                 setNewFeedback(field, currentUser.id, next);
@@ -396,8 +393,8 @@
             class:ring-primary={hoveredFieldId === field.id}
             class:brightness-110={hoveredFieldId === field.id}
             style={getHeatmapStyle(field)}
-            on:mouseenter={() => hoveredFieldId = field.id}
-            on:mouseleave={() => hoveredFieldId = null}
+            onmouseenter={() => hoveredFieldId = field.id}
+            onmouseleave={() => hoveredFieldId = null}
           >
             <div class="font-semibold text-lg">{yesCount}</div>
             <div class="text-xs opacity-80">({maybeCount})</div>

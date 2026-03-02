@@ -32,61 +32,54 @@
     updateSongCandidateFeedback,
     acceptSongApproach, logout as apiLogout} from '$lib/api.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-
-  import { popup } from '@skeletonlabs/skeleton';
   import { InfoIcon } from 'lucide-svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   import NewSongForm from './NewSongForm.svelte';
   import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
-  import { getModalStore  } from '@skeletonlabs/skeleton';
-
-  import AgGrid from '$lib/components/AgGrid.svelte';
+  import { modalState } from '$lib/modalState.js';
+import AgGrid from '$lib/components/AgGrid.svelte';
   function handleRowClick(event) {
     openModal(event.data);
   }
 
-  const modalStore = getModalStore();
+  
 
-    let user = null;
-  let songs = [];
-  let filteredSongs = [];
+    let user = $state(null);
+  let songs = $state([]);
   let filteredSongsMobile=[];
-  let filterStringMobile = "";
-  let error = '';
-  let search = '';
-  let sortField = 'title';
-  let sortAsc = true;
+  let filterStringMobile = $state("");
+  let error = $state('');
+  let search = $state('');
+  let sortField = $state('title');
+  let sortAsc = $state(true);
 
 
-  let showRetired = false;
-  let rulesVisible = false;
-  let showHelp = false;
-  let tabSet = 1; // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
+  let showRetired = $state(false);
+  let rulesVisible = $state(false);
+  let showHelp = $state(false);
+  let tabSet = $state(1); // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
   let gridApi;
 
-  let expandedSongId = null;
-  let editSongId = null;
-  let editBuffer = {};
+  let expandedSongId = $state(null);
+  let editSongId = $state(null);
+  let editBuffer = $state({});
 
-  $: songFieldsDetails = getSongFieldsDetails($appConfig);
+  let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
-  export let data;
+  let { data } = $props();
 
   function toggleRules() {
     rulesVisible = !rulesVisible;
   }
 
   function openModal(song) {
-    modalStore.trigger({
-    type: 'component',
-    component: { ref: SongDetailsModal },
+    modalState.trigger({
+    component: SongDetailsModal,
     meta: {
       songId: song.id
     },
@@ -271,19 +264,18 @@
     return this.eGui;
   };
 
-  $: rowData = filteredSongs;
+  let rowData = $derived(filteredSongs);
 
   // PATCH-Request für Song-Änderung (ins $lib/api.js auslagern)
 
   function openNewSongModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewSongForm },
+    modalState.trigger({
+      component: NewSongForm,
       title: 'Neuen Song erstellen',
       response: (r) => {
         if (r) addSong(r);
       },
-      close: modalStore.close
+      close: modalState.close
     });
   }
 
@@ -310,9 +302,8 @@
   }
 
  async function openSongDetailsModal(song) {
-      modalStore.trigger({
-        type: 'component',
-        component: { ref: SongDetailsModal },
+      modalState.trigger({
+        component: SongDetailsModal,
         meta: { songId: song.id },
         response: async (r) => {
       if (r?.action === 'updated' || r?.action === 'delete') {
@@ -348,9 +339,8 @@
   async function setSongToRetired(songId, songTitle, songInterpret) {
     const songName = songInterpret ? `${songInterpret} - ${songTitle}` : songTitle;
 
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Song löschen',
         message: `Möchten Sie den Song "${songName}" wirklich löschen? Der Song wird als "retired" markiert und aus der aktiven Liste entfernt.`,
@@ -381,10 +371,10 @@
     showRetired = !showRetired;
   }
 
-let vorschlaegeSongs = [];
+let vorschlaegeSongs = $state([]);
 
-$: filteredSongs = songs
-  .filter(song =>song.status !== 'vorschlag' &&
+let filteredSongs = $derived(songs
+  .filter(song => song.status !== 'vorschlag' &&
      (showRetired || song.status !== 'retired')
   ).sort((a, b) => {
     let vA = a[sortField] ?? '';
@@ -394,7 +384,7 @@ $: filteredSongs = songs
     if (vA < vB) return sortAsc ? -1 : 1;
     if (vA > vB) return sortAsc ? 1 : -1;
     return 0;
-  });
+  }));
 
   function setSort(field) {
     if (sortField === field) {
@@ -406,7 +396,7 @@ $: filteredSongs = songs
   }
 
   function mobileFilter() {
-    filteredSongs = songs.filter(song =>
+    filteredSongsMobile = songs.filter(song =>
         song.title.toLowerCase().includes(filterStringMobile.toLowerCase()) ||
         song.interpret.toLowerCase().includes(filterStringMobile.toLowerCase())  &&
       (showRetired || song.status !== 'retired')
@@ -482,7 +472,7 @@ $: filteredSongs = songs
         'user_id': user.id,
         'song_id': song.id,
         'feedback': feedback
-    }
+    };
 
     //Find Feedback-Object of User
     let existingUserFeedback = song.feedbacks.find(fb => fb.user_id === user.id);
@@ -537,7 +527,7 @@ $: filteredSongs = songs
         <h3 class="h2 mb-4 text-on-surface">Songs</h3>
         <button
           class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
-          on:click={() => showHelp = !showHelp}
+          onclick={() => showHelp = !showHelp}
           aria-label="Hilfe anzeigen"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -613,12 +603,11 @@ $: filteredSongs = songs
     {/if}
 
     <div class="inline-flex items-center gap-2">
-      <button class="btn variant-filled-primary btn-sm w-fit border mt-4 md:mb-4" on:click={openNewSongModal}>
+      <button class="btn variant-filled-primary btn-sm w-fit border mt-4 md:mb-4" onclick={openNewSongModal}>
         Neuen Song hinzufügen
       </button>
       <span
         class="inline-block align-super cursor-help"
-        use:popup={{ event: 'click', target: 'newSongInfo', placement: 'top' }}
       >
         <InfoIcon class="w-4 h-4 text-primary-500" />
       </span>
@@ -631,27 +620,26 @@ $: filteredSongs = songs
     </div>
 
     <!-- Tab-Navigation -->
-    <TabGroup>
-      <Tab bind:group={tabSet} name="vorschlaege" value={1} class={vorschlaegeSongs.length > 0 ? 'font-bold' : ''}>
+    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+      <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {vorschlaegeSongs.length > 0 ? 'font-bold' : ''}">
         <span>Vorschläge ({vorschlaegeSongs.length})</span>
-      </Tab>
+      </button>
 
-      <Tab bind:group={tabSet} name="songs" value={0}>
+      <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
         <span>Songs ({filteredSongs.length})</span>
-      </Tab>
+      </button>
 
-      <svelte:fragment slot="panel">
+      <div class="mt-4">
         {#if tabSet === 0}
           <!-- Tab 1: Songs -->
           <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-1 md:gap-4 mt-4">
             <div class="flex items-center md:gap-2">
               <div class="inline-flex items-center gap-2">
-                <button type="button" class="btn btn-sm {showRetired ? 'variant-filled-primary' : 'variant-ghost'}  w-fit border mt-4 mb-4" on:click={toggleShowRetired}>
+                <button type="button" class="btn btn-sm {showRetired ? 'variant-filled-primary' : 'variant-ghost'}  w-fit border mt-4 mb-4" onclick={toggleShowRetired}>
                   Gelöschte Songs anzeigen
                 </button>
                 <span
                   class="inline-block align-super cursor-help"
-                  use:popup={{ event: 'click', target: 'showDelSongsInfo', placement: 'top' }}
                 >
                   <InfoIcon class="w-4 h-4 text-primary-500" />
                 </span>
@@ -687,7 +675,7 @@ $: filteredSongs = songs
                     <h3 class="h3">{song.title}</h3>
                     <button
                       class="btn btn-sm variant-ghost"
-                      on:click={() => expandedSongId = null}
+                      onclick={() => expandedSongId = null}
                     >
                       ✕
                     </button>
@@ -695,7 +683,7 @@ $: filteredSongs = songs
 
                   {#if editSongId === song.id}
                     <!-- Bearbeiten-Modus -->
-                    <form class="space-y-3" on:submit|preventDefault={() => saveEdit(song)}>
+                    <form class="space-y-3" onsubmit={() => saveEdit(song)}>
                       {#each [...songFields, ...songFieldsDetails] as f}
                         <label class="block">
                           <span class="text-sm font-medium">{f.label}</span>
@@ -713,7 +701,7 @@ $: filteredSongs = songs
                         <button
                           type="button"
                           class="btn btn-sm variant-ghost"
-                          on:click={cancelEdit}
+                          onclick={cancelEdit}
                         >
                           Abbrechen
                         </button>
@@ -732,7 +720,7 @@ $: filteredSongs = songs
                       {#if canEdit()}
                         <button
                           class="btn variant-filled-primary btn-sm"
-                          on:click={() => startEdit(song)}
+                          onclick={() => startEdit(song)}
                         >
                           Bearbeiten
                         </button>
@@ -740,7 +728,7 @@ $: filteredSongs = songs
                       {#if song.status !== 'retired' && canEdit()}
                         <button
                           class="btn variant-filled-error btn-sm"
-                          on:click={() => setSongToRetired(song.id, song.title, song.interpret)}
+                          onclick={() => setSongToRetired(song.id, song.title, song.interpret)}
                         >
                           Löschen
                         </button>
@@ -763,12 +751,12 @@ $: filteredSongs = songs
               class="input w-full mb-3 bg-surface border-none focus:ring-primary text-surface-200"
               placeholder="Suche Songs..."
               bind:value={filterStringMobile}
-              on:input={mobileFilter} />
+              oninput={mobileFilter} />
             {#each filteredSongs as song (song.id)}
               <div class="card variant-filled-surface rounded-xl shadow-sm p-4 bg-surface-50">
                 <div class="flex justify-between items-start">
                   <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-200">{song.title}</h3>
-                  <button class="btn btn-sm variant-tonal" on:click={() => toggleExpand(song.id)}>
+                  <button class="btn btn-sm variant-tonal" onclick={() => toggleExpand(song.id)}>
                     {#if expandedSongId === song.id}
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M7 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -817,7 +805,7 @@ $: filteredSongs = songs
               <button
                 type="button"
                 class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
-                on:click={toggleRules}
+                onclick={toggleRules}
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -885,26 +873,26 @@ $: filteredSongs = songs
                   {#each vorschlaegeSongs as song (song.id)}
                     {@const userFeedbackType = getUserFeedback(song.feedbacks)}
                     <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
-                        on:click={() => toggleExpand(song.id)}>
-                        <td on:click={() => openSongDetailsModal(song)}>{song.title}</td>
-                        <td on:click={() => openSongDetailsModal(song)}>{song.interpret}</td>
+                        onclick={() => toggleExpand(song.id)}>
+                        <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
+                        <td onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
                        {#if user.musician}
                             <td>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'a' ? 'variant-filled-success' : 'variant-outline-success'}"
-                                    on:click={() => submitFeedback(song, 'a')}
+                                    onclick={() => submitFeedback(song, 'a')}
                                 >
                                     👍
                                 </button>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'na' ? 'variant-filled-error' : 'variant-outline-error'}"
-                                    on:click={() => submitFeedback(song, 'na')}
+                                    onclick={() => submitFeedback(song, 'na')}
                                 >
                                     👎
                                 </button>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'o' ? 'variant-filled-warning' : 'variant-outline-warning'}"
-                                    on:click={() => submitFeedback(song, 'o')}
+                                    onclick={() => submitFeedback(song, 'o')}
                                 >
                                     🤷
                                 </button>
@@ -940,7 +928,7 @@ $: filteredSongs = songs
                                 {#if stats.relative.a >= 50 && stats.absolute.sum >= 4}
                                     <button
                                         class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
-                                        on:click={() => acceptSong(song)}
+                                        onclick={() => acceptSong(song)}
                                     >
                                         ✓
                                     </button>
@@ -954,8 +942,7 @@ $: filteredSongs = songs
             </div>
           {/if}
         {/if}
-      </svelte:fragment>
-    </TabGroup>
+      </div></div>
   </div>
 </div>
 

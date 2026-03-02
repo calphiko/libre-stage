@@ -21,11 +21,8 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { getUser, getUserTodos, updateUserTodo, logout as apiLogout } from '$lib/api.js';
-  import { TabGroup, Tab, TabAnchor, Paginator } from '@skeletonlabs/skeleton';
-
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   //components
   import RoleTable from '$lib/components/RoleTable.svelte';
@@ -99,7 +96,7 @@
       <h2 class="h2 text-on-surface">Dashboard</h2>
       <button
         class="btn variant-ghost-surface btn-sm"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,28 +170,28 @@
             {:else}
             <!-- Desktop-Tabelle -->
 
-                <TabGroup>
-                    <Tab bind:group={tabsBasic} name="offen" value={0} class={todos.notDoneTodos.length > 0 ? 'font-bold' : ''}>
+                <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+                    <button onclick={() => tabsBasic = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabsBasic === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {todos.notDoneTodos.length > 0 ? 'font-bold' : ''}">
                         <span class="hidden md:inline">Offene Todos ({todos.notDoneTodos.length})</span>
                         <span class="md:hidden">Offen ({todos.notDoneTodos.length})</span>
-                    </Tab>
+                    </button>
 
-                    <Tab bind:group={tabsBasic} name="songsForFeedback" value={1} class={(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}>
+                    <button onclick={() => tabsBasic = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabsBasic === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
                         <span class="hidden md:inline">Songs ({todos.songsForFeedback?.length ?? 0})</span>
                         <span class="md:hidden">🎵 ({todos.songsForFeedback?.length ?? 0})</span>
-                    </Tab>
+                    </button>
 
-                    <Tab bind:group={tabsBasic} name="surveysForFeedback" value={2} class={(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}>
+                    <button onclick={() => tabsBasic = 2} class="px-4 py-2 rounded-t-lg transition-colors {tabsBasic === 2 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
                         <span class="hidden md:inline">Abstimmungen ({todos.surveysForFeedback?.length ?? 0})</span>
                         <span class="md:hidden">📊 ({todos.surveysForFeedback?.length ?? 0})</span>
-                    </Tab>
+                    </button>
 
-                    <Tab bind:group={tabsBasic} name="done" value={3}>
+                    <button onclick={() => tabsBasic = 3} class="px-4 py-2 rounded-t-lg transition-colors {tabsBasic === 3 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
                         <span class="hidden md:inline">Erledigt ({todos.doneTodos.length})</span>
                         <span class="md:hidden">✓ ({todos.doneTodos.length})</span>
-                    </Tab>
+                    </button>
 
-                    <svelte:fragment slot="panel">
+                    <div class="mt-4">
                         {#if tabsBasic === 0}
                             <!-- Desktop Ansicht offene Todos -->
                             <div class="hidden md:block">
@@ -216,7 +213,7 @@
                                                 <td class="px-3 py-2">
                                                     <button
                                                         class="btn variant-filled-primary rounded-lg px-3 py-0 text-base font-semibold"
-                                                        on:click={() => markTodoAsDone(td)}
+                                                        onclick={() => markTodoAsDone(td)}
                                                     >✓</button>
                                                 </td>
                                             </tr>
@@ -235,7 +232,7 @@
                                         <p class="mb-2 text-on-surface-variant">{td.todo}</p>
                                         <button
                                             class="btn variant-filled-success w-full rounded-lg py-2 font-semibold"
-                                            on:click={() => markTodoAsDone(td)}
+                                            onclick={() => markTodoAsDone(td)}
                                         >✓</button>
                                     </div>
                                 {/each}
@@ -333,8 +330,7 @@
                                 {/each}
                             </div>
                         {/if}
-                    </svelte:fragment>
-                </TabGroup>
+                    </div></div>
 
             {/if}
 
@@ -352,7 +348,7 @@
                 />
                 <button
                   class="btn variant-filled-primary"
-                  on:click={() => navigator.clipboard.writeText(calendarUrl)}
+                  onclick={() => navigator.clipboard.writeText(calendarUrl)}
                 >
                   Kopieren
                 </button>

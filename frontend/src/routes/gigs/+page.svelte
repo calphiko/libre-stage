@@ -26,35 +26,31 @@
   import { appConfig } from '$lib/appConfig.js';
   import { gigIdForEditor } from '$lib/stores.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import LiveModeModal from '$lib/components/LiveModeModal.svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   import NewGigForm from './NewGigForm.svelte';
 
-  import {
-    getModalStore
-  } from '@skeletonlabs/skeleton';
+  import { modalState } from '$lib/modalState.js';
 
-  const modalStore = getModalStore();
 
-    let user = null;
-  let gigs = [];
-  let jahre = [];
-  let jahr = '';
-  let error = '';
-  let showHelp = false;
-  let expandedGigId = null;
-  let editGigId = null;
-  let liveModeStatus = {}; // Key: gigId, Value: { available, can_force, forced, reason }
-  let editBuffer = {};
+    let user = $state(null);
+  let gigs = $state([]);
+  let jahre = $state([]);
+  let jahr = $state('');
+  let error = $state('');
+  let showHelp = $state(false);
+  let expandedGigId = $state(null);
+  let editGigId = $state(null);
+    let liveModeStatus = $state({}); // Key: gigId, Value: { available, can_force, forced, reason }
+  let editBuffer = $state({});
 
-  $: gigFieldsDetails = getGigFieldsDetails($appConfig);
+  let gigFieldsDetails = $derived(getGigFieldsDetails($appConfig));
 
-  let forceUnlocked = false;
+  let forceUnlocked = $state(false);
 
   async function checkLiveMode() {
     liveModeStatus = await getLiveModeAvailability(null, gigId, forceUnlocked);
@@ -216,12 +212,13 @@
     expandedGigId = expandedGigId === id ? null : id;
   }
 
-  $: canEdit = user && (user.user_group === 'editor' || user.user_group === 'admin');
+  let canEdit = $derived(user && (user.user_group === 'editor' || user.user_group === 'admin'));
 
   // Reactive: Wenn sich das Jahr ändert, lade Gigs und Live-Mode-Status neu
-  $: if (browser && jahr) {
+  $effect(() => { if (browser && jahr) {
     reloadGigsForYear();
   }
+  });
 
   async function reloadGigsForYear() {
     try {
@@ -272,9 +269,8 @@
   }
 
   async function deleteGig(gigId, gigName) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Gig löschen',
         message: `Möchten Sie den Gig "${gigName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
@@ -297,14 +293,13 @@
   }
 
   function openNewGigModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewGigForm },
+    modalState.trigger({
+      component: NewGigForm,
       title: 'Neuen Gig erstellen',
       response: (r) => {
         if (r) addGig(r);
       },
-      close: modalStore.close
+      close: modalState.close
     });
   }
 
@@ -319,9 +314,8 @@
   }
 
   function openLiveModeModal(gigId) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: LiveModeModal },
+    modalState.trigger({
+      component: LiveModeModal,
       meta: { gigId },
       backdropClasses: 'bg-surface-500/50 backdrop-blur-sm'
     });
@@ -335,7 +329,7 @@
       <h2 class="h2 mb-4 text-on-surface">Gigs‑Liste</h2>
       <button
         class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,7 +404,7 @@
         <select
             id="jahr"
             bind:value={jahr}
-            on:change={onJahrChange}
+            onchange={onJahrChange}
             class="form-input variant-soft w-auto inline-block rounded-md px-5 bg-surface-200 dark:bg-surface-700 py-2"
         >
           {#each jahre.slice().reverse() as y}
@@ -420,7 +414,7 @@
         </select>
       </div>
       {#if canEdit}
-        <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" on:click={openNewGigModal}>
+        <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewGigModal}>
               Neuen Gig hinzufügen
         </button>
       {/if}
@@ -446,7 +440,7 @@
                 class="transition cursor-pointer {isPast(gig.datum)
                   ? 'opacity-50 dark:opacity-40 hover:opacity-80 dark:hover:opacity-60 bg-surface-50 dark:bg-surface-900'
                   : 'dark:hover:bg-surface-700 hover:bg-surface-300'}"
-                on:click={() => toggleExpand(gig.id)}
+                onclick={() => toggleExpand(gig.id)}
               >
                 <td class="py-2 px-3 text-center">
                   {#if isPast(gig.datum)}
@@ -472,7 +466,7 @@
                         </h4>
                         <button
                           class="btn btn-sm variant-ghost"
-                          on:click|stopPropagation={() => expandedGigId = null}
+                          onclick={() => expandedGigId = null}
                         >
                           ✕
                         </button>
@@ -480,7 +474,7 @@
 
                       {#if editGigId === gig.id}
                         <!-- Bearbeiten-Modus -->
-                        <form class="space-y-4" on:submit|preventDefault={() => saveEdit(gig)}>
+                        <form class="space-y-4" onsubmit={() => saveEdit(gig)}>
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {#each gigFieldsDetails as f}
                               <div class="mb-2">
@@ -535,7 +529,7 @@
                             <button
                               type="button"
                               class="btn variant-outline-secondary btn-sm"
-                              on:click={cancelEdit}
+                              onclick={cancelEdit}
                             >
                               Abbrechen
                             </button>
@@ -566,12 +560,12 @@
                             <div class="flex flex-wrap gap-2">
                               <button
                                 class="btn variant-filled-primary btn-sm"
-                                on:click|stopPropagation={() => startEdit(gig)}
+                                onclick={() => startEdit(gig)}
                               >
                                 Stammdaten bearbeiten
                               </button>
                               <button
-                                on:click|stopPropagation={() => gotoSetlistEditor(gig.id)}
+                                onclick={() => gotoSetlistEditor(gig.id)}
                                 class="btn variant-filled-primary btn-sm"
                               >
                                 Setliste bearbeiten
@@ -581,7 +575,7 @@
                               {#if liveModeStatus[gig.id]}
                                 {#if liveModeStatus[gig.id].available}
                                   <button
-                                    on:click|stopPropagation={() => openLiveModeModal(gig.id)}
+                                    onclick={() => openLiveModeModal(gig.id)}
                                     class="btn variant-filled-secondary btn-sm"
                                   >
                                     ▶ Live Mode
@@ -591,7 +585,7 @@
                                   </button>
                                 {:else if liveModeStatus[gig.id].can_force}
                                   <button
-                                    on:click|stopPropagation={() => unlockLiveMode(gig.id)}
+                                    onclick={() => unlockLiveMode(gig.id)}
                                     class="btn variant-soft-warning btn-sm"
                                   >
                                     🔓 Live Mode entsperren
@@ -602,7 +596,7 @@
                               {#if user.user_group === 'admin'}
                                 <button
                                   class="btn variant-filled-error btn-sm"
-                                  on:click|stopPropagation={() => deleteGig(gig.id, gig.name)}
+                                  onclick={() => deleteGig(gig.id, gig.name)}
                                 >
                                   Löschen
                                 </button>
@@ -613,13 +607,13 @@
                           <div class="flex flex-wrap gap-2 pt-2 border-t border-surface-300">
                             <button
                               class="btn variant-outline-primary btn-sm"
-                              on:click|stopPropagation={() => getGemaList(gig)}
+                              onclick={() => getGemaList(gig)}
                             >
                               GEMA-Liste drucken
                             </button>
                             <button
                               class="btn variant-outline-primary btn-sm"
-                              on:click|stopPropagation={() => getSetlist(gig)}
+                              onclick={() => getSetlist(gig)}
                             >
                               Setliste drucken
                             </button>
@@ -643,7 +637,7 @@
               ? 'bg-surface-50 dark:bg-surface-900 opacity-60 hover:opacity-90'
               : 'bg-surface-1'}">
             <div class="flex justify-between items-start">
-              <div class="flex-1" on:click={() => toggleExpand(gig.id)}>
+              <div class="flex-1" onclick={() => toggleExpand(gig.id)}>
                 <div class="flex items-center gap-2 mb-1">
                   {#if isPast(gig.datum)}
                     <span class="badge variant-soft-success text-xs px-1.5 py-0.5">✓ gewesen</span>
@@ -654,7 +648,7 @@
                   {formatDateDE(gig.datum)} – {gig.kind_of_gig}
                 </p>
               </div>
-              <button class="btn btn-sm variant-tonal" on:click|stopPropagation={() => toggleExpand(gig.id)}>
+              <button class="btn btn-sm variant-tonal" onclick={() => toggleExpand(gig.id)}>
                 {#if expandedGigId === gig.id}
                   <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M7 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -671,7 +665,7 @@
               <div class="mt-3 border-t border-surface-300 pt-3 space-y-2">
                 {#if editGigId === gig.id}
                   <!-- Bearbeiten-Modus -->
-                  <form class="space-y-3" on:submit|preventDefault={() => saveEdit(gig)}>
+                  <form class="space-y-3" onsubmit={() => saveEdit(gig)}>
                     {#each gigFieldsDetails as f}
                       <label class="block">
                         <span class="text-sm font-medium text-on-surface-variant">
@@ -722,7 +716,7 @@
                       <button
                         type="button"
                         class="btn btn-sm variant-ghost"
-                        on:click={cancelEdit}
+                        onclick={cancelEdit}
                       >
                         Abbrechen
                       </button>
@@ -749,12 +743,12 @@
                     {#if canEdit}
                       <button
                         class="btn variant-filled-primary btn-sm w-full"
-                        on:click|stopPropagation={() => startEdit(gig)}
+                        onclick={() => startEdit(gig)}
                       >
                         Stammdaten bearbeiten
                       </button>
                       <button
-                        on:click|stopPropagation={() => gotoSetlistEditor(gig.id)}
+                        onclick={() => gotoSetlistEditor(gig.id)}
                         class="btn variant-filled-primary btn-sm w-full"
                       >
                         Setliste bearbeiten
@@ -764,7 +758,7 @@
                       {#if liveModeStatus[gig.id]}
                         {#if liveModeStatus[gig.id].available}
                           <button
-                            on:click|stopPropagation={() => openLiveModeModal(gig.id)}
+                            onclick={() => openLiveModeModal(gig.id)}
                             class="btn variant-filled-secondary btn-sm w-full"
                           >
                             ▶ Live Mode
@@ -774,7 +768,7 @@
                           </button>
                         {:else if liveModeStatus[gig.id].can_force}
                           <button
-                            on:click|stopPropagation={() => unlockLiveMode(gig.id)}
+                            onclick={() => unlockLiveMode(gig.id)}
                             class="btn variant-soft-warning btn-sm w-full"
                           >
                             🔓 Live Mode entsperren
@@ -785,7 +779,7 @@
                       {#if user.user_group === 'admin'}
                         <button
                           class="btn variant-filled-error btn-sm w-full"
-                          on:click|stopPropagation={() => deleteGig(gig.id, gig.name)}
+                          onclick={() => deleteGig(gig.id, gig.name)}
                         >
                           Löschen
                         </button>
@@ -794,13 +788,13 @@
 
                     <button
                       class="btn variant-outline-primary btn-sm w-full"
-                      on:click|stopPropagation={() => getGemaList(gig)}
+                      onclick={() => getGemaList(gig)}
                     >
                       GEMA-Liste drucken
                     </button>
                     <button
                       class="btn variant-outline-primary btn-sm w-full"
-                      on:click|stopPropagation={() => getSetlist(gig)}
+                      onclick={() => getSetlist(gig)}
                     >
                       Setliste drucken
                     </button>

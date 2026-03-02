@@ -17,22 +17,13 @@
 -->
 
 <script>
-  import { Accordion, AccordionItem, Autocomplete } from '@skeletonlabs/skeleton';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { tick } from 'svelte';
   import RehearsalSongCard from './RehearsalSongCard.svelte';
   import { appConfig } from '$lib/appConfig.js';
 
-  const dispatch = createEventDispatcher();
+  let { reh, songs = [], songsForSearch = [], users = [], isEditor = false, expanded = false, expandedSongId = null, ontoggle, onupdate, ondelete, onsongtoggle, onerror, onwarning, onsuccess } = $props();
 
-  export let reh;
-  export let songs = [];
-  export let songsForSearch = [];
-  export let users = [];
-  export let isEditor = false;
-  export let expanded = false;
-  export let expandedSongId = null;
-
-  $: statusOptions = $appConfig?.rehearsalSongStatuses ?? [];
+  let statusOptions = $derived($appConfig?.rehearsalSongStatuses ?? []);
 
   const dateOptions = {
     weekday: 'long',
@@ -41,9 +32,9 @@
     day: 'numeric',
   };
 
-  let searchTerm = '';
-  let selectedSong = null;
-  let newSongTodo = '';
+  let searchTerm = $state('');
+  let selectedSong = $state(null);
+  let newSongTodo = $state('');
   let songToAddInput;
 
   function onSelect(event) {
@@ -52,37 +43,37 @@
   }
 
   function handleToggle() {
-    dispatch('toggle', { id: reh.id });
+    ontoggle?.({ id: reh.id });
   }
 
   function handleDelete() {
     const dateStr = new Date(reh.begin).toLocaleDateString('de-DE', {
       day: '2-digit', month: '2-digit', year: 'numeric'
     });
-    dispatch('delete', { id: reh.id, date: dateStr });
+    ondelete?.({ id: reh.id, date: dateStr });
   }
 
   function handleUpdate(songId = null) {
-    dispatch('update', { reh, songId });
+    onupdate?.({ reh, songId });
   }
 
   function handleSongToggle(e) {
-    dispatch('songtoggle', { id: e.detail.id });
+    onsongtoggle?.({ id: e.id });
   }
 
   function handleSongRemove(e) {
-    reh.songs = reh.songs.filter(s => s.id !== e.detail.id);
+    reh.songs = reh.songs.filter(s => s.id !== e.id);
     handleUpdate(null);
   }
 
   function handleSongDone(e) {
-    e.detail.song.done = !e.detail.song.done;
-    handleUpdate(e.detail.song.id);
+    e.song.done = !e.song.done;
+    handleUpdate(e.song.id);
   }
 
   function handleStatusChange(e) {
-    e.detail.song.status = e.detail.status;
-    handleUpdate(e.detail.song.id);
+    e.song.status = e.status;
+    handleUpdate(e.song.id);
   }
 
   function handleSongUpdate() {
@@ -90,7 +81,7 @@
   }
 
   function handleAddTodo(e) {
-    const { song, userId, todoText } = e.detail;
+    const { song, userId, todoText } = e;
     const newTodo = {
       id: null,
       id_reh: song.id_rehearsal,
@@ -106,7 +97,7 @@
 
   async function addSongTodo() {
     if (!selectedSong) {
-      dispatch('error', { message: 'Bitte wähle einen gültigen Song aus.' });
+      onerror?.({ message: 'Bitte wähle einen gültigen Song aus.' });
       searchTerm = '';
       await tick();
       songToAddInput?.focus();
@@ -115,7 +106,7 @@
 
     const alreadyPresent = reh.songs.some(s => s.id_song === selectedSong.id);
     if (alreadyPresent) {
-      dispatch('warning', { message: `Der Song "${selectedSong.title}" ist bereits in dieser Probe enthalten.` });
+      onwarning?.({ message: `Der Song "${selectedSong.title}" ist bereits in dieser Probe enthalten.` });
       selectedSong = null;
       newSongTodo = '';
       searchTerm = '';
@@ -139,7 +130,7 @@
     };
     reh.songs = [...reh.songs, newSong];
     handleUpdate(null);
-    dispatch('success', { message: `Der Song "${selectedSong.title}" wurde zur Probe hinzugefügt.` });
+    onsuccess?.({ message: `Der Song "${selectedSong.title}" wurde zur Probe hinzugefügt.` });
 
     selectedSong = null;
     newSongTodo = '';
@@ -149,24 +140,24 @@
   }
 </script>
 
-<AccordionItem
+<details 
   open={expanded}
-  on:toggle={handleToggle}
+  ontoggle={handleToggle}
   class="border border-outline-variant rounded-lg mb-2 bg-surface-1"
 >
-  <svelte:fragment slot="summary">
+  <div class="font-semibold">
     <span class="text-lg font-bold">
       {new Date(reh.begin).toLocaleString(undefined, dateOptions)}
     </span>
-  </svelte:fragment>
+  </div>
 
-  <svelte:fragment slot="content">
+  <div>
     <div class="px-4">
       {#if isEditor}
         <button
           class="btn variant-filled-error btn-sm text-sm float-left mb-3 border"
           title="Probe löschen"
-          on:click|stopPropagation={handleDelete}
+          onclick={handleDelete}
         >🗑️ Probe löschen</button>
       {/if}
 
@@ -174,12 +165,12 @@
         <textarea
           class="input w-full rounded-md" rows="7"
           bind:value={reh.comment}
-          on:blur|stopPropagation={() => handleUpdate(expandedSongId)}
+          onblur={() => handleUpdate(expandedSongId)}
           placeholder="Probenkommentar"
         />
       </div>
 
-      <form class="mb-6 border-t pt-3" on:submit|preventDefault={addSongTodo}>
+      <form class="mb-6 border-t pt-3" onsubmit={addSongTodo}>
         <h6 class="font-bold text-base mb-2">Song mit Todo</h6>
         <div class="flex flex-col gap-2">
           {#if songsForSearch.length > 0}
@@ -190,14 +181,14 @@
                 bind:this={songToAddInput}
                 bind:value={searchTerm}
                 placeholder="Song eingeben" autocomplete="off"
-                on:focus|stopPropagation on:click|stopPropagation
+                
               />
               {#if searchTerm?.trim()}
                 <div class="card w-full max-w-md max-h-48 p-4 overflow-y-auto" tabindex="-1">
                   <Autocomplete
                     options={songsForSearch}
                     bind:input={searchTerm}
-                    on:selection={onSelect}
+                    onselection={onSelect}
                     class="w-full"
                   />
                 </div>
@@ -210,7 +201,7 @@
             class="input w-full" type="text"
             bind:value={newSongTodo} required
             placeholder="Was gibts zu tun?"
-            on:focus|stopPropagation on:click|stopPropagation
+            
           />
         </div>
         <button class="btn variant-filled-primary btn-sm border mt-2 w-fit" type="submit">
@@ -218,23 +209,23 @@
         </button>
       </form>
 
-      <Accordion class="border-t pt-3">
+      <div  class="border-t pt-3">
         {#each reh.songs as song (song.id ?? song.id_song)}
           <RehearsalSongCard
             {song}
             {users}
             {statusOptions}
             expanded={expandedSongId === song.id}
-            on:toggle={handleSongToggle}
-            on:remove={handleSongRemove}
-            on:done={handleSongDone}
-            on:statuschange={handleStatusChange}
-            on:update={handleSongUpdate}
-            on:addtodo={handleAddTodo}
+            ontoggle={handleSongToggle}
+            onremove={handleSongRemove}
+            ondone={handleSongDone}
+            onstatuschange={handleStatusChange}
+            onupdate={handleSongUpdate}
+            onaddtodo={handleAddTodo}
           />
         {/each}
-      </Accordion>
+      </div>
     </div>
-  </svelte:fragment>
-</AccordionItem>
+  </div>
+</details>
 

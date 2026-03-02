@@ -17,29 +17,31 @@
 -->
 
 <!-- lib/Messages.svelte -->
-<script context="module">
-  export function createMessageHelpers(toastStore) {
+<script module>
+  import { toastState } from '$lib/toast.js';
+
+  export function createMessageHelpers() {
     return {
       showError(message, autohide = 5000) {
-        toastStore.trigger({
+        toastState.add({
           message,
-          background: 'variant-filled-error',
+          type: 'error',
           autohide: true,
           timeout: autohide
         });
       },
       showSuccess(message, autohide = 3000) {
-        toastStore.trigger({
+        toastState.add({
           message,
-          background: 'variant-filled-success',
+          type: 'success',
           autohide: true,
           timeout: autohide
         });
       },
       showWarning(message, autohide = 4000) {
-        toastStore.trigger({
+        toastState.add({
           message,
-          background: 'variant-filled-warning',
+          type: 'warning',
           autohide: true,
           timeout: autohide
         });
