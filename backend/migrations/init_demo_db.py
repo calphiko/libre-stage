@@ -19,7 +19,7 @@ init_demo_db.py – Erstellt eine neue Datenbank mit realistischen Demo-Daten.
 
 Usage:
     python backend/migrations/init_demo_db.py
-    python backend/migrations/init_demo_db.py backend/db/demo.db
+    python backend/migrations/init_demo_db.py backend/db/app.db
 """
 
 import sys
@@ -43,7 +43,7 @@ from backend.models import (
 
 # ─── DB-Pfad ────────────────────────────────────────────────────────────────
 
-DEFAULT_DB = Path(__file__).parent.parent / "db" / "demo.db"
+DEFAULT_DB = Path(__file__).parent.parent / "db" / "app.db"
 db_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_DB
 db_path.parent.mkdir(parents=True, exist_ok=True)
 
