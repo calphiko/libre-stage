@@ -15,13 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, FileResponse
 from datetime import time, datetime, timedelta
 import pytz
 import logging
 from sqlalchemy.orm import Session
 
 from backend import models, schemas, auth
+from backend.app_config import get_frontend_config
+import os
 
 router = APIRouter(
     prefix="/public", tags=["public"], dependencies=[]
@@ -42,6 +44,15 @@ class LogFilter(logging.Filter):  # pragma: no cover
 
 uvicorn_logger = logging.getLogger("uvicorn.access")
 uvicorn_logger.addFilter(LogFilter())
+
+
+@router.get("/app_config")
+def get_app_config():
+    """Gibt die frontend-relevante App-Konfiguration zurück (öffentlich, kein Auth nötig)."""
+    return JSONResponse(
+        content=get_frontend_config(),
+        headers={"Cache-Control": "public, max-age=300"},
+    )
 
 
 @router.get("/song_histo")
@@ -93,3 +104,14 @@ def get_dates(
     logger.info("Getting all dates for public")
     gigs = db.query(models.Gig).where(models.Gig.publish == "1").all()
     return {"data":[schemas.PublicDate.from_gig(gig) for gig in gigs]}
+
+
+
+
+@router.get("/logo")
+def get_logo():
+    """Gibt das Logo zurück (öffentlich, kein Auth nötig)."""
+    for filename in ("LogoCustom.png", "Logo.png"):
+        if os.path.isfile(filename):
+            return FileResponse(filename, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Logo not found")
