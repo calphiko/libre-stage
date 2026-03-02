@@ -18,14 +18,13 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
 from datetime import time, datetime, timedelta
 import pytz
-import json
 import logging
 import os
-from pathlib import Path
 from sqlalchemy.orm import Session
 
 from typing import List
 from backend import models, schemas, auth
+from backend.app_config import app_config
 
 router = APIRouter(
     prefix="/ical", tags=["ical"], dependencies=[]
@@ -33,20 +32,12 @@ router = APIRouter(
 
 logger = logging.getLogger("uvicorn.error")
 
-# Load app config
-_config_path = Path(__file__).parent.parent.parent / "app.config.json"
-try:
-    with open(_config_path) as f:
-        _app_config = json.load(f)
-except FileNotFoundError:
-    _app_config = {}
-
-ICAL_DOMAIN = _app_config.get("ical_domain", "example.com")
-ICAL_PRODID = _app_config.get("ical_prodid", "-//Band Calendar//EN")
-ICAL_CALNAME = _app_config.get("ical_calendar_name", "Band Termine")
-ICAL_REH_PREFIX = _app_config.get("ical_rehearsal_prefix", "[Probe]")
-ICAL_GIG_PREFIX = _app_config.get("ical_gig_prefix", "[Gig]")
-APP_TIMEZONE = os.getenv("TIMEZONE", _app_config.get("timezone", "Europe/Berlin"))
+ICAL_DOMAIN = app_config.get("ical_domain", "example.com")
+ICAL_PRODID = app_config.get("ical_prodid", "-//Band Calendar//EN")
+ICAL_CALNAME = app_config.get("ical_calendar_name", "Band Termine")
+ICAL_REH_PREFIX = app_config.get("ical_rehearsal_prefix", "[Probe]")
+ICAL_GIG_PREFIX = app_config.get("ical_gig_prefix", "[Gig]")
+APP_TIMEZONE = os.getenv("TIMEZONE", app_config.get("timezone", "Europe/Berlin"))
 # suppress progress polls to reduce log clutter
 block_endpoints = ["/ical/log"]
 
