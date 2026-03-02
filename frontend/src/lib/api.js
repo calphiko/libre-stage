@@ -848,3 +848,13 @@ export async function getAppLogo() {
 
     return response.blob();
 }
+
+export async function triggerSendPwResetToken(user_id) {
+    const res = await fetchWithAuth(`${API_URL}/admin/trigger_password_reset/${user_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Senden des Reset-Links fehlgeschlagen');
+    return res.json();
+}
+
