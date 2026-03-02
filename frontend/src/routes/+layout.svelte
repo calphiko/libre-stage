@@ -56,6 +56,7 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import { getUser, getVersionJson, logout as apiLogout } from '$lib/api.js';
+    import { loadAppConfig } from '$lib/appConfig.js';
 
     let version = '0.0.0'; // Oder importiere aus einer package.json
     let version_title = '';
@@ -94,6 +95,12 @@
           version_description = data.description;
       } catch (e) {
           console.error('Could not load version', e);
+      }
+
+      try {
+          await loadAppConfig();
+      } catch (e) {
+          console.error('Could not load app config', e);
       }
 
       // Nur User laden wenn wir nicht auf einer öffentlichen Seite sind
