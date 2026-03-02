@@ -20,7 +20,8 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { songFields, songApproachFields, songFieldsDetails } from '$lib/songFields.js';
+  import { songFields, songApproachFields, getSongFieldsDetails } from '$lib/songFields.js';
+  import { appConfig } from '$lib/appConfig.js';
   import {
     getSongs,
     getUser,
@@ -74,6 +75,8 @@
   let editSongId = null;
   let editBuffer = {};
 
+  $: songFieldsDetails = getSongFieldsDetails($appConfig);
+
   export let data;
 
   function toggleRules() {
@@ -124,16 +127,11 @@
     resizable: true
   };
 
-  // Master-Detail Configuration für erweiterte Ansicht
+  // Master-Detail Configuration – Detail wird via Modal geöffnet, nicht inline
   const detailCellRendererParams = {
     detailGridOptions: {
       columnDefs: [
         ...songFields.map(f => ({
-          field: f.key,
-          headerName: f.label,
-          editable: false
-        })),
-        ...songFieldsDetails.map(f => ({
           field: f.key,
           headerName: f.label,
           editable: false
@@ -145,19 +143,6 @@
     },
     getDetailRowData: (params) => {
       params.successCallback([params.data]);
-    },
-    template: (params) => {
-      const song = params.data;
-      const isEditing = editSongId === song.id;
-
-      return `
-        <div class="p-4 space-y-2 bg-surface-70">
-          <h3 class="text-lg font-semibold text-primary-900 dark:text-primary-200">
-            ${song.title}
-          </h3>
-          <div id="detail-content-${song.id}"></div>
-        </div>
-      `;
     }
   };
 
