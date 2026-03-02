@@ -19,18 +19,29 @@
 <script>
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
-  import { login } from '$lib/api.js';
+  import { login, getAppLogo } from '$lib/api.js';
   import { invalidateAll } from '$app/navigation';
+  import { onMount } from 'svelte';
 
 
   let username = '';
   let password = '';
   let error = '';
   let loading = false;
+  let logoUrl = null;
 
 
   // Falls eingeloggt (durch Cookie), prüfe /me Endpoint
   // Dies wird durch Server-Side Rendering oder onMount geprüft
+
+  onMount(async () => {
+    try {
+      const blob = await getAppLogo();
+      logoUrl = URL.createObjectURL(blob);
+    } catch (e) {
+      console.warn('Logo konnte nicht geladen werden:', e.message);
+    }
+  });
 
   async function doLogin() {
     error = '';
@@ -51,11 +62,11 @@
 	<div class="space-y-10 text-center flex flex-col items-center w-full">
         <!-- Login Box -->
 
-        <div class="grid place-items-center min-h-[80vh] bg-surface-1 p-6 w-full">
+        <div class="grid place-items-center min-h-[80vh]  p-6 w-full">
             <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 w-full max-w-4xl">
                 <!-- Logo -->
-                <div class="logo-container flex-shrink-0">
-                    <img src="/Logo.svg" alt="Logo" class="logo-img" />
+                <div class="logo-container flex-shrink-0 ">
+                    <img src="{logoUrl}" alt="Logo" class="logo-img" />
                 </div>
 
                 <!-- Login Form -->
