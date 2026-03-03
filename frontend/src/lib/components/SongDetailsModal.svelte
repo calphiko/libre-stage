@@ -43,7 +43,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   let editBuffer = $state({});
   let singers = $state([]);
   let isSaving = $state(false);
-  let rehearsalHistory = $state([]);
+  let rehearsalHistory = $state(false);
   let users = $state([]);
   let historyLoading = $state(false);
   let statistics = $state(null);
@@ -91,7 +91,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   }
 
   async function loadRehearsalHistory() {
-    if (rehearsalHistory.length > 0) return; // Schon geladen
+    if (rehearsalHistoryLoaded) return; // Schon versucht, egal ob leer oder nicht
     historyLoading = true;
     try {
       rehearsalHistory = await getSongRehearsalHistory(songId, 3);
@@ -99,6 +99,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
       console.error('Rehearsal history load error:', e);
     } finally {
       historyLoading = false;
+      rehearsalHistoryLoaded = true; // Immer setzen, auch bei leerem Ergebnis
     }
   }
 
@@ -208,7 +209,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   <!-- Header -->
   <header class="flex justify-between items-center mb-4 flex-shrink-0">
     <h2 class="h2">{song?.title ?? 'Song laden...'}</h2>
-    <button class="btn-icon btn-icon-sm variant-ghost" onclick={parent.onClose}>✕</button>
+    <button class="btn-icon btn-icon-sm variant-ghost" onclick={() => parent?.close()}>✕</button>
   </header>
 
   {#if loading}
@@ -223,7 +224,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
       <p>{error}</p>
     </div>
     <footer class="flex gap-2 justify-end pt-4 flex-shrink-0">
-      <button class="btn variant-ghost" onclick={parent.onClose}>Schließen</button>
+      <button class="btn variant-ghost" onclick={() => parent?.close()}>Schließen</button>
     </footer>
   {:else if song}
     <!-- Manuell gebaute Tabs -->
@@ -303,7 +304,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
             {#if song.status !== 'retired' && canEdit}
               <button class="btn variant-filled-error" onclick={handleDelete}>Löschen</button>
             {/if}
-            <button class="btn variant-ghost" onclick={parent.onClose}>Schließen</button>
+            <button class="btn variant-ghost" onclick={() => parent?.close()}>Schließen</button>
           </footer>
         {/if}
       </div>
