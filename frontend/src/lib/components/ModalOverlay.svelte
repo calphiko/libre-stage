@@ -31,7 +31,7 @@
     aria-modal="true"
   >
     <div
-      class="w-full max-w-lg max-h-[90vh] overflow-y-auto"
+      class="max-h-[90vh] overflow-y-auto"
       transition:fly={{ y: 20, duration: 200 }}
     >
       {#if ModalComponent}
