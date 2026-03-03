@@ -35,5 +35,9 @@
     "echarts": "^6.0.0",
     "lucide-svelte": "^0.562.0",
     "svelte-dnd-action": "^0.9.65"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+    "lightningcss-linux-x64-gnu": "^1.29.1"
   }
 }
