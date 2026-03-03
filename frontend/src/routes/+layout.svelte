@@ -25,8 +25,7 @@
 	import ToastOverlay from '$lib/components/ToastOverlay.svelte';
 	import ModalOverlay from '$lib/components/ModalOverlay.svelte';
 
-	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { getUser, getVersionJson, logout as apiLogout } from '$lib/api.js';
 	import { loadAppConfig } from '$lib/appConfig.js';
@@ -46,6 +45,19 @@
 
 	let sidebarOpen = $state(false);
 
+	const publicPaths = ['/', '/login', '/password_reset'];
+	function isPublicPath(pathname: string) {
+		return publicPaths.includes(pathname) || pathname.startsWith('/password_reset');
+	}
+
+	async function tryLoadUser() {
+		try {
+			user = await getUser();
+		} catch(e) {
+			user = { user_name: null, user_group: null };
+		}
+	}
+
 	async function logout() {
 		try {
 			await apiLogout();
@@ -56,10 +68,6 @@
 	}
 
 	onMount(async () => {
-		const publicPaths = ['/', '/login', '/password_reset'];
-		const isPublicPage = publicPaths.includes(window.location.pathname) ||
-			window.location.pathname.startsWith('/password_reset');
-
 		try {
 			const data = await getVersionJson();
 			version = data.release;
@@ -77,12 +85,14 @@
 			console.error('Could not load app config', e);
 		}
 
-		if (!isPublicPage) {
-			try {
-				user = await getUser();
-			} catch(e) {
-				console.error('User konnte nicht geladen werden', e);
-			}
+		// User immer laden — auch auf der Login-Seite (Cookie könnte noch gültig sein)
+		await tryLoadUser();
+	});
+
+	// Nach clientseitiger Navigation User nachladen (z.B. nach Redirect von / → /dashboard)
+	afterNavigate(async ({ to }) => {
+		if (to && !isPublicPath(to.url.pathname) && !user.user_name) {
+			await tryLoadUser();
 		}
 	});
 

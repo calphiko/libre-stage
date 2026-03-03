@@ -320,7 +320,7 @@ import { onMount, onDestroy } from 'svelte';
 </script>
 
 <div
-  class="card p-0 w-full max-w-5xl h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
+  class="card p-0 w-95 h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
   ontouchstart={handleTouchStart}
   ontouchmove={handleTouchMove}
   ontouchend={handleTouchEnd}

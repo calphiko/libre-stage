@@ -190,7 +190,8 @@
                         <span class="hidden md:inline">Erledigt ({todos.doneTodos.length})</span>
                         <span class="md:hidden">✓ ({todos.doneTodos.length})</span>
                     </button>
-
+                </div>
+                <div>
                     <div class="mt-4">
                         {#if tabsBasic === 0}
                             <!-- Desktop Ansicht offene Todos -->

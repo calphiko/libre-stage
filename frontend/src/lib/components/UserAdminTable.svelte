@@ -25,8 +25,6 @@
   import { triggerSendPwResetToken } from '$lib/api_pw_reset.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
-  // Toast Store initialisieren
-  const toastStore = getToastStore();
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
 

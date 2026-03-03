@@ -25,8 +25,10 @@
   import UserAdminTable from '$lib/components/UserAdminTable.svelte';
   import PasswordChange from '$lib/components/PasswordChange.svelte';
 
+  let { data } = $props();
 
-    let user = $state({});
+  let user = $state({});
+  let error = $state('');
   let showHelp = $state(false);
 
   let edit = $state({
@@ -126,7 +128,6 @@
         <!-- Theme -->
         <div>
           <h4 class="font-semibold text-tertiary-500 mb-2">🎨 Design/Theme</h4>
-          <p class="text-sm">Wähle zwischen hellem und dunklem Design - deine Präferenz wird gespeichert!</p>
         </div>
 
         <!-- Admin-Bereich -->
@@ -152,6 +153,14 @@
     </div>
   {/if}
 
+  {#if !user.id}
+    <div class="flex justify-center items-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mb-4"></div>
+        <p class="text-on-surface-variant">Lade Benutzerdaten...</p>
+      </div>
+    </div>
+  {:else}
   <!-- Benutzer-Felder -->
   <form class="flex flex-col gap-6">
     <!-- Username -->
@@ -208,6 +217,7 @@
       </div>
     </div>
   </form>
+  {/if}
 
   <hr class="my-8">
 
@@ -216,7 +226,9 @@
   <hr class="my-8">
 
  <!-- Passwort ändern -->
- <PasswordChange {user} />
+ {#if user.id}
+   <PasswordChange {user} />
+ {/if}
 
   <!-- Kasten für Rollen-Management (nur Admin) -->
   {#if isAdmin}

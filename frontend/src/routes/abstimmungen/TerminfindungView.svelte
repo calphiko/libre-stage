@@ -18,11 +18,9 @@
 
 <script>
   import { updateSurveyFeedback } from '$lib/api.js';
-  import { browser } from '$app/environment';
   import { formatGermanDateTime } from '$lib/common.js';
   import { shortFormatGermanDate } from '$lib/common.js';
-  import { writable } from 'svelte/store';
-
+  import { isDarkMode } from '$lib/themeStore';
 
     let { survey, users = [], user = {}, updateFeedback } = $props();
 
@@ -36,24 +34,6 @@
   ));
 
 
-  // Create a reactive dark mode store
-  const isDarkMode = writable(false);
-
-  // Update on mount and observe changes
-  if (browser) {
-     isDarkMode.set(document.documentElement.classList.contains('dark'));
-
-      const observer = new MutationObserver(() => {
-          console.log('Dark mode changed:', document.documentElement.classList.contains('dark'));
-
-          isDarkMode.set(document.documentElement.classList.contains('dark'));
-      });
-
-      observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-      });
-  }
 
 
   // Helper: Feedback eines Users für ein bestimmtes Feld
@@ -386,19 +366,14 @@
       {#each sortedFields as field}
           {@const yesCount = (field.feedbacks?.filter(fb => fb.value === 'a').length ?? 0) - (field.feedbacks?.filter(fb => fb.value === 'o').length ?? 0)}
           {@const maybeCount = field.feedbacks?.filter(fb => fb.value === 'm').length ?? 0}
-          {@const _ = $isDarkMode}
-          <td
-            class="px-2 py-1 border border-gray-300 dark:border-gray-600 text-center transition-colors"
-            class:ring-4={hoveredFieldId === field.id}
-            class:ring-primary={hoveredFieldId === field.id}
-            class:brightness-110={hoveredFieldId === field.id}
+          <div
+            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-center transition-colors"
             style={getHeatmapStyle(field)}
-            onmouseenter={() => hoveredFieldId = field.id}
-            onmouseleave={() => hoveredFieldId = null}
           >
+            <div class="text-sm font-medium">{formatGermanDateTime(field.field_text)}</div>
             <div class="font-semibold text-lg">{yesCount}</div>
-            <div class="text-xs opacity-80">({maybeCount})</div>
-          </td>
+            <div class="text-xs opacity-80">({maybeCount} vielleicht)</div>
+          </div>
       {/each}
     </div>
   </div>

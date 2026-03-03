@@ -19,7 +19,7 @@
 <script>
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
-  import { login, getAppLogo } from '$lib/api.js';
+  import { login, getAppLogo, getUser } from '$lib/api.js';
   import { invalidateAll } from '$app/navigation';
   import { onMount } from 'svelte';
 
@@ -30,11 +30,16 @@
   let loading = false;
   let logoUrl = null;
 
-
-  // Falls eingeloggt (durch Cookie), prüfe /me Endpoint
-  // Dies wird durch Server-Side Rendering oder onMount geprüft
-
   onMount(async () => {
+    // Prüfe ob bereits eingeloggt — wenn ja, weiterleiten zu /dashboard
+    try {
+      await getUser();
+      goto('/dashboard');
+      return;
+    } catch (e) {
+      // Nicht eingeloggt — Login-Seite zeigen
+    }
+
     try {
       const blob = await getAppLogo();
       logoUrl = URL.createObjectURL(blob);

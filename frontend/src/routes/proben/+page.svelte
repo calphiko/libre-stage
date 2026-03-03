@@ -31,6 +31,7 @@
   import NewRehearsalForm from './NewRehearsalForm.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import RehearsalCard from './RehearsalCard.svelte';
+  import { modalState } from '$lib/modalState.js';
 
   import { onMount, tick } from 'svelte';
   
@@ -43,6 +44,7 @@
 
   let error = $state('');
   let showHelp = $state(false);
+  let showNewRehearsalInfo = $state(false);
   let tabSet = $state(0);
   let expandedRehId = $state(null);
   let expandedSongId = $state(null);
@@ -254,16 +256,18 @@
             Neue Probe hinzufügen
           </button>
           <span
-            class="inline-block align-super cursor-help"
+            class="inline-block align-super cursor-help relative"
+            onclick={() => showNewRehearsalInfo = !showNewRehearsalInfo}
           >
             <InfoIcon class="w-4 h-4 text-primary-500" />
+            {#if showNewRehearsalInfo}
+              <div class="absolute z-10 left-6 -top-2 w-56 card p-3 variant-filled-secondary shadow-lg text-sm bg-surface-100 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded">
+                <b>Neue Probe erstellen</b>
+                <hr class="my-1">
+                <p>Hier kannst du ganz einfach eine neue Probe erstellen</p>
+              </div>
+            {/if}
           </span>
-        </div>
-        <div class="card p-4 variant-filled-secondary" data-popup="rehearsalInfo">
-          <b>Neue Probe erstellen</b>
-          <hr>
-          <p>Hier kannst du ganz einfach eine neue Probe erstellen</p>
-          <div class="arrow variant-filled-secondary" />
         </div>
       </div>
 
@@ -277,64 +281,65 @@
             <span class="hidden md:inline">Vergangene Proben ({pastRehearsals.length})</span>
             <span class="md:hidden">🕐 ({pastRehearsals.length})</span>
           </button>
+        </div>
 
-          <div class="mt-4">
-            {#if tabSet === 0}
-              {#if upcomingRehearsals.length === 0}
-                <div class="rounded-xl bg-success-100 text-success-900 p-4 mt-6 shadow text-center">
-                  Keine bevorstehenden Proben geplant. 🎉
-                </div>
-              {:else}
-                <div  class="mt-4">
-                  {#each upcomingRehearsals as reh (reh.id)}
-                    <RehearsalCard
-                      {reh}
-                      {songs}
-                      {songsForSearch}
-                      {users}
-                      {isEditor}
-                      expanded={expandedRehId === reh.id}
-                      {expandedSongId}
-                      ontoggle={() => toggleExpand(reh.id)}
-                      onupdate={handleCardUpdate}
-                      ondelete={handleCardDelete}
-                      onsongtoggle={handleCardSongToggle}
-                      onerror={(e) => showError(e.message)}
-                      onwarning={(e) => showWarning(e.message)}
-                      onsuccess={(e) => showSuccess(e.message)}
-                    />
-                  {/each}
-                </div>
-              {/if}
+        <div class="mt-4">
+          {#if tabSet === 0}
+            {#if upcomingRehearsals.length === 0}
+              <div class="rounded-xl bg-success-100 text-success-900 p-4 mt-6 shadow text-center">
+                Keine bevorstehenden Proben geplant. 🎉
+              </div>
             {:else}
-              {#if pastRehearsals.length === 0}
-                <div class="rounded-xl bg-surface-100 text-surface-900 p-4 mt-6 shadow text-center">
-                  Keine vergangenen Proben vorhanden.
-                </div>
-              {:else}
-                <div  class="mt-4">
-                  {#each pastRehearsals as reh (reh.id)}
-                    <RehearsalCard
-                      {reh}
-                      {songs}
-                      {songsForSearch}
-                      {users}
-                      {isEditor}
-                      expanded={expandedRehId === reh.id}
-                      {expandedSongId}
-                      ontoggle={() => toggleExpand(reh.id)}
-                      onupdate={handleCardUpdate}
-                      ondelete={handleCardDelete}
-                      onsongtoggle={handleCardSongToggle}
-                      onerror={(e) => showError(e.message)}
-                      onwarning={(e) => showWarning(e.message)}
-                      onsuccess={(e) => showSuccess(e.message)}
-                    />
-                  {/each}
-                </div>
-              {/if}
+              <div class="mt-4">
+                {#each upcomingRehearsals as reh (reh.id)}
+                  <RehearsalCard
+                    {reh}
+                    {songs}
+                    {songsForSearch}
+                    {users}
+                    {isEditor}
+                    expanded={expandedRehId === reh.id}
+                    {expandedSongId}
+                    ontoggle={() => toggleExpand(reh.id)}
+                    onupdate={handleCardUpdate}
+                    ondelete={handleCardDelete}
+                    onsongtoggle={handleCardSongToggle}
+                    onerror={(e) => showError(e.message)}
+                    onwarning={(e) => showWarning(e.message)}
+                    onsuccess={(e) => showSuccess(e.message)}
+                  />
+                {/each}
+              </div>
             {/if}
-          </div></div>
+          {:else}
+            {#if pastRehearsals.length === 0}
+              <div class="rounded-xl bg-surface-100 text-surface-900 p-4 mt-6 shadow text-center">
+                Keine vergangenen Proben vorhanden.
+              </div>
+            {:else}
+              <div class="mt-4">
+                {#each pastRehearsals as reh (reh.id)}
+                  <RehearsalCard
+                    {reh}
+                    {songs}
+                    {songsForSearch}
+                    {users}
+                    {isEditor}
+                    expanded={expandedRehId === reh.id}
+                    {expandedSongId}
+                    ontoggle={() => toggleExpand(reh.id)}
+                    onupdate={handleCardUpdate}
+                    ondelete={handleCardDelete}
+                    onsongtoggle={handleCardSongToggle}
+                    onerror={(e) => showError(e.message)}
+                    onwarning={(e) => showWarning(e.message)}
+                    onsuccess={(e) => showSuccess(e.message)}
+                  />
+                {/each}
+              </div>
+            {/if}
+          {/if}
+        </div>
       {/if}
 
 

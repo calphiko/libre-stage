@@ -131,26 +131,27 @@ import NewPollForm from './NewPollForm.svelte';
     }
   }
 
-  async function handleItemToggle(event, surveyId) {
-    const { open } = event.detail; // v2: event.detail.open = true/false[web:26]
-
-    if (!open) return; // nur beim Öffnen laden
-
-    // Scroll zum Accordion-Header
-    if (open) {
-      setTimeout(() => {
-        // Finde das Accordion-Element über die data-survey-id
-        const accordionElement = document.querySelector(`[data-survey-id="${surveyId}"]`);
-        if (accordionElement) {
-          accordionElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest'
-          });
-        }
-      }, 150); // Etwas längere Verzögerung für sichere Öffnung
+  async function handleItemToggle(surveyId) {
+    // Toggle open/close
+    if (openValue.includes(surveyId)) {
+      openValue = openValue.filter(id => id !== surveyId);
+      return;
     }
+    openValue = [...openValue, surveyId];
 
+    // Scroll zum Element
+    setTimeout(() => {
+      const accordionElement = document.querySelector(`[data-survey-id="${surveyId}"]`);
+      if (accordionElement) {
+        accordionElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 150);
+
+    // Lade Details wenn noch nicht vorhanden
     if (!details[surveyId] && !loading[surveyId]) {
       loading = { ...loading, [surveyId]: true };
       const d = await getSurveyD(surveyId);
@@ -372,77 +373,81 @@ import NewPollForm from './NewPollForm.svelte';
         <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
           <span>Abgeschlossene Umfragen ({closedSurveys.length})</span>
         </button>
+    </div>
 
-      <div class="mt-4">
+    <div class="mt-4">
         {#if tabSet === 0}
             <!-- Laufende Umfragen -->
             {#if activeSurveys.length === 0}
                 <p class="text-on-surface-variant italic mt-4">Keine laufenden Umfragen</p>
               {:else}
-                <div  class="space-y-3 mt-4">
+                <div class="space-y-3 mt-4">
                   {#each activeSurveys as survey (survey.id)}
-                    <details  ontoggle={(event) => handleItemToggle(event, survey.id)} class="survey-item" data-survey-id={survey.id}>
-                      <div class="font-semibold">
-                        <div class="flex justify-between items-center w-full p-2">
-                          <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
-                          <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
+                    <div class="survey-item" data-survey-id={survey.id}>
+                      <button
+                        type="button"
+                        class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+                        onclick={() => handleItemToggle(survey.id)}
+                      >
+                        <div class="flex justify-between items-center w-full">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="font-medium text-on-surface">{survey.rf_survey}</span>
+                          </div>
+                          <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
                             {userById.get(survey.user_created)?.user_name ?? survey.user_created}
                             {shortFormatGermanDate(survey.release_date)}
-                            {#if survey.user_created === user?.id }
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-warning btn-sm py-0"
-                                onclick={() => {
-                                  closeSurvey(survey.id, survey.rf_survey);
-                                }}>
-                                Archivieren
-                              </button>
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                onclick={() => {
-                                  removeSurvey(survey.id, survey.rf_survey);
-                                }}
-                                >
-                                ✕
-                              </button>
-                            {/if}
                           </span>
                         </div>
-                      </div>
+                      </button>
 
-                      <div>
-                        {#if loading[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
-                            <ProgressRadial
-                              stroke={80}
-                              meter="stroke-secondary-500"
-                              track="stroke-secondary-500/30"
-                              strokeLinecap="round"
-                              value={undefined}
-                            />
-                          </div>
-                        {:else if details[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant">
-                            {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                              {#if user}
-                                <TerminfindungView
-                                  survey={details[survey.id]}
-                                  users={users}
-                                  {user}
-                                />
+                      {#if survey.user_created === user?.id}
+                        <div class="flex gap-2 px-2 pb-2">
+                          <button
+                            type="button"
+                            class="btn variant-filled-warning btn-sm py-0"
+                            onclick={() => closeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            Archivieren
+                          </button>
+                          <button
+                            type="button"
+                            class="btn variant-filled-error btn-sm py-0"
+                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      {/if}
+
+                      {#if openValue.includes(survey.id)}
+                        <div>
+                          {#if loading[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
+                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
+                            </div>
+                          {:else if details[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant">
+                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
+                                {#if user}
+                                  <TerminfindungView
+                                    survey={details[survey.id]}
+                                    users={users}
+                                    {user}
+                                  />
+                                {:else}
+                                  <div>Benutzerdaten werden geladen…</div>
+                                {/if}
+                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
+                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
                               {:else}
-                                <div>Benutzerdaten werden geladen…</div>
+                                <div>Unbekannter Survey-Typ.</div>
                               {/if}
-                            {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                              <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                            {:else}
-                              <div>Unbekannter Survey-Typ.</div>
-                            {/if}
-                          </div>
-                        {/if}
-                      </div>
-                    </details>
+                            </div>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
                   {/each}
                 </div>
               {/if}
@@ -454,19 +459,16 @@ import NewPollForm from './NewPollForm.svelte';
               {:else}
                 <!-- Suchfeld für abgeschlossene Umfragen -->
                 <div class="mt-4 mb-3">
-                  <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                    <div class="input-group-shim">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                      </svg>
-                    </div>
+                  <div class="flex items-center gap-2 border border-outline-variant rounded-lg px-3 py-2 bg-surface-1">
+                    <svg class="w-5 h-5 text-on-surface-variant" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
                     <input
                       type="search"
                       bind:value={closedSurveysFilter}
                       placeholder="Suche nach Titel oder Ersteller..."
-                      class="input"
+                      class="input border-none bg-transparent flex-1 p-0 focus:ring-0"
                     />
-
                   </div>
                   {#if closedSurveysFilter && filteredClosedSurveys.length !== closedSurveys.length}
                     <p class="text-sm text-on-surface-variant mt-2">
@@ -478,69 +480,73 @@ import NewPollForm from './NewPollForm.svelte';
                 {#if filteredClosedSurveys.length === 0}
                   <p class="text-on-surface-variant italic mt-4">Keine Umfragen gefunden</p>
                 {:else}
-                <div  class="space-y-3 mt-4">
+                <div class="space-y-3 mt-4">
                   {#each filteredClosedSurveys as survey (survey.id)}
-                    <details  ontoggle={(event) => handleItemToggle(event, survey.id)} class="survey-item survey-item-closed" data-survey-id={survey.id}>
-                      <div class="font-semibold">
-                        <div class="flex justify-between items-center w-full p-2">
-                          <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
-                          <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
+                    <div class="survey-item survey-item-closed" data-survey-id={survey.id}>
+                      <button
+                        type="button"
+                        class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+                        onclick={() => handleItemToggle(survey.id)}
+                      >
+                        <div class="flex justify-between items-center w-full">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="font-medium text-on-surface">{survey.rf_survey}</span>
+                          </div>
+                          <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
                             {userById.get(survey.user_created)?.user_name ?? survey.user_created}
                             {shortFormatGermanDate(survey.release_date)}
                             <span class="badge variant-filled py-1">geschlossen</span>
-                            {#if survey.user_created === user?.id }
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                onclick={() => {
-                                  removeSurvey(survey.id, survey.rf_survey);
-                                }}
-                                >
-                                ✕
-                              </button>
-                            {/if}
                           </span>
                         </div>
-                      </div>
+                      </button>
 
-                      <div>
-                        {#if loading[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
-                            <ProgressRadial
-                              stroke={80}
-                              meter="stroke-secondary-500"
-                              track="stroke-secondary-500/30"
-                              strokeLinecap="round"
-                              value={undefined}
-                            />
-                          </div>
-                        {:else if details[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant">
-                            {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                              {#if user}
-                                <TerminfindungView
-                                  survey={details[survey.id]}
-                                  users={users}
-                                  {user}
-                                />
+                      {#if survey.user_created === user?.id}
+                        <div class="flex gap-2 px-2 pb-2">
+                          <button
+                            type="button"
+                            class="btn variant-filled-error btn-sm py-0"
+                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      {/if}
+
+                      {#if openValue.includes(survey.id)}
+                        <div>
+                          {#if loading[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
+                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
+                            </div>
+                          {:else if details[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant">
+                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
+                                {#if user}
+                                  <TerminfindungView
+                                    survey={details[survey.id]}
+                                    users={users}
+                                    {user}
+                                  />
+                                {:else}
+                                  <div>Benutzerdaten werden geladen…</div>
+                                {/if}
+                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
+                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
                               {:else}
-                                <div>Benutzerdaten werden geladen…</div>
+                                <div>Unbekannter Survey-Typ.</div>
                               {/if}
-                            {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                              <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                            {:else}
-                              <div>Unbekannter Survey-Typ.</div>
-                            {/if}
-                          </div>
-                        {/if}
-                      </div>
-                    </details>
+                            </div>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
                   {/each}
                 </div>
                 {/if}
               {/if}
         {/if}
-      </div></div>
+    </div>
 
 
     {#if error}

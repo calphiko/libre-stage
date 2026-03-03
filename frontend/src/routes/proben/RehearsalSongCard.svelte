@@ -84,25 +84,24 @@
   }
 </script>
 
-<details 
-  open={expanded}
-  ontoggle={handleToggle}
-  class="border border-outline-variant rounded-lg mb-2 bg-surface-1"
->
-  <div>
+<div class="border border-outline-variant rounded-lg mb-2 bg-surface-1">
+  <button
+    type="button"
+    class="w-full cursor-pointer p-3 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-t-lg text-left flex items-center gap-2"
+    onclick={handleToggle}
+  >
+    <span class="text-xs">{expanded ? '▼' : '▶'}</span>
     {#if song.done}
       <span style="color: lightgreen;">✔</span>
     {:else}
       <span>♪</span>
     {/if}
-  </div>
-
-  <div class="font-semibold">
     <span class="font-bold text-base">{song.interpret} - {song.title}</span>
-  </div>
+  </button>
 
-  <div>
-    <div class="flex justify-between items-center mb-2 gap-2">
+  {#if expanded}
+  <div class="px-3 pb-3">
+    <div class="flex gap-2 mb-4">
       <button
         class="btn variant-filled-error border btn-sm"
         title="Song entfernen"
@@ -154,8 +153,7 @@
           class="input w-full" rows="2"
           bind:value={song.comment}
           onblur={handleBlur}
-          
-        />
+        ></textarea>
       </div>
     </div>
 
@@ -196,7 +194,8 @@
       </form>
     </div>
   </div>
-</details>
+  {/if}
+</div>
 
 <style>
   :global(.btn-status-success) {

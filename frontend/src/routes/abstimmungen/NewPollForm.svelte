@@ -188,7 +188,7 @@ import {formatGermanDateTime} from '$lib/common.js';
   }
 </script>
 
-<div class="container w-50 max-h-screen overflow-y-auto p-4">
+<div class="container w-min-100 w-max-500 max-h-screen overflow-y-auto p-4">
     <form class="card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
       <h4 class="h5 mb-3">Neue Abstimmung</h4>
 
