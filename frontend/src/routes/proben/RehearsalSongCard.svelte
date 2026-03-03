@@ -172,7 +172,7 @@
       <form class="flex gap-2 mt-2 flex-wrap" onsubmit={handleAddTodo}>
         <select
           bind:value={newTodoUserId}
-          class="input w-full max-w-xs" required
+          class="input w-full max-w-xs select" required
           
         >
           <option value="" disabled selected>Wer?</option>
@@ -219,4 +219,6 @@
   .open-icon {
     color: orange;
   }
+
+
 </style>
