@@ -320,7 +320,7 @@ import { onMount, onDestroy } from 'svelte';
 </script>
 
 <div
-  class="card p-0 w-95 h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
+  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
   ontouchstart={handleTouchStart}
   ontouchmove={handleTouchMove}
   ontouchend={handleTouchEnd}
@@ -347,7 +347,7 @@ import { onMount, onDestroy } from 'svelte';
       </button>
       <button
         class="btn-icon btn-icon-sm variant-ghost"
-        onclick={parent.onClose}
+        onclick={() => parent?.close()}
         aria-label="Schließen"
       >
         ✕
