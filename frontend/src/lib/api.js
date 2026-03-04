@@ -673,6 +673,7 @@ export async function sendSurveyReminder(surveyId) {
       },
     });
     if (!response.ok) throw new Error('Failed to send survey reminder');
+    return response.json();
 }
 
 // ===== LIVE MODE API =====
