@@ -340,3 +340,73 @@ def close_survey(
     # Je nach Typ
 
     return get_surveys_from_db(db)
+
+@router.post("/reminder/{survey_id}", response_model=dict)
+def send_reminder(
+    survey_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user)
+):
+    """
+    Send a reminder for a survey.
+
+    :param survey_id: The ID of
+    :param db: Database session (injected automatically)
+    :param current: Currently authenticated user (injected automatically)
+    :return: Success message
+    :raises HTTPException 404: If no survey with the given ID is found
+    """
+
+    user_db = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
+    if not user_db:
+        raise HTTPException(status_code=403, detail="Your User is not found")
+
+    survey = db.query(models.Surveys).filter(models.Surveys.id == survey_id).first()
+    if survey is None:
+        logger.error(f"Survey with id {survey_id} not found")
+        raise HTTPException(status_code=404, detail="Survey not found")
+
+    if not survey.user_created == user_db.id and not current["user_group"] == "admin":
+        raise HTTPException(status_code=403, detail="You do not have permission to send a reminder for this survey")
+
+    # Alle User-IDs die bereits Feedback für diese Survey gegeben haben
+    feedback_user_ids = (
+        db.query(models.SurveyFeedback.id_user)
+        .join(
+            models.SurveyFields,
+            models.SurveyFeedback.id_sv_field == models.SurveyFields.id
+        )
+        .filter(models.SurveyFields.id_survey == survey_id)
+        .distinct()
+        .subquery()
+    )
+
+    # User die Musiker sind und noch kein Feedback gegeben haben
+    users_without_feedback = (
+        db.query(models.User)
+        .filter(models.User.musician == 1)
+        .filter(~models.User.id.in_(feedback_user_ids))
+        .all()
+    )
+
+    for user in users_without_feedback:
+        try:
+            from backend.utils import mattermost
+            message = f":bell: Erinnerung: Bitte gib dein Feedback zur Umfrage **{survey.rf_survey}** ab. Vielen Dank!\n"
+            mattermost.send_mm_message(channel=f"@{user.mm_username}", text=message)
+            logger.info(f"Sent Mattermost reminder to user {user.user_name} (@{user.mm_username}) for survey {survey_id}")
+        except Exception as e:
+            logger.error(f"Failed to send Mattermost message: {e}\n\tTrying to send email to {user.email}")
+            try:
+                from backend.utils.email import send_email
+                send_email(
+                    to_email=user.email,
+                    subject=f"Erinnerung: Feedback zur Umfrage '{survey.rf_survey}'",
+                    body=f"Hallo {user.clear_name},\n\nbitte gib dein Feedback zur Umfrage '{survey.rf_survey}' ab. Vielen Dank!\n\nBeste Grüße,\nDein Libre-Stage Team"
+                )
+            except Exception as e:
+                logger.error(f"Failed to send email: {e}")
+
+    return {"message": "Reminders sent successfully"}
+
+
