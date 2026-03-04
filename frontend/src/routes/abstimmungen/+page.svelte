@@ -20,12 +20,25 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getSurveys, getSurveyDetails, getUserList, updateSurveyFeedback, createSurvey, deleteSurvey, archiveSurvey, logout as apiLogout} from '$lib/api.js';
+  import {
+    getUser,
+    getSurveys,
+    getSurveyDetails,
+    getUserList,
+    updateSurveyFeedback,
+    createSurvey,
+    deleteSurvey,
+    archiveSurvey,
+    logout as apiLogout,
+    sendSurveyReminder
+  } from '$lib/api.js';
   import { shortFormatGermanDate } from '$lib/common.js';
 
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
   const { showError, showSuccess, showWarning } = createMessageHelpers();
+
+  let isAdmin = $derived(user && user.user_group === 'admin');
 
 
   import TerminfindungView from './TerminfindungView.svelte';
@@ -41,7 +54,8 @@
   let closedSurveysFilter = $state(''); // Filter für abgeschlossene Umfragen
 
   let surveys = $state([]);
-  let { users = [] } = $props();
+  let users  = $state([]);
+  //let { users = [] } = $props();
 
   let openValue = $state([]);
     let loading = $state({});
@@ -207,6 +221,15 @@ import NewPollForm from './NewPollForm.svelte';
         }
       }
     });
+  }
+
+  async function rememberUsersWithoutFeedback(survey_id){
+    try {
+        await sendSurveyReminder(survey_id);
+    } catch (e) {
+        showError('Fehler beim Erinnern der säumigen User.');
+        console.error('Fehler beim Erinnern der säumigen User:', e);
+    }
   }
 
   function toggleRules() {
@@ -395,14 +418,21 @@ import NewPollForm from './NewPollForm.svelte';
                             <span class="font-medium text-on-surface">{survey.rf_survey}</span>
                           </div>
                           <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
-                            {userById.get(survey.user_created)?.user_name ?? survey.user_created}
+                            {userById.get(survey.user_created)?.clear_name ?? survey.user_created}
                             {shortFormatGermanDate(survey.release_date)}
                           </span>
                         </div>
                       </button>
 
-                      {#if survey.user_created === user?.id}
+                      {#if survey.user_created === user?.id || isAdmin }
                         <div class="flex gap-2 px-2 pb-2">
+                            <button
+                                type="button"
+                                class="btn variant-filled-warning btn-sm py-0"
+                                onclick={() => rememberUsersWithoutFeedback(survey.id)}
+                              >
+                                Säumige User erinnern
+                          </button>
                           <button
                             type="button"
                             class="btn variant-filled-warning btn-sm py-0"
