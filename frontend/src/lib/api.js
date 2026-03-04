@@ -664,6 +664,17 @@ export async function updateSurveyFeedback(token, surveyId, feedbacks) {
   return response.json();
 }
 
+export async function sendSurveyReminder(surveyId) {
+    console.log('Sending survey reminder');
+    const response = await fetchWithAuth(`${API_URL}/surveys/reminder/${surveyId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to send survey reminder');
+}
+
 // ===== LIVE MODE API =====
 
 export async function getGigLiveMode(token, gigId) {
