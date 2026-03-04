@@ -225,7 +225,26 @@ import NewPollForm from './NewPollForm.svelte';
 
   async function rememberUsersWithoutFeedback(survey_id){
     try {
-        await sendSurveyReminder(survey_id);
+        const result = await sendSurveyReminder(survey_id);
+        const { details } = result;
+
+        const sent = details.filter(d => d.channel !== 'Failed');
+        const failed = details.filter(d => d.channel === 'Failed');
+
+        if (sent.length > 0) {
+            const names = sent.map(d => `${d.user} (${d.channel})`).join(', ');
+            showSuccess(`Erinnerung gesendet an: ${names}`);
+        }
+
+        if (failed.length > 0) {
+            const names = failed.map(d => d.user).join(', ');
+            showWarning(`Konnte nicht erreicht werden: ${names}`);
+        }
+
+        if (details.length === 0) {
+            showSuccess('Alle Musiker haben bereits abgestimmt — niemand muss erinnert werden.');
+        }
+
     } catch (e) {
         showError('Fehler beim Erinnern der säumigen User.');
         console.error('Fehler beim Erinnern der säumigen User:', e);

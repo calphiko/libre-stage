@@ -389,12 +389,15 @@ def send_reminder(
         .all()
     )
 
+    output = []
+
     for user in users_without_feedback:
         try:
             from backend.utils import mattermost
             message = f":bell: Erinnerung: Bitte gib dein Feedback zur Umfrage **{survey.rf_survey}** ab. Vielen Dank!\n"
             mattermost.send_mm_message(channel=f"@{user.mm_username}", text=message)
             logger.info(f"Sent Mattermost reminder to user {user.user_name} (@{user.mm_username}) for survey {survey_id}")
+            output.append({"user": user.clear_name, "channel": "Mattermost"})
         except Exception as e:
             logger.error(f"Failed to send Mattermost message: {e}\n\tTrying to send email to {user.email}")
             try:
@@ -404,9 +407,11 @@ def send_reminder(
                     subject=f"Erinnerung: Feedback zur Umfrage '{survey.rf_survey}'",
                     body=f"Hallo {user.clear_name},\n\nbitte gib dein Feedback zur Umfrage '{survey.rf_survey}' ab. Vielen Dank!\n\nBeste Grüße,\nDein Libre-Stage Team"
                 )
+                output.append({"user": user.clear_name, "channel": "Email"})
             except Exception as e:
                 logger.error(f"Failed to send email: {e}")
+                output.append({"user": user.clear_name, "channel": "Failed"})
 
-    return {"message": "Reminders sent successfully"}
+    return {"message": f"Sent reminders to {len(users_without_feedback)} users", "details": output}
 
 
