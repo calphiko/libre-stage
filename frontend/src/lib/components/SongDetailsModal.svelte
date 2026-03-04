@@ -204,7 +204,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
     }, 200);
   }
 </script>
-<div class="card p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
+<div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col">
 
   <!-- Header -->
   <header class="flex justify-between items-center mb-4 flex-shrink-0">
@@ -257,7 +257,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
                     {#if songField.required}<span class="text-error-500 ms-1">*</span>{/if}
                   </label>
                   {#if songField.type === 'option' && Array.isArray(songField.options)}
-                    <select class="input flex-grow" bind:value={editBuffer[songField.key]} required={songField.required}>
+                    <select class="input flex-grow select" bind:value={editBuffer[songField.key]} required={songField.required}>
                       {#each songField.options as o}
                         <option value={o.key}>{o.label}</option>
                       {/each}

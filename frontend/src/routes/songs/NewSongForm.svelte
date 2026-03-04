@@ -40,7 +40,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
 
 </script>
 
-<div class="card p-6 space-y-4 max-w-4xl w-full max-h-[90vh] flex flex-col">
+<div class="card p-6 space-y-4 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col">
     <header class="flex justify-between items-center flex-shrink-0">
       <h4 class="h5 mb-3">Neuer Song</h4>
     </header>
@@ -58,7 +58,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
 
                   {#if songField.type === 'option' && Array.isArray(songField.options)}
                     <select
-                      class="input flex-grow-1"
+                      class="input flex-grow-1 select"
                       bind:value={song[songField.key]}
                       required={songField.required}
                     >
