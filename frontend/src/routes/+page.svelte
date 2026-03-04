@@ -19,7 +19,7 @@
 <script>
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
-  import { login, getAppLogo } from '$lib/api.js';
+  import { login, getAppLogo, getUser } from '$lib/api.js';
   import { invalidateAll } from '$app/navigation';
   import { onMount } from 'svelte';
 
@@ -30,11 +30,16 @@
   let loading = false;
   let logoUrl = null;
 
-
-  // Falls eingeloggt (durch Cookie), prüfe /me Endpoint
-  // Dies wird durch Server-Side Rendering oder onMount geprüft
-
   onMount(async () => {
+    // Prüfe ob bereits eingeloggt — wenn ja, weiterleiten zu /dashboard
+    try {
+      await getUser();
+      goto('/dashboard');
+      return;
+    } catch (e) {
+      // Nicht eingeloggt — Login-Seite zeigen
+    }
+
     try {
       const blob = await getAppLogo();
       logoUrl = URL.createObjectURL(blob);
@@ -71,7 +76,7 @@
 
                 <!-- Login Form -->
                 <form
-                    on:submit|preventDefault={doLogin}
+                    onsubmit={doLogin}
                     class="max-w-sm w-full bg-surface-2 p-8 rounded-2xl shadow-md space-y-6 border border-outline-variant"
                 >
                     <h2 class="text-3xl font-semibold text-center mb-8 text-on-surface">Login</h2>
@@ -120,57 +125,27 @@
 	</div>
 </div>
 
-<style lang="postcss">
-	figure {
-		@apply flex relative flex-col;
-	}
-	figure svg,
-	.img-bg {
-		@apply w-64 h-64 md:w-80 md:h-80;
-	}
-	.img-bg {
-		@apply absolute z-[-1] rounded-full blur-[50px] transition-all;
-		animation: pulse 5s cubic-bezier(0, 0, 0, 0.5) infinite,
-			glow 5s linear infinite;
-	}
-	@keyframes glow {
-		0% {
-			@apply bg-primary-400/50;
-		}
-		33% {
-			@apply bg-secondary-400/50;
-		}
-		66% {
-			@apply bg-tertiary-400/50;
-		}
-		100% {
-			@apply bg-primary-400/50;
-		}
-	}
-	@keyframes pulse {
-		50% {
-			transform: scale(1.5);
-		}
+<style>
+	.logo-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
-    .logo-container {
-        @apply flex items-center justify-center;
-    }
+	.logo-img {
+		width: 320px;
+		height: 250px;
+		object-fit: contain;
+	}
 
-    .logo-img {
-        width: 320px;
-        height: 250px;
-        object-fit: contain;
-    }
-
-    @media (max-width: 1023px) {
-        .logo-container {
-            @apply mb-4;
-        }
-        .logo-img {
-            width: 240px;
-            height: 190px;
-            object-fit: contain;
-        }
-    }
+	@media (max-width: 1023px) {
+		.logo-container {
+			margin-bottom: 1rem;
+		}
+		.logo-img {
+			width: 240px;
+			height: 190px;
+			object-fit: contain;
+		}
+	}
 </style>

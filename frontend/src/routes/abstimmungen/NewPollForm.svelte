@@ -17,44 +17,41 @@
 -->
 
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  import { SlideToggle } from '@skeletonlabs/skeleton';
-  import {formatGermanDateTime} from '$lib/common.js';
+  import { modalState } from '$lib/modalState.js';
+  import { formatGermanDateTime } from '$lib/common.js';
 
   // Props vom Modal
-  export let parent;
+  let { parent } = $props();
 
-  const modalStore = getModalStore();
+  
 
-  let survey = {
+  let survey = $state({
     rf_survey: '',
     kind_of_survey: 'Terminfindung', // Default
     released: true,
     closed: false,
     fields: []
-  };
+  });
 
   // UI State
-  let newFieldValue = null;
-  let flagZeitraum = 0; // 0 = Einzeltermine, 1 = Zeitraum
-  let optionsError = null;
-  let error = ''; // Globaler Fehler (z.B. "Keine Felder")
-  let genError = ''; // Fehler spezifisch für die Generierung
+  let newFieldValue = $state(null);
+  let flagZeitraum = $state(0); // 0 = Einzeltermine, 1 = Zeitraum
+  let optionsError = $state(null);
+    let error = $state(''); // Globaler Fehler (z.B. "Keine Felder")
+  let genError = $state(''); // Fehler spezifisch für die Generierung
 
   // --- ZEITRAUM LOGIK ---
 
-  let fromDate = '';
-  let toDate = '';
-  let defaultTime = '10:00';
-  let weekdays = {
+  let fromDate = $state('');
+  let toDate = $state('');
+  let defaultTime = $state('10:00');
+  let weekdays = $state({
       monday: false, tuesday: false, wednesday: false,
       thursday: false, friday: false, saturday: false, sunday: false
-  };
+  });
 
-  let errFrom = '';
-  let errTo = '';
-
-  // Hilfsfunktion: Gibt lokales Datum als YYYY-MM-DD zurück (Zeitzonen-sicher)
+  let errFrom = $state('');
+    let errTo = $state('');
   function getLocalISOString(dateObj) {
       const year = dateObj.getFullYear();
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -63,20 +60,20 @@
   }
 
   // 1. Sicheres "Heute" Datum bestimmen
-  $: todayStr = getLocalISOString(new Date());
+  let todayStr = $derived(getLocalISOString(new Date()));
 
   // 2. Validierung: Startdatum
-  $: {
+  $effect(() => {
       errFrom = '';
       if (fromDate) {
           if (fromDate < todayStr) {
               errFrom = 'Darf nicht in der Vergangenheit liegen.';
           }
       }
-  }
+  });
 
   // 3. Validierung: Enddatum
-  $: {
+  $effect(() => {
       errTo = '';
       if (toDate) {
           if (fromDate && toDate < fromDate) {
@@ -85,19 +82,19 @@
               errTo = 'Darf nicht in der Vergangenheit liegen.';
           }
       }
-  }
+  });
 
   // 4. Validierung: Wochentage
-  $: hasSelectedWeekday = Object.values(weekdays).some(v => v);
+  let hasSelectedWeekday = $derived(Object.values(weekdays).some(v => v));
 
   // 5. Gesamtzustand Button "Termine hinzufügen"
   // Aktiv wenn: Felder voll, keine Fehler, Wochentag gewählt
-  $: canAddDates = (
+  let canAddDates = $derived((
       fromDate && !errFrom &&
       toDate && !errTo &&
       hasSelectedWeekday &&
       defaultTime
-  );
+  ));
 
   // Generierungs-Logik (Sicher mit While-Loop)
   function generateTimeSeq() {
@@ -165,7 +162,7 @@
   // --- STANDARD LOGIK ---
 
   // Submit Button Logic
-  $: canSubmit = survey.rf_survey?.trim().length > 0 && survey.fields.length > 0;
+  let canSubmit = $derived(survey.rf_survey?.trim().length > 0 && survey.fields.length > 0);
 
   function addField() {
     optionsError = null;
@@ -186,13 +183,13 @@
         error = 'Bitte mindestens ein Feld hinzufügen.';
         return;
     }
-    if ($modalStore[0].response) $modalStore[0].response(survey);
-    modalStore.close();
+    modalState.close(survey);
+    modalState.close();
   }
 </script>
 
-<div class="container w-50 max-h-screen overflow-y-auto p-4">
-    <form class="card bg-surface-1 p-4 rounded shadow mb-4" on:submit|preventDefault={submit}>
+<div class="container w-min-100 w-max-500 max-h-screen overflow-y-auto p-4">
+    <form class="card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
       <h4 class="h5 mb-3">Neue Abstimmung</h4>
 
       <!-- TITEL -->
@@ -223,7 +220,7 @@
                     <div class="chip variant-filled-surface flex items-center gap-2">
                      <!-- Schöne Anzeige: T durch Leerzeichen ersetzen -->
                      <span>{formatGermanDateTime(field.field_text)} Uhr</span>
-                     <button type="button" class="btn-icon btn-icon-sm variant-filled-error" on:click={() => deleteField(field)}>✕</button>
+                     <button type="button" class="btn-icon btn-icon-sm variant-filled-error" onclick={() => deleteField(field)}>✕</button>
                     </div>
                {/each}
            </div>
@@ -246,9 +243,9 @@
                     type="datetime-local"
                     class="input flex-grow-1"
                     bind:value={newFieldValue}
-                    on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addField(); }}}
+                    onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addField(); }}}
                   />
-                  <button type="button" class="btn variant-filled-primary" on:click={() => addField()}>+</button>
+                  <button type="button" class="btn variant-filled-primary" onclick={() => addField()}>+</button>
                 </div>
 
             <!-- ZEITRAUM -->
@@ -262,7 +259,7 @@
                       <span>Von:</span>
                       <input
                         type="date"
-                        class="input {errFrom ? 'input-error variant-form-material-error' : ''}"
+                        class="input {errFrom ? 'input-error border-error-500' : ''}"
                         bind:value={fromDate}
                         min={todayStr}
                       />
@@ -276,7 +273,7 @@
                       <span>Bis:</span>
                       <input
                         type="date"
-                        class="input {errTo ? 'input-error variant-form-material-error' : ''}"
+                        class="input {errTo ? 'input-error border-error-500' : ''}"
                         bind:value={toDate}
                         min={fromDate || todayStr}
                         disabled={!fromDate || !!errFrom}
@@ -303,15 +300,18 @@
                       </div>
 
                       <div class="flex flex-wrap gap-2">
-                        {#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as day}
-                            <SlideToggle
-                                name={day}
-                                bind:checked={weekdays[day]}
-                                active="bg-primary-500"
-                                size="sm"
-                            >
-                                {day.charAt(0).toUpperCase() + day.slice(1, 2)}
-                            </SlideToggle>
+                        {#each [['monday','Mo'],['tuesday','Di'],['wednesday','Mi'],['thursday','Do'],['friday','Fr'],['saturday','Sa'],['sunday','So']] as [day, label]}
+                            <label class="flex items-center gap-1.5 cursor-pointer select-none px-3 py-1.5 rounded-full border transition-colors
+                                {weekdays[day]
+                                    ? 'bg-primary-500 border-primary-500 text-white'
+                                    : 'bg-surface-200 dark:bg-surface-700 border-surface-400 dark:border-surface-500 text-surface-700 dark:text-surface-200'}">
+                                <input
+                                    type="checkbox"
+                                    class="sr-only"
+                                    bind:checked={weekdays[day]}
+                                />
+                                <span class="text-sm font-medium">{label}</span>
+                            </label>
                         {/each}
                       </div>
                   </div>
@@ -328,7 +328,7 @@
                     type="button"
                     class="btn variant-filled-success w-full mt-4"
                     disabled={!canAddDates}
-                    on:click={handleAddDates}
+                    onclick={handleAddDates}
                   >
                     {#if errFrom || errTo}
                         Bitte Fehler korrigieren
@@ -354,7 +354,7 @@
                         <button
                             type="button"
                             class="btn variant-filled-error border btn-sm ml-4"
-                            on:click={() => deleteField(field)}
+                            onclick={() => deleteField(field)}
                         >x</button>
                     </div>
                 {/each}
@@ -366,7 +366,7 @@
                     class="input"
                     bind:value={newFieldValue}
                     placeholder="Neue Option (mit Enter hinzufügen)"
-                    on:keydown={(e) => {
+                    onkeydown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
                           addField();
@@ -376,7 +376,7 @@
                 <button
                     type="button"
                     class="btn variant-filled-primary border btn-sm ml-4"
-                    on:click={() => addField()}
+                    onclick={() => addField()}
                 >+</button>
             </div>
          {/if}
@@ -387,7 +387,7 @@
         {#if error}
             <span class="text-error-500 flex items-center mr-4">{error}</span>
         {/if}
-        <button class="btn variant-ringed-surface" type="button" on:click={modalStore.close}>Abbrechen</button>
+        <button class="btn variant-ringed-surface" type="button" onclick={modalState.close}>Abbrechen</button>
         <button class="btn variant-filled-primary" type="submit" disabled={!canSubmit}>Erstellen</button>
       </div>
     </form>

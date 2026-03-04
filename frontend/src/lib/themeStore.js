@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const defaultTheme = browser ? localStorage.getItem('selectedTheme') || 'wintry' : 'wintry';
@@ -6,6 +6,9 @@ const defaultMode = browser ? localStorage.getItem('colorMode') || 'auto' : 'aut
 
 export const currentTheme = writable(defaultTheme);
 export const colorMode = writable(defaultMode);
+
+// Reaktiver isDarkMode Store, der von eCharts und anderen Komponenten genutzt werden kann
+export const isDarkMode = writable(browser ? document.documentElement.classList.contains('dark') : false);
 
 currentTheme.subscribe(value => {
     if (browser) {
@@ -24,17 +27,22 @@ colorMode.subscribe(value => {
 function applyTheme() {
     if (!browser) return;
 
-    const theme = localStorage.getItem('selectedTheme') || 'modern';
+    const theme = localStorage.getItem('selectedTheme') || 'wintry';
     const mode = localStorage.getItem('colorMode') || 'auto';
 
-    document.body.setAttribute('data-theme', theme);
+    // Skeleton 4: data-theme on <html>
+    document.documentElement.setAttribute('data-theme', theme);
 
+    let dark;
     if (mode === 'auto') {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', isDark);
+        dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     } else {
-        document.documentElement.classList.toggle('dark', mode === 'dark');
+        dark = mode === 'dark';
     }
+    document.documentElement.classList.toggle('dark', dark);
+
+    // Update isDarkMode Store
+    isDarkMode.set(dark);
 }
 
 // System Dark Mode Listener
@@ -44,19 +52,21 @@ if (browser) {
             applyTheme();
         }
     });
+
+    // Sofort beim Laden anwenden
+    applyTheme();
 }
 
+// Skeleton 4 available themes
 export const availableThemes = [
-    { value: 'skeleton', label: 'Skeleton' },
-    { value: 'wintry', label: 'Wintry' },
-    { value: 'modern', label: 'Modern' },
-    { value: 'hamlindigo', label: 'Hamlindigo' },
-    { value: 'rocket', label: 'Rocket' },
-    { value: 'sahara', label: 'Sahara' },
-    { value: 'gold-nouveau', label: 'Gold Nouveau' },
+    { value: 'sahara', label: 'Sahara'},
+    { value: 'cerberus', label: 'Cerberus' },
+    { value: 'catppuccin', label: 'Catppuccin' },
+    { value: 'pine', label: 'Pine' },
+    { value: 'rose', label: 'Rose' },
+    { value: 'terminus', label: 'Terminus' },
     { value: 'vintage', label: 'Vintage' },
-    { value: 'seafoam', label: 'Seafoam' },
-    { value: 'crimson', label: 'Crimson' }
+    { value: 'wintry', label: 'Wintry' }
 ];
 
 export const colorModes = [

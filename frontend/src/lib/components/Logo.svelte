@@ -17,8 +17,7 @@
 -->
 
 <script lang="ts">
-  export let className = "";
-  export let size: number | string | null = null;
+  let { className = "", size = null }: { className?: string; size?: number | string | null } = $props();
 </script>
 
 <svg

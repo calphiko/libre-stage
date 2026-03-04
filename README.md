@@ -2,10 +2,11 @@
 
 **A comprehensive internal management platform for bands and music ensembles**
 
-![Version](https://img.shields.io/badge/version-v0.2.0-blue)
+![Version](https://img.shields.io/badge/version-v0.3.1-blue)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-teal)
-![Svelte](https://img.shields.io/badge/Svelte-4.2.7-orange)
+![Svelte](https://img.shields.io/badge/Svelte-5.29.0-orange)
+![Skeleton](https://img.shields.io/badge/Skeleton-4.12.1-orange)
 
 ## 📖 Overview
 
@@ -34,10 +35,12 @@ Band Manager is a self-hosted web application designed to manage band operations
 
 ### Frontend (SvelteKit + Skeleton UI)
 - **Framework**: SvelteKit 2.0
-- **UI Library**: Skeleton UI with Tailwind CSS
+- **Svelte**: 5.x (Runes API)
+- **UI Library**: Skeleton UI 4.x (@skeletonlabs/skeleton-svelte) with Tailwind CSS 4.x
 - **Charts**: ECharts for data visualization
 - **Drag & Drop**: svelte-dnd-action for setlist editing
 - **Responsive**: Full mobile and tablet support
+
 
 ## 🚀 Quick Start
 

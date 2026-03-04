@@ -22,11 +22,9 @@
   import { shortFormatGermanDate } from '$lib/common.js';
   import SurveyPlot from '$lib/plots/surveyPlot.svelte';
 
-  export let survey;
-  export let users;
-  export let user;
+  let { survey, users, user } = $props();
 
-  $: userById = new Map(users.map(u => [u.id, u]));
+  let userById = $derived(new Map(users.map(u => [u.id, u])));
 
   const hasCurrentUserFeedback = (field) => {
     return field.feedbacks?.some((fb) => Number(fb.id_user) === Number(user?.id));
@@ -150,7 +148,7 @@
               {hasCurrentUserFeedback(field)
                 ? 'bg-green-200 dark:bg-green-700'
                 : 'bg-surface-1 hover:bg-surface-2'}"
-            on:click={() => toggleFeedback(field)}
+            onclick={() => toggleFeedback(field)}
             role="button"
             tabindex="0"
           >
@@ -165,7 +163,7 @@
             <details class="mt-2">
               <summary
                 class="cursor-pointer text-sm text-secondary-500 hover:text-secondary-400"
-                on:click|stopPropagation
+                onclick={(e) => e.stopPropagation()}
               >
                 Feedbacks anzeigen ({field.feedbacks.length})
               </summary>

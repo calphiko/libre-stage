@@ -25,18 +25,18 @@
 
   overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
 
-  export let setlist;
-  let setIndex = 1;
+  let { setlist } = $props();
+  let setIndex = $state(1);
 
-  let isUpdating = false;
-  let updateError = null;
+  let isUpdating = $state(false);
+  let updateError = $state(null);
 
-  let dragOverSetIdx = null;
-  let dragOverSongId = null;
-  let dragInsertPos = null; // Neue Position zum Einfügen
+  let dragOverSetIdx = $state(null);
+  let dragOverSongId = $state(null);
+  let dragInsertPos = $state(null); // Neue Position zum Einfügen
 
   
-  let nextNegativeSetsongId = -1;
+  let nextNegativeSetsongId = $state(-1);
 
   function cleanDnDItems(items) {
     // Entferne nur Shadow-Elemente
@@ -181,7 +181,7 @@
 {#each setlist.sets as set, setIdx (set.gigset_id)}
   <div class="set-card">
     <div class="set-header ">
-       <button class="btn btn-sm variant-filled-primary py-0" on:click={() => insertSetBefore(setIdx)}>
+       <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)}>
           + Set
        </button>
        <input
@@ -189,9 +189,9 @@
           class="setlist-name-input"
           bind:value={set.setlist_name}
           placeholder={`Set ${setIdx + 1}`}
-          on:blur={() => updateSetlist(setlist)}
+          onblur={() => updateSetlist(setlist)}
        />
-       <button class="btn btn-sm variant-filled-error py-0" on:click={() => removeSet(setIdx)}>
+       <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)}>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"></path>
             </svg>
@@ -203,10 +203,10 @@
         type: 'song-in-set',
         flipDurationMs: 150
       }}
-      on:consider={e => handleSongsConsider(setIdx, e)}
-      on:finalize={e => handleSongsFinalize(setIdx, e)}
-      on:dragover={(e) => e.preventDefault()}
-      on:drop={(e) => handleDragOverSet(setIdx, e)}
+      onconsider={e => handleSongsConsider(setIdx, e)}
+      onfinalize={e => handleSongsFinalize(setIdx, e)}
+      ondragover={(e) => e.preventDefault()}
+      ondrop={(e) => handleDragOverSet(setIdx, e)}
     >
       {#each set.songs as song (song.setsong_id)}
         <div class="song-in-set text-surface-900 dark:text-surface-950" data-song-id={song.setsong_id}
@@ -218,7 +218,7 @@
           {/if}
           {song.title}   <small>{song.comment}</small>     </span>
           <button class="btn btn-sm variant-filled-error py-0"
-                  on:click={() => removeSongFromSet(setIdx, song.setsong_id)}>
+                  onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"></path>
             </svg>
@@ -241,7 +241,7 @@
 {/each}
 
 <div class="add-set-end-container">
-  <button class="insert-btn" on:click={addSetAtEnd}>
+  <button class="insert-btn" onclick={addSetAtEnd}>
     + Set
   </button>
 </div>

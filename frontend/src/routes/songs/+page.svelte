@@ -32,61 +32,54 @@
     updateSongCandidateFeedback,
     acceptSongApproach, logout as apiLogout} from '$lib/api.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-
-  import { popup } from '@skeletonlabs/skeleton';
   import { InfoIcon } from 'lucide-svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   import NewSongForm from './NewSongForm.svelte';
   import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
-  import { getModalStore  } from '@skeletonlabs/skeleton';
-
+  import { modalState } from '$lib/modalState.js';
   import AgGrid from '$lib/components/AgGrid.svelte';
   function handleRowClick(event) {
     openModal(event.data);
   }
 
-  const modalStore = getModalStore();
+  
 
-    let user = null;
-  let songs = [];
-  let filteredSongs = [];
-  let filteredSongsMobile=[];
-  let filterStringMobile = "";
-  let error = '';
-  let search = '';
-  let sortField = 'title';
-  let sortAsc = true;
+    let user = $state(null);
+  let songs = $state([]);
+  let filteredSongsMobile = $state([]);
+  let filterStringMobile = $state("");
+  let error = $state('');
+  let search = $state('');
+  let sortField = $state('title');
+  let sortAsc = $state(true);
+  let showNewSongInfo = $state(false);
 
 
-  let showRetired = false;
-  let rulesVisible = false;
-  let showHelp = false;
-  let tabSet = 1; // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
+  let rulesVisible = $state(false);
+  let showHelp = $state(false);
+  let tabSet = $state(1); // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
   let gridApi;
 
-  let expandedSongId = null;
-  let editSongId = null;
-  let editBuffer = {};
+  let expandedSongId = $state(null);
+  let editSongId = $state(null);
+  let editBuffer = $state({});
 
-  $: songFieldsDetails = getSongFieldsDetails($appConfig);
+  let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
-  export let data;
+  let { data } = $props();
 
   function toggleRules() {
     rulesVisible = !rulesVisible;
   }
 
   function openModal(song) {
-    modalStore.trigger({
-    type: 'component',
-    component: { ref: SongDetailsModal },
+    modalState.trigger({
+    component: SongDetailsModal,
     meta: {
       songId: song.id
     },
@@ -101,7 +94,356 @@
   }
 
 
-  const columnDefs = songFields.map(f => ({
+  let statusValues = $derived(
+    [...new Set(songs.map(s => s.status).filter(Boolean))]
+  );
+
+  // Custom Status-Filter (Popup mit Checkboxen, Community-only)
+  class StatusFilter {
+    init(params) {
+      this.params = params;
+      this.selectedValues = null; // null = alle ausgewählt (kein Filter aktiv)
+      this.eGui = document.createElement('div');
+      this.eGui.classList.add('ag-status-filter');
+    }
+
+    _getAllValues() {
+      const values = new Set();
+      this.params.api.forEachNode(node => {
+        if (node.data?.status) values.add(node.data.status);
+      });
+      return [...values].sort();
+    }
+
+    getGui() {
+      const allValues = this._getAllValues();
+      this.eGui.innerHTML = '';
+
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const bgColor = isDarkMode ? '#1e293b' : '#f8fafc';
+      const textColor = isDarkMode ? '#f8fafc' : '#0f172a';
+
+      const container = document.createElement('div');
+      container.style.padding = '10px';
+      container.style.minWidth = '180px';
+      container.style.backgroundColor = bgColor;
+      container.style.color = textColor;
+
+      // "Alle" Checkbox
+      const allLabel = document.createElement('label');
+      allLabel.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; margin-bottom: 6px;';
+      const allCb = document.createElement('input');
+      allCb.type = 'checkbox';
+      allCb.checked = this.selectedValues === null;
+      allLabel.appendChild(allCb);
+      allLabel.appendChild(document.createTextNode('Alle'));
+      container.appendChild(allLabel);
+
+      const hr1 = document.createElement('hr');
+      hr1.style.cssText = 'margin: 4px 0 8px 0; border-color: var(--ag-border-color, #ccc);';
+      container.appendChild(hr1);
+
+      const optionsDiv = document.createElement('div');
+      const checkboxes = [];
+
+      allValues.forEach(val => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 3px 0;';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = val;
+        cb.checked = this.selectedValues === null || this.selectedValues.has(val);
+        cb.addEventListener('change', () => {
+          if (this.selectedValues === null) {
+            this.selectedValues = new Set(allValues);
+          }
+          if (cb.checked) {
+            this.selectedValues.add(val);
+          } else {
+            this.selectedValues.delete(val);
+          }
+          allCb.checked = this.selectedValues.size === allValues.length;
+          if (this.selectedValues.size === allValues.length) {
+            this.selectedValues = null;
+          }
+          this.params.filterChangedCallback();
+        });
+        checkboxes.push(cb);
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(val));
+        optionsDiv.appendChild(label);
+      });
+      container.appendChild(optionsDiv);
+
+      allCb.addEventListener('change', () => {
+        if (allCb.checked) {
+          this.selectedValues = null;
+          checkboxes.forEach(cb => cb.checked = true);
+        } else {
+          this.selectedValues = new Set();
+          checkboxes.forEach(cb => cb.checked = false);
+        }
+        this.params.filterChangedCallback();
+      });
+
+      const hr2 = document.createElement('hr');
+      hr2.style.cssText = 'margin: 8px 0 4px 0; border-color: var(--ag-border-color, #ccc);';
+      container.appendChild(hr2);
+
+      const btnDiv = document.createElement('div');
+      btnDiv.style.cssText = 'margin-top: 6px; text-align: right;';
+      const resetBtn = document.createElement('button');
+      resetBtn.textContent = 'Reset';
+      resetBtn.id = 'resetBtn';
+      resetBtn.style.cssText = 'padding: 4px 14px; border-radius: 6px; border: none; cursor: pointer;';
+      resetBtn.addEventListener('click', () => {
+        this.selectedValues = null;
+        allCb.checked = true;
+        checkboxes.forEach(cb => cb.checked = true);
+        this.params.filterChangedCallback();
+      });
+      btnDiv.appendChild(resetBtn);
+      container.appendChild(btnDiv);
+
+      this.eGui.appendChild(container);
+      return this.eGui;
+    }
+
+    doesFilterPass(params) {
+      if (this.selectedValues === null) return true;
+      return this.selectedValues.has(params.data?.status);
+    }
+
+    isFilterActive() {
+      return this.selectedValues !== null;
+    }
+
+    getModel() {
+      if (this.selectedValues === null) return null;
+      return { values: [...this.selectedValues] };
+    }
+
+    setModel(model) {
+      if (!model) {
+        this.selectedValues = null;
+      } else {
+        this.selectedValues = new Set(model.values);
+      }
+    }
+
+    applyFilterFromFloating(model) {
+      if (!model) {
+        this.selectedValues = null;
+      } else {
+        this.selectedValues = new Set(model.values);
+      }
+      this.params.filterChangedCallback();
+    }
+
+    destroy() {}
+  }
+
+  // Custom Floating-Filter: Checkbox-Optionsmenü (Popup) statt Dropdown
+  class StatusFloatingFilter {
+    init(params) {
+      this.params = params;
+      this.popupVisible = false;
+      this.allValues = [];
+
+      // Container
+      this.eGui = document.createElement('div');
+      this.eGui.style.cssText = 'width: 100%; display: flex; align-items: center; height: 100%; position: relative;';
+
+      // Button der den aktuellen Status anzeigt und das Popup öffnet
+      this.btn = document.createElement('button');
+      this.btn.type = 'button';
+
+      // Farben basierend auf Dark/Light Mode
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const btnBg = isDarkMode ? '#1e293b' : '#f8fafc';  // surface-800 : surface-50
+      const btnBorder = isDarkMode ? '#475569' : '#cbd5e1'; // surface-600 : surface-300
+      const btnText = isDarkMode ? '#f8fafc' : '#0f172a'; // surface-50 : surface-900
+
+      this.btn.style.cssText = `width: 100%; padding: 4px 8px; border-radius: 6px; font-size: 12px; border: 1px solid ${btnBorder}; background: ${btnBg}; color: ${btnText}; cursor: pointer; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;`;
+      this.btn.textContent = 'Alle';
+      this.btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._togglePopup();
+      });
+      this.eGui.appendChild(this.btn);
+
+      // Popup-Container
+      this.popup = document.createElement('div');
+      this.popup.classList.add('ag-status-filter', 'ag-status-floating-popup');
+
+      // Fallback-Farben für Light und Dark Mode (wiederverwendet isDarkMode von oben)
+      const bgColor = isDarkMode ? '#1e293b' : '#f8fafc';  // surface-800 : surface-50
+      const borderColor = isDarkMode ? '#475569' : '#cbd5e1'; // surface-600 : surface-300
+      const textColor = isDarkMode ? '#f8fafc' : '#0f172a'; // surface-50 : surface-900
+
+      // Styles einzeln setzen für maximale Priorität
+      this.popup.style.display = 'none';
+      this.popup.style.position = 'absolute';
+      this.popup.style.top = '100%';
+      this.popup.style.left = '0';
+      this.popup.style.zIndex = '9999';
+      this.popup.style.minWidth = '180px';
+      this.popup.style.padding = '10px';
+      this.popup.style.borderRadius = '8px';
+      this.popup.style.backgroundColor = bgColor;
+      this.popup.style.border = `1px solid ${borderColor}`;
+      this.popup.style.color = textColor;
+      this.popup.style.boxShadow = `0 4px 16px rgba(0, 0, 0, ${isDarkMode ? '0.3' : '0.15'})`;
+
+      this.eGui.appendChild(this.popup);
+
+      // Klick außerhalb schließt das Popup
+      this._onDocClick = (e) => {
+        if (this.popupVisible && !this.popup.contains(e.target) && e.target !== this.btn) {
+          this._hidePopup();
+        }
+      };
+      document.addEventListener('click', this._onDocClick, true);
+    }
+
+    _togglePopup() {
+      if (this.popupVisible) {
+        this._hidePopup();
+      } else {
+        this._showPopup();
+      }
+    }
+
+    _showPopup() {
+      this._buildPopup();
+      this.popup.style.display = 'block';
+      this.popupVisible = true;
+    }
+
+    _hidePopup() {
+      this.popup.style.display = 'none';
+      this.popupVisible = false;
+    }
+
+    _getSelectedFromParent(callback) {
+      this.params.parentFilterInstance(instance => {
+        const model = instance.getModel();
+        callback(model ? new Set(model.values) : null);
+      });
+    }
+
+    _buildPopup() {
+      this.popup.innerHTML = '';
+
+      // Aktuelle Werte aus dem Grid lesen
+      const allValues = new Set();
+      this.params.api.forEachNode(node => {
+        if (node.data?.status) allValues.add(node.data.status);
+      });
+      this.allValues = [...allValues].sort();
+
+      // Aktuelles Filter-Model vom Parent lesen
+      this.params.parentFilterInstance(instance => {
+        const model = instance.getModel();
+        const selected = model ? new Set(model.values) : null; // null = alle
+
+        // "Alle" Checkbox
+        const allLabel = document.createElement('label');
+        allLabel.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; margin-bottom: 6px;';
+        const allCb = document.createElement('input');
+        allCb.type = 'checkbox';
+        allCb.checked = selected === null;
+        allLabel.appendChild(allCb);
+        allLabel.appendChild(document.createTextNode('Alle'));
+        this.popup.appendChild(allLabel);
+
+        const hr1 = document.createElement('hr');
+        hr1.style.cssText = 'margin: 4px 0 6px 0; border-color: var(--ag-border-color, #ccc);';
+        this.popup.appendChild(hr1);
+
+        const checkboxes = [];
+
+        this.allValues.forEach(val => {
+          const label = document.createElement('label');
+          label.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 3px 0;';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.value = val;
+          cb.checked = selected === null || selected.has(val);
+          cb.addEventListener('change', () => {
+            this._onCheckboxChange(cb, allCb, checkboxes);
+          });
+          checkboxes.push(cb);
+          label.appendChild(cb);
+          label.appendChild(document.createTextNode(val));
+          this.popup.appendChild(label);
+        });
+
+        allCb.addEventListener('change', () => {
+          if (allCb.checked) {
+            checkboxes.forEach(cb => cb.checked = true);
+            instance.applyFilterFromFloating(null);
+          } else {
+            checkboxes.forEach(cb => cb.checked = false);
+            instance.applyFilterFromFloating({ values: [] });
+          }
+        });
+      });
+    }
+
+    _onCheckboxChange(changedCb, allCb, checkboxes) {
+      this.params.parentFilterInstance(instance => {
+        const checkedVals = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+        allCb.checked = checkedVals.length === this.allValues.length;
+        if (checkedVals.length === this.allValues.length) {
+          instance.applyFilterFromFloating(null);
+        } else {
+          instance.applyFilterFromFloating({ values: checkedVals });
+        }
+      });
+    }
+
+    _getSummaryText(parentModel) {
+      if (!parentModel) return 'Alle';
+      const vals = parentModel.values || [];
+      if (vals.length === 0) return '(keine)';
+      if (vals.length === 1) return vals[0];
+      if (vals.length <= 3) return vals.join(', ');
+      return `${vals.length} gewählt`;
+    }
+
+    getGui() { return this.eGui; }
+
+    onParentModelChanged(parentModel) {
+      this.btn.textContent = this._getSummaryText(parentModel);
+      // Visuelles Feedback: Button-Style wenn Filter aktiv
+      if (parentModel) {
+        this.btn.style.fontWeight = '600';
+      } else {
+        this.btn.style.fontWeight = 'normal';
+      }
+    }
+
+    destroy() {
+      document.removeEventListener('click', this._onDocClick, true);
+    }
+  }
+
+  let columnDefs = $derived(songFields.map(f => {
+    if (f.key === 'status') {
+      return {
+        field: f.key,
+        headerName: f.label,
+        sortable: true,
+        filter: StatusFilter,
+        floatingFilter: true,
+        floatingFilterComponent: StatusFloatingFilter,
+        suppressFloatingFilterButton: true,
+        resizable: true,
+        flex: 1,
+      };
+    }
+    return {
       field: f.key,
       headerName: f.label,
       sortable: true,
@@ -118,6 +460,7 @@
       floatingFilterComponentParams: {
         suppressFilterButton: true
       }
+    };
   }));
 
 
@@ -147,15 +490,31 @@
   };
 
   function onGridReady(params) {
-    gridApi = params.api;}
+    gridApi = params.api;
+  }
+
+  // Wird aufgerufen sobald die ersten Daten im Grid gerendert sind
+  function onFirstDataRendered(params) {
+    params.api.sizeColumnsToFit();
+    // Initalen Status-Filter setzen: 'retired' abwählen
+    const allStatuses = [];
+    params.api.forEachNode(node => {
+      if (node.data?.status && !allStatuses.includes(node.data.status)) {
+        allStatuses.push(node.data.status);
+      }
+    });
+    const withoutRetired = allStatuses.filter(s => s !== 'retired');
+    if (withoutRetired.length < allStatuses.length) {
+      // Nur filtern wenn 'retired' überhaupt existiert
+      params.api.setFilterModel({
+        status: { values: withoutRetired }
+      });
+    }
+  }
 
   function onRowClicked(event) {
     const node = event.node;
     node.setExpanded(!node.expanded);
-  }
-
-  function onFirstDataRendered(params) {
-    params.api.sizeColumnsToFit();
   }
 
   // Custom Detail Panel Renderer
@@ -271,19 +630,18 @@
     return this.eGui;
   };
 
-  $: rowData = filteredSongs;
+  let rowData = $derived(filteredSongs);
 
   // PATCH-Request für Song-Änderung (ins $lib/api.js auslagern)
 
   function openNewSongModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewSongForm },
+    modalState.trigger({
+      component: NewSongForm,
       title: 'Neuen Song erstellen',
       response: (r) => {
         if (r) addSong(r);
       },
-      close: modalStore.close
+      close: modalState.close
     });
   }
 
@@ -310,9 +668,8 @@
   }
 
  async function openSongDetailsModal(song) {
-      modalStore.trigger({
-        type: 'component',
-        component: { ref: SongDetailsModal },
+      modalState.trigger({
+        component: SongDetailsModal,
         meta: { songId: song.id },
         response: async (r) => {
       if (r?.action === 'updated' || r?.action === 'delete') {
@@ -330,8 +687,7 @@
       // Erst zuweisen, dann console.log zum Debuggen
       songs = newSongs;
       vorschlaegeSongs = newVorschlaege;
-
-      console.log('Songs aktualisiert:', songs.length);
+      mobileFilter();
       console.log('Vorschläge aktualisiert:', vorschlaegeSongs.length);
   }
 
@@ -348,9 +704,8 @@
   async function setSongToRetired(songId, songTitle, songInterpret) {
     const songName = songInterpret ? `${songInterpret} - ${songTitle}` : songTitle;
 
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Song löschen',
         message: `Möchten Sie den Song "${songName}" wirklich löschen? Der Song wird als "retired" markiert und aus der aktiven Liste entfernt.`,
@@ -377,15 +732,10 @@
     expandedSongId = expandedSongId === id ? null : id;
   }
 
-  function toggleShowRetired() {
-    showRetired = !showRetired;
-  }
+let vorschlaegeSongs = $state([]);
 
-let vorschlaegeSongs = [];
-
-$: filteredSongs = songs
-  .filter(song =>song.status !== 'vorschlag' &&
-     (showRetired || song.status !== 'retired')
+let filteredSongs = $derived(songs
+  .filter(song => song.status !== 'vorschlag'
   ).sort((a, b) => {
     let vA = a[sortField] ?? '';
     let vB = b[sortField] ?? '';
@@ -394,7 +744,7 @@ $: filteredSongs = songs
     if (vA < vB) return sortAsc ? -1 : 1;
     if (vA > vB) return sortAsc ? 1 : -1;
     return 0;
-  });
+  }));
 
   function setSort(field) {
     if (sortField === field) {
@@ -406,10 +756,13 @@ $: filteredSongs = songs
   }
 
   function mobileFilter() {
-    filteredSongs = songs.filter(song =>
+    filteredSongsMobile = songs.filter(song =>
+      song.status !== 'retired' &&
+      song.status !== 'vorschlag' &&
+      (
         song.title.toLowerCase().includes(filterStringMobile.toLowerCase()) ||
-        song.interpret.toLowerCase().includes(filterStringMobile.toLowerCase())  &&
-      (showRetired || song.status !== 'retired')
+        song.interpret.toLowerCase().includes(filterStringMobile.toLowerCase())
+      )
     );
   }
 
@@ -427,6 +780,7 @@ $: filteredSongs = songs
     }
     songs = await getSongs();
     vorschlaegeSongs = await getSongsCandidates();
+    mobileFilter();
     if (vorschlaegeSongs.length === 0 ) { tabSet = 0; } else {tabSet = 1;}
   });
 
@@ -482,7 +836,7 @@ $: filteredSongs = songs
         'user_id': user.id,
         'song_id': song.id,
         'feedback': feedback
-    }
+    };
 
     //Find Feedback-Object of User
     let existingUserFeedback = song.feedbacks.find(fb => fb.user_id === user.id);
@@ -537,7 +891,7 @@ $: filteredSongs = songs
         <h3 class="h2 mb-4 text-on-surface">Songs</h3>
         <button
           class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
-          on:click={() => showHelp = !showHelp}
+          onclick={() => showHelp = !showHelp}
           aria-label="Hilfe anzeigen"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -596,7 +950,7 @@ $: filteredSongs = songs
             <h4 class="font-semibold text-error-500 mb-2">📦 Archivierte Songs</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li>Songs mit Status "Archiviert" werden standardmäßig ausgeblendet</li>
-              <li>Über den Filter "Gelöschte Songs anzeigen" kannst du sie einblenden</li>
+              <li>Über den <strong>Status-Filter</strong> in der Tabellenspalte kannst du "retired" hinzuwählen</li>
               <li>Archivierte Songs können nicht in Setlisten verwendet werden</li>
             </ul>
           </div>
@@ -613,58 +967,39 @@ $: filteredSongs = songs
     {/if}
 
     <div class="inline-flex items-center gap-2">
-      <button class="btn variant-filled-primary btn-sm w-fit border mt-4 md:mb-4" on:click={openNewSongModal}>
+      <button class="btn variant-filled-primary btn-sm w-fit border mt-4 md:mb-4" onclick={openNewSongModal}>
         Neuen Song hinzufügen
       </button>
       <span
-        class="inline-block align-super cursor-help"
-        use:popup={{ event: 'click', target: 'newSongInfo', placement: 'top' }}
+        class="inline-block align-super cursor-help relative "
+        onclick={() => showNewSongInfo = !showNewSongInfo}
       >
         <InfoIcon class="w-4 h-4 text-primary-500" />
+        {#if showNewSongInfo}
+          <div class="absolute z-10 left-6 -top-2 w-56 card p-3 variant-filled-secondary shadow-lg text-sm bg-surface-100 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded">
+            <b>Neuen Song erstellen</b>
+            <hr class="my-1">
+            <p>Hier kannst du ganz einfach einen neuen Song erstellen</p>
+          </div>
+        {/if}
       </span>
-    </div>
-    <div class="card p-4 variant-filled-secondary" data-popup="newSongInfo">
-      <b>Neuen Song erstellen</b>
-      <hr>
-      <p>Hier kannst du ganz einfach einen neuen Song erstellen</p>
-      <div class="arrow variant-filled-secondary" />
     </div>
 
     <!-- Tab-Navigation -->
-    <TabGroup>
-      <Tab bind:group={tabSet} name="vorschlaege" value={1} class={vorschlaegeSongs.length > 0 ? 'font-bold' : ''}>
+    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+      <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {vorschlaegeSongs.length > 0 ? 'font-bold' : ''}">
         <span>Vorschläge ({vorschlaegeSongs.length})</span>
-      </Tab>
+      </button>
 
-      <Tab bind:group={tabSet} name="songs" value={0}>
+      <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
         <span>Songs ({filteredSongs.length})</span>
-      </Tab>
+      </button>
+    </div>
+    <div>
 
-      <svelte:fragment slot="panel">
+      <div class="mt-4">
         {#if tabSet === 0}
           <!-- Tab 1: Songs -->
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-1 md:gap-4 mt-4">
-            <div class="flex items-center md:gap-2">
-              <div class="inline-flex items-center gap-2">
-                <button type="button" class="btn btn-sm {showRetired ? 'variant-filled-primary' : 'variant-ghost'}  w-fit border mt-4 mb-4" on:click={toggleShowRetired}>
-                  Gelöschte Songs anzeigen
-                </button>
-                <span
-                  class="inline-block align-super cursor-help"
-                  use:popup={{ event: 'click', target: 'showDelSongsInfo', placement: 'top' }}
-                >
-                  <InfoIcon class="w-4 h-4 text-primary-500" />
-                </span>
-              </div>
-              <div class="card p-4 variant-filled-secondary" data-popup="showDelSongsInfo">
-                <b>Gelöschte Songs anzeigen</b>
-                <hr>
-                <p>Wird ein Song als gelöscht markiert, wird er nicht wirklich gelöscht um auch vergangene Setlisten konsistent zu halten.</p>
-                <p>Standardmäßig sind diese Songs hier aber ausgeblendet. Mit diesem Schalter kannst du die Songs ein- oder ausblenden.</p>
-                <div class="arrow variant-filled-secondary" />
-              </div>
-            </div>
-          </div>
 
           {#if error}
             <div class="alert alert-danger">{error}</div>
@@ -676,6 +1011,8 @@ $: filteredSongs = songs
                   {rowData}
                   {columnDefs}
                   onRowClicked={handleRowClick}
+                  {onGridReady}
+                  {onFirstDataRendered}
                 />
             </div>
 
@@ -687,7 +1024,7 @@ $: filteredSongs = songs
                     <h3 class="h3">{song.title}</h3>
                     <button
                       class="btn btn-sm variant-ghost"
-                      on:click={() => expandedSongId = null}
+                      onclick={() => expandedSongId = null}
                     >
                       ✕
                     </button>
@@ -695,7 +1032,7 @@ $: filteredSongs = songs
 
                   {#if editSongId === song.id}
                     <!-- Bearbeiten-Modus -->
-                    <form class="space-y-3" on:submit|preventDefault={() => saveEdit(song)}>
+                    <form class="space-y-3" onsubmit={() => saveEdit(song)}>
                       {#each [...songFields, ...songFieldsDetails] as f}
                         <label class="block">
                           <span class="text-sm font-medium">{f.label}</span>
@@ -713,7 +1050,7 @@ $: filteredSongs = songs
                         <button
                           type="button"
                           class="btn btn-sm variant-ghost"
-                          on:click={cancelEdit}
+                          onclick={cancelEdit}
                         >
                           Abbrechen
                         </button>
@@ -732,7 +1069,7 @@ $: filteredSongs = songs
                       {#if canEdit()}
                         <button
                           class="btn variant-filled-primary btn-sm"
-                          on:click={() => startEdit(song)}
+                          onclick={() => startEdit(song)}
                         >
                           Bearbeiten
                         </button>
@@ -740,7 +1077,7 @@ $: filteredSongs = songs
                       {#if song.status !== 'retired' && canEdit()}
                         <button
                           class="btn variant-filled-error btn-sm"
-                          on:click={() => setSongToRetired(song.id, song.title, song.interpret)}
+                          onclick={() => setSongToRetired(song.id, song.title, song.interpret)}
                         >
                           Löschen
                         </button>
@@ -763,12 +1100,12 @@ $: filteredSongs = songs
               class="input w-full mb-3 bg-surface border-none focus:ring-primary text-surface-200"
               placeholder="Suche Songs..."
               bind:value={filterStringMobile}
-              on:input={mobileFilter} />
-            {#each filteredSongs as song (song.id)}
+              oninput={mobileFilter} />
+            {#each filteredSongsMobile as song (song.id)}
               <div class="card variant-filled-surface rounded-xl shadow-sm p-4 bg-surface-50">
                 <div class="flex justify-between items-start">
                   <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-200">{song.title}</h3>
-                  <button class="btn btn-sm variant-tonal" on:click={() => toggleExpand(song.id)}>
+                  <button class="btn btn-sm variant-tonal" onclick={() => toggleExpand(song.id)}>
                     {#if expandedSongId === song.id}
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M7 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -817,7 +1154,7 @@ $: filteredSongs = songs
               <button
                 type="button"
                 class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
-                on:click={toggleRules}
+                onclick={toggleRules}
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -885,26 +1222,26 @@ $: filteredSongs = songs
                   {#each vorschlaegeSongs as song (song.id)}
                     {@const userFeedbackType = getUserFeedback(song.feedbacks)}
                     <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
-                        on:click={() => toggleExpand(song.id)}>
-                        <td on:click={() => openSongDetailsModal(song)}>{song.title}</td>
-                        <td on:click={() => openSongDetailsModal(song)}>{song.interpret}</td>
+                        onclick={() => toggleExpand(song.id)}>
+                        <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
+                        <td onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
                        {#if user.musician}
                             <td>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'a' ? 'variant-filled-success' : 'variant-outline-success'}"
-                                    on:click={() => submitFeedback(song, 'a')}
+                                    onclick={() => submitFeedback(song, 'a')}
                                 >
                                     👍
                                 </button>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'na' ? 'variant-filled-error' : 'variant-outline-error'}"
-                                    on:click={() => submitFeedback(song, 'na')}
+                                    onclick={() => submitFeedback(song, 'na')}
                                 >
                                     👎
                                 </button>
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'o' ? 'variant-filled-warning' : 'variant-outline-warning'}"
-                                    on:click={() => submitFeedback(song, 'o')}
+                                    onclick={() => submitFeedback(song, 'o')}
                                 >
                                     🤷
                                 </button>
@@ -940,7 +1277,7 @@ $: filteredSongs = songs
                                 {#if stats.relative.a >= 50 && stats.absolute.sum >= 4}
                                     <button
                                         class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
-                                        on:click={() => acceptSong(song)}
+                                        onclick={() => acceptSong(song)}
                                     >
                                         ✓
                                     </button>
@@ -954,8 +1291,7 @@ $: filteredSongs = songs
             </div>
           {/if}
         {/if}
-      </svelte:fragment>
-    </TabGroup>
+      </div></div>
   </div>
 </div>
 

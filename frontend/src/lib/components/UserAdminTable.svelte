@@ -17,18 +17,17 @@
 -->
 
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount,  onDestroy, mount, unmount } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { createGrid, ModuleRegistry, AllCommunityModule, themeQuartz } from 'ag-grid-community';
   import { getUser, adminUpdateUser, adminGetAllUsers, logout as apiLogout} from '$lib/api.js';
   import { triggerSendPwResetToken } from '$lib/api_pw_reset.js';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
+  import ToggleCellRenderer from '$lib/components/ToggleCellRenderer.svelte';
 
-  // Toast Store initialisieren
-  const toastStore = getToastStore();
-  const { showError, showSuccess, showWarning } = createMessageHelpers(toastStore);
+
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
 
   if (!ModuleRegistry.__registeredModules) {
@@ -40,6 +39,39 @@
   let gridApi;
   let isDark = false;
   let error = '';
+
+  const makeToggleRenderer = (field) => {
+      return class {
+        init(params) {
+          this._wrapper = document.createElement('div');
+          this._wrapper.style.cssText = 'display:flex;align-items:center;height:100%;';
+          this._component = mount(ToggleCellRenderer, {
+            target: this._wrapper,
+            props: {
+              checked: params.value == 1,
+              onChange: async (newChecked) => {
+                const newValue = newChecked ? 1 : 0;
+                params.node.setDataValue(field, newValue);
+                try {
+                  await adminUpdateUser(null, { ...params.data, [field]: newValue });
+                  showSuccess('Gespeichert');
+                } catch (e) {
+                  showError('Konnte nicht gespeichert werden');
+                }
+              }
+            }
+          });
+        }
+
+        getGui() {
+          return this._wrapper;
+        }
+
+        destroy() {
+          if (this._component) unmount(this._component);
+        }
+      };
+    };
 
   const columnDefs = [
     {
@@ -80,29 +112,23 @@
       },
       filter: 'agTextColumnFilter'
     },
-    {
+  {
       field: 'musician',
       headerName: 'Ist Musiker?',
       headerTooltip: 'Gibt an, ob der Benutzer Musiker ist. Nur Musiker haben in Abstimmungen ein Stimmrecht.',
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: [1, 0],
-        labels: ['Ja', 'Nein']
-      },
-      filter: 'agTextColumnFilter'
+      editable: false,
+      filter: 'agTextColumnFilter',
+      cellRenderer: makeToggleRenderer('musician'),
+      minWidth: 130
     },
-     {
+    {
       field: 'is_singer',
       headerName: 'Ist Sänger?',
       headerTooltip: 'Gibt an, ob der Benutzer Sänger ist. Falls ja, taucht er als Option als Sänger für einen Song auf.',
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: [1, 0],
-        labels: ['Ja', 'Nein']
-      },
-      filter: 'agTextColumnFilter'
+      editable: false,
+      filter: 'agTextColumnFilter',
+      cellRenderer: makeToggleRenderer('is_singer'),
+      minWidth: 130
     },
     {
         field: 'password_reset',
@@ -136,7 +162,11 @@
 
     if (gridApi) {
       gridApi.updateGridOptions({
-        theme: getThemeConfig()
+        theme: getThemeConfig(),
+        columnDefs,
+        enableBrowserTooltips: true,
+        rowData: users,
+        rowHeight: 52,
       });
     }
   }
@@ -230,9 +260,10 @@
     }
   });
 
-  $: if (gridApi && users.length > 0) {
+  $effect(() => { if (gridApi && users.length > 0) {
     gridApi.setGridOption('rowData', users);
   }
+  });
 </script>
 
 <div bind:this={gridDiv} style="height: 500px; width: 100%;"></div>
@@ -274,5 +305,10 @@
   :global(.ag-input-field-input::placeholder) {
     color: rgb(var(--color-surface-500)) !important;
     opacity: 0.7 !important;
+  }
+
+  :global(.ag-cell [data-part="control"]) {
+    display: flex !important;
+    align-items: center !important;
   }
 </style>

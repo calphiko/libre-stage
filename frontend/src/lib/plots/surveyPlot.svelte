@@ -22,32 +22,26 @@
     import { BarChart, PieChart } from 'echarts/charts';
     import { GridComponent, TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
     import { CanvasRenderer } from 'echarts/renderers';
+    import { isDarkMode } from '$lib/themeStore';
 
-    export let survey;
-    export let users;
+  let { survey, users } = $props();
 
     echarts.use([BarChart, PieChart, GridComponent, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
     let barChartRef: HTMLDivElement;
     let donutChartRef: HTMLDivElement;
-    let isDarkMode = false;
     let barChart: echarts.ECharts | null = null;
     let donutChart: echarts.ECharts | null = null;
 
-    // Prüfe Dark Mode aus html-Element
-    function checkDarkMode() {
-        isDarkMode = document.documentElement.classList.contains('dark');
-    }
-
     // Farben basierend auf Theme
-    $: chartTheme = {
-        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-        textColor: isDarkMode ? '#e2e8f0' : '#1e293b' ,
-        axisLineColor: isDarkMode ? '#475569' : '#d1d5db',
-        barColor: isDarkMode ? '#60a5fa' : '#3b82f6',
-        successColor: isDarkMode ? '#34d399' : '#10b981',
-        errorColor: isDarkMode ? '#f87171' : '#ef4444'
-    };
+    let chartTheme = $derived({
+        backgroundColor: $isDarkMode ? '#1e293b' : '#ffffff',
+        textColor: $isDarkMode ? '#e2e8f0' : '#1e293b' ,
+        axisLineColor: $isDarkMode ? '#475569' : '#d1d5db',
+        barColor: $isDarkMode ? '#60a5fa' : '#3b82f6',
+        successColor: $isDarkMode ? '#34d399' : '#10b981',
+        errorColor: $isDarkMode ? '#f87171' : '#ef4444'
+    });
 
     function generatePlotOptionsFromSurvey() {
         const fieldData = survey.fields?.map((field: any) => ({
@@ -67,7 +61,7 @@
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
                 formatter: '{b}: {c} Stimme(n)',
-                backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                backgroundColor: $isDarkMode ? '#334155' : '#ffffff',
                 borderColor: chartTheme.axisLineColor,
                 textStyle: {
                     color: chartTheme.textColor
@@ -202,8 +196,6 @@
     }
 
     onMount(() => {
-        checkDarkMode();
-
         barChart = echarts.init(barChartRef);
         donutChart = echarts.init(donutChartRef);
 
@@ -211,37 +203,29 @@
         barChart.setOption(generatePlotOptionsFromSurvey());
         donutChart.setOption(generateDonutChartOptions());
 
-        // Observer für Theme-Änderungen
-        const observer = new MutationObserver(() => {
-            checkDarkMode();
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
         return () => {
-            observer.disconnect();
             barChart?.dispose();
             donutChart?.dispose();
         };
     });
 
     // Reaktive Updates bei Survey-Änderungen
-    $: if (barChart && survey) {
+    $effect(() => { if (barChart && survey) {
         barChart.setOption(generatePlotOptionsFromSurvey());
     }
+    });
 
-    $: if (donutChart && survey && users) {
+    $effect(() => { if (donutChart && survey && users) {
         donutChart.setOption(generateDonutChartOptions());
     }
+    });
 
     // Reaktives Update bei Theme-Änderung
-    $: if (barChart && donutChart && isDarkMode !== undefined) {
+    $effect(() => { if (barChart && donutChart && $isDarkMode !== undefined) {
         barChart.setOption(generatePlotOptionsFromSurvey());
         donutChart.setOption(generateDonutChartOptions());
     }
+    });
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">

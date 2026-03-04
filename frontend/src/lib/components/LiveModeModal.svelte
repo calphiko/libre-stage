@@ -17,49 +17,47 @@
 -->
 
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  import { onMount, onDestroy } from 'svelte';
+  import { modalState } from '$lib/modalState.js';
+import { onMount, onDestroy } from 'svelte';
 	import { getGigLiveMode, updateSongLiveMode, insertSongAfter, getSongs } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { getToastStore } from '@skeletonlabs/skeleton';
+  
+  const { showError, showSuccess } = createMessageHelpers();
 
-  const modalStore = getModalStore();
-  const { showError, showSuccess } = createMessageHelpers(getToastStore());
+    let { parent = {}, meta = {} } = $props();
 
-  export let parent;
+  const { gigId } = meta;
 
-  const { gigId } = $modalStore[0].meta;
-
-  let gig = null;
-  let allSongs = [];
-  let currentIndex = 0;
-  let loading = true;
-  let showHelp = false;
+  let gig = $state(null);
+  let allSongs = $state([]);
+  let currentIndex = $state(0);
+  let loading = $state(true);
+  let showHelp = $state(false);
 
   // Song einfügen
-  let availableSongs = [];
-  let searchTerm = '';
-  let selectedSongToInsert = null;
-  let showInsertSection = false;
+  let availableSongs = $state([]);
+  let searchTerm = $state('');
+  let selectedSongToInsert = $state(null);
+  let showInsertSection = $state(false);
 
   // Touch/Swipe handling
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchEndX = 0;
-  let isSwiping = false;
+  let touchStartX = $state(0);
+  let touchStartY = $state(0);
+  let touchEndX = $state(0);
+  let isSwiping = $state(false);
 
-  $: currentSong = allSongs[currentIndex];
-  $: previousSong = currentIndex > 0 ? allSongs[currentIndex - 1] : null;
-  $: nextSong = currentIndex < allSongs.length - 1 ? allSongs[currentIndex + 1] : null;
-  $: isFirstSong = currentIndex === 0;
-  $: isLastSong = currentIndex === allSongs.length - 1;
-  $: isFinished = currentIndex >= allSongs.length;
-  $: progress = allSongs.length > 0 ? ((currentIndex + 1) / allSongs.length) * 100 : 0;
-  $: filteredSongs = availableSongs.filter(song =>
+  let currentSong = $derived(allSongs[currentIndex]);
+  let previousSong = $derived(currentIndex > 0 ? allSongs[currentIndex - 1] : null);
+  let nextSong = $derived(currentIndex < allSongs.length - 1 ? allSongs[currentIndex + 1] : null);
+  let isFirstSong = $derived(currentIndex === 0);
+  let isLastSong = $derived(currentIndex === allSongs.length - 1);
+  let isFinished = $derived(currentIndex >= allSongs.length);
+  let progress = $derived(allSongs.length > 0 ? ((currentIndex + 1) / allSongs.length) * 100 : 0);
+  let filteredSongs = $derived(availableSongs.filter(song =>
     searchTerm === '' ||
     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     song.interpret.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 10); // Maximal 10 Ergebnisse
+  ).slice(0, 10)); // Maximal 10 Ergebnisse
 
   onMount(async () => {
     await loadGigData();
@@ -322,10 +320,10 @@
 </script>
 
 <div
-  class="card p-0 w-full max-w-5xl h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
-  on:touchstart={handleTouchStart}
-  on:touchmove={handleTouchMove}
-  on:touchend={handleTouchEnd}
+  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
+  ontouchstart={handleTouchStart}
+  ontouchmove={handleTouchMove}
+  ontouchend={handleTouchEnd}
 >
   <!-- Header -->
   <header class="flex justify-between items-center p-3 md:p-4 border-b border-surface-300 no-swipe">
@@ -340,7 +338,7 @@
     <div class="flex items-center gap-2">
       <button
         class="btn-icon btn-icon-sm variant-ghost"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +347,7 @@
       </button>
       <button
         class="btn-icon btn-icon-sm variant-ghost"
-        on:click={parent.onClose}
+        onclick={() => parent?.close()}
         aria-label="Schließen"
       >
         ✕
@@ -478,13 +476,13 @@
           <div class="flex flex-wrap justify-center gap-3 no-swipe">
             <button
               class="btn variant-filled-primary"
-              on:click={() => currentIndex = 0}
+              onclick={() => currentIndex = 0}
             >
               🔄 Zurück zum Anfang
             </button>
             <button
               class="btn variant-filled-surface"
-              on:click={parent.onClose}
+              onclick={parent.onClose}
             >
               Schließen
             </button>
@@ -497,7 +495,7 @@
         <!-- Previous Button -->
         <button
           class="btn variant-filled-primary flex md:flex flex-shrink-0 w-8 md:w-auto h-32 md:h-auto px-1 md:px-4 no-swipe"
-          on:click={goPrevious}
+          onclick={goPrevious}
           disabled={isFirstSong}
           aria-label="Vorheriger Song"
         >
@@ -585,7 +583,7 @@
               <!-- Überspringen Button -->
               <button
                 class="btn btn-sm md:btn-md {currentSong.uebersprungen ? 'variant-filled-warning' : 'variant-soft-surface'}"
-                on:click={toggleUebersprungen}
+                onclick={toggleUebersprungen}
               >
                 {currentSong.uebersprungen ? '⏭️ Übersprungen' : '⏭️ Überspringen'}
               </button>
@@ -601,7 +599,7 @@
                   ] as { rating, filled, empty }}
                     <button
                       class="btn-icon btn-icon-sm md:btn-icon {currentSong.feedback === rating ? 'variant-filled-primary' : 'variant-soft-surface'} text-xl md:text-2xl"
-                      on:click={() => setFeedback(rating)}
+                      onclick={() => setFeedback(rating)}
                       aria-label="{rating} Sterne"
                     >
                       {currentSong.feedback === rating ? filled : empty}
@@ -615,7 +613,7 @@
             <div class="border-t border-surface-300 dark:border-surface-700 pt-3 mt-3 no-swipe">
               <button
                 class="btn btn-sm variant-soft-secondary w-full mb-2"
-                on:click={() => showInsertSection = !showInsertSection}
+                onclick={() => showInsertSection = !showInsertSection}
               >
                 {showInsertSection ? '✖️ Abbrechen' : '➕ Song einfügen'}
               </button>
@@ -637,7 +635,7 @@
                       {#each filteredSongs as song}
                         <button
                           class="w-full text-left p-2 rounded-lg transition-colors {selectedSongToInsert?.id === song.id ? 'bg-primary-500 text-white' : 'bg-surface-200 dark:bg-surface-700 hover:bg-surface-300 dark:hover:bg-surface-600'}"
-                          on:click={() => selectedSongToInsert = song}
+                          onclick={() => selectedSongToInsert = song}
                         >
                           <div class="font-semibold text-sm">{song.title}</div>
                           <div class="text-xs opacity-75">{song.interpret}</div>
@@ -653,7 +651,7 @@
                   {#if selectedSongToInsert}
                     <button
                       class="btn btn-sm variant-filled-primary w-full"
-                      on:click={insertSong}
+                      onclick={insertSong}
                     >
                       ➕ "{selectedSongToInsert.title}" einfügen
                     </button>
@@ -672,7 +670,7 @@
           {#if nextSong}
             <button
               class="w-full text-left mt-2 group"
-              on:click={goNext}
+              onclick={goNext}
             >
               <div class="card variant-ghost-surface p-2 hover:variant-soft-surface transition-all relative">
                 <!-- Timeline-Punkt -->
@@ -703,7 +701,7 @@
         <!-- Next Button -->
         <button
           class="btn variant-filled-primary flex md:flex flex-shrink-0 w-8 md:w-auto h-32 md:h-auto px-1 md:px-4 no-swipe"
-          on:click={goNext}
+          onclick={goNext}
           disabled={isLastSong}
           aria-label="Nächster Song"
         >

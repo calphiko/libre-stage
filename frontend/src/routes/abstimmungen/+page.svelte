@@ -23,44 +23,36 @@
   import { getUser, getSurveys, getSurveyDetails, getUserList, updateSurveyFeedback, createSurvey, deleteSurvey, archiveSurvey, logout as apiLogout} from '$lib/api.js';
   import { shortFormatGermanDate } from '$lib/common.js';
 
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { TabGroup, Tab } from '@skeletonlabs/skeleton';
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers(getToastStore());
+  const { showError, showSuccess, showWarning } = createMessageHelpers();
 
-
-  import { Accordion,
-            AccordionItem,
-            Autocomplete,
-            ProgressRadial
-          } from '@skeletonlabs/skeleton';
 
   import TerminfindungView from './TerminfindungView.svelte';
   import MeinungsumfrageView from './MeinungsumfrageView.svelte';
   import AuftrittsanfrageView from './AuftrittsanfrageView.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
-  let user = null;
-  let error = '';
-  let rulesVisible = false;
-  let showHelp = false;
-  let tabSet = 0; // Tab-Steuerung
-  let closedSurveysFilter = ''; // Filter für abgeschlossene Umfragen
+  let user = $state(null);
+  let error = $state('');
+  let rulesVisible = $state(false);
+  let showHelp = $state(false);
+  let tabSet = $state(0); // Tab-Steuerung
+  let closedSurveysFilter = $state(''); // Filter für abgeschlossene Umfragen
 
-  let surveys = [];
-  export let users = [];
+  let surveys = $state([]);
+  let { users = [] } = $props();
 
-  let openValue = [];
-  let loading = {};
-  let details = {};
+  let openValue = $state([]);
+    let loading = $state({});
+    let details = $state({});
 
-  $: userById = new Map(users.map(u => [u.id, u]));
-  $: activeSurveys = surveys.filter(s => !s.closed);
-  $: closedSurveys = surveys.filter(s => s.closed);
+  let userById = $derived(new Map(users.map(u => [u.id, u])));
+  let activeSurveys = $derived(surveys.filter(s => !s.closed));
+  let closedSurveys = $derived(surveys.filter(s => s.closed));
 
   // Gefilterte abgeschlossene Umfragen
-  $: filteredClosedSurveys = closedSurveys.filter(survey => {
+  let filteredClosedSurveys = $derived(closedSurveys.filter(survey => {
     if (!closedSurveysFilter.trim()) return true;
 
     const searchLower = closedSurveysFilter.toLowerCase();
@@ -68,15 +60,12 @@
     const creatorMatch = userById.get(survey.user_created)?.user_name?.toLowerCase().includes(searchLower);
 
     return titleMatch || creatorMatch;
-  });
+  }));
 
-  import {
-    getModalStore
-  } from '@skeletonlabs/skeleton';
+  import { modalState } from '$lib/modalState.js';
+import NewPollForm from './NewPollForm.svelte';
 
-  import NewPollForm from './NewPollForm.svelte';
-
-  const modalStore = getModalStore();
+  
 
 
   onMount(async () => {
@@ -111,14 +100,13 @@
   }
 
   function openNewModal() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: NewPollForm },
+    modalState.trigger({
+      component: NewPollForm,
       title: 'Neue Abstimmung erstellen',
       response: (r) => {
         if (r) addSurvey(r);
       },
-      close: modalStore.close
+      close: modalState.close
     });
   }
 
@@ -143,26 +131,27 @@
     }
   }
 
-  async function handleItemToggle(event, surveyId) {
-    const { open } = event.detail; // v2: event.detail.open = true/false[web:26]
-
-    if (!open) return; // nur beim Öffnen laden
-
-    // Scroll zum Accordion-Header
-    if (open) {
-      setTimeout(() => {
-        // Finde das Accordion-Element über die data-survey-id
-        const accordionElement = document.querySelector(`[data-survey-id="${surveyId}"]`);
-        if (accordionElement) {
-          accordionElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest'
-          });
-        }
-      }, 150); // Etwas längere Verzögerung für sichere Öffnung
+  async function handleItemToggle(surveyId) {
+    // Toggle open/close
+    if (openValue.includes(surveyId)) {
+      openValue = openValue.filter(id => id !== surveyId);
+      return;
     }
+    openValue = [...openValue, surveyId];
 
+    // Scroll zum Element
+    setTimeout(() => {
+      const accordionElement = document.querySelector(`[data-survey-id="${surveyId}"]`);
+      if (accordionElement) {
+        accordionElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 150);
+
+    // Lade Details wenn noch nicht vorhanden
     if (!details[surveyId] && !loading[surveyId]) {
       loading = { ...loading, [surveyId]: true };
       const d = await getSurveyD(surveyId);
@@ -172,9 +161,8 @@
   }
 
   async function removeSurvey(surveyId, surveyName) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Abstimmung löschen',
         message: `Möchten Sie die Abstimmung "${surveyName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
@@ -197,9 +185,8 @@
     });
   }
   async function closeSurvey(surveyId, surveyName) {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: ConfirmModal },
+    modalState.trigger({
+      component: ConfirmModal,
       meta: {
         title: 'Abstimmung archivieren',
         message: `Möchten Sie die Abstimmung "${surveyName}" wirklich archivieren? Archivierte Abstimmungen können nicht mehr bearbeitet werden.`,
@@ -235,7 +222,7 @@
       <h2 class="h2 text-on-surface">Abstimmungen</h2>
       <button
         class="btn variant-ghost-surface btn-sm"
-        on:click={() => showHelp = !showHelp}
+        onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,7 +303,7 @@
       </div>
     {/if}
 
-    <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" on:click={openNewModal}>
+    <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewModal}>
           Neue Abstimmung
     </button>
 
@@ -325,7 +312,7 @@
       <button
         type="button"
         class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
-        on:click={toggleRules}
+        onclick={toggleRules}
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -379,86 +366,90 @@
       {/if}
     </div>
 
-    <TabGroup>
-        <Tab bind:group={tabSet} name="active" value={0} class={activeSurveys.length > 0 ? 'font-bold' : ''}>
+    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
+        <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {activeSurveys.length > 0 ? 'font-bold' : ''}">
           <span>Laufende Umfragen ({activeSurveys.length})</span>
-        </Tab>
-        <Tab bind:group={tabSet} name="closed" value={1}>
+        </button>
+        <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
           <span>Abgeschlossene Umfragen ({closedSurveys.length})</span>
-        </Tab>
+        </button>
+    </div>
 
-      <svelte:fragment slot="panel">
+    <div class="mt-4">
         {#if tabSet === 0}
             <!-- Laufende Umfragen -->
             {#if activeSurveys.length === 0}
                 <p class="text-on-surface-variant italic mt-4">Keine laufenden Umfragen</p>
               {:else}
-                <Accordion class="space-y-3 mt-4">
+                <div class="space-y-3 mt-4">
                   {#each activeSurveys as survey (survey.id)}
-                    <AccordionItem on:toggle={(event) => handleItemToggle(event, survey.id)} class="survey-item" data-survey-id={survey.id}>
-                      <svelte:fragment slot="summary">
-                        <div class="flex justify-between items-center w-full p-2">
-                          <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
-                          <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
+                    <div class="survey-item" data-survey-id={survey.id}>
+                      <button
+                        type="button"
+                        class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+                        onclick={() => handleItemToggle(survey.id)}
+                      >
+                        <div class="flex justify-between items-center w-full">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="font-medium text-on-surface">{survey.rf_survey}</span>
+                          </div>
+                          <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
                             {userById.get(survey.user_created)?.user_name ?? survey.user_created}
                             {shortFormatGermanDate(survey.release_date)}
-                            {#if survey.user_created === user?.id }
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-warning btn-sm py-0"
-                                on:click|stopPropagation={() => {
-                                  closeSurvey(survey.id, survey.rf_survey);
-                                }}>
-                                Archivieren
-                              </button>
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                on:click|stopPropagation={() => {
-                                  removeSurvey(survey.id, survey.rf_survey);
-                                }}
-                                >
-                                ✕
-                              </button>
-                            {/if}
                           </span>
                         </div>
-                      </svelte:fragment>
+                      </button>
 
-                      <svelte:fragment slot="content">
-                        {#if loading[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
-                            <ProgressRadial
-                              stroke={80}
-                              meter="stroke-secondary-500"
-                              track="stroke-secondary-500/30"
-                              strokeLinecap="round"
-                              value={undefined}
-                            />
-                          </div>
-                        {:else if details[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant">
-                            {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                              {#if user}
-                                <TerminfindungView
-                                  survey={details[survey.id]}
-                                  users={users}
-                                  {user}
-                                />
+                      {#if survey.user_created === user?.id}
+                        <div class="flex gap-2 px-2 pb-2">
+                          <button
+                            type="button"
+                            class="btn variant-filled-warning btn-sm py-0"
+                            onclick={() => closeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            Archivieren
+                          </button>
+                          <button
+                            type="button"
+                            class="btn variant-filled-error btn-sm py-0"
+                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      {/if}
+
+                      {#if openValue.includes(survey.id)}
+                        <div>
+                          {#if loading[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
+                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
+                            </div>
+                          {:else if details[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant">
+                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
+                                {#if user}
+                                  <TerminfindungView
+                                    survey={details[survey.id]}
+                                    users={users}
+                                    {user}
+                                  />
+                                {:else}
+                                  <div>Benutzerdaten werden geladen…</div>
+                                {/if}
+                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
+                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
                               {:else}
-                                <div>Benutzerdaten werden geladen…</div>
+                                <div>Unbekannter Survey-Typ.</div>
                               {/if}
-                            {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                              <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                            {:else}
-                              <div>Unbekannter Survey-Typ.</div>
-                            {/if}
-                          </div>
-                        {/if}
-                      </svelte:fragment>
-                    </AccordionItem>
+                            </div>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
                   {/each}
-                </Accordion>
+                </div>
               {/if}
 
         {:else if tabSet === 1}
@@ -468,19 +459,16 @@
               {:else}
                 <!-- Suchfeld für abgeschlossene Umfragen -->
                 <div class="mt-4 mb-3">
-                  <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                    <div class="input-group-shim">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                      </svg>
-                    </div>
+                  <div class="flex items-center gap-2 border border-outline-variant rounded-lg px-3 py-2 bg-surface-1">
+                    <svg class="w-5 h-5 text-on-surface-variant" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
                     <input
                       type="search"
                       bind:value={closedSurveysFilter}
                       placeholder="Suche nach Titel oder Ersteller..."
-                      class="input"
+                      class="input border-none bg-transparent flex-1 p-0 focus:ring-0"
                     />
-
                   </div>
                   {#if closedSurveysFilter && filteredClosedSurveys.length !== closedSurveys.length}
                     <p class="text-sm text-on-surface-variant mt-2">
@@ -492,70 +480,73 @@
                 {#if filteredClosedSurveys.length === 0}
                   <p class="text-on-surface-variant italic mt-4">Keine Umfragen gefunden</p>
                 {:else}
-                <Accordion class="space-y-3 mt-4">
+                <div class="space-y-3 mt-4">
                   {#each filteredClosedSurveys as survey (survey.id)}
-                    <AccordionItem on:toggle={(event) => handleItemToggle(event, survey.id)} class="survey-item survey-item-closed" data-survey-id={survey.id}>
-                      <svelte:fragment slot="summary">
-                        <div class="flex justify-between items-center w-full p-2">
-                          <span class="font-medium text-on-surface w-60/100">{survey.rf_survey}</span>
-                          <span class="text-sm text-on-surface-variant w-40/100 hidden md:block">
+                    <div class="survey-item survey-item-closed" data-survey-id={survey.id}>
+                      <button
+                        type="button"
+                        class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+                        onclick={() => handleItemToggle(survey.id)}
+                      >
+                        <div class="flex justify-between items-center w-full">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="font-medium text-on-surface">{survey.rf_survey}</span>
+                          </div>
+                          <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
                             {userById.get(survey.user_created)?.user_name ?? survey.user_created}
                             {shortFormatGermanDate(survey.release_date)}
                             <span class="badge variant-filled py-1">geschlossen</span>
-                            {#if survey.user_created === user?.id }
-                              <button
-                                type="button"
-                                class="md:ml-2 btn variant-filled-error btn-sm py-0"
-                                on:click|stopPropagation={() => {
-                                  removeSurvey(survey.id, survey.rf_survey);
-                                }}
-                                >
-                                ✕
-                              </button>
-                            {/if}
                           </span>
                         </div>
-                      </svelte:fragment>
+                      </button>
 
-                      <svelte:fragment slot="content">
-                        {#if loading[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant flex justify-between items-center">
-                            <ProgressRadial
-                              stroke={80}
-                              meter="stroke-secondary-500"
-                              track="stroke-secondary-500/30"
-                              strokeLinecap="round"
-                              value={undefined}
-                            />
-                          </div>
-                        {:else if details[survey.id]}
-                          <div class="md:p-4 border-t border-outline-variant">
-                            {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                              {#if user}
-                                <TerminfindungView
-                                  survey={details[survey.id]}
-                                  users={users}
-                                  {user}
-                                />
+                      {#if survey.user_created === user?.id}
+                        <div class="flex gap-2 px-2 pb-2">
+                          <button
+                            type="button"
+                            class="btn variant-filled-error btn-sm py-0"
+                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      {/if}
+
+                      {#if openValue.includes(survey.id)}
+                        <div>
+                          {#if loading[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
+                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
+                            </div>
+                          {:else if details[survey.id]}
+                            <div class="md:p-4 border-t border-outline-variant">
+                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
+                                {#if user}
+                                  <TerminfindungView
+                                    survey={details[survey.id]}
+                                    users={users}
+                                    {user}
+                                  />
+                                {:else}
+                                  <div>Benutzerdaten werden geladen…</div>
+                                {/if}
+                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
+                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
                               {:else}
-                                <div>Benutzerdaten werden geladen…</div>
+                                <div>Unbekannter Survey-Typ.</div>
                               {/if}
-                            {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                              <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                            {:else}
-                              <div>Unbekannter Survey-Typ.</div>
-                            {/if}
-                          </div>
-                        {/if}
-                      </svelte:fragment>
-                    </AccordionItem>
+                            </div>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
                   {/each}
-                </Accordion>
+                </div>
                 {/if}
               {/if}
         {/if}
-      </svelte:fragment>
-    </TabGroup>
+    </div>
 
 
     {#if error}

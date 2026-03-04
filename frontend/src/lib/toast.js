@@ -1,38 +1,29 @@
+// src/lib/toast.js
+// Simple reactive toast state for Skeleton 4 / Svelte 5
+
 import { writable } from 'svelte/store';
 
-const toastStore = writable([]);
+const { subscribe, update } = writable([]);
 
-export function showError(message, autohide = 5000) {
+export const toastState = {
+  subscribe,
+  add(toast) {
     const id = Date.now() + Math.random();
-    toastStore.update(queue => [...queue, {
-        id,
-        message,
-        background: 'variant-filled-error',
-        autohide: true,
-        timeout: autohide
-    }]);
-}
+    const entry = { id, ...toast };
+    update(queue => [...queue, entry]);
 
-export function showSuccess(message, autohide = 3000) {
-    const id = Date.now() + Math.random();
-    toastStore.update(queue => [...queue, {
-        id,
-        message,
-        background: 'variant-filled-success',
-        autohide: true,
-        timeout: autohide
-    }]);
-}
+    if (toast.autohide !== false) {
+      setTimeout(() => {
+        toastState.remove(id);
+      }, toast.timeout ?? 3000);
+    }
 
-export function showWarning(message, autohide = 4000) {
-    const id = Date.now() + Math.random();
-    toastStore.update(queue => [...queue, {
-        id,
-        message,
-        background: 'variant-filled-warning',
-        autohide: true,
-        timeout: autohide
-    }]);
-}
-
-export { toastStore };
+    return id;
+  },
+  remove(id) {
+    update(queue => queue.filter(t => t.id !== id));
+  },
+  clear() {
+    update(() => []);
+  }
+};

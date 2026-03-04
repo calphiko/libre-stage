@@ -17,71 +17,47 @@
 -->
 
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
+  import { modalState } from '$lib/modalState.js';
 
-  // Props vom Modal
-  export let parent;
+    let { parent, meta = {} } = $props();
 
-  const modalStore = getModalStore();
-
-  // Default-Werte
-  let title = 'Bestätigung erforderlich';
-  let message = 'Sind Sie sicher, dass Sie fortfahren möchten?';
-  let confirmText = 'Bestätigen';
-  let cancelText = 'Abbrechen';
-  let confirmButtonClass = 'btn variant-filled-error';
-  let cancelButtonClass = 'btn variant-outline-secondary';
-
-  // Überschreibe mit meta-Daten, falls vorhanden
-  if ($modalStore[0]?.meta) {
-    title = $modalStore[0].meta.title ?? title;
-    message = $modalStore[0].meta.message ?? message;
-    confirmText = $modalStore[0].meta.confirmText ?? confirmText;
-    cancelText = $modalStore[0].meta.cancelText ?? cancelText;
-    confirmButtonClass = $modalStore[0].meta.confirmButtonClass ?? confirmButtonClass;
-    cancelButtonClass = $modalStore[0].meta.cancelButtonClass ?? cancelButtonClass;
-  }
+  let title = $state(meta.title ?? 'Bestätigung erforderlich');
+  let message = $state(meta.message ?? 'Sind Sie sicher, dass Sie fortfahren möchten?');
+  let confirmText = $state(meta.confirmText ?? 'Bestätigen');
+  let cancelText = $state(meta.cancelText ?? 'Abbrechen');
 
   function confirm() {
-    if ($modalStore[0].response) {
-      $modalStore[0].response(true);
-    }
-    modalStore.close();
+    modalState.close(true);
   }
 
   function cancel() {
-    if ($modalStore[0].response) {
-      $modalStore[0].response(false);
-    }
-    modalStore.close();
+    modalState.close(false);
   }
 </script>
 
-<div class="card p-6 space-y-4 max-w-lg w-full">
+<div class="bg-surface-50 dark:bg-surface-800 rounded-xl p-6 space-y-4 max-w-lg w-full shadow-xl">
   <header>
-    <h3 class="h3 font-semibold text-on-surface">{title}</h3>
+    <h3 class="text-xl font-semibold">{title}</h3>
   </header>
 
-  <div class="text-on-surface-variant">
+  <div class="text-surface-600 dark:text-surface-300">
     <p>{message}</p>
   </div>
 
   <footer class="flex justify-end gap-3 mt-6">
     <button
       type="button"
-      class={cancelButtonClass}
-      on:click={cancel}
+      class="px-4 py-2 rounded-lg border border-surface-300 dark:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700"
+      onclick={cancel}
     >
       {cancelText}
     </button>
     <button
       type="button"
-      class={confirmButtonClass}
-      on:click={confirm}
+      class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+      onclick={confirm}
     >
       {confirmText}
     </button>
   </footer>
 </div>
-
-
