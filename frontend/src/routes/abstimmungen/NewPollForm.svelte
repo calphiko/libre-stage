@@ -18,7 +18,7 @@
 
 <script>
   import { modalState } from '$lib/modalState.js';
-import {formatGermanDateTime} from '$lib/common.js';
+  import { formatGermanDateTime } from '$lib/common.js';
 
   // Props vom Modal
   let { parent } = $props();
@@ -259,7 +259,7 @@ import {formatGermanDateTime} from '$lib/common.js';
                       <span>Von:</span>
                       <input
                         type="date"
-                        class="input {errFrom ? 'input-error variant-form-material-error' : ''}"
+                        class="input {errFrom ? 'input-error border-error-500' : ''}"
                         bind:value={fromDate}
                         min={todayStr}
                       />
@@ -273,7 +273,7 @@ import {formatGermanDateTime} from '$lib/common.js';
                       <span>Bis:</span>
                       <input
                         type="date"
-                        class="input {errTo ? 'input-error variant-form-material-error' : ''}"
+                        class="input {errTo ? 'input-error border-error-500' : ''}"
                         bind:value={toDate}
                         min={fromDate || todayStr}
                         disabled={!fromDate || !!errFrom}
@@ -300,15 +300,18 @@ import {formatGermanDateTime} from '$lib/common.js';
                       </div>
 
                       <div class="flex flex-wrap gap-2">
-                        {#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as day}
-                            <SlideToggle
-                                name={day}
-                                bind:checked={weekdays[day]}
-                                active="bg-primary-500"
-                                size="sm"
-                            >
-                                {day.charAt(0).toUpperCase() + day.slice(1, 2)}
-                            </SlideToggle>
+                        {#each [['monday','Mo'],['tuesday','Di'],['wednesday','Mi'],['thursday','Do'],['friday','Fr'],['saturday','Sa'],['sunday','So']] as [day, label]}
+                            <label class="flex items-center gap-1.5 cursor-pointer select-none px-3 py-1.5 rounded-full border transition-colors
+                                {weekdays[day]
+                                    ? 'bg-primary-500 border-primary-500 text-white'
+                                    : 'bg-surface-200 dark:bg-surface-700 border-surface-400 dark:border-surface-500 text-surface-700 dark:text-surface-200'}">
+                                <input
+                                    type="checkbox"
+                                    class="sr-only"
+                                    bind:checked={weekdays[day]}
+                                />
+                                <span class="text-sm font-medium">{label}</span>
+                            </label>
                         {/each}
                       </div>
                   </div>
