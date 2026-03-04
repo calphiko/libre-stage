@@ -43,7 +43,7 @@ import { getGigFieldsDetails, getKindOfGigOptions } from '$lib/songFields.js';
 </script>
 
 
-<div class="card p-6 space-y-4 max-w-4xl w-full max-h-[90vh] flex flex-col">
+<div class="card p-6 space-y-4 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col">
     <header class="flex justify-between items-center flex-shrink-0">
         <h2 class="h5 mb-3">Neuer Gig</h2>
     </header>
@@ -58,7 +58,7 @@ import { getGigFieldsDetails, getKindOfGigOptions } from '$lib/songFields.js';
             </label>
             {#if gigField.type == 'option' && Array.isArray(gigField.options)}
               <select
-                class="input flex-grow-1"
+                class="input flex-grow-1 select"
                 bind:value={gig[gigField.key]}
                 required={gigField.required}
               >
