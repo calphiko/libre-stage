@@ -4,6 +4,7 @@
 
 // Statische Felder ohne Options – unverändert nutzbar
 export const songFields = [
+  { key: 'id',      label: 'ID'},
   { key: 'title',     label: 'Titel' },
   { key: 'interpret', label: 'Interpret' },
   { key: 'genre',     label: 'Genre' },
