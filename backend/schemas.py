@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pydantic import BaseModel, Field, field_validator, computed_field, model_validator, EmailStr, HttpUrl
+from pydantic import BaseModel, Field, field_validator, computed_field, model_validator, EmailStr
 from typing import Optional, Union, List
 from enum import Enum
 from datetime import time, date, datetime
@@ -507,6 +507,64 @@ class SongStatistics(BaseModel):
 
     # Häufige Set-Begleiter
     companion_songs: List[CompanionSong] = Field(default_factory=list)
+
+
+class GigOverviewEntry(BaseModel):
+    gig_id: int
+    gig_name: str
+    gig_date: str
+    song_count: int
+    skipped_count: int
+    inserted_count: int
+    feedback_avg: Optional[float] = None
+
+class TopSongEntry(BaseModel):
+    song_id: int
+    title: str
+    interpret: str
+    count: int  # Wie oft in Setlisten dieser Saison
+
+class SeasonStatistics(BaseModel):
+    jahr: Optional[int] = None
+    gig_count: int = 0
+    total_songs: int = 0          # Gesamtzahl Song-Einträge in allen Sets
+    unique_songs: int = 0         # Anzahl unique Songs
+    skipped_count: int = 0
+    inserted_count: int = 0
+    feedback_count: int = 0
+    feedback_avg: Optional[float] = None
+    feedback_distribution: dict = Field(default_factory=dict)  # {1: x, 2: y, 3: z}
+    genre_distribution: dict = Field(default_factory=dict)  # {genre: count}
+    top_songs: List[TopSongEntry] = Field(default_factory=list)
+    gigs_overview: List[GigOverviewEntry] = Field(default_factory=list)
+
+
+class GigStatsSongEntry(BaseModel):
+    song_id: int
+    title: str
+    interpret: str
+    position: int
+    feedback: Optional[int] = None
+    uebersprungen: Optional[bool] = None
+    eingeschoben: Optional[bool] = None
+
+class GigStatsSetEntry(BaseModel):
+    set_name: str
+    feedback_avg: Optional[float] = None
+    songs: List[GigStatsSongEntry] = Field(default_factory=list)
+
+class GigStatistics(BaseModel):
+    gig_id: int
+    gig_name: str
+    gig_date: str
+    song_count: int = 0
+    skipped_count: int = 0
+    inserted_count: int = 0
+    feedback_count: int = 0
+    feedback_avg: Optional[float] = None
+    feedback_distribution: dict = Field(default_factory=dict)  # {1: x, 2: y, 3: z}
+    genre_distribution: dict = Field(default_factory=dict)  # {genre: count}
+    sets: List[GigStatsSetEntry] = Field(default_factory=list)
 
 
 class RehListElem(BaseModel):

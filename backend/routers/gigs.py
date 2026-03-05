@@ -72,6 +72,105 @@ def list_gigs(
         query = query.filter(models.Gig.datum.startswith(str(jahr)))
     return query.all()
 
+
+@router.get("/statistics", response_model=schemas.SeasonStatistics)
+def get_season_statistics(
+    jahr: int = Query(None, description="Jahr für die Saisonstatistik"),
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    """Gibt aggregierte Statistiken für alle Gigs eines Jahres zurück."""
+    query = db.query(models.Gig).order_by(models.Gig.datum.asc())
+    if jahr is not None:
+        query = query.filter(models.Gig.datum.startswith(str(jahr)))
+    gigs = query.all()
+
+    gig_count = len(gigs)
+    total_songs = 0
+    unique_song_ids = set()
+    skipped_count = 0
+    inserted_count = 0
+    feedback_values = []
+    song_play_counts = {}  # song_id -> count
+    gigs_overview = []
+    genre_counts = {}  # genre -> count
+
+    for gig in gigs:
+        gig_songs = 0
+        gig_skipped = 0
+        gig_inserted = 0
+        gig_feedbacks = []
+
+        for gigset in gig.sets:
+            set_obj = gigset.set
+            if not set_obj:
+                continue
+            for setsong in set_obj.songs:
+                total_songs += 1
+                gig_songs += 1
+                if setsong.id_song:
+                    unique_song_ids.add(setsong.id_song)
+                    song_play_counts[setsong.id_song] = song_play_counts.get(setsong.id_song, 0) + 1
+                if setsong.uebersprungen:
+                    skipped_count += 1
+                    gig_skipped += 1
+                if setsong.eingeschoben:
+                    inserted_count += 1
+                    gig_inserted += 1
+                if setsong.feedback is not None:
+                    feedback_values.append(setsong.feedback)
+                    gig_feedbacks.append(setsong.feedback)
+                # Genre zählen
+                if setsong.song and setsong.song.genre:
+                    genre = setsong.song.genre.strip()
+                    if genre:
+                        genre_counts[genre] = genre_counts.get(genre, 0) + 1
+
+        gig_feedback_avg = round(sum(gig_feedbacks) / len(gig_feedbacks), 2) if gig_feedbacks else None
+        gigs_overview.append(schemas.GigOverviewEntry(
+            gig_id=gig.id,
+            gig_name=gig.name,
+            gig_date=gig.datum.strftime('%Y-%m-%d') if gig.datum else '',
+            song_count=gig_songs,
+            skipped_count=gig_skipped,
+            inserted_count=gig_inserted,
+            feedback_avg=gig_feedback_avg,
+        ))
+
+    feedback_distribution = {}
+    for fv in feedback_values:
+        feedback_distribution[fv] = feedback_distribution.get(fv, 0) + 1
+    feedback_avg = round(sum(feedback_values) / len(feedback_values), 2) if feedback_values else None
+
+    # Top 10 Songs
+    top_song_entries = sorted(song_play_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    top_songs = []
+    for song_id, count in top_song_entries:
+        song = db.query(models.Song).get(song_id)
+        if song:
+            top_songs.append(schemas.TopSongEntry(
+                song_id=song.id,
+                title=song.title,
+                interpret=song.interpret or '',
+                count=count,
+            ))
+
+    return schemas.SeasonStatistics(
+        jahr=jahr,
+        gig_count=gig_count,
+        total_songs=total_songs,
+        unique_songs=len(unique_song_ids),
+        skipped_count=skipped_count,
+        inserted_count=inserted_count,
+        feedback_count=len(feedback_values),
+        feedback_avg=feedback_avg,
+        feedback_distribution=feedback_distribution,
+        genre_distribution=genre_counts,
+        top_songs=top_songs,
+        gigs_overview=gigs_overview,
+    )
+
+
 @router.post("/livemode_available_batch")
 def get_livemode_available_batch(
     gig_ids: List[int],
@@ -171,6 +270,89 @@ def is_livemode_available(
         "can_force": True,
         "gig_date": gig_date.isoformat()
     }
+
+@router.get("/{gig_id}/statistics", response_model=schemas.GigStatistics)
+def get_gig_statistics(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    """Gibt detaillierte Statistiken für einen einzelnen Gig zurück."""
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig nicht gefunden")
+
+    song_count = 0
+    skipped_count = 0
+    inserted_count = 0
+    feedback_values = []
+    set_entries = []
+    genre_counts = {}  # genre -> count
+
+    for gigset in gig.sets:
+        set_obj = gigset.set
+        if not set_obj:
+            continue
+
+        set_songs = []
+        set_feedbacks = []
+
+        for setsong in sorted(set_obj.songs, key=lambda s: s.position):
+            song = setsong.song
+            title = song.title if song else "⚠️ Song gelöscht"
+            interpret = (song.interpret or '') if song else ''
+            song_id = setsong.id_song or 0
+
+            song_count += 1
+            if setsong.uebersprungen:
+                skipped_count += 1
+            if setsong.eingeschoben:
+                inserted_count += 1
+            if setsong.feedback is not None:
+                feedback_values.append(setsong.feedback)
+                set_feedbacks.append(setsong.feedback)
+            # Genre zählen
+            if song and song.genre:
+                genre = song.genre.strip()
+                if genre:
+                    genre_counts[genre] = genre_counts.get(genre, 0) + 1
+
+            set_songs.append(schemas.GigStatsSongEntry(
+                song_id=song_id,
+                title=title,
+                interpret=interpret,
+                position=setsong.position,
+                feedback=setsong.feedback,
+                uebersprungen=setsong.uebersprungen,
+                eingeschoben=setsong.eingeschoben,
+            ))
+
+        set_feedback_avg = round(sum(set_feedbacks) / len(set_feedbacks), 2) if set_feedbacks else None
+        set_entries.append(schemas.GigStatsSetEntry(
+            set_name=set_obj.setlist_name or set_obj.name or f"Set {len(set_entries) + 1}",
+            feedback_avg=set_feedback_avg,
+            songs=set_songs,
+        ))
+
+    feedback_distribution = {}
+    for fv in feedback_values:
+        feedback_distribution[fv] = feedback_distribution.get(fv, 0) + 1
+    feedback_avg = round(sum(feedback_values) / len(feedback_values), 2) if feedback_values else None
+
+    return schemas.GigStatistics(
+        gig_id=gig.id,
+        gig_name=gig.name,
+        gig_date=gig.datum.strftime('%Y-%m-%d') if gig.datum else '',
+        song_count=song_count,
+        skipped_count=skipped_count,
+        inserted_count=inserted_count,
+        feedback_count=len(feedback_values),
+        feedback_avg=feedback_avg,
+        feedback_distribution=feedback_distribution,
+        genre_distribution=genre_counts,
+        sets=set_entries,
+    )
+
 
 @router.put("/{gig_id}", response_model=schemas.GigOut)
 def update_gig(
