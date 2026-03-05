@@ -188,7 +188,7 @@
   }
 </script>
 
-<div class="container w-min-100 w-max-500 max-h-screen overflow-y-auto p-4">
+<div class="container w-min-100 w-max-500 w-[60vw] max-h-screen overflow-y-auto p-4">
     <form class="card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
       <h4 class="h5 mb-3">Neue Abstimmung</h4>
 
@@ -205,7 +205,7 @@
             <label class="whitespace-nowrap w-24">
                Art: <span class="text-danger">*</span>
             </label>
-            <select class="input flex-grow-1" bind:value={survey.kind_of_survey} required>
+            <select class="input flex-grow-1 select" bind:value={survey.kind_of_survey} required>
                <option value="Meinungsumfrage">Meinungsumfrage</option>
                <option value="Terminfindung">Datumsumfrage</option>
             </select>
