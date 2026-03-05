@@ -535,6 +535,27 @@ export async function getSongStatistics(songId) {
     return res.json();
 }
 
+export async function getSeasonStatistics(jahr) {
+    const url = jahr
+        ? `${API_URL}/gigs/statistics?jahr=${encodeURIComponent(jahr)}`
+        : `${API_URL}/gigs/statistics`;
+    const res = await fetchWithAuth(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Saisonstatistiken konnten nicht geladen werden');
+    return res.json();
+}
+
+export async function getGigStatistics(gigId) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/statistics`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Gig-Statistiken konnten nicht geladen werden');
+    return res.json();
+}
+
 export async function getRehearsalList(token) {
     const res = await fetchWithAuth(`${API_URL}/reh/`, {
         method: 'GET',
