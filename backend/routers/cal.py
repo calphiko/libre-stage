@@ -125,7 +125,6 @@ def get_iCal_Abo(
             dtstamp = rehearsal.begin if rehearsal.begin.tzinfo else berlin_tz.localize(rehearsal.begin)
         event.add('dtstamp', dtstamp)
 
-        # Rest deines Codes...
         if rehearsal.begin.tzinfo is None:
             dtstart = berlin_tz.localize(rehearsal.begin)
         else:
@@ -143,8 +142,11 @@ def get_iCal_Abo(
 
         if hasattr(rehearsal, 'ort') and rehearsal.ort:
             event.add('location', rehearsal.ort)
-        if hasattr(rehearsal, 'beschreibung') and rehearsal.beschreibung:
-            event.add('description', rehearsal.beschreibung)
+        if hasattr(rehearsal, 'songs'):
+            song_titles = [song.title for song in rehearsal.songs if hasattr(song, 'title')]
+            if song_titles:
+                event.add('description', "Agenda:\n" + "\n".join(f"- {t}" for t in song_titles))
+
         cal.add_component(event)
 
     ical_bytes = BytesIO(cal.to_ical())
