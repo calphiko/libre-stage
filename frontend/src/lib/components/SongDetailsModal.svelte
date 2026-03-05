@@ -48,6 +48,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   let historyLoading = $state(false);
   let statistics = $state(null);
   let statsLoading = $state(false);
+  let rehearsalHistoryLoaded = $state(false);
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
