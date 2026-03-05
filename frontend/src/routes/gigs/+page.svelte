@@ -29,6 +29,8 @@
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import LiveModeModal from '$lib/components/LiveModeModal.svelte';
+  import SeasonStatsModal from './SeasonStatsModal.svelte';
+  import GigStatsModal from './GigStatsModal.svelte';
 
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
@@ -399,19 +401,29 @@
 
 
     <div class="mb-5 flex flex-col md:flex-row md:justify-between md:items-center">
-      <div>
-        <label for="jahr" class="form-label text-on-surface-variant font-medium">Jahr wählen:</label>
-        <select
-            id="jahr"
-            bind:value={jahr}
-            onchange={onJahrChange}
-            class="form-input variant-soft w-auto inline-block rounded-md px-5 bg-surface-200 dark:bg-surface-700 py-2"
+      <div class="flex flex-wrap items-center gap-3">
+        <div>
+          <label for="jahr" class="form-label text-on-surface-variant font-medium">Jahr wählen:</label>
+          <select
+              id="jahr"
+              bind:value={jahr}
+              onchange={onJahrChange}
+              class="form-input variant-soft w-auto inline-block rounded-md px-5 bg-surface-200 dark:bg-surface-700 py-2"
+          >
+            {#each jahre.slice().reverse() as y}
+               <option value={y} class="bg-surface-300 dark:bg-surface-700">{y}</option>
+            {/each}
+             <option value="" class="bg-surface-300 dark:bg-surface-700">Alle</option>
+          </select>
+        </div>
+        <button
+          class="btn variant-ghost-secondary btn-sm"
+          onclick={() => modalState.trigger({ component: SeasonStatsModal, meta: { jahr } })}
+          disabled={!jahr}
+          title={!jahr ? 'Bitte zuerst ein Jahr auswählen' : `Statistik für ${jahr} anzeigen`}
         >
-          {#each jahre.slice().reverse() as y}
-             <option value={y} class="bg-surface-300 dark:bg-surface-700">{y}</option>
-          {/each}
-           <option value="" class="bg-surface-300 dark:bg-surface-700">Alle</option>
-        </select>
+          📊 Saisonstatistik
+        </button>
       </div>
       {#if canEdit}
         <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewGigModal}>
@@ -617,6 +629,12 @@
                             >
                               Setliste drucken
                             </button>
+                            <button
+                              class="btn variant-outline-primary btn-sm"
+                              onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
+                            >
+                              Statistik
+                            </button>
                           </div>
                         </div>
                       {/if}
@@ -797,6 +815,12 @@
                       onclick={() => getSetlist(gig)}
                     >
                       Setliste drucken
+                    </button>
+                    <button
+                      class="btn variant-outline-primary btn-sm w-full"
+                      onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
+                    >
+                      Statistik
                     </button>
                   </div>
                 {/if}
