@@ -50,7 +50,7 @@
   });
 </script>
 
-<div class="card p-6 space-y-4 w-[80vw] max-w-3xl max-h-[90vh] flex flex-col">
+<div class="card p-6 space-y-4 w-[80vw] max-w-3xl max-h-[90vh] flex flex-col modal-base">
   <!-- Header -->
   <header class="flex justify-between items-center flex-shrink-0">
     <h2 class="h3">📊 Saisonstatistik {jahr ? jahr : 'Alle Jahre'}</h2>

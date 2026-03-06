@@ -205,7 +205,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
     }, 200);
   }
 </script>
-<div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col">
+<div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col  modal-base">
 
   <!-- Header -->
   <header class="flex justify-between items-center mb-4 flex-shrink-0">
