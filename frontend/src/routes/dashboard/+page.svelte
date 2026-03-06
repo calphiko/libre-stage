@@ -20,7 +20,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout } from '$lib/api.js';
+  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
@@ -36,6 +36,7 @@
   };
 
   let calendarUrl = '';
+  let seasonStats = null;
 
   let tabsBasic = 0;
 
@@ -58,6 +59,10 @@
       setTabIndex();
       calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ical/`;
       calendarUrl = calendarUrl.replace(/^https:\/\//, 'webcal://');
+
+      // Lade Saisonstatistiken für das aktuelle Jahr
+      const currentYear = new Date().getFullYear();
+      seasonStats = await getSeasonStatistics(currentYear);
     } catch(e) {
       // Bei Auth-Fehlern wird automatisch von api.js umgeleitet
       error = 'Nicht eingeloggt oder Session abgelaufen';
@@ -159,6 +164,76 @@
            {user.user_group}
         </span>
       </div>
+
+      <div>
+      <!-- Saisonstatistiken -->
+           {#if seasonStats}
+             <h2 class="text-xl font-semibold mt-7 mb-2 text-on-surface">Saison {new Date().getFullYear()}</h2>
+             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+               <!-- Gigs -->
+               <div class="card variant-ghost-primary p-4 text-center rounded-lg">
+                 <div class="text-3xl font-bold text-primary-500">{seasonStats.played_gig_count}/{seasonStats.gig_count}</div>
+                 <div class="text-sm text-on-surface-variant">Gigs gespielt</div>
+               </div>
+
+               <!-- Songs gesamt -->
+               <div class="card variant-ghost-secondary p-4 text-center rounded-lg">
+                 <div class="text-3xl font-bold text-secondary-500">{seasonStats.total_songs}</div>
+                 <div class="text-sm text-on-surface-variant">Songs gesamt</div>
+               </div>
+
+               <!-- Unique Songs -->
+               <div class="card variant-ghost-tertiary p-4 text-center rounded-lg">
+                 <div class="text-3xl font-bold text-tertiary-500">{seasonStats.unique_songs}</div>
+                 <div class="text-sm text-on-surface-variant">Unique Songs</div>
+               </div>
+
+               <!-- Feedback Durchschnitt -->
+               <div class="card variant-ghost-warning p-4 text-center rounded-lg">
+                 {#if seasonStats.feedback_avg != null}
+                   <div class="text-3xl font-bold">
+                     {seasonStats.feedback_avg >= 2.5 ? '😊' : seasonStats.feedback_avg >= 1.5 ? '😐' : '😞'}
+                   </div>
+                   <div class="text-sm text-on-surface-variant">Ø Feedback {seasonStats.feedback_avg.toFixed(1)}</div>
+                 {:else}
+                   <div class="text-3xl font-bold text-surface-400">–</div>
+                   <div class="text-sm text-on-surface-variant">Ø Feedback</div>
+                 {/if}
+               </div>
+             </div>
+
+             <!-- Genre-Verteilung -->
+             {#if Object.keys(seasonStats.genre_distribution).length > 0}
+               {@const genreTotal = Object.values(seasonStats.genre_distribution).reduce((a, b) => a + b, 0)}
+               {@const genresSorted = Object.entries(seasonStats.genre_distribution).sort((a, b) => b[1] - a[1])}
+               <div class="card variant-ghost-surface p-4 rounded-lg mt-4">
+                 <h4 class="text-sm font-semibold text-on-surface mb-3">🎸 Genres in dieser Saison</h4>
+                 <div class="space-y-2">
+                   {#each genresSorted.slice(0, 5) as [genre, count]}
+                     {@const pct = Math.round((count / genreTotal) * 100)}
+                     <div class="flex items-center gap-2 text-sm">
+                       <span class="w-32 truncate text-sm text-on-surface flex-shrink-0">{genre}</span>
+                       <div class="flex-grow bg-surface-300 dark:bg-surface-700 rounded-full h-4">
+                         <div
+                           class="h-4 rounded-full bg-tertiary-500 transition-all"
+                           style="width: {pct}%"
+                         ></div>
+                       </div>
+                       <span class="w-24 text-right text-sm text-on-surface-variant flex-shrink-0">{count}× ({pct}%)</span>
+                     </div>
+                   {/each}
+                   {#if genresSorted.length > 5}
+                     <p class="text-xs text-on-surface-variant text-center pt-2">
+                       + {genresSorted.length - 5} weitere Genres
+                     </p>
+                   {/if}
+                 </div>
+               </div>
+             {/if}
+           {/if}
+      </div>
+
+      <hr class="my-7 border-outline-variant">
 
       <div class="mt-7">
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Deine Todos!</h2>
@@ -335,6 +410,8 @@
 
             {/if}
 
+            <hr class="my-7 border-outline-variant">
+
            <h2 class="text-xl font-semibold my-2 text-on-surface">Kalender-Abo</h2>
            <div class="mt-6 p-4 rounded-xl border border-primary-200">
               <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 mb-2">📅 Kalender-Abo</h3>
@@ -345,7 +422,7 @@
                   type="text"
                   readonly
                   value={calendarUrl}
-                  class="input flex-1 bg-white text-sm"
+                  class="input flex-1  text-sm "
                 />
                 <button
                   class="btn variant-filled-primary"
@@ -358,26 +435,13 @@
                 Füge diese URL als Kalender-Abo in deiner Kalender-App hinzu.
               </p>
             </div>
+
+
         </div>
       </div>
 
-      <hr class="my-7 border-outline-variant">
 
-      <div class="mt-6">
-        <h2 class="text-xl font-semibold text-on-surface mb-2">Fehlende Features!</h2>
-        <ul class="list-disc ml-5 text-on-surface-variant">
-          <li>Statistische Auswertungen</li>
-          <li>User Markierung für zu probende Songs</li>
-        </ul>
-      </div>
 
-      <hr class="my-7 border-outline-variant">
-
-      <div class="mt-6">
-        <h2 class="text-xl font-semibold text-on-surface mb-2">Bekannte Bugs!</h2>
-        <ul class="list-disc ml-5 text-on-surface-variant">
-        </ul>
-      </div>
       <hr class="my-7 border-outline-variant">
       <h2 class ="text-xl font-semibold text-on-surface mb-2">Rollenberechtigungen</h2>
       <RoleTable/>

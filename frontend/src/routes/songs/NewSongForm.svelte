@@ -18,7 +18,7 @@
 
 <script>
   import { modalState } from '$lib/modalState.js';
-import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
 
   // Diese Props werden vom Modal übergeben
@@ -40,7 +40,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
 
 </script>
 
-<div class="card p-6 space-y-4 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col">
+<div class="card p-6 space-y-4 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col modal-base">
     <header class="flex justify-between items-center flex-shrink-0">
       <h4 class="h5 mb-3">Neuer Song</h4>
     </header>
