@@ -44,7 +44,7 @@
 </script>
 
 
-<form class="card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
+<form class="card bg-surface-1 p-4 rounded shadow mb-4 modal-base" onsubmit={submit} >
   <h4 class="h5 mb-3">Neue Probe</h4>
   <div class="mb-3">
     <label class="form-label" for="reh-date">Datum & Zeit</label>
