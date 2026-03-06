@@ -1105,16 +1105,12 @@ let filteredSongs = $derived(songs
               <div class="card variant-filled-surface rounded-xl shadow-sm p-4 bg-surface-50">
                 <div class="flex justify-between items-start">
                   <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-200">{song.title}</h3>
-                  <button class="btn btn-sm variant-tonal" onclick={() => toggleExpand(song.id)}>
-                    {#if expandedSongId === song.id}
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M7 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                      </svg>
-                    {:else}
+                  <button class="btn btn-sm variant-tonal" onclick={() => openSongDetailsModal(song)}>
+
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                       </svg>
-                    {/if}
+
                   </button>
                 </div>
 
