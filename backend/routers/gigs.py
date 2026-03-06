@@ -80,12 +80,15 @@ def get_season_statistics(
     current_user=Depends(auth.get_current_user),
 ):
     """Gibt aggregierte Statistiken für alle Gigs eines Jahres zurück."""
+    from datetime import date
+
     query = db.query(models.Gig).order_by(models.Gig.datum.asc())
     if jahr is not None:
         query = query.filter(models.Gig.datum.startswith(str(jahr)))
     gigs = query.all()
 
     gig_count = len(gigs)
+    played_gig_count = sum(1 for gig in gigs if gig.datum and gig.datum < date.today())
     total_songs = 0
     unique_song_ids = set()
     skipped_count = 0
@@ -158,6 +161,7 @@ def get_season_statistics(
     return schemas.SeasonStatistics(
         jahr=jahr,
         gig_count=gig_count,
+        played_gig_count=played_gig_count,
         total_songs=total_songs,
         unique_songs=len(unique_song_ids),
         skipped_count=skipped_count,
