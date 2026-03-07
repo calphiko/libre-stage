@@ -105,10 +105,7 @@
   }
 
 
-  export async function updateSetlist(data) {
-    console.log("Data für API-Call:", data);
-    updateGigSetlist(null, data);
-  }
+
 </script>
 
 <div class="container max-w-full lg:max-w-7xl lg:px-4">
@@ -245,7 +242,7 @@
       </div>
       <div class="card-body pt-3">
         {#if setlist}
-          <SetList {setlist} />
+          <SetList bind:setlist />
         {:else}
           <div class="flex flex-col items-center justify-center py-12 opacity-60">
             <div class="animate-pulse">
