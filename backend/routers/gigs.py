@@ -753,7 +753,7 @@ def update_gig_setlist(
 
     db.commit()
     db.refresh(db_gig)
-    return gig
+    return db_gig.to_dict()
 
 @router.post("/")
 def create_new_gig(
