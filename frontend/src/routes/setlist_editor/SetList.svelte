@@ -25,7 +25,7 @@
 
   overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
 
-  let { setlist } = $props();
+  let { setlist = $bindable() } = $props();
   let setIndex = $state(1);
 
   let isUpdating = $state(false);
@@ -52,7 +52,8 @@
     setlist.sets[setIdx].songs = cleanDnDItems(detail.items);
     setlist = { ...setlist };
 
-    await updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
   }
 
   async function handleDragOverSet(setIdx, e) {
@@ -91,33 +92,35 @@
     dragInsertPos = null;
   }
 
-  function insertSetBefore(idx) {
+  async function insertSetBefore(idx) {
     const newSet = {
       songs: [],
       pause: '00:10:00',
-
     };
     setlist.sets.splice(idx, 0, newSet);
     setlist = { ...setlist };
-    updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
   }
 
-  function addSetAtEnd() {
+  async function addSetAtEnd() {
     const newSet = {
       songs: [],
       pause: '00:10:00',
       setlist_name: '',
       set_name: ''
-      // ggf. weitere Felder
     };
     setlist.sets.push(newSet);
     setlist = { ...setlist };
-    updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
   }
-  function removeSet(setIdx) {
+
+  async function removeSet(setIdx) {
     setlist.sets.splice(setIdx, 1);
     setlist = { ...setlist };
-    updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
   }
 
   async function removeSongFromSet(setIdx, setsong_id) {
@@ -181,17 +184,28 @@
 {#each setlist.sets as set, setIdx (set.gigset_id)}
   <div class="set-card">
     <div class="set-header ">
-       <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)}>
+       <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
           + Set
        </button>
        <input
           type="text"
           class="setlist-name-input"
-          bind:value={set.setlist_name}
+          value={set.setlist_name ?? ''}
           placeholder={`Set ${setIdx + 1}`}
-          onblur={() => updateSetlist(setlist)}
+          oninput={(e) => {
+            // Nur lokale DOM-Mutation – kein Svelte-Neurender, kein Cursor-Sprung
+            setlist.sets[setIdx].setlist_name = e.target.value;
+          }}
+          onblur={(e) => {
+            // Tiefe Kopie via JSON um den Svelte-5-Proxy zu de-proxyfizieren,
+            // dann den aktuellen DOM-Wert reinschreiben und ans Backend senden.
+            // KEIN setlist = ... hier → kein Neurender → kein Zurückspringen.
+            const snapshot = JSON.parse(JSON.stringify(setlist));
+            snapshot.sets[setIdx].setlist_name = e.target.value;
+            updateSetlist(snapshot);
+          }}
        />
-       <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)}>
+       <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)} disabled={isUpdating}>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"></path>
             </svg>
@@ -241,7 +255,7 @@
 {/each}
 
 <div class="add-set-end-container">
-  <button class="insert-btn" onclick={addSetAtEnd}>
+  <button class="insert-btn" onclick={addSetAtEnd} disabled={isUpdating}>
     + Set
   </button>
 </div>
