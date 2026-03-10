@@ -38,18 +38,24 @@ RUN npm run build
 RUN npm ci --production --ignore-scripts
 
 # Final Container
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN useradd -m -s /bin/bash appuser
-RUN apt update && apt -y install python3-pip && apt clean
+RUN apt update && apt clean
+
+# install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_NO_CACHE=1
 
 WORKDIR /app
 COPY --from=code-fetcher /repo/libre-stage/backend ./backend
 COPY --from=code-fetcher /repo/libre-stage/version.json ./
+COPY --from=code-fetcher /repo/libre-stage/uv.lock ./
+COPY --from=code-fetcher /repo/libre-stage/version.json ./
 
 
-WORKDIR /app/backend
-RUN pip3 install -r requirements.txt
+RUN uv sync --frozen --no-dev
 
 
 WORKDIR /app/frontend
