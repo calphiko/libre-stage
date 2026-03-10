@@ -1,10 +1,11 @@
-
+#0;136;0c
 # syntax=docker/dockerfile:1.4
 
 FROM alpine:latest as code-fetcher
 RUN echo "hallo14"
 
 
+#ARG BRANCH=skeleton-migration
 ARG BRANCH=main
 ENV BRANCH=$BRANCH
 
@@ -19,25 +20,22 @@ WORKDIR /repo
 # RUN --mount=type=ssh git clone --depth 1 -b ${BRANCH} codeberg:calphiko/libre-stage.git
 RUN git clone --depth 1 -b ${BRANCH} https://codeberg.org/calphiko/libre-stage.git
 
-# Build Container For Svelte Page
-FROM node:18-alpine as builder
+FROM node:20-bookworm-slim as builder
+ARG VITE_API_URL
 WORKDIR /frontend
 
+# Packages zuerst (für Cache)
 COPY --from=code-fetcher /repo/libre-stage/frontend/package*.json ./
-COPY --from=code-fetcher /repo/libre-stage/frontend/ ./
-CMD ls -lh
-RUN npm install
-# RUN npm ci
+RUN rm -rf node_modules package-lock.json
+RUN npm install --include=optional
 
-ARG VITE_API_URL
+# Rest kopieren
+COPY --from=code-fetcher /repo/libre-stage/frontend/ ./
 ENV VITE_API_URL=${VITE_API_URL}
 
-COPY ./svelte.config.js .
-
-
+RUN npx svelte-kit sync
 RUN npm run build
-RUN npm prune --production
-
+RUN npm ci --production --ignore-scripts
 
 # Final Container
 FROM python:3.12-slim
