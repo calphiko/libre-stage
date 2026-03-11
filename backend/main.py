@@ -50,7 +50,16 @@ limiter = Limiter(key_func=get_remote_address)
 api_prefix = ""
 assert type(api_prefix) is str
 
-models.Base.metadata.create_all(bind=database.engine)
+# Datenbankmigrationen beim Start automatisch anwenden
+from alembic.config import Config as AlembicConfig
+from alembic import command as alembic_command
+from pathlib import Path as _Path
+
+def _run_migrations():
+    alembic_cfg = AlembicConfig(str(_Path(__file__).parent.parent / "alembic.ini"))
+    alembic_command.upgrade(alembic_cfg, "head")
+
+_run_migrations()
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
 load_dotenv()
