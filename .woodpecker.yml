@@ -1,3 +1,6 @@
+labels:
+  branch: ${CI_REPO_BRANCH}
+
 steps:
   - name: test-and-coverage
     image: python:3.11
