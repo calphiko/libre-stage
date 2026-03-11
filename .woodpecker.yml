@@ -3,7 +3,10 @@ labels:
 
 steps:
   - name: test-and-coverage
-    image: python:3.11
+    image: python:3.14
+    environment:
+      DATABASE_URL: "sqlite:///:memory:"
+      TESTING: "true"
     commands:
       - pip install uv
       - uv sync --all-groups
