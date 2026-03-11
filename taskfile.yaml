@@ -28,3 +28,37 @@ tasks:
     cmds:
       - uv run pytest
     desc: "Run the test suite"
+
+  # ── Alembic / Datenbankmigrationen ─────────────────────────────────────────
+
+  db:migrate:
+    cmds:
+      - uv run alembic upgrade head
+    desc: "Alle ausstehenden Migrationen anwenden (upgrade head)"
+
+  db:rollback:
+    cmds:
+      - uv run alembic downgrade -1
+    desc: "Letzte Migration rückgängig machen (downgrade -1)"
+
+  db:revision:
+    cmds:
+      - uv run alembic revision --autogenerate -m "{{.MSG}}"
+    desc: "Neue Migration aus Modeländerungen generieren  →  task db:revision MSG='beschreibung'"
+
+  db:history:
+    cmds:
+      - uv run alembic history --verbose
+    desc: "Migrationsverlauf anzeigen"
+
+  db:current:
+    cmds:
+      - uv run alembic current
+    desc: "Aktuellen Migrationsstand der DB anzeigen"
+
+  db:init-demo:
+    cmds:
+      - uv run python backend/migrations/init_demo_db.py
+    desc: "Demo-Datenbank mit Beispieldaten befüllen"
+
+

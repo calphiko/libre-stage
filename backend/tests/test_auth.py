@@ -26,7 +26,8 @@ from backend.auth import (
     get_db
 )
 from backend.models import User, Song
-from jose import jwt
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from unittest.mock import Mock
 
 
