@@ -50,7 +50,7 @@ ENV UV_NO_CACHE=1
 
 WORKDIR /app
 COPY --from=code-fetcher /repo/libre-stage/backend ./backend
-COPY --from=code-fetcher /repo/libre-stage/version.json ./
+COPY --from=code-fetcher /repo/libre-stage/pyproject.toml ./
 COPY --from=code-fetcher /repo/libre-stage/uv.lock ./
 COPY --from=code-fetcher /repo/libre-stage/version.json ./
 
