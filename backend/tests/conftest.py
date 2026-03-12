@@ -70,12 +70,12 @@ def client(db_session):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[auth.get_db] = override_get_db
 
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides.clear()
-    limiter._key_func = original_key_func
-    limiter._key_func = original_key_func
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.clear()
+        limiter._key_func = original_key_func
 
 
 @pytest.fixture
