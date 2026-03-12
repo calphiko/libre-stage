@@ -4,13 +4,13 @@
 
 ![Version](https://img.shields.io/badge/version-v0.3.5-blue)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-teal)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.135.0-teal)
 ![Svelte](https://img.shields.io/badge/Svelte-5.29.0-orange)
 ![Skeleton](https://img.shields.io/badge/Skeleton-4.12.1-orange)
 
 ## 📖 Overview
 
-Band Manager is a self-hosted web application designed to manage band operations including:
+libreStage is a self-hosted web application designed to manage band operations including:
 
 - **Gig Management**: Organize concerts, setlists, and schedules
 - **Setlist Editor**: Drag-and-drop interface for creating and editing setlists
@@ -26,12 +26,12 @@ Band Manager is a self-hosted web application designed to manage band operations
 ## 🏗️ Architecture
 
 ### Backend (FastAPI + SQLAlchemy)
-- **Framework**: FastAPI 0.115.12
+- **Framework**: FastAPI 0.135.0
 - **Database**: SQLite with SQLAlchemy ORM
 - **Authentication**: JWT-based with refresh tokens and httpOnly cookies
 - **API Documentation**: Auto-generated OpenAPI/Swagger docs
 - **Rate Limiting**: SlowAPI for DDoS protection
-- **Testing**: Pytest with 80%+ coverage
+- **Testing**: Pytest with 72%+ coverage
 
 ### Frontend (SvelteKit + Skeleton UI)
 - **Framework**: SvelteKit 2.0
@@ -54,16 +54,17 @@ Band Manager is a self-hosted web application designed to manage band operations
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd band-manager
+git clone https://codeberg.org/calphiko/libre-stage.git
+cd libre-stage
 ```
 
 2. **Backend Setup**
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-# .venv\Scripts\activate   # Windows
-pip install -r backend/requirements.txt
+# Install uv (modern Python package installer)
+pip install uv
+
+# Sync all dependencies including dev tools
+uv sync --all-groups
 ```
 
 3. **Frontend Setup**
@@ -174,10 +175,12 @@ Mirror the same options for the frontend (genres, gig types, statuses, tone keys
 ## 📁 Project Structure
 
 ```
-band-manager/
+libre-stage/
 ├── app.config.json          # Band-specific configuration
 ├── .env.example             # Environment template
 ├── version.json             # Version info (shown in footer)
+├── pyproject.toml           # Python project config with uv
+├── uv.lock                  # Locked dependency versions
 ├── backend/
 │   ├── main.py              # FastAPI entry point
 │   ├── auth.py              # JWT authentication
@@ -213,8 +216,10 @@ band-manager/
 │   │       ├── songs/
 │   │       ├── proben/      # Rehearsals
 │   │       └── setlist_editor/
-│   └── static/              # Logo, fonts, favicon
-└── docs/                    # Additional documentation
+│   ├── static/              # Logo, fonts, favicon
+│   └── package.json         # Frontend dependencies
+└── docs/                    # Sphinx documentation
+    └── manual/              # User manual (DE + EN)
 ```
 
 ## 🔑 Key Features
@@ -243,17 +248,44 @@ band-manager/
 - Auto-generated Excel exports in official GEMA format
 - Skipped songs are automatically excluded
 
+## 📚 Documentation
+
+libreStage includes a comprehensive **Sphinx-based user manual** in both German and English:
+
+- **Access online**: https://calphiko.codeberg.page/ (auto-deployed from main branch)
+- **Build locally**:
+  ```bash
+  # Install docs dependencies
+  uv sync --group docs
+  
+  # Build German version
+  uv run sphinx-build -b html -D language=de docs/manual docs/manual/_build/html/de
+  
+  # Build English version
+  uv run sphinx-build -b html -D language=en docs/manual docs/manual/_build/html/en
+  ```
+
+The manual covers:
+- Installation and initial setup
+- User roles and permissions
+- Song management workflow
+- Gig and setlist creation
+- Live mode usage
+- Rehearsal planning
+- Survey system
+- Configuration options
+
 ## 🧪 Testing
 
 ```bash
-# Run all tests
-pytest
+# Run all tests (requires uv sync --all-groups first)
+uv run pytest
 
 # With coverage report
-pytest --cov=backend --cov-report=html
+uv run pytest --cov=backend --cov-report=html
 
 # Single test file
-pytest backend/tests/test_gigs.py -v
+uv run pytest backend/tests/test_gigs.py -v
 ```
 
 ## 🔒 Security

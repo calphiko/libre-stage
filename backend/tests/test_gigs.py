@@ -494,7 +494,7 @@ def test_add_nonexistant_song_to_existing_set_in_gig(client, auth_headers, db_se
     response = client.put(f"/gigs/{gig.id}/update_setlist", json=gig_data, headers=auth_headers)
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"] == f"Song with id={song_data['song_id']} does not exist"
+    assert data["detail"] == "Song not found"
 
 def test_get_gig_setlist_with_nonexistent_gig_id(client, auth_headers, db_session):
     """Helper function to get gig setlist."""
