@@ -15,12 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import uuid
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.main import app
+from backend.main import app, limiter
 from backend.models import Base
 from backend import auth, models
 from backend.database import get_db
@@ -60,13 +61,21 @@ def client(db_session):
         finally:
             pass
 
+    # Each test gets a unique "IP" so rate limit counters never bleed between tests
+    test_id = str(uuid.uuid4())
+    original_key_func = limiter._key_func
+    limiter._key_func = lambda request: test_id
+
     # Override both get_db functions
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[auth.get_db] = override_get_db
 
-    with TestClient(app) as test_client:
-        yield test_client
-    app.dependency_overrides.clear()
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.clear()
+        limiter._key_func = original_key_func
 
 
 @pytest.fixture
@@ -77,6 +86,7 @@ def test_user(db_session):
         user_pw=auth.hash_pw("testpassword123"),
         user_group="admin",
         musician=True,
+        is_singer=False,
         clear_name="Test User",
         email="test@example.com"
     )
