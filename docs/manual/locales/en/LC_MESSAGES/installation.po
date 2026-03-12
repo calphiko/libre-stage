@@ -1,0 +1,316 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../installation.rst:4
+msgid "Installation"
+msgstr "Installation"
+
+#: ../../installation.rst:6
+msgid ""
+"Dieses Kapitel beschreibt die vollständige Installation von libreStage "
+"auf einem eigenen Server oder auf einem lokalen Rechner für die "
+"Entwicklung."
+msgstr ""
+
+#: ../../installation.rst:10
+msgid "Voraussetzungen"
+msgstr "Prerequisites"
+
+#: ../../installation.rst:12
+msgid "Folgende Software muss auf dem Zielsystem installiert sein:"
+msgstr "The following software must be installed on the target system:"
+
+#: ../../installation.rst:18
+msgid "Software"
+msgstr "Software"
+
+#: ../../installation.rst:19
+msgid "Mindestversion"
+msgstr "Minimum version"
+
+#: ../../installation.rst:20
+msgid "Hinweis"
+msgstr "Note"
+
+#: ../../installation.rst:21
+msgid "Python"
+msgstr "Python"
+
+#: ../../installation.rst:22
+msgid "3.11"
+msgstr "3.11"
+
+#: ../../installation.rst:23
+msgid "Empfohlen: 3.12+"
+msgstr "Recommended: 3.12+"
+
+#: ../../installation.rst:24
+msgid "Node.js"
+msgstr "Node.js"
+
+#: ../../installation.rst:25
+msgid "18"
+msgstr "18"
+
+#: ../../installation.rst:26
+msgid "Für das Frontend (SvelteKit)"
+msgstr "For the frontend (SvelteKit)"
+
+#: ../../installation.rst:27
+msgid "npm"
+msgstr "npm"
+
+#: ../../installation.rst:28
+msgid "9"
+msgstr "9"
+
+#: ../../installation.rst:29
+msgid "Wird mit Node.js installiert"
+msgstr "Installed with Node.js"
+
+#: ../../installation.rst:30
+msgid "Git"
+msgstr "Git"
+
+#: ../../installation.rst:31
+msgid "beliebig"
+msgstr "any"
+
+#: ../../installation.rst:32
+msgid "Für das Klonen des Repositories"
+msgstr "For cloning the repository"
+
+#: ../../installation.rst:35
+msgid "Repository klonen"
+msgstr "Clone the repository"
+
+#: ../../installation.rst:43
+msgid "Backend einrichten"
+msgstr "Set up the backend"
+
+#: ../../installation.rst:45
+msgid ""
+"libreStage verwendet `uv <https://github.com/astral-sh/uv>`_ als Python-"
+"Paketmanager."
+msgstr ""
+
+#: ../../installation.rst:62
+msgid "Umgebungsvariablen konfigurieren"
+msgstr "Configure environment variables"
+
+#: ../../installation.rst:64
+msgid "Kopiere die Beispiel-Konfiguration und passe sie an:"
+msgstr "Copy the example configuration and adjust it:"
+
+#: ../../installation.rst:70
+msgid ""
+"Öffne anschließend ``.env`` in einem Texteditor und setze mindestens den "
+"``SECRET_KEY`` (langer, zufälliger String). Alle verfügbaren Variablen "
+"sind in :ref:`configuration` beschrieben."
+msgstr ""
+
+#: ../../installation.rst:74
+msgid "Datenbank initialisieren"
+msgstr "Initialise the database"
+
+#: ../../installation.rst:76
+msgid "Führe die Datenbankmigrationen aus, um das Schema anzulegen:"
+msgstr "Run the database migrations to create the schema:"
+
+#: ../../installation.rst:83
+msgid "Optional: Demo-Datenbank mit Beispieldaten laden"
+msgstr "Optional: load the demo database with sample data"
+
+#: ../../installation.rst:85
+msgid "Für einen schnellen Einstieg steht eine Demo-Datenbank bereit:"
+msgstr "For a quick start, a demo database is available:"
+
+#: ../../installation.rst:92
+msgid "Frontend einrichten"
+msgstr "Set up the frontend"
+
+#: ../../installation.rst:101
+msgid "Anwendung starten"
+msgstr "Start the application"
+
+#: ../../installation.rst:103
+msgid "Starte Backend und Frontend in zwei separaten Terminals:"
+msgstr "Start the backend and frontend in two separate terminals:"
+
+#: ../../installation.rst:105
+msgid "**Terminal 1 – Backend:**"
+msgstr ""
+
+#: ../../installation.rst:111
+msgid "**Terminal 2 – Frontend:**"
+msgstr ""
+
+#: ../../installation.rst:118
+msgid "Die Anwendung ist danach unter folgenden Adressen erreichbar:"
+msgstr "The application is then available at the following addresses:"
+
+#: ../../installation.rst:120
+msgid "**Frontend:** http://localhost:5173"
+msgstr "**Frontend:** http://localhost:5173"
+
+#: ../../installation.rst:121
+msgid "**API-Dokumentation (Swagger):** http://localhost:8000/docs"
+msgstr "**API documentation (Swagger):** http://localhost:8000/docs"
+
+#: ../../installation.rst:124
+msgid "Erster Login"
+msgstr "First login"
+
+#: ../../installation.rst:126
+msgid "Login-Seite von libreStage"
+msgstr "libreStage login page"
+
+#: ../../installation.rst:131
+msgid "Login-Formular von libreStage."
+msgstr "libreStage login form."
+
+#: ../../installation.rst:134
+msgid ""
+"Screenshot folgt – bitte ``docs/manual/_static/screenshots/login.png`` "
+"ablegen."
+msgstr ""
+
+#: ../../installation.rst:136
+msgid ""
+"Beim ersten Start mit der Demo-Datenbank stehen folgende Accounts zur "
+"Verfügung:"
+msgstr ""
+
+#: ../../installation.rst:142
+msgid "Benutzername"
+msgstr "Username"
+
+#: ../../installation.rst:143
+msgid "Passwort"
+msgstr "Password"
+
+#: ../../installation.rst:144
+msgid "Rolle"
+msgstr "Role"
+
+#: ../../installation.rst:145
+msgid "Beschreibung"
+msgstr "Description"
+
+#: ../../installation.rst:146
+msgid "``admin``"
+msgstr ""
+
+#: ../../installation.rst:147
+msgid "``Admin1234!``"
+msgstr ""
+
+#: ../../installation.rst:148
+msgid "admin"
+msgstr ""
+
+#: ../../installation.rst:149
+msgid "Vollständige Verwaltungsrechte"
+msgstr "Full administrative rights"
+
+#: ../../installation.rst:150
+msgid "``alice``"
+msgstr ""
+
+#: ../../installation.rst:151 ../../installation.rst:155
+#: ../../installation.rst:159 ../../installation.rst:163
+msgid "``Demo1234!``"
+msgstr ""
+
+#: ../../installation.rst:152 ../../installation.rst:156
+msgid "editor"
+msgstr ""
+
+#: ../../installation.rst:153
+msgid "Sängerin, kann Inhalte bearbeiten"
+msgstr "Singer, can edit content"
+
+#: ../../installation.rst:154
+msgid "``bob``"
+msgstr ""
+
+#: ../../installation.rst:157
+msgid "Sänger, kann Inhalte bearbeiten"
+msgstr "Singer (m), can edit content"
+
+#: ../../installation.rst:158
+msgid "``carol``"
+msgstr ""
+
+#: ../../installation.rst:160 ../../installation.rst:164
+msgid "musician"
+msgstr ""
+
+#: ../../installation.rst:161
+msgid "Musikerin, Lesezugriff + eigene Todos"
+msgstr "Musician, read access + own todos"
+
+#: ../../installation.rst:162
+msgid "``dave``"
+msgstr ""
+
+#: ../../installation.rst:165
+msgid "Musiker, Lesezugriff + eigene Todos"
+msgstr "Musician (m), read access + own todos"
+
+#: ../../installation.rst:168
+msgid ""
+"Ändere vor dem produktiven Einsatz unbedingt alle Demo-Passwörter und "
+"setze einen sicheren ``SECRET_KEY`` in der ``.env``-Datei!"
+msgstr ""
+
+#: ../../installation.rst:172
+msgid "Produktion"
+msgstr "Production"
+
+#: ../../installation.rst:174
+msgid "Für den produktiven Betrieb empfiehlt sich:"
+msgstr "For production use, the following is recommended:"
+
+#: ../../installation.rst:176
+msgid ""
+"Frontend mit ``npm run build`` bauen – die statischen Dateien liegen dann"
+" in ``frontend/build/``"
+msgstr ""
+
+#: ../../installation.rst:177
+msgid "Backend hinter einem Reverse-Proxy (nginx, Caddy) betreiben"
+msgstr "Run the backend behind a reverse proxy (nginx, Caddy)"
+
+#: ../../installation.rst:178
+msgid ""
+"``ENVIRONMENT=production`` in ``.env`` setzen (aktiviert Secure-Cookie-"
+"Flag)"
+msgstr ""
+
+#: ../../installation.rst:179
+msgid "PostgreSQL statt SQLite für Mehrbenutzerbetrieb unter Last"
+msgstr "Use PostgreSQL instead of SQLite for multi-user operation under load"
+
+#: ../../installation.rst:180
+msgid "Regelmäßige Datenbank-Backups einrichten"
+msgstr "Set up regular database backups"
+

@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Mode &mdash; libreStage v0.3.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=41e4a704"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Song Database" href="songs.html" />
+    <link rel="prev" title="Setlist Editor" href="setlist_editor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            libreStage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#voraussetzungen">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#repository-klonen">Clone the repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#backend-einrichten">Set up the backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#umgebungsvariablen-konfigurieren">Configure environment variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#datenbank-initialisieren">Initialise the database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#optional-demo-datenbank-laden">Optional: Demo-Datenbank laden</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#frontend-einrichten">Set up the frontend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#anwendung-starten">Start the application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#erster-login">First login</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#produktion">Production</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../configuration.html#umgebungsvariablen-env">Environment variables (<code class="docutils literal notranslate"><span class="pre">.env</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../configuration.html#anwendungskonfiguration-appconfig-json">Application configuration (<code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../configuration.html#song-status">Song status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../configuration.html#gig-status">Gig status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../configuration.html#frontend-konfiguration">Frontend configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dashboard.html">Dashboard</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dashboard.html#todos">Todos</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dashboard.html#songbewertungen">Song ratings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dashboard.html#abstimmungen">Abstimmungen</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dashboard.html#saison-statistiken">Season statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dashboard.html#kalender-export-ical">Calendar export (iCal)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gigs.html">Gigs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#gig-anlegen">Create a gig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#status-workflow">Status workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#setlist-verwalten">Manage setlist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#setlist-pdf-generieren">Generate setlist PDF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#gema-export-excel">GEMA export (Excel)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gigs.html#statistiken">Statistics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setlist_editor.html">Setlist Editor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#sets-anlegen">Create sets</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setlist_editor.html#set-umbenennen">Rename a set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setlist_editor.html#set-loschen">Delete a set</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#songs-hinzufugen">Add songs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#drag-drop">Drag &amp; drop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#zeitberechnung">Timing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setlist_editor.html#pausen">Breaks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#sanger-farb-kodierung">Singer colour coding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setlist_editor.html#tastaturkurzel">Keyboard shortcuts</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Live Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#verfugbarkeit">Availability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#song-navigation">Song navigation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#desktop">Desktop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mobile-touch">Mobile (touch)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fortschrittsanzeige">Progress display</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#songbewertung">Song rating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#song-uberspringen">Skip a song</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#song-einfugen">Insert a song</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#session-wiederverbinden">Reconnect session</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="songs.html">Song Database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="songs.html#song-anlegen">Create a song</a></li>
+<li class="toctree-l3"><a class="reference internal" href="songs.html#status-workflow">Status workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="songs.html#filtern-und-suchen">Filter and search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="songs.html#song-details-und-statistiken">Song details and statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="songs.html#bewertungen-songvoting">Ratings (song voting)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="proben.html">Proben</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="proben.html#probe-anlegen">Probe anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="proben.html#songs-einer-probe-zuweisen">Songs einer Probe zuweisen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="proben.html#aufgaben-todos">Aufgaben (Todos)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="proben.html#probe-fortschritt">Probe-Fortschritt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="proben.html#ical-export">iCal-Export</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="abstimmungen.html">Abstimmungen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="abstimmungen.html#abstimmung-anlegen">Abstimmung anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstimmungen.html#umfragetypen">Umfragetypen</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="abstimmungen.html#meinungsumfrage">Meinungsumfrage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="abstimmungen.html#terminfindung">Terminfindung</a></li>
+<li class="toctree-l4"><a class="reference internal" href="abstimmungen.html#auftrittsanfrage">Auftrittsanfrage</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="abstimmungen.html#abstimmung-schlieszen">Abstimmung schließen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstimmungen.html#benachrichtigungen">Benachrichtigungen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzer.html">Benutzerverwaltung &amp; Profil</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzer.html#eigenes-profil">Eigenes Profil</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzer.html#passwort-andern">Passwort ändern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzer.html#passwort-vergessen">Passwort vergessen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzer.html#rollen-und-berechtigungen">Rollen und Berechtigungen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzer.html#benutzerverwaltung-nur-admin">Benutzerverwaltung (nur Admin)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">REST-API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#api-dokumentation-swagger">API-Dokumentation (Swagger)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#authentifizierung">Authentifizierung</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#endpunkt-ubersicht">Endpunkt-Übersicht</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#rate-limiting">Rate Limiting</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Further Information</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Änderungsprotokoll</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#v0-3-5-2026-03-10">v0.3.5 (2026-03-10)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#v0-3-0">v0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#v0-2-0">v0.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#v0-1-0">v0.1.0</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">libreStage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">User Manual</a></li>
+      <li class="breadcrumb-item active">Live Mode</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/benutzerhandbuch/livemode.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="live-modus">
+<span id="livemode"></span><h1>Live Mode<a class="headerlink" href="#live-modus" title="Link to this heading"></a></h1>
+<p>Der Live-Modus begleitet die Band während eines Auftritts. Er zeigt den aktuellen Song
+prominent an, ermöglicht Navigation und erfasst Bewertungen für spätere Auswertungen.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Screenshot folgt – bitte <code class="docutils literal notranslate"><span class="pre">docs/manual/_static/screenshots/livemode.png</span></code> ablegen.</p>
+</div>
+<section id="verfugbarkeit">
+<h2>Availability<a class="headerlink" href="#verfugbarkeit" title="Link to this heading"></a></h2>
+<p>Live mode can be started when:</p>
+<ul class="simple">
+<li><p><strong>Es der Gig-Tag ist</strong> (das Datum des Gigs entspricht dem heutigen Datum), <em>oder</em></p></li>
+<li><p>ein <strong>Editor oder Admin</strong> den Modus manuell erzwingt.</p></li>
+</ul>
+<p>Musician users can only start live mode on the gig day.</p>
+</section>
+<section id="song-navigation">
+<h2>Song navigation<a class="headerlink" href="#song-navigation" title="Link to this heading"></a></h2>
+<section id="desktop">
+<h3>Desktop<a class="headerlink" href="#desktop" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Right arrow / Next button:</strong> Next song</p></li>
+<li><p><strong>Keyboard →:</strong> Next song</p></li>
+<li><p><strong>Left arrow / Back button:</strong> Previous song</p></li>
+<li><p><strong>Keyboard ←:</strong> Previous song</p></li>
+</ul>
+</section>
+<section id="mobile-touch">
+<h3>Mobile (touch)<a class="headerlink" href="#mobile-touch" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Swipe left:</strong> Next song</p></li>
+<li><p><strong>Swipe right:</strong> Previous song</p></li>
+</ul>
+</section>
+<section id="fortschrittsanzeige">
+<h3>Progress display<a class="headerlink" href="#fortschrittsanzeige" title="Link to this heading"></a></h3>
+<p>Eine Progress-Bar zeigt die aktuelle Position innerhalb der Setlist.
+Darunter wird der aktuelle Set und die Position im Set angezeigt
+(z. B. „Set 2 – Song 3 / 8“).</p>
+</section>
+</section>
+<section id="songbewertung">
+<h2>Song rating<a class="headerlink" href="#songbewertung" title="Link to this heading"></a></h2>
+<p>After playing a song, a rating can be submitted:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Symbol</p></th>
+<th class="head"><p>Bedeutung</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>😞</p></td>
+<td><p>Did not go well</p></td>
+</tr>
+<tr class="row-odd"><td><p>😐</p></td>
+<td><p>Was OK</p></td>
+</tr>
+<tr class="row-even"><td><p>😊</p></td>
+<td><p>Went very well</p></td>
+</tr>
+</tbody>
+</table>
+<p>Die Bewertungen fließen in die Song-Statistiken ein.</p>
+</section>
+<section id="song-uberspringen">
+<h2>Skip a song<a class="headerlink" href="#song-uberspringen" title="Link to this heading"></a></h2>
+<p>Über den Button <strong>Überspringen</strong> wird der aktuelle Song als übersprungen markiert.
+Übersprungene Songs werden im GEMA-Export ausgeschlossen (siehe <a class="reference internal" href="gigs.html#gigs"><span class="std std-ref">Gigs</span></a>).</p>
+</section>
+<section id="song-einfugen">
+<h2>Insert a song<a class="headerlink" href="#song-einfugen" title="Link to this heading"></a></h2>
+<p>Über <strong>Song einfügen</strong> kann ein Song aus der Datenbank spontan in die laufende Setlist
+eingefügt werden.</p>
+</section>
+<section id="session-wiederverbinden">
+<h2>Reconnect session<a class="headerlink" href="#session-wiederverbinden" title="Link to this heading"></a></h2>
+<p>Wird die Seite neu geladen oder das Gerät gewechselt, öffnet sich der Live-Modus
+automatisch an der zuletzt gespeicherten Position.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="setlist_editor.html" class="btn btn-neutral float-left" title="Setlist Editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="songs.html" class="btn btn-neutral float-right" title="Song Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, libreStage contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

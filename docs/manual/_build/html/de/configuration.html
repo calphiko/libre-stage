@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="de" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konfiguration &mdash; libreStage v0.3.5 Dokumentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=3c9b7c0e"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/translations.js?v=9bf55d28"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Stichwortverzeichnis" href="genindex.html" />
+    <link rel="search" title="Suche" href="search.html" />
+    <link rel="next" title="Benutzerhandbuch" href="benutzerhandbuch/index.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            libreStage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Dokumentation durchsuchen" aria-label="Dokumentation durchsuchen" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Inhaltsverzeichnis</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#voraussetzungen">Voraussetzungen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#repository-klonen">Repository klonen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#backend-einrichten">Backend einrichten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#umgebungsvariablen-konfigurieren">Umgebungsvariablen konfigurieren</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#datenbank-initialisieren">Datenbank initialisieren</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#optional-demo-datenbank-laden">Optional: Demo-Datenbank laden</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#frontend-einrichten">Frontend einrichten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#anwendung-starten">Anwendung starten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#erster-login">Erster Login</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#produktion">Produktion</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Konfiguration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#umgebungsvariablen-env">Umgebungsvariablen (<code class="docutils literal notranslate"><span class="pre">.env</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#anwendungskonfiguration-appconfig-json">Anwendungskonfiguration (<code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#song-status">Song-Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gig-status">Gig-Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#frontend-konfiguration">Frontend-Konfiguration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="benutzerhandbuch/index.html">Benutzerhandbuch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/dashboard.html">Dashboard</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/dashboard.html#todos">Todos</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/dashboard.html#songbewertungen">Songbewertungen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/dashboard.html#abstimmungen">Abstimmungen</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/dashboard.html#saison-statistiken">Saison-Statistiken</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/dashboard.html#kalender-export-ical">Kalender-Export (iCal)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/gigs.html">Gigs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#gig-anlegen">Gig anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#status-workflow">Status-Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#setlist-verwalten">Setlist verwalten</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#setlist-pdf-generieren">Setlist-PDF generieren</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#gema-export-excel">GEMA-Export (Excel)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#statistiken">Statistiken</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html">Setlist-Editor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#sets-anlegen">Sets anlegen</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#set-umbenennen">Set umbenennen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#set-loschen">Set löschen</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#songs-hinzufugen">Songs hinzufügen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#drag-drop">Drag &amp; Drop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#zeitberechnung">Zeitberechnung</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#pausen">Pausen</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#sanger-farb-kodierung">Sänger-Farb-Kodierung</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/setlist_editor.html#tastaturkurzel">Tastaturkürzel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/livemode.html">Live-Modus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#verfugbarkeit">Verfügbarkeit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#song-navigation">Song-Navigation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/livemode.html#desktop">Desktop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/livemode.html#mobile-touch">Mobile (Touch)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/livemode.html#fortschrittsanzeige">Fortschrittsanzeige</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#songbewertung">Songbewertung</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#song-uberspringen">Song überspringen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#song-einfugen">Song einfügen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/livemode.html#session-wiederverbinden">Session wiederverbinden</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/songs.html">Song-Datenbank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#song-anlegen">Song anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#status-workflow">Status-Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#filtern-und-suchen">Filtern und Suchen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#song-details-und-statistiken">Song-Details und Statistiken</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#bewertungen-songvoting">Bewertungen (Songvoting)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/proben.html">Proben</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#probe-anlegen">Probe anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#songs-einer-probe-zuweisen">Songs einer Probe zuweisen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#aufgaben-todos">Aufgaben (Todos)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#probe-fortschritt">Probe-Fortschritt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#ical-export">iCal-Export</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html">Abstimmungen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#abstimmung-anlegen">Abstimmung anlegen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#umfragetypen">Umfragetypen</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#meinungsumfrage">Meinungsumfrage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#terminfindung">Terminfindung</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#auftrittsanfrage">Auftrittsanfrage</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#abstimmung-schlieszen">Abstimmung schließen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/abstimmungen.html#benachrichtigungen">Benachrichtigungen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/benutzer.html">Benutzerverwaltung &amp; Profil</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#eigenes-profil">Eigenes Profil</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#passwort-andern">Passwort ändern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#passwort-vergessen">Passwort vergessen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#rollen-und-berechtigungen">Rollen und Berechtigungen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzerverwaltung-nur-admin">Benutzerverwaltung (nur Admin)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">REST-API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#api-dokumentation-swagger">API-Dokumentation (Swagger)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#authentifizierung">Authentifizierung</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#endpunkt-ubersicht">Endpunkt-Übersicht</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#rate-limiting">Rate Limiting</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Weitere Informationen</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Änderungsprotokoll</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-5-2026-03-10">v0.3.5 (2026-03-10)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-0">v0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-2-0">v0.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-0">v0.1.0</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">libreStage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Konfiguration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configuration.rst.txt" rel="nofollow"> Quelltext anzeigen</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="konfiguration">
+<span id="configuration"></span><h1>Konfiguration<a class="headerlink" href="#konfiguration" title="Link to this heading"></a></h1>
+<p>libreStage wird über zwei Konfigurationsdateien gesteuert: die <code class="docutils literal notranslate"><span class="pre">.env</span></code>-Datei für
+serverseitige Einstellungen und <code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code> für anwendungsspezifische Anpassungen.</p>
+<section id="umgebungsvariablen-env">
+<h2>Umgebungsvariablen (<code class="docutils literal notranslate"><span class="pre">.env</span></code>)<a class="headerlink" href="#umgebungsvariablen-env" title="Link to this heading"></a></h2>
+<p>Kopiere zunächst die Vorlage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+</pre></div>
+</div>
+<p>Anschließend alle relevanten Werte eintragen:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 15.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Standard</p></th>
+<th class="head"><p>Beschreibung</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SECRET_KEY</span></code></p></td>
+<td><p>–</p></td>
+<td><p><strong>Pflichtfeld.</strong> Langer, zufälliger String zum Signieren von JWTs. Niemals öffentlich!</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ENVIRONMENT</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">production</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">development</span></code> deaktiviert das Secure-Flag für Cookies (nötig auf <code class="docutils literal notranslate"><span class="pre">localhost</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CORS_ORIGINS</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">http://localhost:5173</span></code></p></td>
+<td><p>Erlaubte Frontend-Ursprünge (kommagetrennt)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FRONTEND_URL</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">http://localhost:5173</span></code></p></td>
+<td><p>Basis-URL des Frontends (wird in E-Mails verwendet)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DATABASE_URL</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sqlite:///./backend/db/app.db</span></code></p></td>
+<td><p>SQLAlchemy-Datenbank-URL (SQLite oder PostgreSQL)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TIMEZONE</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Europe/Berlin</span></code></p></td>
+<td><p>Zeitzone der Anwendung (IANA-Format)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SMTP_HOST</span></code></p></td>
+<td><p>–</p></td>
+<td><p>SMTP-Server für E-Mail-Versand (optional)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SMTP_PORT</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">587</span></code></p></td>
+<td><p>SMTP-Port</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SMTP_USER</span></code></p></td>
+<td><p>–</p></td>
+<td><p>SMTP-Benutzername</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SMTP_PASSWORD</span></code></p></td>
+<td><p>–</p></td>
+<td><p>SMTP-Passwort</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MATTERMOST_WEBHOOK_URL</span></code></p></td>
+<td><p>–</p></td>
+<td><p>Webhook-URL für Mattermost-Benachrichtigungen (optional)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="anwendungskonfiguration-appconfig-json">
+<h2>Anwendungskonfiguration (<code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code>)<a class="headerlink" href="#anwendungskonfiguration-appconfig-json" title="Link to this heading"></a></h2>
+<p>Die Datei <code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code> im Projekt-Root enthält alle band-spezifischen Einstellungen,
+die <strong>ohne erneutes Bauen</strong> des Frontends geändert werden können.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;app_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;libreStage&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;app_name_short&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LS&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;timezone&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Europe/Berlin&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;default_break_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 65.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Feld</p></th>
+<th class="head"><p>Beschreibung</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">app_name</span></code></p></td>
+<td><p>Vollständiger Anwendungsname (erscheint im Header)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">app_name_short</span></code></p></td>
+<td><p>Kurzname / Kürzel der Band</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">app_title</span></code></p></td>
+<td><p>Untertitel der Anwendung</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">timezone</span></code></p></td>
+<td><p>Zeitzone (IANA-Format, muss mit <code class="docutils literal notranslate"><span class="pre">.env</span></code> übereinstimmen)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">default_break_seconds</span></code></p></td>
+<td><p>Standard-Pausenlänge zwischen Sets in Sekunden (Standard: 30)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">genres</span></code></p></td>
+<td><p>Liste verfügbarer Genres für Songs</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gigTypes</span></code></p></td>
+<td><p>Auswahlliste für den Veranstaltungstyp</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tonekeys</span></code></p></td>
+<td><p>Verfügbare Tonarten</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rehearsalSongStatuses</span></code></p></td>
+<td><p>Song-Statuswerte für Proben-Ansichten</p></td>
+</tr>
+</tbody>
+</table>
+<section id="song-status">
+<h3>Song-Status<a class="headerlink" href="#song-status" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Bedeutung</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">vorschlag</span></code></p></td>
+<td><p>Song wurde vorgeschlagen, aber noch nicht bewertet</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">angenommen</span></code></p></td>
+<td><p>Song ist grundsätzlich akzeptiert</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">proben</span></code></p></td>
+<td><p>Song wird aktiv geprobt</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">spielbar</span></code></p></td>
+<td><p>Song ist bühnenreif und kann in Setlists eingesetzt werden</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bedarfsweise_proben</span></code></p></td>
+<td><p>Song ist spielbar, wird aber bei Bedarf nochmals geprobt</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="gig-status">
+<h3>Gig-Status<a class="headerlink" href="#gig-status" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Bedeutung</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">anfrage</span></code></p></td>
+<td><p>Auftrittsanfrage eingegangen, noch keine Zusage</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">angenommen</span></code></p></td>
+<td><p>Auftritt wurde bestätigt</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">abgelehnt</span></code></p></td>
+<td><p>Auftrittsanfrage wurde abgelehnt</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="frontend-konfiguration">
+<h2>Frontend-Konfiguration<a class="headerlink" href="#frontend-konfiguration" title="Link to this heading"></a></h2>
+<p>Das Frontend lädt die Konfiguration zur Laufzeit vom Backend-Endpoint <code class="docutils literal notranslate"><span class="pre">/public/app_config</span></code>.
+Für den Entwicklungsmodus wird die API-URL über <code class="docutils literal notranslate"><span class="pre">VITE_API_URL</span></code> gesteuert:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># frontend/.env (für lokale Entwicklung)</span>
+<span class="nv">VITE_API_URL</span><span class="o">=</span>http://localhost:8000
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Zurück</a>
+        <a href="benutzerhandbuch/index.html" class="btn btn-neutral float-right" title="Benutzerhandbuch" accesskey="n" rel="next">Weiter <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, libreStage contributors.</p>
+  </div>
+
+  Erstellt mit <a href="https://www.sphinx-doc.org/">Sphinx</a> mit einem
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    bereitgestellt von <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,178 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../benutzerhandbuch/livemode.rst:4
+#: ../../benutzerhandbuch/livemode.rst:10
+msgid "Live-Modus"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:6
+msgid "Der Live-Modus begleitet die Band während eines Auftritts. Er zeigt den aktuellen Song prominent an, ermöglicht Navigation und erfasst Bewertungen und Besonderheiten für spätere Auswertungen."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:15
+msgid "Live-Modus: aktueller Song mit Bewertungs-Buttons und Progress-Bar."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:18
+msgid "Screenshot folgt – bitte ``docs/manual/_static/screenshots/livemode.png`` ablegen."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:21
+msgid "Verfügbarkeit"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:23
+msgid "Der Live-Modus kann gestartet werden, wenn:"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:25
+msgid "**Es der Gig-Tag ist** (das Datum des Gigs entspricht dem heutigen Datum), *oder*"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:26
+msgid "ein **Editor oder Admin** den Modus manuell erzwingt (über den Button **Live-Modus erzwingen**)."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:28
+msgid "Musician-Benutzer können den Live-Modus nur am Gig-Tag starten."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:31
+msgid "Live-Modus starten"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:33
+msgid "Öffne die Gig-Liste und klicke auf den **Live-Modus**-Button beim gewünschten Gig. Das Live-Modal öffnet sich und zeigt den ersten Song des ersten Sets."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:36
+msgid "Sollte bereits eine laufende Session vorhanden sein (z. B. nach einem Seitenreload), wird die Position automatisch wiederhergestellt."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:40
+msgid "Song-Navigation"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:43
+msgid "Desktop"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:45
+msgid "**Pfeil rechts / Weiter-Button:** Nächster Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:46
+msgid "**Pfeil links / Zurück-Button:** Vorheriger Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:47
+msgid "**Tastatur →:** Nächster Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:48
+msgid "**Tastatur ←:** Vorheriger Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:51
+msgid "Mobile (Touch)"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:53
+msgid "**Wischen nach links:** Nächster Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:54
+msgid "**Wischen nach rechts:** Vorheriger Song"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:57
+msgid "Fortschrittsanzeige"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:59
+msgid "Eine Progress-Bar oben im Modal zeigt die aktuelle Position innerhalb der Setlist. Darunter wird der aktuelle Set und die Position im Set angezeigt (z. B. „Set 2 – Song 3 / 8\")."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:64
+msgid "Songbewertung"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:66
+msgid "Nach dem Spielen eines Songs kann eine Bewertung abgegeben werden:"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:72
+msgid "Symbol"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:73
+msgid "Bedeutung"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:74
+msgid "😞"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:75
+msgid "Hat nicht gut funktioniert"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:76
+msgid "😐"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:77
+msgid "War in Ordnung"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:78
+msgid "😊"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:79
+msgid "Hat sehr gut funktioniert"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:81
+msgid "Die Bewertungen fließen in die Song-Statistiken ein und können in der Song-Detailansicht eingesehen werden."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:85
+msgid "Song überspringen"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:87
+msgid "Über den Button **Überspringen** wird der aktuelle Song als übersprungen markiert. Übersprungene Songs werden im GEMA-Export ausgeschlossen (siehe :ref:`gigs`)."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:91
+msgid "Song einfügen"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:93
+msgid "Über **Song einfügen** kann ein Song aus der Datenbank spontan in die laufende Setlist eingefügt werden. Eingeschobene Songs sind im Nachhinein als solche markiert."
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:97
+msgid "Session wiederverbinden"
+msgstr ""
+
+#: ../../benutzerhandbuch/livemode.rst:99
+msgid "Wird die Seite neu geladen oder das Gerät gewechselt, öffnet sich der Live-Modus automatisch an der zuletzt gespeicherten Position."
+msgstr ""

@@ -1,0 +1,200 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:4
+#: ../../benutzerhandbuch/setlist_editor.rst:9
+msgid "Setlist-Editor"
+msgstr "Setlist Editor"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:6
+msgid ""
+"Der Setlist-Editor ermöglicht es, Setlists für Gigs zu erstellen und zu "
+"bearbeiten. Er unterstützt mehrere Sets, Drag & Drop sowie automatische "
+"Zeitberechnung."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:14
+msgid "Setlist-Editor mit mehreren Sets, Drag & Drop und Zeitanzeige."
+msgstr "Setlist editor with multiple sets, drag & drop and time display."
+
+#: ../../benutzerhandbuch/setlist_editor.rst:17
+msgid ""
+"Screenshot folgt – bitte "
+"``docs/manual/_static/screenshots/setlist_editor.png`` ablegen."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:20
+msgid "Sets anlegen"
+msgstr "Create sets"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:22
+msgid ""
+"Über den Button **+ Set hinzufügen** wird ein neues Set an die Setlist "
+"angehängt. Jedes Set bekommt automatisch einen Namen (z. B. „Set 1\", "
+"„Set 2\", …)."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:26
+msgid "Set umbenennen"
+msgstr "Rename a set"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:28
+msgid ""
+"Klicke auf den Set-Namen, um ihn inline zu bearbeiten. Drücke **Enter** "
+"oder klicke außerhalb des Feldes, um den Namen zu speichern."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:32
+msgid "Set löschen"
+msgstr "Delete a set"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:34
+msgid ""
+"Über das **Papierkorb-Icon** am Set-Header kann das gesamte Set (inkl. "
+"aller enthaltenen Songs) gelöscht werden. Eine Bestätigungsabfrage "
+"verhindert versehentliches Löschen."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:38
+msgid "Songs hinzufügen"
+msgstr "Add songs"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:40
+msgid ""
+"Im unteren Bereich des Editors befindet sich eine Songliste mit allen "
+"Songs aus der Datenbank, deren Status ``spielbar`` ist."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:43
+msgid "Klicke auf einen Song, um ihn dem aktuell ausgewählten Set hinzuzufügen."
+msgstr "Click a song to add it to the currently selected set."
+
+#: ../../benutzerhandbuch/setlist_editor.rst:44
+msgid "Alternativ kann im Suchfeld nach Titel oder Interpret gesucht werden."
+msgstr "Alternatively, the search field can be used to search by title or artist."
+
+#: ../../benutzerhandbuch/setlist_editor.rst:45
+msgid ""
+"Mit der **Enter**-Taste kann der erste Treffer der Suche direkt "
+"hinzugefügt werden."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:48
+msgid "Drag & Drop"
+msgstr "Drag & drop"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:50
+msgid ""
+"Songs können innerhalb eines Sets und zwischen Sets per Drag & Drop "
+"verschoben werden:"
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:52
+msgid "**Innerhalb eines Sets:** Ziehe einen Song an die gewünschte Position."
+msgstr "**Within a set:** drag a song to the desired position."
+
+#: ../../benutzerhandbuch/setlist_editor.rst:53
+msgid "**Zwischen Sets:** Ziehe einen Song auf ein anderes Set."
+msgstr "**Between sets:** drag a song onto another set."
+
+#: ../../benutzerhandbuch/setlist_editor.rst:56
+msgid "Song entfernen"
+msgstr "Remove a song"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:58
+msgid ""
+"Jede Song-Zeile im Set hat ein **X-Icon**, um den Song aus dem Set zu "
+"entfernen."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:61
+msgid "Zeitberechnung"
+msgstr "Timing"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:63
+msgid ""
+"libreStage berechnet die Spielzeit eines Sets automatisch aus den "
+"hinterlegten Song-Dauern. Die Gesamtdauer und die geplante Endzeit werden"
+" in Echtzeit aktualisiert."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:67
+msgid "Pausen"
+msgstr "Breaks"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:69
+msgid ""
+"Zwischen Sets wird automatisch eine Pause eingeplant. Die Standard-"
+"Pausenlänge wird in ``appConfig.json`` über das Feld "
+"``default_break_seconds`` konfiguriert."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:72
+msgid ""
+"Die Pausenlänge kann für jeden einzelnen Übergang im Editor angepasst "
+"werden."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:75
+msgid "Sänger-Farb-Kodierung"
+msgstr "Singer colour coding"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:77
+msgid ""
+"Jeder Sänger erhält automatisch eine eigene Farbe. Die Farbe erscheint "
+"als farbiger Balken links neben dem Song-Titel. So ist auf einen Blick "
+"erkennbar, welcher Sänger wie viele Songs in welchem Set singt."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:81
+msgid ""
+"Die Zuweisung der Farben erfolgt dynamisch und basiert auf den Sänger-"
+"Profilen in der Benutzerverwaltung (siehe :ref:`benutzer`)."
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:85
+msgid "Tastaturkürzel"
+msgstr "Keyboard shortcuts"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:91
+msgid "Taste"
+msgstr "Key"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:92
+msgid "Funktion"
+msgstr "Function"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:93
+msgid "**Enter**"
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:94
+msgid "Ersten Suchtreffer zum aktuellen Set hinzufügen"
+msgstr "Add the first search result to the current set"
+
+#: ../../benutzerhandbuch/setlist_editor.rst:95
+msgid "**Esc**"
+msgstr ""
+
+#: ../../benutzerhandbuch/setlist_editor.rst:96
+msgid "Suchfeld leeren / Fokus aufheben"
+msgstr "Clear search field / remove focus"
+
