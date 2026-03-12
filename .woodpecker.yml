@@ -1,6 +1,8 @@
 steps:
   - name: test-and-coverage
     image: python:3.14
+    when:
+      - event: push
     commands:
       - cp .env.example .env
       - pip install uv
@@ -11,10 +13,11 @@ steps:
   - name: build-and-deploy-docs
     image: python:3.12
     when:
-      branch: main
-    secrets:
-      - source: PAGES_SSH_KEY
-        target: PAGES_SSH_KEY
+      - branch: main
+        event: push
+    environment:
+      PAGES_SSH_KEY:
+        from_secret: PAGES_SSH_KEY
     commands:
       - pip install uv
       - uv sync --group docs
