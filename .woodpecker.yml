@@ -62,5 +62,5 @@ steps:
       - git rm -rf . 2>/dev/null || true
       - cp -r ../public/. .
       - git add -A
-      - git diff --cached --quiet || git commit -m "docs: deploy $VERSION [skip ci]"
+      - "git diff --cached --quiet || git commit -m \"docs: deploy $VERSION [skip ci]\""
       - git push origin pages
