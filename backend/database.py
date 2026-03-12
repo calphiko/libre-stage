@@ -27,7 +27,6 @@ engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False},
     pool_size=20,           # Mehr Connections im Pool
-    max_overflow=40,        # Zusätzliche Overflow-Connections
     pool_pre_ping=True,     # Teste Connection vor Verwendung
     pool_recycle=3600,      # Recycle Connections nach 1h
 )

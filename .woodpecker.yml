@@ -1,11 +1,69 @@
-labels:
-  branch: ${CI_REPO_BRANCH}
-
 steps:
   - name: test-and-coverage
-    image: python:3.11
+    image: python:3.14
+    when:
+      - event: push
     commands:
+      - cp .env.example .env
       - pip install uv
       - uv sync --all-groups
       - uv run pytest --cov=backend --cov-report=xml --cov-report=term
       - uv run coverage report --fail-under=75
+
+  - name: build-and-deploy-docs
+    image: python:3.12
+    when:
+      - branch: main
+        event: push
+    environment:
+      PAGES_SSH_KEY:
+        from_secret: PAGES_SSH_KEY
+    commands:
+      - pip install uv
+      - uv sync --group docs
+
+      - VERSION=$(python3 -c "import json; print(json.load(open('version.json'))['release'])")
+      - echo "Building docs for version $VERSION"
+
+      - uv run sphinx-build -b html -D language=de docs/manual docs/manual/_build/html/de
+      - mkdir -p public/de public/$VERSION/de
+      - cp -r docs/manual/_build/html/de/. public/de/
+      - cp -r docs/manual/_build/html/de/. public/$VERSION/de/
+
+      - uv run sphinx-build -b html -D language=en docs/manual docs/manual/_build/html/en
+      - mkdir -p public/en public/$VERSION/en
+      - cp -r docs/manual/_build/html/en/. public/en/
+      - cp -r docs/manual/_build/html/en/. public/$VERSION/en/
+
+      - >-
+        printf '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+        <meta http-equiv="refresh" content="0; url=de/">
+        <title>libreStage Docs</title>
+        <style>body{font-family:sans-serif;max-width:600px;margin:4rem auto;text-align:center}
+        a{display:inline-block;margin:1rem;padding:.75rem 2rem;background:#2980b9;color:#fff;
+        text-decoration:none;border-radius:4px}a:hover{background:#1a5276}</style></head>
+        <body><h1>libreStage Documentation</h1><p>Please select your language:</p>
+        <a href="de/">Deutsch</a> <a href="en/">English</a></body></html>'
+        > public/index.html
+
+      - apt-get update -qq && apt-get install -y -qq git openssh-client
+      - mkdir -p ~/.ssh
+      - printf '%s\n' "$PAGES_SSH_KEY" > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan codeberg.org >> ~/.ssh/known_hosts 2>/dev/null
+      - git config --global user.email "ci@librestage"
+      - git config --global user.name "libreStage CI"
+      - git config --global --add safe.directory '*'
+
+      - ORIGIN=$(git remote get-url origin)
+      - SSH_ORIGIN=$(echo "$ORIGIN" | sed 's|https://codeberg.org/|git@codeberg.org:|')
+      - "echo \"Deploy target: $SSH_ORIGIN branch=pages\""
+
+      - git clone --depth=1 --branch=pages "$SSH_ORIGIN" pages-repo || git clone --depth=1 "$SSH_ORIGIN" pages-repo
+      - cd pages-repo
+      - git checkout pages 2>/dev/null || git checkout --orphan pages
+      - git rm -rf . 2>/dev/null || true
+      - cp -r ../public/. .
+      - git add -A
+      - "git diff --cached --quiet || git commit -m \"docs: deploy $VERSION [skip ci]\""
+      - git push origin pages

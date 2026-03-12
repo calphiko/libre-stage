@@ -1,0 +1,480 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../configuration.rst:4
+msgid "Konfiguration"
+msgstr "Configuration"
+
+#: ../../configuration.rst:6
+msgid ""
+"libreStage wird über zwei Konfigurationsdateien gesteuert: die "
+"``.env``-Datei für serverseitige Einstellungen und ``appConfig.json`` für"
+" anwendungsspezifische, bandspezifische Anpassungen."
+msgstr ""
+
+#: ../../configuration.rst:10
+msgid "Umgebungsvariablen (``.env``)"
+msgstr "Environment variables (``.env``)"
+
+#: ../../configuration.rst:12
+msgid "Kopiere zunächst die Vorlage:"
+msgstr "First copy the template:"
+
+#: ../../configuration.rst:18
+msgid "Anschließend alle relevanten Werte eintragen:"
+msgstr "Then fill in all relevant values:"
+
+#: ../../configuration.rst:24
+msgid "Variable"
+msgstr "Variable"
+
+#: ../../configuration.rst:25
+msgid "Standard"
+msgstr "Default"
+
+#: ../../configuration.rst:26 ../../configuration.rst:100
+msgid "Beschreibung"
+msgstr ""
+
+#: ../../configuration.rst:27
+msgid "``SECRET_KEY``"
+msgstr ""
+
+#: ../../configuration.rst:28 ../../configuration.rst:52
+#: ../../configuration.rst:58 ../../configuration.rst:61
+#: ../../configuration.rst:64 ../../configuration.rst:67
+#: ../../configuration.rst:70 ../../configuration.rst:73
+msgid "–"
+msgstr ""
+
+#: ../../configuration.rst:29
+msgid ""
+"**Pflichtfeld.** Langer, zufälliger String zum Signieren von JWTs. "
+"Niemals öffentlich!"
+msgstr ""
+
+#: ../../configuration.rst:30
+msgid "``ENVIRONMENT``"
+msgstr ""
+
+#: ../../configuration.rst:31
+msgid "``production``"
+msgstr ""
+
+#: ../../configuration.rst:32
+msgid ""
+"``development`` deaktiviert das Secure-Flag für Cookies (nötig auf "
+"``localhost``)"
+msgstr ""
+
+#: ../../configuration.rst:33
+msgid "``CORS_ORIGINS``"
+msgstr ""
+
+#: ../../configuration.rst:34 ../../configuration.rst:37
+msgid "``http://localhost:5173``"
+msgstr ""
+
+#: ../../configuration.rst:35
+msgid "Erlaubte Frontend-Ursprünge (kommagetrennt)"
+msgstr "Allowed frontend origins (comma-separated)"
+
+#: ../../configuration.rst:36
+msgid "``FRONTEND_URL``"
+msgstr ""
+
+#: ../../configuration.rst:38
+msgid "Basis-URL des Frontends (wird in E-Mails verwendet)"
+msgstr "Base URL of the frontend (used in emails)"
+
+#: ../../configuration.rst:39
+msgid "``DATABASE_URL``"
+msgstr ""
+
+#: ../../configuration.rst:40
+msgid "``sqlite:///./backend/db/app.db``"
+msgstr ""
+
+#: ../../configuration.rst:41
+msgid "SQLAlchemy-Datenbank-URL (SQLite oder PostgreSQL)"
+msgstr "SQLAlchemy database URL (SQLite or PostgreSQL)"
+
+#: ../../configuration.rst:42
+msgid "``TIMEZONE``"
+msgstr ""
+
+#: ../../configuration.rst:43
+msgid "``Europe/Berlin``"
+msgstr ""
+
+#: ../../configuration.rst:44
+msgid "Zeitzone der Anwendung (IANA-Format)"
+msgstr "Application timezone (IANA format)"
+
+#: ../../configuration.rst:45
+msgid "``DOCS_URL``"
+msgstr ""
+
+#: ../../configuration.rst:46
+msgid "``/docs``"
+msgstr ""
+
+#: ../../configuration.rst:47
+msgid "Pfad zur Swagger-Doku (leer lassen zum Deaktivieren)"
+msgstr "Path to Swagger docs (leave empty to disable)"
+
+#: ../../configuration.rst:48
+msgid "``OPENAPI_URL``"
+msgstr ""
+
+#: ../../configuration.rst:49
+msgid "``/openapi.json``"
+msgstr ""
+
+#: ../../configuration.rst:50
+msgid "Pfad zum OpenAPI-Schema"
+msgstr "Path to OpenAPI schema"
+
+#: ../../configuration.rst:51
+msgid "``SMTP_HOST``"
+msgstr ""
+
+#: ../../configuration.rst:53
+msgid "SMTP-Server für E-Mail-Versand (optional)"
+msgstr "SMTP server for email sending (optional)"
+
+#: ../../configuration.rst:54
+msgid "``SMTP_PORT``"
+msgstr ""
+
+#: ../../configuration.rst:55
+msgid "``587``"
+msgstr ""
+
+#: ../../configuration.rst:56
+msgid "SMTP-Port"
+msgstr "SMTP port"
+
+#: ../../configuration.rst:57
+msgid "``SMTP_USER``"
+msgstr ""
+
+#: ../../configuration.rst:59
+msgid "SMTP-Benutzername"
+msgstr "SMTP username"
+
+#: ../../configuration.rst:60
+msgid "``SMTP_PASSWORD``"
+msgstr ""
+
+#: ../../configuration.rst:62
+msgid "SMTP-Passwort"
+msgstr "SMTP password"
+
+#: ../../configuration.rst:63
+msgid "``MATTERMOST_WEBHOOK_URL``"
+msgstr ""
+
+#: ../../configuration.rst:65
+msgid "Webhook-URL für Mattermost-Benachrichtigungen (optional)"
+msgstr ""
+
+#: ../../configuration.rst:66
+msgid "``MM_CHANNEL_SONG_VOTES``"
+msgstr ""
+
+#: ../../configuration.rst:68
+msgid "Mattermost-Kanal für neue Song-Abstimmungen"
+msgstr "Mattermost channel for new song votes"
+
+#: ../../configuration.rst:69
+msgid "``MM_CHANNEL_GIGS``"
+msgstr ""
+
+#: ../../configuration.rst:71
+msgid "Mattermost-Kanal für neue Gigs"
+msgstr "Mattermost channel for new gigs"
+
+#: ../../configuration.rst:72
+msgid "``MM_CHANNEL_REH``"
+msgstr ""
+
+#: ../../configuration.rst:74
+msgid "Mattermost-Kanal für neue Proben"
+msgstr "Mattermost channel for new rehearsals"
+
+#: ../../configuration.rst:77
+msgid "Anwendungskonfiguration (``appConfig.json``)"
+msgstr "Application configuration (``appConfig.json``)"
+
+#: ../../configuration.rst:79
+msgid ""
+"Die Datei ``appConfig.json`` im Projekt-Root enthält alle band-"
+"spezifischen Einstellungen, die **ohne erneutes Bauen** des Frontends "
+"geändert werden können."
+msgstr ""
+
+#: ../../configuration.rst:93
+msgid "Allgemeine Felder"
+msgstr "General fields"
+
+#: ../../configuration.rst:99
+msgid "Feld"
+msgstr "Field"
+
+#: ../../configuration.rst:101
+msgid "``app_name``"
+msgstr ""
+
+#: ../../configuration.rst:102
+msgid "Vollständiger Anwendungsname (erscheint im Header)"
+msgstr "Full application name (appears in the header)"
+
+#: ../../configuration.rst:103
+msgid "``app_name_short``"
+msgstr ""
+
+#: ../../configuration.rst:104
+msgid "Kurzname / Kürzel der Band (z. B. für Badges)"
+msgstr ""
+
+#: ../../configuration.rst:105
+msgid "``app_title``"
+msgstr ""
+
+#: ../../configuration.rst:106
+msgid "Untertitel der Anwendung"
+msgstr "Application subtitle"
+
+#: ../../configuration.rst:107
+msgid "``app_description``"
+msgstr ""
+
+#: ../../configuration.rst:108
+msgid "Kurze Beschreibung (Meta-Tag)"
+msgstr "Short description (meta tag)"
+
+#: ../../configuration.rst:109
+msgid "``copyright_holder``"
+msgstr ""
+
+#: ../../configuration.rst:110
+msgid "Name der Band / Organisation für das Copyright"
+msgstr ""
+
+#: ../../configuration.rst:111
+msgid "``copyright_url``"
+msgstr ""
+
+#: ../../configuration.rst:112
+msgid "URL der Band-Webseite"
+msgstr "URL of the band website"
+
+#: ../../configuration.rst:113
+msgid "``ical_domain``"
+msgstr ""
+
+#: ../../configuration.rst:114
+msgid "Domain für iCal-UIDs (z. B. ``meineband.de``)"
+msgstr ""
+
+#: ../../configuration.rst:115
+msgid "``ical_prodid``"
+msgstr ""
+
+#: ../../configuration.rst:116
+msgid "PRODID-Wert im iCal-Export"
+msgstr "PRODID value in the iCal export"
+
+#: ../../configuration.rst:117
+msgid "``ical_calendar_name``"
+msgstr ""
+
+#: ../../configuration.rst:118
+msgid "Anzeigename des Kalenders"
+msgstr "Display name of the calendar"
+
+#: ../../configuration.rst:119
+msgid "``ical_rehearsal_prefix``"
+msgstr ""
+
+#: ../../configuration.rst:120
+msgid "Präfix für Proben-Einträge im Kalender (z. B. ``[Probe]``)"
+msgstr ""
+
+#: ../../configuration.rst:121
+msgid "``ical_gig_prefix``"
+msgstr ""
+
+#: ../../configuration.rst:122
+msgid "Präfix für Gig-Einträge im Kalender"
+msgstr ""
+
+#: ../../configuration.rst:123
+msgid "``timezone``"
+msgstr ""
+
+#: ../../configuration.rst:124
+msgid "Zeitzone (IANA-Format, muss mit ``.env`` übereinstimmen)"
+msgstr ""
+
+#: ../../configuration.rst:125
+msgid "``default_break_seconds``"
+msgstr ""
+
+#: ../../configuration.rst:126
+msgid "Standard-Pausenlänge zwischen Sets in Sekunden (Standard: 30)"
+msgstr ""
+
+#: ../../configuration.rst:129
+msgid "Genres"
+msgstr "Genres"
+
+#: ../../configuration.rst:131
+msgid "Liste der verfügbaren Genres für Songs:"
+msgstr "List of available genres for songs:"
+
+#: ../../configuration.rst:141
+msgid "Gig-Typen"
+msgstr "Gig types"
+
+#: ../../configuration.rst:143
+msgid "Auswahlliste für den Veranstaltungstyp bei Gigs:"
+msgstr "Selection list for the event type of gigs:"
+
+#: ../../configuration.rst:153
+msgid "Song-Status"
+msgstr "Song status"
+
+#: ../../configuration.rst:155
+msgid "Definiert den Workflow für Songs vom Vorschlag bis zur Bühnenreife:"
+msgstr ""
+
+#: ../../configuration.rst:161 ../../configuration.rst:181
+msgid "Status"
+msgstr "Status"
+
+#: ../../configuration.rst:162 ../../configuration.rst:182
+msgid "Bedeutung"
+msgstr "Meaning"
+
+#: ../../configuration.rst:163
+msgid "``vorschlag``"
+msgstr ""
+
+#: ../../configuration.rst:164
+msgid "Song wurde vorgeschlagen, aber noch nicht bewertet"
+msgstr "Song has been proposed but not yet reviewed"
+
+#: ../../configuration.rst:165 ../../configuration.rst:185
+msgid "``angenommen``"
+msgstr ""
+
+#: ../../configuration.rst:166
+msgid "Song ist grundsätzlich akzeptiert"
+msgstr ""
+
+#: ../../configuration.rst:167
+msgid "``proben``"
+msgstr ""
+
+#: ../../configuration.rst:168
+msgid "Song wird aktiv geprobt"
+msgstr "Song is actively being rehearsed"
+
+#: ../../configuration.rst:169
+msgid "``spielbar``"
+msgstr ""
+
+#: ../../configuration.rst:170
+msgid "Song ist bühnenreif und kann in Setlists eingesetzt werden"
+msgstr ""
+
+#: ../../configuration.rst:171
+msgid "``bedarfsweise_proben``"
+msgstr ""
+
+#: ../../configuration.rst:172
+msgid "Song ist spielbar, wird aber bei Bedarf nochmals geprobt"
+msgstr ""
+
+#: ../../configuration.rst:175
+msgid "Gig-Status"
+msgstr "Gig status"
+
+#: ../../configuration.rst:183
+msgid "``anfrage``"
+msgstr ""
+
+#: ../../configuration.rst:184
+msgid "Auftrittsanfrage eingegangen, noch keine Zusage"
+msgstr "Gig request received, no confirmation yet"
+
+#: ../../configuration.rst:186
+msgid "Auftritt wurde bestätigt"
+msgstr "Performance has been confirmed"
+
+#: ../../configuration.rst:187
+msgid "``abgelehnt``"
+msgstr ""
+
+#: ../../configuration.rst:188
+msgid "Auftrittsanfrage wurde abgelehnt"
+msgstr "Gig request was declined"
+
+#: ../../configuration.rst:191
+msgid "Tonarten (``tonekeys``)"
+msgstr "Keys (``tonekeys``)"
+
+#: ../../configuration.rst:193
+msgid ""
+"Vollständige Liste der verfügbaren Tonarten (Dur und Moll) für Songs. Die"
+" Werte können in ``appConfig.json`` beliebig ergänzt oder angepasst "
+"werden."
+msgstr ""
+
+#: ../../configuration.rst:197
+msgid "Probe-Song-Status (``rehearsalSongStatuses``)"
+msgstr "Rehearsal song status (``rehearsalSongStatuses``)"
+
+#: ../../configuration.rst:199
+msgid ""
+"Liste von Song-Statuswerten, die in Proben-Ansichten gefiltert werden "
+"können:"
+msgstr ""
+
+#: ../../configuration.rst:206
+msgid "Frontend-Konfiguration"
+msgstr "Frontend configuration"
+
+#: ../../configuration.rst:208
+msgid ""
+"Das Frontend lädt die Konfiguration zur Laufzeit vom Backend-Endpoint "
+"``/public/app_config``. Damit werden alle Änderungen an "
+"``appConfig.json`` sofort wirksam, ohne das Frontend neu bauen zu müssen."
+msgstr ""
+
+#: ../../configuration.rst:211
+msgid ""
+"Für den Entwicklungsmodus wird die API-URL über die Umgebungsvariable "
+"``VITE_API_URL`` gesteuert:"
+msgstr ""
+
