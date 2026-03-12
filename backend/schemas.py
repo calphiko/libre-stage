@@ -68,6 +68,7 @@ class UserOut(BaseModel):
     mm_username: Optional[str] = ""
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
 
+
 class UserTodo(BaseModel):
     id: int
     todo: str

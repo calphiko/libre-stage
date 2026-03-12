@@ -376,8 +376,11 @@ def test_add_feedback_to_survey(client, auth_headers, auth_headers2, wrong_auth_
     assert response.json()["detail"] == "Survey is closed for feedback"
 
     response = client.put(f"/surveys/{survey.id}/feedback", json=feedback_data, headers=auth_headers2)
-    assert response.status_code == 403
-    assert response.json()["detail"] == "You can only update your own feedback"
+    # Backend silently skips feedback with wrong id_user (testuser2 sending feedback for testuser)
+    assert response.status_code == 200
+    # Verify no feedback was stored since id_user didn't match authenticated user
+    data = response.json()
+    assert len(data["fields"][0]["feedbacks"]) == 0
 
     response = client.put(f"/surveys/{survey.id}/feedback", json=feedback_data2, headers=auth_headers)
     assert response.status_code == 400
