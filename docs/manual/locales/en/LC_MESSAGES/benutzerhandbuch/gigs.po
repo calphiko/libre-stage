@@ -1,0 +1,230 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../benutzerhandbuch/gigs.rst:4
+msgid "Gigs"
+msgstr "Gigs"
+
+#: ../../benutzerhandbuch/gigs.rst:6
+msgid ""
+"Im Bereich **Gigs** werden alle Konzerte und Auftritte der Band "
+"verwaltet. Admins und Editors können Gigs anlegen, bearbeiten und "
+"löschen."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:9
+msgid "Gig-Verwaltung"
+msgstr "Gig management"
+
+#: ../../benutzerhandbuch/gigs.rst:14
+msgid "Gig-Liste mit Statusbadges und Aktions-Buttons."
+msgstr "Gig list with status badges and action buttons."
+
+#: ../../benutzerhandbuch/gigs.rst:17
+msgid ""
+"Screenshot folgt – bitte ``docs/manual/_static/screenshots/gigs.png`` "
+"ablegen."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:20
+msgid "Gig anlegen"
+msgstr "Create a gig"
+
+#: ../../benutzerhandbuch/gigs.rst:22
+msgid "Klicke auf **+ Neuer Gig**, um das Formular zu öffnen."
+msgstr "Click **+ New Gig** to open the form."
+
+#: ../../benutzerhandbuch/gigs.rst:28
+msgid "Feld"
+msgstr "Field"
+
+#: ../../benutzerhandbuch/gigs.rst:29
+msgid "Beschreibung"
+msgstr "Description"
+
+#: ../../benutzerhandbuch/gigs.rst:30
+msgid "**Name**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:31
+msgid "Bezeichnung des Auftritts (z. B. „Stadtfest Hauptbühne\")"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:32
+msgid "**Datum**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:33
+msgid "Datum des Auftritts"
+msgstr "Date of the performance"
+
+#: ../../benutzerhandbuch/gigs.rst:34
+msgid "**Typ**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:35
+msgid "Veranstaltungstyp (aus ``appConfig.json`` konfigurierbar)"
+msgstr "Event type (configurable in ``appConfig.json``)"
+
+#: ../../benutzerhandbuch/gigs.rst:36
+msgid "**Veranstalter**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:37
+msgid "Name des Veranstalters"
+msgstr "Name of the organiser"
+
+#: ../../benutzerhandbuch/gigs.rst:38
+msgid "**Location**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:39
+msgid "Ort / Adresse des Auftritts"
+msgstr "Venue / address of the performance"
+
+#: ../../benutzerhandbuch/gigs.rst:40
+msgid "**Einlass**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:41
+msgid "Uhrzeit des Einlasses"
+msgstr "Doors open time"
+
+#: ../../benutzerhandbuch/gigs.rst:42
+msgid "**Beginn**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:43
+msgid "Uhrzeit des Auftrittsbeginns"
+msgstr "Performance start time"
+
+#: ../../benutzerhandbuch/gigs.rst:44
+msgid "**Ende**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:45
+msgid "Geplantes Ende des Auftritts"
+msgstr "Planned end of the performance"
+
+#: ../../benutzerhandbuch/gigs.rst:46
+msgid "**Kommentar**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:47
+msgid "Interne Anmerkungen (nicht öffentlich)"
+msgstr "Internal notes (not public)"
+
+#: ../../benutzerhandbuch/gigs.rst:50
+msgid "Status-Workflow"
+msgstr "Status workflow"
+
+#: ../../benutzerhandbuch/gigs.rst:52
+msgid "Jeder Gig durchläuft einen Status-Workflow:"
+msgstr "Every gig goes through a status workflow:"
+
+#: ../../benutzerhandbuch/gigs.rst:58
+msgid "Status"
+msgstr "Status"
+
+#: ../../benutzerhandbuch/gigs.rst:59
+msgid "Bedeutung"
+msgstr "Meaning"
+
+#: ../../benutzerhandbuch/gigs.rst:60
+msgid "**anfrage**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:61
+msgid "Auftrittsanfrage eingegangen, noch keine endgültige Zusage"
+msgstr "Gig request received, no final confirmation yet"
+
+#: ../../benutzerhandbuch/gigs.rst:62
+msgid "**angenommen**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:63
+msgid "Auftritt ist fest zugesagt und findet statt"
+msgstr "Performance is firmly confirmed and will take place"
+
+#: ../../benutzerhandbuch/gigs.rst:64
+msgid "**abgelehnt**"
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:65
+msgid "Anfrage wurde abgelehnt"
+msgstr "Request was declined"
+
+#: ../../benutzerhandbuch/gigs.rst:68
+msgid "Setlist verwalten"
+msgstr "Manage setlist"
+
+#: ../../benutzerhandbuch/gigs.rst:70
+msgid ""
+"Jeder Gig hat eine eigene Setlist, die im :ref:`setlist_editor` "
+"bearbeitet wird. Klicke auf **Setlist** in der Gig-Zeile, um den Editor "
+"zu öffnen."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:74
+msgid "Setlist-PDF generieren"
+msgstr "Generate setlist PDF"
+
+#: ../../benutzerhandbuch/gigs.rst:76
+msgid ""
+"Der Button **PDF** erzeugt ein druckfertiges PDF der Setlist mit allen "
+"Sets, Songs, Tonarten, Dauern, Sängern sowie Gesamtspieldauer und "
+"Pausenzeiten."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:80
+msgid "GEMA-Export (Excel)"
+msgstr "GEMA export (Excel)"
+
+#: ../../benutzerhandbuch/gigs.rst:82
+msgid ""
+"Der Button **GEMA** erzeugt ein Excel-Dokument im offiziellen GEMA-"
+"Meldeformat. Songs, die im Live-Modus als *übersprungen* markiert wurden,"
+" werden automatisch ausgeschlossen."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:85
+msgid ""
+"Das Dokument enthält je Song: Titel, Interpret, Komponist, Texter, "
+"Bearbeiter, Verlag, Dauer."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:88
+msgid "Statistiken"
+msgstr "Statistics"
+
+#: ../../benutzerhandbuch/gigs.rst:90
+msgid ""
+"Der Button **Statistiken** öffnet ein Modal mit der Auswertung des Gigs: "
+"gespielte / übersprungene Songs, Bewertungsverteilung aus dem Live-Modus,"
+" Spielzeit vs. Plan."
+msgstr ""
+
+#: ../../benutzerhandbuch/gigs.rst:93
+msgid ""
+"Der Button **Saison-Statistiken** zeigt aggregierte Daten aller Gigs der "
+"laufenden Saison."
+msgstr ""
+

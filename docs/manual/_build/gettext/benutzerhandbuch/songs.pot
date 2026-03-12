@@ -1,0 +1,258 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-12 08:17+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../benutzerhandbuch/songs.rst:4
+#: ../../benutzerhandbuch/songs.rst:9
+msgid "Song-Datenbank"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:6
+msgid "Die Song-Datenbank enthält das gesamte Repertoire der Band. Admins und Editors können Songs anlegen, bearbeiten und archivieren."
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:14
+msgid "Song-Tabelle mit Filterleiste und Status-Badges."
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:17
+msgid "Screenshot folgt – bitte ``docs/manual/_static/screenshots/songs.png`` ablegen."
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:20
+msgid "Song anlegen"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:22
+msgid "Klicke auf **+ Neuer Song**, um das Formular zu öffnen. Folgende Felder stehen zur Verfügung:"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:28
+msgid "Feld"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:29
+msgid "Beschreibung"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:30
+msgid "**Titel**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:31
+msgid "Offizieller Songtitel"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:32
+msgid "**Interpret**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:33
+msgid "Ursprünglicher Interpret (z. B. „The Beatles\")"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:34
+msgid "**Komponist**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:35
+msgid "Name(n) der Komponisten (für GEMA-Export)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:36
+msgid "**Texter**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:37
+msgid "Name(n) der Texter (für GEMA-Export)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:38
+msgid "**Bearbeiter**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:39
+msgid "Name des Bearbeiters, falls eine eigene Arrangement-Fassung existiert"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:40
+msgid "**Verlag**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:41
+msgid "Musikverlag (für GEMA-Export)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:42
+msgid "**Tonart**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:43
+msgid "Tonart des Songs (z. B. „Am\", „G\", „C#\")"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:44
+msgid "**Dauer**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:45
+msgid "Spielzeit in Minuten:Sekunden (z. B. ``3:45``)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:46
+msgid "**Genre**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:47
+msgid "Genre aus der konfigurierten Liste (siehe :ref:`configuration`)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:48
+msgid "**Status**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:49
+msgid "Aktueller Status im Workflow (s. u.)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:50
+msgid "**Sänger**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:51
+msgid "Hauptsänger aus der Sängerliste"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:54
+msgid "Status-Workflow"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:56
+msgid "Songs durchlaufen einen Workflow von der Idee bis zur Bühnenreife:"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:62
+msgid "Status"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:63
+msgid "Bedeutung"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:64
+msgid "**vorschlag**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:65
+msgid "Song wurde vorgeschlagen, aber noch nicht bewertet"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:66
+msgid "**angenommen**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:67
+msgid "Song ist grundsätzlich akzeptiert und soll erarbeitet werden"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:68
+msgid "**proben**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:69
+msgid "Song wird aktiv geprobt"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:70
+msgid "**spielbar**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:71
+msgid "Song ist bühnenreif – erscheint im Setlist-Editor"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:72
+msgid "**bedarfsweise_proben**"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:73
+msgid "Song ist spielbar, wird aber bei Bedarf nochmals geprobt"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:76
+msgid "Nur Songs mit Status **spielbar** oder **bedarfsweise_proben** erscheinen im Setlist-Editor."
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:80
+msgid "Filtern und Suchen"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:82
+msgid "Die Songliste kann nach folgenden Kriterien gefiltert werden:"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:84
+msgid "Status (Mehrfachauswahl)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:85
+msgid "Genre"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:86
+msgid "Sänger"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:87
+msgid "Freitextsuche (Titel / Interpret)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:90
+msgid "Song-Details und Statistiken"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:92
+msgid "Ein Klick auf einen Song öffnet die Detailansicht mit:"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:94
+msgid "Alle Felder des Songs"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:95
+msgid "**Proben-Historie:** Wie oft und wann wurde der Song geprobt?"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:96
+msgid "**Gig-Historie:** Bei welchen Auftritten wurde der Song gespielt, mit Bewertungen?"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:97
+msgid "**Feedback-Verteilung:** Balkendiagramm der Bewertungen aus dem Live-Modus"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:98
+msgid "**Häufige Begleiter:** Welche anderen Songs erscheinen am häufigsten in derselben Setlist?"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:101
+msgid "Bewertungen (Songvoting)"
+msgstr ""
+
+#: ../../benutzerhandbuch/songs.rst:103
+msgid "Alle Benutzer können Songs bewerten (Daumen hoch / Daumen runter). Die Bewertungen sind im Dashboard als Aufgabe sichtbar, solange noch keine Stimme abgegeben wurde."
+msgstr ""
