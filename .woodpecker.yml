@@ -1,6 +1,3 @@
-labels:
-  branch: ${CI_REPO_BRANCH}
-
 steps:
   - name: test-and-coverage
     image: python:3.14
@@ -16,76 +13,52 @@ steps:
     when:
       branch: main
     secrets:
-      - PAGES_SSH_KEY
+      - source: PAGES_SSH_KEY
+        target: PAGES_SSH_KEY
     commands:
-      # ── Install docs dependencies ──────────────────────────────────────────
       - pip install uv
       - uv sync --group docs
 
-      # ── Read version from version.json ────────────────────────────────────
       - VERSION=$(python3 -c "import json; print(json.load(open('version.json'))['release'])")
       - echo "Building docs for version $VERSION"
 
-      # ── Build German docs ─────────────────────────────────────────────────
       - uv run sphinx-build -b html -D language=de docs/manual docs/manual/_build/html/de
       - mkdir -p public/de public/$VERSION/de
       - cp -r docs/manual/_build/html/de/. public/de/
       - cp -r docs/manual/_build/html/de/. public/$VERSION/de/
 
-      # ── Build English docs ────────────────────────────────────────────────
       - uv run sphinx-build -b html -D language=en docs/manual docs/manual/_build/html/en
       - mkdir -p public/en public/$VERSION/en
       - cp -r docs/manual/_build/html/en/. public/en/
       - cp -r docs/manual/_build/html/en/. public/$VERSION/en/
 
-      # ── Generate root index.html (language selector) ──────────────────────
-      - |
-        cat > public/index.html << 'HTML'
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta http-equiv="refresh" content="0; url=de/">
-          <title>libreStage Docs</title>
-          <style>
-            body { font-family: sans-serif; max-width: 600px; margin: 4rem auto; text-align: center; }
-            a { display: inline-block; margin: 1rem; padding: .75rem 2rem;
-                background: #2980b9; color: #fff; text-decoration: none; border-radius: 4px; }
-            a:hover { background: #1a5276; }
-            .versions { margin-top: 2rem; font-size: .9rem; color: #555; }
-            .versions a { background: #7f8c8d; padding: .4rem 1rem; margin: .25rem; }
-          </style>
-        </head>
-        <body>
-          <h1>libreStage Documentation</h1>
-          <p>Please select your language:</p>
-          <a href="de/">Deutsch</a>
-          <a href="en/">English</a>
-        </body>
-        </html>
-        HTML
+      - >-
+        printf '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+        <meta http-equiv="refresh" content="0; url=de/">
+        <title>libreStage Docs</title>
+        <style>body{font-family:sans-serif;max-width:600px;margin:4rem auto;text-align:center}
+        a{display:inline-block;margin:1rem;padding:.75rem 2rem;background:#2980b9;color:#fff;
+        text-decoration:none;border-radius:4px}a:hover{background:#1a5276}</style></head>
+        <body><h1>libreStage Documentation</h1><p>Please select your language:</p>
+        <a href="de/">Deutsch</a> <a href="en/">English</a></body></html>'
+        > public/index.html
 
-      # ── Deploy to pages branch via SSH ────────────────────────────────────
       - apt-get update -qq && apt-get install -y -qq git openssh-client
       - mkdir -p ~/.ssh
-      - echo "$PAGES_SSH_KEY" > ~/.ssh/id_ed25519
+      - printf '%s\n' "$PAGES_SSH_KEY" > ~/.ssh/id_ed25519
       - chmod 600 ~/.ssh/id_ed25519
       - ssh-keyscan codeberg.org >> ~/.ssh/known_hosts 2>/dev/null
       - git config --global user.email "ci@librestage"
       - git config --global user.name "libreStage CI"
+      - git config --global --add safe.directory '*'
 
-      # ── Derive SSH remote URL from current origin ─────────────────────────
       - ORIGIN=$(git remote get-url origin)
       - SSH_ORIGIN=$(echo "$ORIGIN" | sed 's|https://codeberg.org/|git@codeberg.org:|')
-      - echo "Deploying to $SSH_ORIGIN (branch pages)"
+      - echo "Deploy target: $SSH_ORIGIN branch=pages"
 
-      # ── Clone or init pages branch ────────────────────────────────────────
-      - git clone --depth=1 --branch=pages "$SSH_ORIGIN" pages-repo 2>/dev/null
-          || ( git clone --depth=1 "$SSH_ORIGIN" pages-repo
-               && cd pages-repo
-               && git checkout --orphan pages
-               && git rm -rf . 2>/dev/null || true )
+      - git clone --depth=1 --branch=pages "$SSH_ORIGIN" pages-repo || git clone --depth=1 "$SSH_ORIGIN" pages-repo
       - cd pages-repo
+      - git checkout pages 2>/dev/null || git checkout --orphan pages
       - git rm -rf . 2>/dev/null || true
       - cp -r ../public/. .
       - git add -A
