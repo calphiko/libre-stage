@@ -11,7 +11,7 @@ steps:
   - name: build-and-deploy-docs
     image: python:3.12
     when:
-      - branch: dev
+      - branch: main
         event: push
     environment:
       PAGES_SSH_KEY:
