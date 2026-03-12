@@ -54,7 +54,7 @@ steps:
 
       - ORIGIN=$(git remote get-url origin)
       - SSH_ORIGIN=$(echo "$ORIGIN" | sed 's|https://codeberg.org/|git@codeberg.org:|')
-      - echo "Deploy target: $SSH_ORIGIN branch=pages"
+      - "echo \"Deploy target: $SSH_ORIGIN branch=pages\""
 
       - git clone --depth=1 --branch=pages "$SSH_ORIGIN" pages-repo || git clone --depth=1 "$SSH_ORIGIN" pages-repo
       - cd pages-repo
