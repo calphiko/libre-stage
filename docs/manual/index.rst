@@ -31,6 +31,12 @@ Plattform.
    api
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Entwickler-Referenz
+
+   coderef/index
+
+.. toctree::
    :maxdepth: 1
    :caption: Weitere Informationen
 
