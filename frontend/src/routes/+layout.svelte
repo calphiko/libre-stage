@@ -120,6 +120,7 @@
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
+				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
 				<button class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700 w-full text-left" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
 			</nav>
 		</aside>
@@ -155,7 +156,7 @@
 		{#if user.user_name}
 			<footer class="bg-surface-100 dark:bg-surface-800 p-4 text-center text-sm text-surface-600 dark:text-surface-300">
 				<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span><br>
-				<span>{version_description} • © {new Date().getFullYear()} <a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a></span>
+				<span>{version_description} • © {new Date().getFullYear()} <a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a> <a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Dokumentation</a></span>
 			</footer>
 		{/if}
 	</div>
