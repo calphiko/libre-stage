@@ -1,3 +1,15 @@
+"""
+Gig management router.
+
+Handles CRUD operations for gigs, set and setlist management, PDF
+export of printed setlists and the gig schedule calculation.
+
+Requires authentication. Create/update/delete operations additionally
+require the ``editor`` or ``admin`` role.
+
+Prefix: ``/gigs``  |  Tag: ``gigs``
+"""
+
 # libre-stage - Band rehearsal and gig management software
 # Copyright (C) 2026  libre-stage contributors
 #

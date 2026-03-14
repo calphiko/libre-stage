@@ -15,9 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Zentrale App-Konfiguration aus appConfig.json im Projekt-Root.
-Wird beim Import geladen. Wenn die Datei fehlt oder ungültig ist,
-wird der Start mit einer aussagekräftigen Fehlermeldung abgebrochen.
+Application configuration loader.
+
+Reads and validates ``appConfig.json`` from the project root on import.
+If the file is missing, malformed or incomplete the application exits
+immediately with a descriptive error message.
+
+Required top-level keys in ``appConfig.json``:
+    ``genres``, ``gigTypes``, ``songStatuses``, ``gigStatuses``,
+    ``tonekeys``, ``rehearsalSongStatuses``
 """
 
 import json
@@ -79,7 +85,14 @@ if _missing:
 
 
 def get_frontend_config() -> dict:
-    """Gibt nur die frontend-relevanten Konfigurations-Keys zurück."""
+    """
+    Return only the configuration keys relevant to the frontend.
+
+    Returns:
+        dict: A dictionary containing ``genres``, ``gigTypes``,
+        ``songStatuses``, ``gigStatuses``, ``tonekeys`` and
+        ``rehearsalSongStatuses``.
+    """
     return {
         "genres": app_config["genres"],
         "gigTypes": app_config["gigTypes"],
@@ -88,4 +101,3 @@ def get_frontend_config() -> dict:
         "tonekeys": app_config["tonekeys"],
         "rehearsalSongStatuses": app_config["rehearsalSongStatuses"],
     }
-

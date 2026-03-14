@@ -14,6 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Live-mode router.
+
+Provides endpoints to control the live mode during a performance:
+song feedback ratings, skipping and inserting songs, and set
+navigation.  All write operations require the ``editor`` or
+``admin`` role.
+
+Prefix: ``/gigs_lm``  |  Tag: ``gigs_lm``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 import logging
 from sqlalchemy.orm import Session

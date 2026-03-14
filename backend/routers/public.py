@@ -14,6 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Public router – unauthenticated endpoints.
+
+Provides endpoints that do not require a valid access token:
+application configuration, version information and public gig listings.
+
+Prefix: ``/public``  |  Tag: ``public``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import JSONResponse, FileResponse
 from datetime import time, datetime, timedelta

@@ -1,3 +1,26 @@
+"""
+Pydantic schemas for request validation and response serialisation.
+
+Every schema is a :class:`pydantic.BaseModel` subclass.  Schemas are
+grouped by domain:
+
+- **Auth** – :class:`LoginRequest`, :class:`RefreshRequest`,
+  :class:`LogoutRequest`
+- **User** – :class:`UserOut`, :class:`UserCreate`, :class:`UserUpdate`,
+  :class:`UserListElem`, :class:`UserTodo`, :class:`UserTodoList`
+- **Song** – :class:`SongIn`, :class:`SongOut`, :class:`SongCandidateOut`,
+  :class:`SongFeedbackBase`, :class:`SongFeedbackIn`,
+  :class:`SongStatistics`
+- **Rehearsal** – :class:`RehListElem`, :class:`NewRehDict`,
+  :class:`RehTodoOut`
+- **Gig** – :class:`GigIn`, :class:`GigOut`, :class:`GigSetlistOut`,
+  :class:`GigStatistics`, :class:`SeasonStatistics`
+- **Survey** – :class:`SurveyIn`, :class:`SurveyList`,
+  :class:`SurveyQuestionOut`, :class:`SurveyFeedbackOut`
+- **Password** – :class:`PasswordUpdateRequest`,
+  :class:`PasswordResetRequest`
+"""
+
 # libre-stage - Band rehearsal and gig management software
 # Copyright (C) 2026  libre-stage contributors
 #

@@ -14,6 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+iCal calendar feed router.
+
+Provides unauthenticated iCal (RFC 5545) feeds for rehearsals and gigs
+so that band members can subscribe to band events in any calendar
+application.
+
+Prefix: ``/ical``  |  Tag: ``ical``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
 from datetime import time, datetime, timedelta

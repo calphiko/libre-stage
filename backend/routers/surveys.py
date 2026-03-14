@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Survey router.
+
+Handles CRUD operations for member feedback surveys: creating,
+releasing and closing surveys, managing individual survey fields
+and collecting per-user responses.
+
+Requires authentication. Create/update/delete operations additionally
+require the ``editor`` or ``admin`` role.
+
+Prefix: ``/surveys``  |  Tag: ``surveys``
+"""
+
 from dataclasses import fields
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
@@ -40,6 +53,17 @@ load_dotenv(".env")
 MM_CHANNEL = os.getenv("MM_CHANNEL_VOTES")
 
 def get_surveys_from_db(db: Session, skip: int = 0, limit: int = 20):
+    """
+    Query the database for surveys ordered by creation date.
+
+    Args:
+        db (Session): Active SQLAlchemy database session.
+        skip (int): Number of rows to skip (for pagination).
+        limit (int): Maximum number of rows to return.
+
+    Returns:
+        list[models.Surveys]: List of survey objects.
+    """
     return db.query(models.Surveys).order_by(models.Surveys.datum.desc()).offset(skip).limit(limit).all()
 
 @router.get("/", response_model=List[schemas.SurveyList])

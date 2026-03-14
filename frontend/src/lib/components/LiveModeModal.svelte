@@ -21,7 +21,8 @@
 import { onMount, onDestroy } from 'svelte';
 	import { getGigLiveMode, updateSongLiveMode, insertSongAfter, getSongs } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  
+  import SetlistOverviewPanel from '$lib/components/SetlistOverviewPanel.svelte';
+
   const { showError, showSuccess } = createMessageHelpers();
 
     let { parent = {}, meta = {} } = $props();
@@ -33,6 +34,7 @@ import { onMount, onDestroy } from 'svelte';
   let currentIndex = $state(0);
   let loading = $state(true);
   let showHelp = $state(false);
+  let showSetlistOverview = $state(false);
 
   // Song einfügen
   let availableSongs = $state([]);
@@ -145,7 +147,17 @@ import { onMount, onDestroy } from 'svelte';
     } else if (e.key === '3') {
       setFeedback(3);1
     } else if (e.key === 'Escape') {
-      parent.onClose();
+      if (showSetlistOverview) {
+        showSetlistOverview = false;
+      } else if (showHelp) {
+        showHelp = false;
+      } else {
+        parent.onClose();
+      }
+    } else if (e.key === '?') {
+      showHelp = !showHelp;
+    } else if (e.key === 'l' || e.key === 'L') {
+      showSetlistOverview = !showSetlistOverview;
     }
   }
 
@@ -320,7 +332,7 @@ import { onMount, onDestroy } from 'svelte';
 </script>
 
 <div
-  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800"
+  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800 relative overflow-hidden"
   ontouchstart={handleTouchStart}
   ontouchmove={handleTouchMove}
   ontouchend={handleTouchEnd}
@@ -343,6 +355,16 @@ import { onMount, onDestroy } from 'svelte';
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </button>
+      <button
+        class="btn-icon btn-icon-sm variant-ghost {showSetlistOverview ? 'variant-filled-secondary' : ''}"
+        onclick={() => showSetlistOverview = !showSetlistOverview}
+        aria-label="Setlisten-Übersicht anzeigen"
+        title="Setlisten-Übersicht (L)"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
         </svg>
       </button>
       <button
@@ -440,6 +462,8 @@ import { onMount, onDestroy } from 'svelte';
             <div><kbd class="kbd kbd-sm">2</kbd> Bewertung: 😐</div>
             <div><kbd class="kbd kbd-sm">3</kbd> Bewertung: 😞</div>
             <div><kbd class="kbd kbd-sm">Leertaste</kbd> Überspringen</div>
+            <div><kbd class="kbd kbd-sm">?</kbd> Hilfe ein/aus</div>
+            <div><kbd class="kbd kbd-sm">L</kbd> Setlisten-Übersicht ein/aus</div>
           </div>
         </div>
 
@@ -717,9 +741,20 @@ import { onMount, onDestroy } from 'svelte';
   <footer class="hidden md:block border-t border-surface-300 p-3 bg-surface-50 dark:bg-surface-900">
     <div class="flex justify-center gap-6 text-xs text-surface-600 dark:text-surface-400">
       <span>← → Navigation</span>
+      <span><kbd class="kbd kbd-sm">?</kbd> Hilfe</span>
+      <span><kbd class="kbd kbd-sm">L</kbd> Liste</span>
       <span>ESC Schließen</span>
     </div>
   </footer>
+
+  <!-- Setlisten-Übersicht Slide-In-Panel -->
+  <SetlistOverviewPanel
+    {allSongs}
+    {currentIndex}
+    open={showSetlistOverview}
+    onJump={(index) => { currentIndex = index; }}
+    onClose={() => { showSetlistOverview = false; }}
+  />
 </div>
 
 <style>

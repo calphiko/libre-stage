@@ -24,8 +24,29 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger("uvicorn.error")
 
+"""
+E-mail sending utility.
+
+Wraps Python's :mod:`smtplib` to send plain-text e-mails via SMTP/TLS.
+SMTP credentials are read from the environment (``SMTP_HOST``,
+``SMTP_PORT``, ``SMTP_USER``, ``SMTP_PASSWORD``).  When any of the
+required variables are missing the message is only logged rather than
+sent.
+"""
+
 def send_email(to_email: str, subject: str, body: str):
-    """Sendet eine E-Mail über SMTP"""
+    """
+    Send a plain-text e-mail via SMTP.
+
+    If any of the required SMTP environment variables (``SMTP_HOST``,
+    ``SMTP_USER``, ``SMTP_PASSWORD``) are missing the function logs the
+    message and returns without raising an error.
+
+    Args:
+        to_email (str): Recipient e-mail address.
+        subject (str): E-mail subject line.
+        body (str): Plain-text message body.
+    """
     smtp_host = os.getenv("SMTP_HOST")
     smtp_port = int(os.getenv("SMTP_PORT", 587))
     smtp_user = os.getenv("SMTP_USER")

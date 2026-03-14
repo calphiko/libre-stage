@@ -14,6 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Admin router – user and system management.
+
+All endpoints are protected by :func:`user_is_admin` which verifies
+that the authenticated user holds the ``admin`` role.
+
+Prefix: ``/admin``  |  Tag: ``admin``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 import logging
@@ -31,7 +40,23 @@ block_endpoints = ["/admin/log"]
 load_dotenv(".env")
 
 async def user_is_admin(request: Request, db: Session = Depends(auth.get_db)):
-    """Check if current user is admin - for router-level dependencies"""
+    """
+    Router-level dependency: allow access only for admin users.
+
+    Reads the token from the request (header or cookie), validates it
+    and checks the ``admin`` role.
+
+    Args:
+        request (Request): Incoming FastAPI request.
+        db (Session): Active database session.
+
+    Returns:
+        dict: Current user payload (``user_name``, ``user_group``).
+
+    Raises:
+        HTTPException 403: If the authenticated user is not an admin.
+        HTTPException 401: If authentication fails.
+    """
     logger.info(f"[Admin-Check] Request Path: {request.url.path}")
     logger.info(f"[Admin-Check] Cookies: {list(request.cookies.keys())}")
     logger.info(f"[Admin-Check] Auth Header: {request.headers.get('Authorization', 'None')}")

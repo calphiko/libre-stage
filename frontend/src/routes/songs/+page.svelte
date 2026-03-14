@@ -25,6 +25,7 @@
   import {
     getSongs,
     getUser,
+    getUserList,
     updateSong,
     deleteSong,
     createNewSong,
@@ -733,6 +734,7 @@
   }
 
 let vorschlaegeSongs = $state([]);
+let totalMusicians = $state(0);
 
 let filteredSongs = $derived(songs
   .filter(song => song.status !== 'vorschlag'
@@ -780,6 +782,12 @@ let filteredSongs = $derived(songs
     }
     songs = await getSongs();
     vorschlaegeSongs = await getSongsCandidates();
+    try {
+      const musicianList = await getUserList(null);
+      totalMusicians = musicianList.length;
+    } catch(e) {
+      console.warn('Konnte Musikerliste nicht laden:', e);
+    }
     mobileFilter();
     if (vorschlaegeSongs.length === 0 ) { tabSet = 0; } else {tabSet = 1;}
   });
@@ -1189,7 +1197,7 @@ let filteredSongs = $derived(songs
                     </li>
                     <li class="flex gap-2">
                       <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>
-                      <span><strong>Digitale Abstimmung:</strong> Ein Song ist zur Übernahme freigegeben, wenn (a) der Ja-Anteil unter den gültigen Stimmen (Ja+Nein) ≥50% beträgt und (b) mindestens 4 gültige Stimmen abgegeben wurden (Enthaltungen zählen nicht)</span>
+                      <span><strong>Digitale Abstimmung:</strong> Ein Song ist zur Übernahme freigegeben, wenn (a) der Ja-Anteil unter den gültigen Stimmen (Ja+Nein) ≥50% beträgt, (b) mindestens 4 gültige Stimmen abgegeben wurden (Enthaltungen zählen nicht) und (c) mindestens 90% aller Stimmberechtigten abgestimmt haben</span>
                     </li>
                     <li class="flex gap-2">
                       <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>
@@ -1217,12 +1225,17 @@ let filteredSongs = $derived(songs
                 <tbody>
                   {#each vorschlaegeSongs as song (song.id)}
                     {@const userFeedbackType = getUserFeedback(song.feedbacks)}
+                    {@const stats = getFeedbackStats(song.feedbacks)}
+                    {@const validVotes = stats.absolute.a + stats.absolute.na + stats.absolute.o}
+                    {@const quorumTarget = totalMusicians > 0 ? Math.ceil(totalMusicians * 0.9) : 4}
+                    {@const quorumReached = validVotes >= quorumTarget}
+                    {@const canAccept = stats.relative.a >= 50 && stats.absolute.sum >= 4 && quorumReached}
                     <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
                         onclick={() => toggleExpand(song.id)}>
                         <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
                         <td onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
                        {#if user.musician}
-                            <td>
+                            <td class="whitespace-nowrap">
                                 <button
                                     class="btn btn-sm {userFeedbackType === 'a' ? 'variant-filled-success' : 'variant-outline-success'}"
                                     onclick={() => submitFeedback(song, 'a')}
@@ -1245,32 +1258,47 @@ let filteredSongs = $derived(songs
                        {:else}
                             <td>--</td>
                        {/if}
+                       <!-- Abstimmungsergebnis: kompakte Badges auf einen Blick -->
                        <td class="px-2">
-                            {#if song.feedbacks && song.feedbacks.length > 0}
-                                {@const stats = getFeedbackStats(song.feedbacks)}
-                                <div style="display: inline-flex; align-items: center; gap: 8px; width: 100%;">
-                                    <div
-                                        style="position: relative; display: flex; width: 100%; flex: 0 0 80%; height: 20px; background-color: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"
-                                        title="Gesamtstimmen: ∑ {stats.absolute.sum} | 👍 {stats.absolute.a} | 👎 {stats.absolute.na} | 🤷: {stats.absolute.o}"
-                                    >
-                                        {#if stats.relative.a > 0}
-                                            <div style="background-color: green; width: {stats.relative.a}%; height: 100%;"></div>
-                                        {/if}
-                                        {#if stats.relative.na > 0}
-                                            <div style="background-color: red; width: {stats.relative.na}%; height: 100%;"></div>
-                                        {/if}
-                                        <div style="position: absolute; left: 50%; top: 0; bottom: 0; border-left: 2px dashed black;"></div>
-                                    </div>
-                                    <span class="text-xs whitespace-nowrap" style="flex: 0 0 20%;">🤷: {stats.absolute.o}</span>
-                                </div>
-                            {:else}
-                                <div style="position: relative; display: flex; width: 80%; height: 20px; background-color: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"></div>
-                            {/if}
+                            <div class="vote-summary">
+                                <!-- Gesamtstimmen und Quorum-Fortschritt -->
+                                <span class="vote-total" title="Abgegebene Stimmen / Quorum (90% der {totalMusicians} Stimmberechtigten = {quorumTarget})">
+                                    ∑ {validVotes} / {quorumTarget}
+                                    {#if !quorumReached}
+                                        <span class="vote-missing" title="Noch {quorumTarget - validVotes} Stimme(n) für das Quorum (90%)">
+                                            ({quorumTarget - validVotes} fehlen)
+                                        </span>
+                                    {/if}
+                                </span>
+                                <!-- Ja-Stimmen -->
+                                <span class="vote-badge vote-yes" title="Ja-Stimmen">
+                                    👍 {stats.absolute.a}
+                                    {#if stats.absolute.a + stats.absolute.na > 0}
+                                        <span class="vote-pct">({stats.relative.a}%)</span>
+                                    {/if}
+                                </span>
+                                <!-- Nein-Stimmen -->
+                                <span class="vote-badge vote-no" title="Nein-Stimmen">
+                                    👎 {stats.absolute.na}
+                                    {#if stats.absolute.a + stats.absolute.na > 0}
+                                        <span class="vote-pct">({stats.relative.na}%)</span>
+                                    {/if}
+                                </span>
+                                <!-- Enthaltungen -->
+                                {#if stats.absolute.o > 0}
+                                    <span class="vote-badge vote-abstain" title="Enthaltungen">
+                                        🤷 {stats.absolute.o}
+                                    </span>
+                                {/if}
+                                <!-- Freigabe-Signal -->
+                                {#if canAccept}
+                                    <span class="vote-ready" title="Freigegeben: ≥50% Ja, ≥4 Stimmen und Quorum (90%) erreicht">✅ Freigegeben</span>
+                                {/if}
+                            </div>
                        </td>
                        {#if canEdit()}
-                            {@const stats = getFeedbackStats(song.feedbacks)}
                             <td>
-                                {#if stats.relative.a >= 50 && stats.absolute.sum >= 4}
+                                {#if canAccept}
                                     <button
                                         class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
                                         onclick={() => acceptSong(song)}
@@ -1292,6 +1320,95 @@ let filteredSongs = $derived(songs
 </div>
 
 <style>
-/* Entferne nicht mehr benötigte CSS */
+  /* Vote-Summary: kompakte Badge-Anzeige für Abstimmungsergebnisse */
+  .vote-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .vote-total {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: inherit;
+    white-space: nowrap;
+  }
+
+  .vote-missing {
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .vote-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .vote-yes {
+    background-color: rgba(34, 197, 94, 0.18);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+  :global(.dark) .vote-yes {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.35);
+  }
+
+  .vote-no {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+  :global(.dark) .vote-no {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.35);
+  }
+
+  .vote-abstain {
+    background-color: rgba(234, 179, 8, 0.13);
+    color: #a16207;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+  :global(.dark) .vote-abstain {
+    background-color: rgba(234, 179, 8, 0.18);
+    color: #fde047;
+    border-color: rgba(253, 224, 71, 0.3);
+  }
+
+  .vote-pct {
+    font-weight: 400;
+    opacity: 0.8;
+    font-size: 0.72rem;
+  }
+
+  .vote-ready {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    white-space: nowrap;
+  }
+  :global(.dark) .vote-ready {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.4);
+  }
 </style>
 
