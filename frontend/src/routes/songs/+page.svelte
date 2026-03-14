@@ -948,7 +948,9 @@ let filteredSongs = $derived(songs
             <h4 class="font-semibold text-warning-500 mb-2">💡 Song-Vorschläge</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li><strong>Vorschlag bewerten:</strong> Gib Feedback (👍/👎/🤷) zu Song-Vorschlägen im Vorschläge-Tab</li>
-              <li><strong>Vorschlag übernehmen:</strong> Akzeptierte Vorschläge (≥50% Ja bei min. 4 Stimmen) werden zu regulären Songs</li>
+              <li><strong>Abstimmungsergebnis:</strong> ∑ abgegebene / Stimmberechtigte – plus farbige Badges für Ja, Nein und Enthaltungen</li>
+              <li><strong>Quorum:</strong> Mindestens 75 % aller Stimmberechtigten müssen abgestimmt haben</li>
+              <li><strong>Freigabe-Button ✓ (grün):</strong> Erscheint für Admins/Editoren sobald Quorum erreicht und ≥ 50 % Ja-Stimmen vorliegen</li>
               <li><strong>Nur Admins/Editoren</strong> können Vorschläge final übernehmen</li>
             </ul>
           </div>
@@ -1228,10 +1230,9 @@ let filteredSongs = $derived(songs
                     {@const stats = getFeedbackStats(song.feedbacks)}
                     {@const validVotes = stats.absolute.a + stats.absolute.na + stats.absolute.o}
                     {@const validYesNo = stats.absolute.a + stats.absolute.na}
-                    {@const quorumTarget = totalMusicians > 0 ? Math.ceil(totalMusicians * 0.9) : null}
+                    {@const quorumTarget = totalMusicians > 0 ? Math.max(3, Math.floor(totalMusicians * 0.75)) : null}
                     {@const quorumReached = quorumTarget === null || validVotes >= quorumTarget}
-                    {@const canAccept = validYesNo >= 4 && stats.absolute.a >= validYesNo / 2 && quorumReached}
-                    {@const canAdminAccept = canEdit() && stats.absolute.a > 0}
+                    {@const canAccept = quorumReached && stats.absolute.a >= validYesNo / 2 && validYesNo > 0}
                     <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
                         onclick={() => toggleExpand(song.id)}>
                         <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
@@ -1264,11 +1265,11 @@ let filteredSongs = $derived(songs
                        <td class="px-2">
                             <div class="vote-summary">
                                 <!-- Gesamtstimmen und Quorum-Fortschritt -->
-                                <span class="vote-total" title="Abgegebene Stimmen{quorumTarget ? ` / Quorum (90% der ${totalMusicians} Stimmberechtigten = ${quorumTarget})` : ''}">
-                                    ∑ {validVotes}{quorumTarget ? ` / ${quorumTarget}` : ''}
+                                <span class="vote-total" title="{validVotes} von {totalMusicians} Stimmberechtigten haben abgestimmt{quorumTarget ? ` (Quorum: ${quorumTarget} = 75%)` : ''}">
+                                    ∑ {validVotes} / {totalMusicians > 0 ? totalMusicians : '?'}
                                     {#if quorumTarget !== null && !quorumReached}
-                                        <span class="vote-missing" title="Noch {quorumTarget - validVotes} Stimme(n) für das Quorum (90%)">
-                                            ({quorumTarget - validVotes} fehlen)
+                                        <span class="vote-missing" title="Noch {quorumTarget - validVotes} Stimme(n) für das Quorum (75% = {quorumTarget})">
+                                            ({quorumTarget - validVotes} f. Quorum)
                                         </span>
                                     {/if}
                                 </span>
@@ -1292,23 +1293,16 @@ let filteredSongs = $derived(songs
                                         🤷 {stats.absolute.o}
                                     </span>
                                 {/if}
-                                <!-- Freigabe-Signal -->
-                                {#if canAccept}
-                                    <span class="vote-ready" title="Freigegeben: ≥50% Ja, ≥4 Stimmen und Quorum (90%) erreicht">✅ Freigegeben</span>
-                                {/if}
                             </div>
                        </td>
-                       {#if canEdit()}
+                       {#if canEdit() && canAccept}
                             <td>
-                                {#if canAdminAccept}
-                                    <button
-                                        class="btn rounded-lg px-3 py-0 text-base font-semibold {canAccept ? 'variant-filled-success' : 'variant-ghost-warning'}"
-                                        title={canAccept ? 'Freigegeben – alle Kriterien erfüllt' : 'Quorum noch nicht erreicht – Übernahme trotzdem möglich (Begründung erforderlich)'}
-                                        onclick={() => acceptSong(song)}
-                                    >
-                                        ✓
-                                    </button>
-                                {/if}
+                                <button
+                                    class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
+                                    onclick={() => acceptSong(song)}
+                                >
+                                    ✓
+                                </button>
                             </td>
                         {/if}
                     </tr>
@@ -1395,23 +1389,6 @@ let filteredSongs = $derived(songs
     font-size: 0.72rem;
   }
 
-  .vote-ready {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    background-color: rgba(34, 197, 94, 0.15);
-    color: #15803d;
-    border: 1px solid rgba(34, 197, 94, 0.5);
-    white-space: nowrap;
-  }
-  :global(.dark) .vote-ready {
-    background-color: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
-    border-color: rgba(74, 222, 128, 0.4);
-  }
+
 </style>
 
