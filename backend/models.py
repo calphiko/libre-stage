@@ -1,18 +1,13 @@
-# libre-stage - Band rehearsal and gig management software
-# Copyright (C) 2026  libre-stage contributors
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+SQLAlchemy ORM models for libreStage.
+
+Defines all database tables as Python classes. Every model that maps to
+a table inherits from :data:`Base`.
+
+Helper:
+    :func:`time_to_str` – converts :class:`datetime.time` /
+    :class:`datetime.date` objects to ISO strings for serialisation.
+"""
 
 from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey, DateTime, Text, Boolean, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -26,6 +21,20 @@ def time_to_str(t):
     return t.strftime('%H:%M:%S') if isinstance(t, time) else (t.strftime('%Y-%m-%d') if isinstance(t, date) else None)
 
 class User(Base):
+    """
+    Registered application user.
+
+    Attributes:
+        id (int): Primary key.
+        user_name (str): Unique login name.
+        user_pw (str): bcrypt password hash.
+        user_group (str): Role – ``admin``, ``editor`` or ``user``.
+        email (str): E-mail address.
+        clear_name (str): Display name.
+        musician (bool): Whether the user is a band member.
+        is_singer (bool): Whether the user is a singer.
+        mm_username (str): Optional Mattermost username.
+    """
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     user_name = Column(String(128), unique=True, index=True)
@@ -39,6 +48,14 @@ class User(Base):
 
 
 class UsedPasswordResetToken(Base):
+    """
+    Record of password-reset tokens that have already been consumed.
+
+    Attributes:
+        id (int): Primary key.
+        token_hash (str): SHA-256 hash of the used token.
+        used_at (datetime): Timestamp when the token was used.
+    """
     __tablename__ = "used_password_reset_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -47,6 +64,18 @@ class UsedPasswordResetToken(Base):
 
 
 class RefreshToken(Base):
+    """
+    Persistent refresh token linked to a user.
+
+    Attributes:
+        id (int): Primary key.
+        token_hash (str): SHA-256 hash of the raw token.
+        user_id (int): Foreign key to :class:`User`.
+        expires_at (datetime): Expiry timestamp (UTC).
+        created_at (datetime): Creation timestamp (UTC).
+        revoked (bool): ``True`` if the token has been invalidated.
+        user (User): Relationship to the owning user.
+    """
     __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -60,6 +89,15 @@ class RefreshToken(Base):
 
 
 class TokenBlacklist(Base):
+    """
+    Blacklisted access tokens (e.g. after explicit logout).
+
+    Attributes:
+        id (int): Primary key.
+        token_hash (str): SHA-256 hash of the blacklisted JWT.
+        blacklisted_at (datetime): Timestamp of blacklisting (UTC).
+        expires_at (datetime): Original token expiry – used for cleanup.
+    """
     __tablename__ = "token_blacklist"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -68,6 +106,18 @@ class TokenBlacklist(Base):
     expires_at = Column(DateTime, nullable=False)
 
 class RehTodo(Base):
+    """
+    A to-do item assigned to a specific user for a song in a rehearsal.
+
+    Attributes:
+        id (int): Primary key.
+        id_song (int): Foreign key to :class:`Song`.
+        id_reh (int): Foreign key to :class:`RehSong` (rehearsal).
+        id_user (int): Foreign key to :class:`User`.
+        todo (str): Description of the task.
+        dt (datetime | None): Optional due date/time.
+        done (bool): Whether the task has been completed.
+    """
     __tablename__ = "todos"
 
     id = Column(Integer, primary_key=True)
@@ -80,6 +130,24 @@ class RehTodo(Base):
 
 
 class RehSong(Base):
+    """
+    Association between a :class:`Rehearsal` and a :class:`Song`.
+
+    Stores per-song rehearsal metadata (comment, to-do text, done flag)
+    and exposes several hybrid properties that proxy attributes of the
+    related :class:`Song`.
+
+    Attributes:
+        id (int): Primary key.
+        id_rehearsal (int): Foreign key to :class:`Rehearsal`.
+        id_song (int): Foreign key to :class:`Song`.
+        comment (str | None): Free-text comment for this rehearsal slot.
+        todo (str | None): Short to-do description.
+        done (bool | None): Whether the rehearsal slot is marked as done.
+        rehearsal (Rehearsal): Owning rehearsal.
+        song (Song): The rehearsed song.
+        todos (list[RehTodo]): Individual to-do items for this slot.
+    """
     __tablename__ = "rehearsal_song"
     __table_args__ = (
         UniqueConstraint('id_rehearsal', 'id_song', name='_reh_song_uc'),
@@ -127,6 +195,17 @@ class RehSong(Base):
     )
 
 class Rehearsal(Base):
+    """
+    A single band rehearsal session.
+
+    Attributes:
+        id (int): Primary key.
+        comment (str): Free-text notes about the rehearsal.
+        begin (datetime): Start time.
+        end (datetime): End time.
+        ical (str): iCal UID or event string.
+        songs (list[RehSong]): Songs scheduled for this rehearsal.
+    """
     __tablename__ = "rehearsal"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -139,6 +218,24 @@ class Rehearsal(Base):
 
 
 class Gig(Base):
+    """
+    A band performance (gig / concert).
+
+    Attributes:
+        id (int): Primary key.
+        name (str): Display name of the gig.
+        datum (date): Performance date.
+        organizer (str | None): Name of the organiser.
+        kind_of_gig (str | None): Type, e.g. *Schützenfest*.
+        venue (str | None): Location name.
+        doors (time | None): Doors-open time.
+        begin (time | None): Start time of the performance.
+        end (time | None): End time of the performance.
+        status (str | None): Workflow status.
+        publish (str | None): Whether the gig is published publicly.
+        sets (list[GigSet]): Ordered set list for this gig.
+    """
+
     __tablename__ = "gigs"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(512), nullable=False)
@@ -157,6 +254,13 @@ class Gig(Base):
     )
 
     def debug_dump(self, schedule=None):
+        """
+        Print a human-readable overview of the gig structure to stdout.
+
+        Args:
+            schedule (dict | None): Optional timing schedule as returned
+                by :meth:`services.setlist.SetlistService.calc_schedule`.
+        """
         print(f"\n=== Gig {self.id}: {self.name} am {self.datum} ===\n")
         print(f"  Beginn: {self.begin}")
         for gigset in sorted(self.sets, key=lambda x: x.position):
@@ -172,7 +276,18 @@ class Gig(Base):
                 )
                 print(f"     [{zeit_str}] {setsong.position}. {song.title} / {song.singer_lead} / {song.duration}")
 
-    def to_dict (self, include_song_details=True):
+    def to_dict(self, include_song_details=True):
+        """
+        Serialise the gig and its full set list to a plain dictionary.
+
+        Args:
+            include_song_details (bool): Reserved for future use; currently
+                always includes song details.
+
+        Returns:
+            dict: A JSON-serialisable representation of the gig including
+            all sets and songs.
+        """
         return {
             "id": self.id,
             "name": self.name,
@@ -201,6 +316,30 @@ class Gig(Base):
         }
 
 class Song(Base):
+    """
+    A song in the band's repertoire.
+
+    Attributes:
+        id (int): Primary key.
+        title (str): Song title.
+        interpret (str): Artist / band name.
+        genre (str | None): Musical genre.
+        singer_background (str | None): Background singer(s).
+        singer_lead (str | None): Lead singer.
+        composer (str | None): Composer name(s).
+        texter (str | None): Lyricist name(s).
+        publisher (str | None): Publisher.
+        arrangement (str | None): Arranger.
+        text (str | None): Full lyrics.
+        tone_key (str | None): Musical key, e.g. ``Bb``.
+        status (str | None): Workflow status (e.g. ``angenommen``).
+        comment (str | None): Internal notes.
+        ytlink (str | None): YouTube link.
+        duration (time | None): Song duration.
+        brass (int | None): Brass instrument flag.
+        rehearsal_links (list[RehSong]): Rehearsal associations.
+        feedbacks (list[SongCandidateFeedback]): Candidate feedback entries.
+    """
     __tablename__ = "songs"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(1024))
@@ -224,6 +363,13 @@ class Song(Base):
     feedbacks = relationship('SongCandidateFeedback', back_populates='song', cascade="all, delete-orphan")
 
     def to_setlist_dict(self):
+        """
+        Serialise the song to a dictionary suitable for setlist display.
+
+        Returns:
+            dict: Song fields used in setlist views (title, interpret,
+            genre, singers, duration, brass, tone_key, status, comment).
+        """
         return {
             "id": self.id,
             "title": self.title,
@@ -239,12 +385,31 @@ class Song(Base):
         }
 
     def to_setlist_element(self):
+        """
+        Like :meth:`to_setlist_dict` but adds ``song_id`` and a
+        placeholder ``setsong_id`` of ``-1``.
+
+        Returns:
+            dict: Extended setlist dictionary with ``song_id`` and
+            ``setsong_id``.
+        """
         output_dict = self.to_setlist_dict()
         output_dict["song_id"] = output_dict["id"]
         output_dict["setsong_id"] = -1
         return output_dict
 
 class SongCandidateFeedback(Base):
+    """
+    User feedback on a song candidate (proposal).
+
+    Attributes:
+        id (int): Primary key.
+        song_id (int): Foreign key to :class:`Song`.
+        user_id (int): Foreign key to :class:`User`.
+        date (datetime): Timestamp of the feedback.
+        feedback (str): Feedback text.
+        song (Song): The song this feedback belongs to.
+    """
     __tablename__ = "song_feedback"
     id = Column(Integer, primary_key=True, index=True)
     song_id = Column(Integer, ForeignKey('songs.id'), nullable=False)
@@ -257,6 +422,18 @@ class SongCandidateFeedback(Base):
 
 
 class Set(Base):
+    """
+    A named set of songs within a gig.
+
+    Attributes:
+        id (int): Primary key.
+        name (str): Internal set name.
+        pause (time): Duration of the break after this set (default 10 min).
+        setlist_name (str | None): Optional public-facing name shown on
+            printed setlists.
+        gig_links (list[GigSet]): Associations to gigs.
+        songs (list[SetSong]): Ordered songs in this set.
+    """
     __tablename__ = "sets"
 
     id: Mapped[int]              = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -279,11 +456,32 @@ class Set(Base):
     )
 
     def to_setlist_dict(self):
+        """
+        Minimal serialisation of the set (currently only ``id``).
+
+        Returns:
+            dict: ``{"id": self.id}``
+        """
         return {
             "id": self.id,
         }
 
 class SetSong(Base):
+    """
+    Association between a :class:`Set` and a :class:`Song`, including
+    position and live-mode state.
+
+    Attributes:
+        id (int): Primary key.
+        id_set (int): Foreign key to :class:`Set`.
+        id_song (int): Foreign key to :class:`Song`.
+        position (int): 1-based position of the song within the set.
+        eingeschoben (bool | None): Marked as inserted ad-hoc during live mode.
+        uebersprungen (bool | None): Marked as skipped during live mode.
+        feedback (int | None): Post-performance rating (1–3).
+        song (Song): The associated song.
+        set (Set): The owning set.
+    """
     __tablename__ = "set_songs"
 
     id: Mapped[int]           = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -305,6 +503,17 @@ class SetSong(Base):
 
     # In models.py, Methode to_setlist_dict der SetSong-Klasse
     def to_setlist_dict(self):
+        """
+        Serialise the set–song association for setlist views.
+
+        Returns a fallback entry with a warning title if the linked song
+        has been deleted.
+
+        Returns:
+            dict: Song fields plus ``song_id``, ``setsong_id``,
+            ``position``, ``eingeschoben``, ``uebersprungen`` and
+            ``feedback``.
+        """
         if not self.song:
             # Fallback für fehlende Songs
             return {
@@ -337,6 +546,17 @@ class SetSong(Base):
 
 
 class GigSet(Base):
+    """
+    Ordered association between a :class:`Gig` and a :class:`Set`.
+
+    Attributes:
+        id (int): Primary key.
+        id_gig (int): Foreign key to :class:`Gig`.
+        id_set (int): Foreign key to :class:`Set`.
+        position (int): 1-based display order within the gig.
+        gig (Gig): The owning gig.
+        set (Set): The associated set.
+    """
     __tablename__ = "gig_sets"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -349,6 +569,20 @@ class GigSet(Base):
 
 
 class Surveys(Base):
+    """
+    A feedback survey created by an admin or editor.
+
+    Attributes:
+        id (int): Primary key.
+        kind_of_survey (str): Survey category / type label.
+        rf_survey (str): Request-for-feedback description.
+        released (bool): Whether the survey is visible to members.
+        closed (bool): Whether the survey is closed for new responses.
+        user_created (int): Foreign key to the creating :class:`User`.
+        release_date (datetime): Date/time the survey was released.
+        datum (datetime): Creation date.
+        fields (list[SurveyFields]): Individual questions / fields.
+    """
     __tablename__ = "surveys"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -362,6 +596,15 @@ class Surveys(Base):
     datum = Column(DateTime, nullable=False, default=datetime)
 
 class SurveyFields(Base):
+    """
+    A single question or rating field within a :class:`Surveys`.
+
+    Attributes:
+        id (int): Primary key.
+        id_survey (int): Foreign key to :class:`Surveys`.
+        field_text (str): The question or label text.
+        feedbacks (list[SurveyFeedback]): Responses to this field.
+    """
     __tablename__ = "survey_field"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -370,6 +613,17 @@ class SurveyFields(Base):
     feedbacks = relationship("SurveyFeedback", backref="survey_field", cascade="all, delete-orphan")
 
 class SurveyFeedback(Base):
+    """
+    A user's response to a single :class:`SurveyFields` entry.
+
+    Attributes:
+        id (int): Primary key.
+        id_sv_field (int): Foreign key to :class:`SurveyFields`.
+        id_user (int): Foreign key to :class:`User`.
+        datum (datetime): Timestamp of the response.
+        value (str): The submitted value (e.g. a rating string).
+        comment (str | None): Optional free-text comment.
+    """
     __tablename__ = "survey_feedback"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -378,3 +632,4 @@ class SurveyFeedback(Base):
     datum = Column(DateTime, nullable=False, default=datetime)
     value = Column(Text, nullable=False)
     comment= Column(Text, nullable=True)
+

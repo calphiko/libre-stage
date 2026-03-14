@@ -14,6 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Database connection and session management.
+
+Provides the SQLAlchemy engine, session factory and the
+FastAPI dependency :func:`get_db`.
+
+Configuration is done via the ``DATABASE_URL`` environment variable
+(default: ``sqlite:///./backend/db/app.db``).
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
@@ -34,9 +44,17 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Dependency für FastAPI
 def get_db():
+    """
+    FastAPI dependency that provides a database session per request.
+
+    Opens a new :class:`sqlalchemy.orm.Session` and ensures it is
+    closed after the request completes, even if an exception occurs.
+
+    Yields:
+        Session: An active SQLAlchemy database session.
+    """
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-

@@ -17,19 +17,29 @@
 import re
 from typing import Tuple
 
+"""
+Password complexity validator.
+
+Enforces the same password rules that are displayed to the user in the
+frontend:
+
+- At least 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one digit
+- At least one special character (``-_!@#$%^&*(),.?\":{}|<>``)
+"""
+
 def validate_password(password: str) -> Tuple[bool, str]:
     """
-    Validiert Passwort-Komplexität gemäß Frontend-Regeln.
+    Validate password complexity against the application's rules.
 
-    Anforderungen:
-    - Mindestens 8 Zeichen
-    - Mindestens ein Großbuchstabe
-    - Mindestens ein Kleinbuchstabe
-    - Mindestens eine Ziffer
-    - Mindestens ein Sonderzeichen
+    Args:
+        password (str): The plain-text password to validate.
 
     Returns:
-        (is_valid, error_message)
+        tuple[bool, str]: A 2-tuple of ``(is_valid, error_message)``.
+        *error_message* is an empty string when the password is valid.
     """
     if len(password) < 8:
         return False, "Passwort muss mindestens 8 Zeichen lang sein"

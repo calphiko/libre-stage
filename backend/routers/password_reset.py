@@ -14,6 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Password reset router.
+
+Implements the self-service password reset flow:
+
+1. An admin triggers a reset for a user via the admin router.
+2. A time-limited JWT is sent to the user by e-mail or Mattermost.
+3. The user submits the new password together with the token.
+4. The token is marked as used to prevent replay attacks.
+
+Rate limiting: 3 requests per minute per IP.
+
+Prefix: ``/password_reset``  |  Tag: ``pw_reset``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 import logging
 from sqlalchemy.orm import Session
@@ -29,6 +44,17 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 def mark_token_as_used(db: Session, token: str):
+    """
+    Record a password-reset token as consumed.
+
+    Stores the SHA-256 hash of *token* in
+    :class:`models.UsedPasswordResetToken` so that the same token
+    cannot be used twice.
+
+    Args:
+        db (Session): Active database session.
+        token (str): The raw password-reset JWT string.
+    """
     token_hash = hashlib.sha256(token.encode()).hexdigest()
     used_token = models.UsedPasswordResetToken(token_hash=token_hash, used_at=datetime.now(timezone.utc))
     db.add(used_token)
