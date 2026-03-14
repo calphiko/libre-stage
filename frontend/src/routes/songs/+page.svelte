@@ -784,9 +784,9 @@ let filteredSongs = $derived(songs
     vorschlaegeSongs = await getSongsCandidates();
     try {
       const musicianList = await getUserList(null);
-      totalMusicians = musicianList.length;
+      totalMusicians = Array.isArray(musicianList) ? musicianList.length : 0;
     } catch(e) {
-      console.warn('Konnte Musikerliste nicht laden:', e);
+      console.error('Konnte Musikerliste nicht laden:', e);
     }
     mobileFilter();
     if (vorschlaegeSongs.length === 0 ) { tabSet = 0; } else {tabSet = 1;}
@@ -1227,9 +1227,11 @@ let filteredSongs = $derived(songs
                     {@const userFeedbackType = getUserFeedback(song.feedbacks)}
                     {@const stats = getFeedbackStats(song.feedbacks)}
                     {@const validVotes = stats.absolute.a + stats.absolute.na + stats.absolute.o}
-                    {@const quorumTarget = totalMusicians > 0 ? Math.ceil(totalMusicians * 0.9) : 4}
-                    {@const quorumReached = validVotes >= quorumTarget}
-                    {@const canAccept = stats.relative.a >= 50 && stats.absolute.sum >= 4 && quorumReached}
+                    {@const validYesNo = stats.absolute.a + stats.absolute.na}
+                    {@const quorumTarget = totalMusicians > 0 ? Math.ceil(totalMusicians * 0.9) : null}
+                    {@const quorumReached = quorumTarget === null || validVotes >= quorumTarget}
+                    {@const canAccept = validYesNo >= 4 && stats.absolute.a >= validYesNo / 2 && quorumReached}
+                    {@const canAdminAccept = canEdit() && stats.absolute.a > 0}
                     <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
                         onclick={() => toggleExpand(song.id)}>
                         <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
@@ -1262,9 +1264,9 @@ let filteredSongs = $derived(songs
                        <td class="px-2">
                             <div class="vote-summary">
                                 <!-- Gesamtstimmen und Quorum-Fortschritt -->
-                                <span class="vote-total" title="Abgegebene Stimmen / Quorum (90% der {totalMusicians} Stimmberechtigten = {quorumTarget})">
-                                    ∑ {validVotes} / {quorumTarget}
-                                    {#if !quorumReached}
+                                <span class="vote-total" title="Abgegebene Stimmen{quorumTarget ? ` / Quorum (90% der ${totalMusicians} Stimmberechtigten = ${quorumTarget})` : ''}">
+                                    ∑ {validVotes}{quorumTarget ? ` / ${quorumTarget}` : ''}
+                                    {#if quorumTarget !== null && !quorumReached}
                                         <span class="vote-missing" title="Noch {quorumTarget - validVotes} Stimme(n) für das Quorum (90%)">
                                             ({quorumTarget - validVotes} fehlen)
                                         </span>
@@ -1298,9 +1300,10 @@ let filteredSongs = $derived(songs
                        </td>
                        {#if canEdit()}
                             <td>
-                                {#if canAccept}
+                                {#if canAdminAccept}
                                     <button
-                                        class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
+                                        class="btn rounded-lg px-3 py-0 text-base font-semibold {canAccept ? 'variant-filled-success' : 'variant-ghost-warning'}"
+                                        title={canAccept ? 'Freigegeben – alle Kriterien erfüllt' : 'Quorum noch nicht erreicht – Übernahme trotzdem möglich (Begründung erforderlich)'}
                                         onclick={() => acceptSong(song)}
                                     >
                                         ✓

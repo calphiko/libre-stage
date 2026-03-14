@@ -141,12 +141,19 @@ Ein Song gilt als **freigegeben**, wenn gleichzeitig gilt:
 Song übernehmen
 ~~~~~~~~~~~~~~~
 
-Ist ein Song freigegeben (✅), erscheint für **Admins und Editoren** die
-Schaltfläche **✓** in der Aktionsspalte. Ein Klick übernimmt den Song
-offiziell und setzt seinen Status auf **angenommen**.
+Für **Admins und Editoren** erscheint in der Aktionsspalte die Schaltfläche **✓**,
+sobald mindestens eine Ja-Stimme vorliegt. Die Farbe signalisiert den Status:
 
-Abweichungen vom Abstimmungsergebnis (z. B. wegen Dringlichkeit) müssen
-kurz begründet werden.
+.. list-table::
+   :widths: 15 85
+
+   * - **Grün ✓**
+     - Alle Kriterien erfüllt – Übernahme empfohlen
+   * - **Gelb ✓**
+     - Quorum noch nicht erreicht – Übernahme möglich, aber Begründung erforderlich
+
+Abweichungen vom Abstimmungsergebnis (z. B. wegen Dringlichkeit oder persönlicher
+Abstimmung in der Probe) müssen kurz begründet werden.
 
 Persönliche Abstimmung
 ~~~~~~~~~~~~~~~~~~~~~~
