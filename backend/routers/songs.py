@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Song catalogue router.
+
+Handles CRUD operations for songs in the band's repertoire, song
+candidate proposals (member submissions), voting/feedback on
+candidates, and per-song rehearsal and gig statistics.
+
+Requires authentication. Create/update/delete operations additionally
+require the ``editor`` or ``admin`` role.
+
+Prefix: ``/songs``  |  Tag: ``songs``
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from datetime import time, datetime
 import logging

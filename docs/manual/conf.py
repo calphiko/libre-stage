@@ -3,6 +3,11 @@
 
 import json
 import os
+import sys
+
+# Make the backend package importable for autodoc
+_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, _root)
 
 # -- Read version from version.json ------------------------------------------
 _root = os.path.join(os.path.dirname(__file__), '..', '..')
@@ -20,7 +25,33 @@ copyright = '2026, libreStage contributors'
 # -- General configuration ---------------------------------------------------
 extensions = [
     'sphinx_copybutton',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
 ]
+
+# autodoc settings
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': False,
+    'show-inheritance': True,
+    'member-order': 'bysource',
+}
+autodoc_typehints = 'description'
+autodoc_typehints_description_target = 'documented'
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+napoleon_include_init_with_doc = False
+napoleon_use_rtype = True
+
+# intersphinx: link to Python standard library docs
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'sqlalchemy': ('https://docs.sqlalchemy.org/en/20/', None),
+    'fastapi': ('https://fastapi.tiangolo.com/', None),
+    'pydantic': ('https://docs.pydantic.dev/latest/', None),
+}
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -60,5 +91,3 @@ html_context = {
         ('English', '/en/'),
     ],
 }
-
-

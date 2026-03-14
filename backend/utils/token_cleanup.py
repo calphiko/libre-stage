@@ -15,8 +15,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Token Cleanup Utility
-Entfernt abgelaufene Tokens aus der Datenbank
+Token cleanup utility.
+
+Removes expired and revoked tokens from the database to keep the token
+tables lean. Intended to be called once at application startup and
+optionally on a recurring schedule.
+
+Cleaned up tables:
+    - :class:`models.UsedPasswordResetToken` – entries older than 48 h
+    - :class:`models.TokenBlacklist` – entries whose ``expires_at`` is in the past
+    - :class:`models.RefreshToken` – revoked entries older than 48 h and
+      all entries whose ``expires_at`` is in the past
 """
 import logging
 from datetime import datetime, timezone, timedelta
@@ -28,10 +37,25 @@ logger = logging.getLogger("uvicorn.error")
 
 def cleanup_expired_tokens(db: Session):
     """
-    Entfernt abgelaufene Tokens aus der Datenbank:
-    - UsedPasswordResetToken älter als 48h
-    - TokenBlacklist Einträge die bereits abgelaufen sind
-    - RefreshToken Einträge die revoked und älter als 48h sind
+    Delete expired and revoked tokens from the database.
+
+    Args:
+        db (Session): Active SQLAlchemy database session.
+
+    Returns:
+        dict: A summary dictionary with the number of removed rows per
+        category::
+
+            {
+                "password_reset": int,
+                "blacklist": int,
+                "revoked_refresh": int,
+                "expired_refresh": int,
+            }
+
+    Raises:
+        Exception: Re-raises any database exception after rolling back
+            the transaction.
     """
     cutoff_time = datetime.now(timezone.utc) - timedelta(hours=48)
     now = datetime.now(timezone.utc)

@@ -14,6 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+PDF setlist generator.
+
+Renders a printable two-column setlist as a PDF using ReportLab.
+Singer-specific colours, live-mode annotations (inserted / skipped songs,
+feedback ratings) and a per-page schedule are included automatically.
+"""
+
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -23,6 +31,28 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from datetime import datetime
 
 class SetlistPDF:
+    """
+    Two-column PDF setlist renderer for a single gig.
+
+    The rendered document contains:
+
+    - A header with gig name, date, timestamp and singer colour legend.
+    - One column per two sets laid out side by side.
+    - Per-song start times derived from the pre-computed schedule.
+    - Live-mode annotations: ``[NEU]`` prefix for inserted songs,
+      strikethrough for skipped songs, and ``[o]`` / ``[+]`` / ``[++]``
+      feedback markers.
+    - Page numbers (``Seite X/Y``) in the bottom-right corner.
+
+    Args:
+        gig (Gig): The gig to render.
+        schedule (dict[int, list[datetime]]): Pre-computed start times per
+            set position, as returned by
+            :meth:`~backend.services.setlist.SetlistService.calc_schedule`.
+        singer_colors (dict[str, str]): Mapping of first-name → hex colour
+            string used to colour-code lead-singer names.
+    """
+
     FONT = "Helvetica"
     FONT_SIZE = 8
 
@@ -40,7 +70,17 @@ class SetlistPDF:
 
     def _calc_set_height(self, gigset, set_idx):
         """
-        Berechnet, wie viel vertikal (in pt) dieses Set braucht (inklusive Songs und ggf. Pause davor).
+        Calculate the vertical space (in points) required to render a
+        single set block, including an optional pause row and a trailing
+        gap after the last song.
+
+        Args:
+            gigset: The :class:`~backend.models.GigSet` to measure.
+            set_idx (int): 0-based index of this set in the sorted gig
+                set list (used to determine whether a pause row is needed).
+
+        Returns:
+            int: Required height in PDF points.
         """
         height = 0
         # Optional: Platz für Pause oben dran?
@@ -62,6 +102,16 @@ class SetlistPDF:
         return height
 
     def build(self) -> BytesIO:
+        """
+        Render the setlist to an in-memory PDF and return it.
+
+        Raises:
+            Any ReportLab exception propagates to the caller.
+
+        Returns:
+            BytesIO: A buffer positioned at offset 0 containing the
+            complete PDF document.
+        """
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4, bottomup=0)
         width, height = A4

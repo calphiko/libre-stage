@@ -14,6 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+FastAPI application entry point.
+
+Creates the :class:`fastapi.FastAPI` instance, registers all middleware
+(CORS, GZip, rate limiting), mounts all API routers and defines the
+core endpoints that do not belong to a specific sub-resource:
+
+- ``POST /login`` – password-based login, returns access + refresh tokens
+- ``POST /refresh`` – exchange a refresh token for a new access token
+- ``POST /logout`` – revoke tokens and clear cookies
+- ``GET  /me`` – return the authenticated user's profile
+- ``PUT  /update_user`` – update own user profile
+- ``PUT  /change_password`` – change own password
+- ``GET  /user_list`` – list all users (authenticated)
+- ``GET  /user_todo_list`` – personal to-do and feedback list
+- ``GET  /app_info`` – application metadata
+- ``GET  /db_health`` – database connectivity probe
+"""
+
 import logging
 
 from fastapi import FastAPI, Depends, HTTPException, Request

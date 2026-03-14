@@ -23,18 +23,37 @@ import logging
 logger = logging.getLogger("uvicorn.error")
 load_dotenv()
 
+"""
+Mattermost notification utility.
+
+Sends messages to a Mattermost channel via an *Incoming Webhook* URL.
+The webhook URL is read from the ``MATTERMOST_WEBHOOK_URL`` environment
+variable by default but can be overridden per call.
+"""
+
 def send_mm_message(
         text: str,
         webhook = os.getenv("MATTERMOST_WEBHOOK_URL"),
         channel: Optional[str] = None
 ) -> bool:
     """
-    Sends a message to a Mattermost channel via Incoming Webhook.
+    Send a message to a Mattermost channel via an Incoming Webhook.
+
+    Args:
+        text (str): The message text to send (Markdown supported).
+        webhook (str): Webhook URL. Defaults to the
+            ``MATTERMOST_WEBHOOK_URL`` environment variable.
+        channel (str | None): Optional channel override. If ``None``
+            the webhook's default channel is used.
+
+    Returns:
+        bool: ``True`` on success.
 
     Raises:
-        ValueError: if webhook URL or text is invalid.
-        TypeError: if data types are incorrect.
-        requests.exceptions.RequestException: in case of http errors.
+        ValueError: If *webhook* is empty/``None`` or *text* is ``None``.
+        TypeError: If *text* or *channel* are not strings.
+        requests.exceptions.HTTPError: If the Mattermost server returns
+            a non-2xx status code.
     """
 
 

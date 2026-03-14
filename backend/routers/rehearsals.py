@@ -1,3 +1,16 @@
+"""
+Rehearsal router.
+
+Handles CRUD operations for rehearsals: creating and updating
+rehearsal sessions, managing the per-rehearsal song list and
+per-user to-do items.
+
+Requires authentication. Create/update/delete operations additionally
+require the ``editor`` or ``admin`` role.
+
+Prefix: ``/rehearsals``  |  Tag: ``rehearsals``
+"""
+
 # libre-stage - Band rehearsal and gig management software
 # Copyright (C) 2026  libre-stage contributors
 #
