@@ -115,38 +115,33 @@ Abstimmungsergebnis auf einen Blick
 
 Das Ergebnis wird je Song als kompakte Badge-Zeile angezeigt:
 
-* **∑ x / y** – abgegebene Stimmen (Ja + Nein + Enthaltung) von benötigten
-  Quorum-Stimmen *y* (= 90 % aller Stimmberechtigten, aufgerundet)
-* **(n fehlen)** – Hinweis, wie viele Stimmen noch für das Quorum fehlen
+* **∑ x / y** – abgegebene Stimmen (Ja + Nein + Enthaltung) von y Stimmberechtigten gesamt
+* **(n f. Quorum)** – Hinweis, wie viele Stimmen noch für das Quorum fehlen
 * 👍 **n (xx %)** – absolute und relative Anzahl der Ja-Stimmen
 * 👎 **n (xx %)** – absolute und relative Anzahl der Nein-Stimmen
 * 🤷 **n** – Enthaltungen (werden nur angezeigt, wenn mindestens eine vorliegt)
-* **✅ Freigegeben** – erscheint, sobald alle drei Freigabe-Kriterien erfüllt sind
 
 Freigabe-Kriterien
 ~~~~~~~~~~~~~~~~~~
 
-Ein Song gilt als **freigegeben**, wenn gleichzeitig gilt:
+Der **✓-Button** erscheint für Admins und Editoren, sobald gleichzeitig gilt:
 
-1. Der Ja-Anteil unter den gültigen Stimmen (Ja + Nein) beträgt **≥ 50 %**.
-2. Es wurden **mindestens 4** gültige Stimmen (Ja + Nein) abgegeben.
-3. **Mindestens 90 % aller Stimmberechtigten** (Musiker) haben abgestimmt
-   (Enthaltungen zählen für das Quorum mit).
+1. Mindestens **75 % aller Stimmberechtigten** haben abgestimmt (Quorum –
+   Enthaltungen zählen mit).
+2. Der Ja-Anteil unter den gültigen Stimmen (Ja + Nein) beträgt **≥ 50 %**.
 
 .. note::
-   Das Quorum wird berechnet als ``ceil(Anzahl Musiker × 0,9)``. Bei einer
-   Band mit 10 Musikern müssen also mindestens 9 Stimmen vorliegen, bevor
-   der Freigabe-Button aktiv wird.
+   Das Quorum wird berechnet als ``max(3, floor(Anzahl Musiker × 0,75))``.
+   Bei 4 Musikern sind das mindestens 3 Stimmen, bei 8 Musikern mindestens 6.
 
 Song übernehmen
 ~~~~~~~~~~~~~~~
 
-Ist ein Song freigegeben (✅), erscheint für **Admins und Editoren** die
-Schaltfläche **✓** in der Aktionsspalte. Ein Klick übernimmt den Song
-offiziell und setzt seinen Status auf **angenommen**.
+Sind alle Kriterien erfüllt, erscheint für **Admins und Editoren** ein grüner
+**✓-Button** in der Aktionsspalte. Ein Klick übernimmt den Song offiziell
+und setzt seinen Status auf **angenommen**.
 
-Abweichungen vom Abstimmungsergebnis (z. B. wegen Dringlichkeit) müssen
-kurz begründet werden.
+Solange das Quorum nicht erreicht ist, wird kein Button angezeigt.
 
 Persönliche Abstimmung
 ~~~~~~~~~~~~~~~~~~~~~~
