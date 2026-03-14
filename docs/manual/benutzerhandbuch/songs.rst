@@ -86,8 +86,72 @@ Ein Klick auf einen Song öffnet die Detailansicht mit:
 * **Feedback-Verteilung:** Balkendiagramm der Bewertungen aus dem Live-Modus
 * **Häufige Begleiter:** Welche anderen Songs erscheinen am häufigsten in derselben Setlist?
 
-Bewertungen (Songvoting)
-------------------------
+Song-Vorschläge & Abstimmung
+-----------------------------
 
-Alle Benutzer können Songs bewerten (Daumen hoch / Daumen runter).
-Die Bewertungen sind im Dashboard als Aufgabe sichtbar.
+Neu eingereichte Songs erhalten zunächst den Status **vorschlag** und erscheinen
+im Tab **Vorschläge** der Song-Seite. Dort können alle stimmberechtigten
+Bandmitglieder (Musiker) ihr Votum abgeben, bevor ein Song offiziell übernommen wird.
+
+Abstimmen
+~~~~~~~~~
+
+Jedes Mitglied mit dem Flag **Musiker** kann pro Song eine von drei Stimmen abgeben:
+
+.. list-table::
+   :widths: 15 85
+
+   * - 👍
+     - **Ja** – ich möchte den Song ins Repertoire aufnehmen
+   * - 👎
+     - **Nein** – ich bin gegen die Aufnahme
+   * - 🤷
+     - **Enthaltung** – ich habe keine Meinung / möchte mich enthalten
+
+Dieselbe Schaltfläche nochmals klicken zieht die Stimme zurück.
+
+Abstimmungsergebnis auf einen Blick
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Das Ergebnis wird je Song als kompakte Badge-Zeile angezeigt:
+
+* **∑ x / y** – abgegebene Stimmen (Ja + Nein + Enthaltung) von benötigten
+  Quorum-Stimmen *y* (= 90 % aller Stimmberechtigten, aufgerundet)
+* **(n fehlen)** – Hinweis, wie viele Stimmen noch für das Quorum fehlen
+* 👍 **n (xx %)** – absolute und relative Anzahl der Ja-Stimmen
+* 👎 **n (xx %)** – absolute und relative Anzahl der Nein-Stimmen
+* 🤷 **n** – Enthaltungen (werden nur angezeigt, wenn mindestens eine vorliegt)
+* **✅ Freigegeben** – erscheint, sobald alle drei Freigabe-Kriterien erfüllt sind
+
+Freigabe-Kriterien
+~~~~~~~~~~~~~~~~~~
+
+Ein Song gilt als **freigegeben**, wenn gleichzeitig gilt:
+
+1. Der Ja-Anteil unter den gültigen Stimmen (Ja + Nein) beträgt **≥ 50 %**.
+2. Es wurden **mindestens 4** gültige Stimmen (Ja + Nein) abgegeben.
+3. **Mindestens 90 % aller Stimmberechtigten** (Musiker) haben abgestimmt
+   (Enthaltungen zählen für das Quorum mit).
+
+.. note::
+   Das Quorum wird berechnet als ``ceil(Anzahl Musiker × 0,9)``. Bei einer
+   Band mit 10 Musikern müssen also mindestens 9 Stimmen vorliegen, bevor
+   der Freigabe-Button aktiv wird.
+
+Song übernehmen
+~~~~~~~~~~~~~~~
+
+Ist ein Song freigegeben (✅), erscheint für **Admins und Editoren** die
+Schaltfläche **✓** in der Aktionsspalte. Ein Klick übernimmt den Song
+offiziell und setzt seinen Status auf **angenommen**.
+
+Abweichungen vom Abstimmungsergebnis (z. B. wegen Dringlichkeit) müssen
+kurz begründet werden.
+
+Persönliche Abstimmung
+~~~~~~~~~~~~~~~~~~~~~~
+
+Wurde in einer Probe direkt per Handzeichen abgestimmt, kann ein Admin/Editor
+den Song ohne digitale Abstimmung direkt als **angenommen** eintragen –
+vorausgesetzt, die anwesenden Stimmberechtigten haben mehrheitlich zugestimmt
+(Enthaltungen zählen nicht).
