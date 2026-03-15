@@ -34,7 +34,6 @@
     acceptSongApproach, logout as apiLogout} from '$lib/api.js';
 
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { InfoIcon } from 'lucide-svelte';
 
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
@@ -58,7 +57,6 @@
   let search = $state('');
   let sortField = $state('title');
   let sortAsc = $state(true);
-  let showNewSongInfo = $state(false);
 
 
   let rulesVisible = $state(false);
@@ -896,7 +894,16 @@ let filteredSongs = $derived(songs
 
 
     <div class="flex flex-col md:flex-row md:justify-between md:items-center md:mb-6">
-        <h3 class="h2 mb-4 text-on-surface">Songs</h3>
+        <div class="flex items-center gap-3 mb-4">
+          <h3 class="h2 text-on-surface">Songs</h3>
+          {#if canEdit()}
+            <button
+              class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+              onclick={openNewSongModal}
+              title="Neuen Song hinzufügen"
+            >+</button>
+          {/if}
+        </div>
         <button
           class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
           onclick={() => showHelp = !showHelp}
@@ -976,24 +983,6 @@ let filteredSongs = $derived(songs
       </div>
     {/if}
 
-    <div class="inline-flex items-center gap-2">
-      <button class="btn variant-filled-primary btn-sm w-fit border mt-4 md:mb-4" onclick={openNewSongModal}>
-        Neuen Song hinzufügen
-      </button>
-      <span
-        class="inline-block align-super cursor-help relative "
-        onclick={() => showNewSongInfo = !showNewSongInfo}
-      >
-        <InfoIcon class="w-4 h-4 text-primary-500" />
-        {#if showNewSongInfo}
-          <div class="absolute z-10 left-6 -top-2 w-56 card p-3 variant-filled-secondary shadow-lg text-sm bg-surface-100 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded">
-            <b>Neuen Song erstellen</b>
-            <hr class="my-1">
-            <p>Hier kannst du ganz einfach einen neuen Song erstellen</p>
-          </div>
-        {/if}
-      </span>
-    </div>
 
     <!-- Tab-Navigation -->
     <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
