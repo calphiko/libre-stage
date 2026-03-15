@@ -261,7 +261,14 @@ import NewPollForm from './NewPollForm.svelte';
 <div class="max-w-6xl md:mx-auto py-6 md:px-3">
   <div class="card bg-surface-2 rounded-2xl shadow-lg p-2 md:p-6 md:border md:border-outline-variant">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="h2 text-on-surface">Abstimmungen</h2>
+      <div class="flex items-center gap-3">
+        <h2 class="h2 text-on-surface">Abstimmungen</h2>
+        <button
+          class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+          onclick={openNewModal}
+          title="Neue Abstimmung erstellen"
+        >+</button>
+      </div>
       <button
         class="btn variant-ghost-surface btn-sm"
         onclick={() => showHelp = !showHelp}
@@ -345,9 +352,6 @@ import NewPollForm from './NewPollForm.svelte';
       </div>
     {/if}
 
-    <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewModal}>
-          Neue Abstimmung
-    </button>
 
     <!-- Regeln als Info-Box -->
     <div class="card variant-soft-warning mb-6">

@@ -17,28 +17,99 @@
 -->
 
 <script>
-  import { onMount,  onDestroy, mount, unmount } from 'svelte';
+  import { onMount, onDestroy, mount, unmount } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { createGrid, ModuleRegistry, AllCommunityModule, themeQuartz } from 'ag-grid-community';
-  import { getUser, adminUpdateUser, adminGetAllUsers, logout as apiLogout} from '$lib/api.js';
+  import { getUser, adminUpdateUser, adminGetAllUsers, adminCreateUser, adminDeleteUser, logout as apiLogout} from '$lib/api.js';
   import { triggerSendPwResetToken } from '$lib/api_pw_reset.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ToggleCellRenderer from '$lib/components/ToggleCellRenderer.svelte';
-
+  import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+  import { modalState } from '$lib/modalState.js';
 
   const { showError, showSuccess, showWarning } = createMessageHelpers();
-
 
   if (!ModuleRegistry.__registeredModules) {
     ModuleRegistry.registerModules([AllCommunityModule]);
   }
 
-  let users = [];
-    let gridDiv;
+  let users = $state([]);
+  let gridDiv;
   let gridApi;
   let isDark = false;
   let error = '';
+
+  let showCreateForm = $state(false);
+  let creating = $state(false);
+  let nu_user_name = $state('');
+  let nu_clear_name = $state('');
+  let nu_email = $state('');
+  let nu_user_pw = $state('');
+  let nu_user_group = $state('user');
+  let nu_musician = $state(false);
+  let nu_is_singer = $state(false);
+
+  function resetNewUser() {
+    nu_user_name = '';
+    nu_clear_name = '';
+    nu_email = '';
+    nu_user_pw = '';
+    nu_user_group = 'user';
+    nu_musician = false;
+    nu_is_singer = false;
+  }
+
+  async function createUser() {
+    if (!nu_user_name || !nu_user_pw || !nu_email) {
+      showError('Bitte Username, E-Mail und Passwort ausfüllen');
+      return;
+    }
+    creating = true;
+    try {
+      await adminCreateUser(null, {
+        user_name: nu_user_name,
+        clear_name: nu_clear_name,
+        email: nu_email,
+        user_pw: nu_user_pw,
+        user_group: nu_user_group,
+        musician: nu_musician,
+        is_singer: nu_is_singer,
+      });
+      users = await adminGetAllUsers(null);
+      gridApi?.setGridOption('rowData', users);
+      showSuccess(`Benutzer „${nu_user_name}" angelegt`);
+      resetNewUser();
+      showCreateForm = false;
+    } catch (e) {
+      showError(e.message ?? 'Anlegen fehlgeschlagen');
+    } finally {
+      creating = false;
+    }
+  }
+
+  async function deleteUser(id, name) {
+    modalState.trigger({
+      component: ConfirmModal,
+      meta: {
+        title: 'Benutzer löschen',
+        message: `Möchtest du den Benutzer „${name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen',
+      },
+      response: async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await adminDeleteUser(null, id);
+          users = await adminGetAllUsers(null);
+          gridApi?.setGridOption('rowData', users);
+          showSuccess(`Benutzer „${name}" gelöscht`);
+        } catch (e) {
+          showError(e.message ?? 'Löschen fehlgeschlagen');
+        }
+      }
+    });
+  }
 
   const makeToggleRenderer = (field) => {
       return class {
@@ -153,6 +224,23 @@
         editable: false,
         flex: 0,
         minWidth: 180
+    },
+    {
+        field: 'delete',
+        headerName: 'Löschen',
+        cellRenderer: (params) => {
+          const button = document.createElement('button');
+          button.innerText = '🗑️';
+          button.className = 'btn btn-sm variant-filled-error';
+          button.title = 'Benutzer löschen';
+          button.addEventListener('click', () => deleteUser(params.data.id, params.data.user_name));
+          return button;
+        },
+        filter: false,
+        sortable: false,
+        editable: false,
+        flex: 0,
+        minWidth: 90
     }
   ];
 
@@ -242,7 +330,7 @@
       },
       onCellValueChanged,
       suppressRowHoverHighlight: false,
-      rowSelection: 'single'
+      rowSelection: { mode: 'singleRow' }
     });
 
     const observer = new MutationObserver(updateTheme);
@@ -265,6 +353,50 @@
   }
   });
 </script>
+
+<div class="mb-3 flex items-center gap-3">
+  <button
+    class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+    onclick={() => showCreateForm = !showCreateForm}
+    title="Neuen Benutzer anlegen"
+  >+</button>
+  <span class="text-sm text-on-surface-variant">Neuen Benutzer anlegen</span>
+</div>
+
+{#if showCreateForm}
+  <form
+    class="mb-4 p-4 border border-outline-variant rounded-xl bg-surface-1 grid grid-cols-1 md:grid-cols-2 gap-3"
+    onsubmit={(e) => { e.preventDefault(); createUser(); }}
+  >
+    <input class="input rounded-lg px-3 py-2" type="text" bind:value={nu_user_name} placeholder="Username *" required />
+    <input class="input rounded-lg px-3 py-2" type="text" bind:value={nu_clear_name} placeholder="Klarname" />
+    <input class="input rounded-lg px-3 py-2" type="email" bind:value={nu_email} placeholder="E-Mail *" required />
+    <input class="input rounded-lg px-3 py-2" type="password" bind:value={nu_user_pw} placeholder="Passwort *" required />
+    <select class="input rounded-lg px-3 py-2" bind:value={nu_user_group}>
+      <option value="user">user</option>
+      <option value="editor">editor</option>
+      <option value="admin">admin</option>
+    </select>
+    <div class="flex flex-col gap-2">
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" bind:checked={nu_musician} />
+        Ist Musiker
+      </label>
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" bind:checked={nu_is_singer} />
+        Ist Sänger
+      </label>
+    </div>
+    <div class="md:col-span-2 flex gap-2">
+      <button class="btn variant-filled-primary btn-sm" type="submit" disabled={creating}>
+        {creating ? 'Anlegen…' : 'Benutzer anlegen'}
+      </button>
+      <button class="btn variant-ghost-surface btn-sm" type="button" onclick={() => { showCreateForm = false; resetNewUser(); }}>
+        Abbrechen
+      </button>
+    </div>
+  </form>
+{/if}
 
 <div bind:this={gridDiv} style="height: 500px; width: 100%;"></div>
 

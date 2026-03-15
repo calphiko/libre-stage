@@ -3,18 +3,52 @@
 Änderungsprotokoll
 ==================
 
+v0.3.11 (2026-03-15)
+---------------------
+
+* Benutzerverwaltung: Admins können Benutzer direkt über ein **+**-Formular
+  anlegen (Username, Klarname, E-Mail, Passwort, Rolle, Musiker, Sänger)
+* Benutzerverwaltung: Neuer **🗑️-Button** pro Tabellenzeile löscht einen
+  Benutzer nach Bestätigung über das Standard-Bestätigungs-Modal
+* Benutzerverwaltung: Tabelle wird nach Anlegen und Löschen automatisch
+  aktualisiert
+* Backend: neuer ``DELETE /admin/users/{id}`` Endpoint
+* Benutzerhandbuch: Abschnitt „Benutzerverwaltung" vollständig neu dokumentiert
+
+v0.3.10 (2026-03-15)
+---------------------
+
+* Live-Modus: Vorwärts-Sprung über die Setlisten-Übersicht (Shortcut ``L``)
+  markiert den aktuellen Song und alle übersprungenen Songs zwischen aktuellem
+  und Ziel-Song automatisch als **übersprungen**; Rückwärts-Sprünge bleiben
+  ohne Seiteneffekte
+* Proben: Vergangene Proben werden als schreibgeschütztes **Protokoll** angezeigt –
+  Probenkommentar, Songs mit Status, Todos und Kommentaren, keine Bearbeitungs-Controls
+* Proben: Protokoll-Ansicht verschlankt – Markdown-ähnliche Textdarstellung ohne
+  Badges, Rahmen oder verschachtelte Listen
+* Proben: Suchbegriff aus der übergeordneten Suche wird im aufgeklappten Protokoll
+  **farbig hervorgehoben**; separates inneres Suchfeld entfernt
+* Proben: **Suche über alle vergangenen Proben** – filtert nach Datum, Song-Titel,
+  Interpret und Probenkommentar
+* Proben: Eine Probe bleibt den **ganzen Probentag und den Folgetag** editierbar
+  und unter „Bevorstehende Proben" sichtbar; erst danach wechselt sie ins Protokoll
+* Proben: Schaltfläche „Neue Probe" als kompaktes **+**-Icon direkt neben der
+  Seitenüberschrift platziert (nur für Admins/Editoren sichtbar)
+
 v0.3.9 (2026-03-14)
 --------------------
 
-* Song-Vorschläge: Abstimmungsanzeige als kompakte Badge-Zeile überarbeitet –
-  Ja/Nein/Enthaltung mit absoluten Werten und Prozentzahlen direkt sichtbar
-* Song-Vorschläge: Quorum-Kriterium eingeführt – ``max(3, floor(n × 0,75))``
+* Song-Vorschläge: Abstimmungsanzeige als kompakte **Badge-Zeile** überarbeitet –
+  Ja/Nein/Enthaltung mit absoluten Werten und Prozentzahlen direkt sichtbar,
+  kein Hover mehr erforderlich
+* Song-Vorschläge: **Quorum-Kriterium** eingeführt – ``max(3, floor(n × 0,75))``
   Stimmberechtigte müssen abgestimmt haben, bevor der Übernahme-Button erscheint
 * Song-Vorschläge: Übernahme-Button (✓, grün) erscheint für Admins/Editoren
   sobald Quorum erreicht und ≥ 50 % Ja-Stimmen vorliegen; kein Button solange
-  das Quorum fehlt
-* Song-Vorschläge: Anzeige „∑ abgegeben / gesamt" mit Hinweis auf fehlende
-  Quorum-Stimmen
+  das Quorum nicht erfüllt ist
+* Song-Vorschläge: Anzeige „**∑ abgegeben / gesamt**" zeigt Abstimmungsfortschritt;
+  Quorum-Detail im Tooltip
+* Song-Vorschläge: „(n f. Quorum)"-Texthinweis entfernt – Layout schlanker
 * Benutzerhandbuch: Abschnitt „Song-Vorschläge & Abstimmung" vollständig neu dokumentiert
 
 v0.3.5 (2026-03-10)

@@ -21,7 +21,7 @@
   import RehearsalSongCard from './RehearsalSongCard.svelte';
   import { appConfig } from '$lib/appConfig.js';
 
-  let { reh, songs = [], songsForSearch = [], users = [], isEditor = false, expanded = false, expandedSongId = null, ontoggle, onupdate, ondelete, onsongtoggle, onerror, onwarning, onsuccess } = $props();
+  let { reh, songs = [], songsForSearch = [], users = [], isEditor = false, isPast = false, searchQuery = '', expanded = false, expandedSongId = null, ontoggle, onupdate, ondelete, onsongtoggle, onerror, onwarning, onsuccess } = $props();
 
   let statusOptions = $derived($appConfig?.rehearsalSongStatuses ?? []);
 
@@ -36,6 +36,15 @@
   let selectedSong = $state(null);
   let newSongTodo = $state('');
   let songToAddInput;
+
+  function highlight(text, query) {
+    if (!query?.trim() || !text) return text ?? '';
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return String(text).replace(
+      new RegExp(`(${escaped})`, 'gi'),
+      '<mark class="bg-warning-200 dark:bg-warning-700 rounded px-0.5">$1</mark>'
+    );
+  }
 
 
   function handleToggle() {
@@ -146,82 +155,127 @@
     <span class="text-lg font-bold">
       {new Date(reh.begin).toLocaleString(undefined, dateOptions)}
     </span>
+    {#if isPast}
+      <span class="ml-2 text-xs text-surface-400 italic">Protokoll</span>
+    {/if}
   </button>
 
   {#if expanded}
   <div class="px-4 pb-4">
-    {#if isEditor}
-      <button
-        class="btn variant-filled-error btn-sm text-sm float-left mb-3 border"
-        title="Probe löschen"
-        onclick={handleDelete}
-      >🗑️ Probe löschen</button>
-    {/if}
 
-    <div class="mb-5 clear-both">
-      <textarea
-        class="input w-full rounded-md" rows="7"
-        bind:value={reh.comment}
-        onblur={() => handleUpdate(expandedSongId)}
-        placeholder="Probenkommentar"
-      ></textarea>
-    </div>
+    {#if isPast}
+      <!-- ── Protokoll-Ansicht (vergangene Probe) ── -->
+      <div class="prose prose-sm dark:prose-invert max-w-none text-sm text-on-surface">
 
-    <form class="mb-6 border-t pt-3" onsubmit={(e) => { e.preventDefault(); addSongTodo(); }}>
-      <h6 class="font-bold text-base mb-2">Song mit Todo</h6>
-      <div class="flex flex-col gap-2">
-        {#if songsForSearch.length > 0}
-          <input
-            class="input w-full mb-1"
-            type="text"
-            list="songs-datalist-{reh.id}"
-            id="songToAdd-{reh.id}"
-            bind:this={songToAddInput}
-            bind:value={searchTerm}
-            placeholder="Song eingeben"
-            autocomplete="off"
-            oninput={(e) => {
-              const selected = songsForSearch.find(s => s.label === e.target.value);
-              if (selected) {
-                selectedSong = songs.find(s => s.id === selected.value);
-              }
-            }}
-          />
-          <datalist id="songs-datalist-{reh.id}">
-            {#each songsForSearch as songOption}
-              <option value={songOption.label}></option>
-            {/each}
-          </datalist>
+        {#if reh.comment}
+          <p class="whitespace-pre-wrap mb-4 text-surface-600 dark:text-surface-300">{@html highlight(reh.comment, searchQuery)}</p>
+          <hr class="border-surface-200 dark:border-surface-700 mb-4" />
+        {/if}
+
+        {#if reh.songs.length === 0}
+          <p class="italic text-surface-400">Keine Songs protokolliert.</p>
+        {:else}
+          {#each reh.songs as song (song.id ?? song.id_song)}
+            <div class="mb-3">
+              <p class="font-semibold">
+                {song.done ? '✔' : '·'}
+                {@html highlight(`${song.interpret} – ${song.title}`, searchQuery)}
+                {#if song.status}
+                  <span class="font-normal text-surface-400 text-xs">({song.status})</span>
+                {/if}
+              </p>
+              {#if song.todo}
+                <p class="ml-4 text-surface-500">Todo: {@html highlight(song.todo, searchQuery)}</p>
+              {/if}
+              {#if song.comment}
+                <p class="ml-4 text-surface-500">{@html highlight(song.comment, searchQuery)}</p>
+              {/if}
+              {#each song.song_todos ?? [] as std}
+                <p class="ml-4 text-surface-400">
+                  {std.done ? '✔' : '⏳'} {users.find(u => u.id === std.id_user)?.clear_name ?? '?'}: {@html highlight(std.todo, searchQuery)}
+                </p>
+              {/each}
+            </div>
+          {/each}
         {/if}
       </div>
-      <div class="my-2">
-        <input
-          class="input w-full" type="text"
-          bind:value={newSongTodo} required
-          placeholder="Was gibts zu tun?"
-        />
-      </div>
-      <button class="btn variant-filled-primary btn-sm border mt-2 w-fit" type="submit">
-        Hinzufügen
-      </button>
-    </form>
 
-    <div class="border-t pt-3">
-      {#each reh.songs as song (song.id ?? song.id_song)}
-        <RehearsalSongCard
-          {song}
-          {users}
-          {statusOptions}
-          expanded={expandedSongId === song.id}
-          ontoggle={handleSongToggle}
-          onremove={handleSongRemove}
-          ondone={handleSongDone}
-          onstatuschange={handleStatusChange}
-          onupdate={handleSongUpdate}
-          onaddtodo={handleAddTodo}
-        />
-      {/each}
-    </div>
+    {:else}
+      <!-- ── Edit-Ansicht (bevorstehende Probe) ── -->
+      {#if isEditor}
+        <button
+          class="btn variant-filled-error btn-sm text-sm float-left mb-3 border"
+          title="Probe löschen"
+          onclick={handleDelete}
+        >🗑️ Probe löschen</button>
+      {/if}
+
+      <div class="mb-5 clear-both">
+        <textarea
+          class="input w-full rounded-md" rows="7"
+          bind:value={reh.comment}
+          onblur={() => handleUpdate(expandedSongId)}
+          placeholder="Probenkommentar"
+        ></textarea>
+      </div>
+
+      <form class="mb-6 border-t pt-3" onsubmit={(e) => { e.preventDefault(); addSongTodo(); }}>
+        <h6 class="font-bold text-base mb-2">Song mit Todo</h6>
+        <div class="flex flex-col gap-2">
+          {#if songsForSearch.length > 0}
+            <input
+              class="input w-full mb-1"
+              type="text"
+              list="songs-datalist-{reh.id}"
+              id="songToAdd-{reh.id}"
+              bind:this={songToAddInput}
+              bind:value={searchTerm}
+              placeholder="Song eingeben"
+              autocomplete="off"
+              oninput={(e) => {
+                const selected = songsForSearch.find(s => s.label === e.target.value);
+                if (selected) {
+                  selectedSong = songs.find(s => s.id === selected.value);
+                }
+              }}
+            />
+            <datalist id="songs-datalist-{reh.id}">
+              {#each songsForSearch as songOption}
+                <option value={songOption.label}></option>
+              {/each}
+            </datalist>
+          {/if}
+        </div>
+        <div class="my-2">
+          <input
+            class="input w-full" type="text"
+            bind:value={newSongTodo} required
+            placeholder="Was gibts zu tun?"
+          />
+        </div>
+        <button class="btn variant-filled-primary btn-sm border mt-2 w-fit" type="submit">
+          Hinzufügen
+        </button>
+      </form>
+
+      <div class="border-t pt-3">
+        {#each reh.songs as song (song.id ?? song.id_song)}
+          <RehearsalSongCard
+            {song}
+            {users}
+            {statusOptions}
+            expanded={expandedSongId === song.id}
+            ontoggle={handleSongToggle}
+            onremove={handleSongRemove}
+            ondone={handleSongDone}
+            onstatuschange={handleStatusChange}
+            onupdate={handleSongUpdate}
+            onaddtodo={handleAddTodo}
+          />
+        {/each}
+      </div>
+    {/if}
+
   </div>
   {/if}
 </div>

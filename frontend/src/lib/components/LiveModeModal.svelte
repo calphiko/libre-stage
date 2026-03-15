@@ -220,6 +220,44 @@ import { onMount, onDestroy } from 'svelte';
     touchEndX = 0;
   }
 
+  async function jumpToSong(targetIndex) {
+    if (targetIndex === currentIndex) return;
+
+    // Rückwärts-Sprung: einfach wechseln, nichts markieren
+    if (targetIndex < currentIndex) {
+      currentIndex = targetIndex;
+      return;
+    }
+
+    // Vorwärts-Sprung: alle Songs von currentIndex bis targetIndex-1 als übersprungen markieren
+    const songsToSkip = allSongs.slice(currentIndex, targetIndex).filter(
+      s => !s.uebersprungen && s.feedback === null || s.feedback === undefined
+    );
+
+    try {
+      await Promise.all(songsToSkip.map(song =>
+        updateSongLiveMode(null, gigId, {
+          id: song.id,
+          uebersprungen: true,
+          feedback: null
+        })
+      ));
+
+      // Lokale Daten aktualisieren
+      for (let i = currentIndex; i < targetIndex; i++) {
+        if (!allSongs[i].uebersprungen) {
+          allSongs[i].uebersprungen = true;
+          allSongs[i].feedback = null;
+        }
+      }
+      allSongs = [...allSongs];
+    } catch (e) {
+      showError(e.message ?? 'Fehler beim Markieren der übersprungenen Songs');
+    }
+
+    currentIndex = targetIndex;
+  }
+
   async function toggleUebersprungen() {
     if (!currentSong) return;
 
@@ -752,7 +790,7 @@ import { onMount, onDestroy } from 'svelte';
     {allSongs}
     {currentIndex}
     open={showSetlistOverview}
-    onJump={(index) => { currentIndex = index; }}
+    onJump={(index) => jumpToSong(index)}
     onClose={() => { showSetlistOverview = false; }}
   />
 </div>
