@@ -21,7 +21,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { createGrid, ModuleRegistry, AllCommunityModule, themeQuartz } from 'ag-grid-community';
-  import { getUser, adminUpdateUser, adminGetAllUsers, adminCreateUser, adminDeleteUser, logout as apiLogout} from '$lib/api.js';
+  import { getUser, adminUpdateUser, adminGetAllUsers, adminCreateUser, adminDeactivateUser, adminActivateUser, logout as apiLogout} from '$lib/api.js';
   import { triggerSendPwResetToken } from '$lib/api_pw_reset.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ToggleCellRenderer from '$lib/components/ToggleCellRenderer.svelte';
@@ -88,27 +88,38 @@
     }
   }
 
-  async function deleteUser(id, name) {
+  async function deactivateUser(id, name) {
     modalState.trigger({
       component: ConfirmModal,
       meta: {
-        title: 'Benutzer löschen',
-        message: `Möchtest du den Benutzer „${name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
-        confirmText: 'Löschen',
+        title: 'Benutzer deaktivieren',
+        message: `Möchtest du den Benutzer „${name}" wirklich deaktivieren? Der Benutzer wird sofort ausgeloggt und kann sich nicht mehr einloggen.`,
+        confirmText: 'Deaktivieren',
         cancelText: 'Abbrechen',
       },
       response: async (confirmed) => {
         if (!confirmed) return;
         try {
-          await adminDeleteUser(null, id);
+          await adminDeactivateUser(null, id);
           users = await adminGetAllUsers(null);
           gridApi?.setGridOption('rowData', users);
-          showSuccess(`Benutzer „${name}" gelöscht`);
+          showSuccess(`Benutzer „${name}" deaktiviert`);
         } catch (e) {
-          showError(e.message ?? 'Löschen fehlgeschlagen');
+          showError(e.message ?? 'Deaktivieren fehlgeschlagen');
         }
       }
     });
+  }
+
+  async function activateUser(id, name) {
+    try {
+      await adminActivateUser(null, id);
+      users = await adminGetAllUsers(null);
+      gridApi?.setGridOption('rowData', users);
+      showSuccess(`Benutzer „${name}" reaktiviert`);
+    } catch (e) {
+      showError(e.message ?? 'Reaktivieren fehlgeschlagen');
+    }
   }
 
   const makeToggleRenderer = (field) => {
@@ -202,6 +213,23 @@
       minWidth: 130
     },
     {
+      field: 'status',
+      headerName: 'Status',
+      headerTooltip: 'Gibt an, ob der Benutzer aktiv oder deaktiviert ist.',
+      editable: false,
+      filter: 'agTextColumnFilter',
+      minWidth: 130,
+      cellRenderer: (params) => {
+        const isActive = params.value === 'active' || params.value == null;
+        const badge = document.createElement('span');
+        badge.innerText = isActive ? '✅ aktiv' : '🚫 deaktiviert';
+        badge.style.cssText = isActive
+          ? 'color: var(--color-success-600, green); font-weight: 600;'
+          : 'color: var(--color-error-600, red); font-weight: 600;';
+        return badge;
+      }
+    },
+    {
         field: 'password_reset',
         headerName: 'Passwort zurücksetzen',
         headerTooltip: 'Sendet dem Benutzer einen Link zum Zurücksetzen des Passworts',
@@ -226,21 +254,29 @@
         minWidth: 180
     },
     {
-        field: 'delete',
-        headerName: 'Löschen',
+        field: 'deactivate',
+        headerName: 'Aktivierung',
         cellRenderer: (params) => {
+          const isActive = params.data.status === 'active' || params.data.status == null;
           const button = document.createElement('button');
-          button.innerText = '🗑️';
-          button.className = 'btn btn-sm variant-filled-error';
-          button.title = 'Benutzer löschen';
-          button.addEventListener('click', () => deleteUser(params.data.id, params.data.user_name));
+          if (isActive) {
+            button.innerText = '🚫 Deaktivieren';
+            button.className = 'btn btn-sm variant-filled-error';
+            button.title = 'Benutzer deaktivieren';
+            button.addEventListener('click', () => deactivateUser(params.data.id, params.data.user_name));
+          } else {
+            button.innerText = '✅ Reaktivieren';
+            button.className = 'btn btn-sm variant-filled-success';
+            button.title = 'Benutzer reaktivieren';
+            button.addEventListener('click', () => activateUser(params.data.id, params.data.user_name));
+          }
           return button;
         },
         filter: false,
         sortable: false,
         editable: false,
         flex: 0,
-        minWidth: 90
+        minWidth: 150
     }
   ];
 
