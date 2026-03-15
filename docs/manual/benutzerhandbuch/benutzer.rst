@@ -109,6 +109,58 @@ Berechtigungssübersicht:
 Benutzerverwaltung (nur Admin)
 -------------------------------
 
-Admins erreichen die Benutzerverwaltung über **Admin → Benutzer**.
-Dort können neue Benutzer angelegt, Rollen zugewiesen, Sänger-Status gesetzt
-und Benutzer deaktiviert werden.
+Admins erreichen die Benutzerverwaltung über **Benutzerverwaltung → Alle Benutzer**.
+Die Tabelle zeigt alle angelegten Benutzer und erlaubt das direkte Bearbeiten,
+Anlegen und Löschen.
+
+Benutzer anlegen
+~~~~~~~~~~~~~~~~
+
+Klicke auf das **+**-Icon oberhalb der Tabelle, um das Formular einzublenden:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Feld
+     - Beschreibung
+   * - **Username** ✱
+     - Eindeutiger Login-Name (3–30 Zeichen, nur Buchstaben, Zahlen, ``_``, ``-``)
+   * - **Klarname**
+     - Anzeigename in der Anwendung
+   * - **E-Mail** ✱
+     - Gültige E-Mail-Adresse (für Passwort-Reset und Benachrichtigungen)
+   * - **Passwort** ✱
+     - Initiales Passwort – der Benutzer kann es später selbst ändern
+   * - **Rolle**
+     - ``user``, ``editor`` oder ``admin``
+   * - **Ist Musiker**
+     - Stimmrecht bei Song-Abstimmungen
+   * - **Ist Sänger**
+     - Erscheint als Sänger-Auswahl im Setlist-Editor
+
+✱ Pflichtfeld
+
+Benutzer bearbeiten
+~~~~~~~~~~~~~~~~~~~
+
+Felder in der Tabelle können direkt angeklickt und bearbeitet werden –
+Änderungen werden nach Verlassen des Feldes automatisch gespeichert.
+Toggle-Schalter für **Ist Musiker** und **Ist Sänger** wirken sofort.
+
+Passwort zurücksetzen
+~~~~~~~~~~~~~~~~~~~~~
+
+Der Button **Reset Password** in der Tabellenspalte sendet dem Benutzer
+einen Zurücksetzen-Link – per **Mattermost** (falls ``mm_username`` gesetzt)
+oder per **E-Mail**.
+
+Benutzer löschen
+~~~~~~~~~~~~~~~~
+
+Der 🗑️-Button in der letzten Tabellenspalte öffnet einen Bestätigungs-Dialog.
+Nach Bestätigung wird der Benutzer unwiderruflich gelöscht.
+
+.. warning::
+   Das Löschen eines Benutzers entfernt alle zugehörigen Daten (Todos, Feedbacks etc.).
+   Diese Aktion kann nicht rückgängig gemacht werden.
