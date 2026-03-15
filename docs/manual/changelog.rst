@@ -3,6 +3,18 @@
 Änderungsprotokoll
 ==================
 
+v0.3.11 (2026-03-15)
+---------------------
+
+* Benutzerverwaltung: Admins können Benutzer direkt über ein **+**-Formular
+  anlegen (Username, Klarname, E-Mail, Passwort, Rolle, Musiker, Sänger)
+* Benutzerverwaltung: Neuer **🗑️-Button** pro Tabellenzeile löscht einen
+  Benutzer nach Bestätigung über das Standard-Bestätigungs-Modal
+* Benutzerverwaltung: Tabelle wird nach Anlegen und Löschen automatisch
+  aktualisiert
+* Backend: neuer ``DELETE /admin/users/{id}`` Endpoint
+* Benutzerhandbuch: Abschnitt „Benutzerverwaltung" vollständig neu dokumentiert
+
 v0.3.10 (2026-03-15)
 ---------------------
 
