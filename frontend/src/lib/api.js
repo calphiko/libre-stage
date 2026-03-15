@@ -837,14 +837,26 @@ export async function adminCreateUser(token, data) {
     return res.json();
 }
 
-export async function adminDeleteUser(token, userId) {
+export async function adminDeactivateUser(token, userId) {
     const res = await fetchWithAuth(`${API_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail ?? 'Benutzer konnte nicht gelöscht werden');
+        throw new Error(err.detail ?? 'Benutzer konnte nicht deaktiviert werden');
+    }
+    return res.json();
+}
+
+export async function adminActivateUser(token, userId) {
+    const res = await fetchWithAuth(`${API_URL}/admin/users/${userId}/activate`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Benutzer konnte nicht aktiviert werden');
     }
     return res.json();
 }

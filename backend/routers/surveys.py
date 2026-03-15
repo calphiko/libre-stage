@@ -405,10 +405,11 @@ def send_reminder(
         .subquery()
     )
 
-    # User die Musiker sind und noch kein Feedback gegeben haben
+    # User die Musiker sind, aktiv sind und noch kein Feedback gegeben haben
     users_without_feedback = (
         db.query(models.User)
         .filter(models.User.musician == 1)
+        .filter(models.User.status == "active")
         .filter(~models.User.id.in_(feedback_user_ids))
         .all()
     )

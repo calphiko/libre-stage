@@ -111,7 +111,9 @@ def get_all_users(
 def update_user(
         user_id: int,
         data: schemas.UserOut,
+        request: Request,
         db: Session = Depends(auth.get_db),
+        current=Depends(auth.get_current_user),
 ):
     logger.info(f"Admin updating user {user_id}")
     user_db = db.query(models.User).filter(models.User.id == user_id).first()
@@ -148,6 +150,13 @@ def update_user(
             if test_status:
                 changes.append(f"Mattermost Nutzername: {user_db.mm_username} → {data.mm_username}")
 
+    # Status-Änderung prüfen
+    new_status = data.status if data.status else "active"
+    if user_db.status != new_status:
+        # Admins dürfen sich nicht selbst deaktivieren
+        if new_status == "deactivated" and user_db.user_name == current["user_name"]:
+            raise HTTPException(status_code=403, detail="You cannot deactivate your own account")
+        changes.append(f"Status: {user_db.status} → {new_status}")
 
     user_db.user_name = data.user_name
     user_db.clear_name = data.clear_name
@@ -156,6 +165,16 @@ def update_user(
     user_db.musician = data.musician
     user_db.is_singer = data.is_singer
     user_db.mm_username = data.mm_username
+
+    # Bei Deaktivierung alle Refresh-Tokens widerrufen (vor dem Status-Update prüfen)
+    if new_status == "deactivated" and user_db.status != "deactivated":
+        db.query(models.RefreshToken).filter(
+            models.RefreshToken.user_id == user_id,
+            models.RefreshToken.revoked == False
+        ).update({"revoked": True})
+
+    user_db.status = new_status
+
     db.commit()
     db.refresh(user_db)
 
@@ -171,17 +190,80 @@ def update_user(
     return user_db
 
 @router.delete("/users/{user_id}")
-def delete_user(
+def deactivate_user(
+        user_id: int,
+        request: Request,
+        db: Session = Depends(auth.get_db),
+        current=Depends(auth.get_current_user),
+):
+    user_db = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user_db:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Admins dürfen sich nicht selbst deaktivieren
+    if user_db.user_name == current["user_name"]:
+        raise HTTPException(status_code=403, detail="You cannot deactivate your own account")
+
+    if user_db.status == "deactivated":
+        raise HTTPException(status_code=400, detail="User is already deactivated")
+
+    user_db.status = "deactivated"
+
+    # Alle Refresh-Tokens des Users widerrufen → sofortiger Logout aller Geräte
+    db.query(models.RefreshToken).filter(
+        models.RefreshToken.user_id == user_id,
+        models.RefreshToken.revoked == False
+    ).update({"revoked": True})
+
+    db.commit()
+    logger.info(f"Admin deactivated user {user_id} ({user_db.user_name})")
+
+    # E-Mail-Benachrichtigung
+    if user_db.email:
+        try:
+            send_email(
+                user_db.email,
+                "Dein Konto wurde deaktiviert",
+                f"Hallo {user_db.clear_name or user_db.user_name},\n\n"
+                f"dein Benutzerkonto wurde von einem Administrator deaktiviert.\n"
+                f"Bei Fragen wende dich an einen Admin."
+            )
+        except Exception as e:
+            logger.error(f"Failed to send deactivation email to {user_db.email}: {e}")
+
+    return {"message": f"User {user_id} deactivated"}
+
+
+@router.put("/users/{user_id}/activate")
+def activate_user(
         user_id: int,
         db: Session = Depends(auth.get_db),
 ):
     user_db = db.query(models.User).filter(models.User.id == user_id).first()
     if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
-    db.delete(user_db)
+
+    if user_db.status == "active":
+        raise HTTPException(status_code=400, detail="User is already active")
+
+    user_db.status = "active"
     db.commit()
-    logger.info(f"Admin deleted user {user_id}")
-    return {"message": f"User {user_id} deleted"}
+    logger.info(f"Admin activated user {user_id} ({user_db.user_name})")
+
+    # E-Mail-Benachrichtigung
+    if user_db.email:
+        try:
+            send_email(
+                user_db.email,
+                "Dein Konto wurde reaktiviert",
+                f"Hallo {user_db.clear_name or user_db.user_name},\n\n"
+                f"dein Benutzerkonto wurde von einem Administrator reaktiviert.\n"
+                f"Du kannst dich nun wieder einloggen."
+            )
+        except Exception as e:
+            logger.error(f"Failed to send activation email to {user_db.email}: {e}")
+
+    return {"message": f"User {user_id} activated"}
 
 @router.post("/users", response_model=schemas.UserOut)
 def create_user(
@@ -196,6 +278,7 @@ def create_user(
         clear_name=user.clear_name,
         email=user.email,
         is_singer=user.is_singer,
+        status="active",
     )
     db.add(db_user)
     db.commit()

@@ -45,6 +45,7 @@ class User(Base):
     musician = Column(Boolean)
     is_singer = Column(Boolean)
     mm_username = Column(String(512))
+    status = Column(String(32), nullable=False, default="active", server_default="active")
 
 
 class UsedPasswordResetToken(Base):

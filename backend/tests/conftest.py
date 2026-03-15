@@ -88,7 +88,8 @@ def test_user(db_session):
         musician=True,
         is_singer=False,
         clear_name="Test User",
-        email="test@example.com"
+        email="test@example.com",
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -107,7 +108,8 @@ def test_user2(db_session):
         user_group="user",
         musician=True,
         clear_name="Test User 2",
-        email="testuser2@example.com"
+        email="testuser2@example.com",
+        status="active"
     )
     db_session.add(user)
     db_session.commit()

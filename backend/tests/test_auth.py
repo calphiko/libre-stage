@@ -67,7 +67,8 @@ def test_authenticate_user_success(db_session):
         user_group="musician",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -87,7 +88,8 @@ def test_authenticate_user_wrong_password(db_session):
         user_group="musician",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -223,7 +225,8 @@ def test_login_endpoint(client, db_session):
         user_group="musician",
         email="login@example.com",
         clear_name="Login User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -247,7 +250,8 @@ def test_login_endpoint_wrong_credentials(client, db_session):
         user_group="musician",
         email="login@example.com",
         clear_name="Login User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -304,7 +308,8 @@ def test_password_change_flow(client, db_session):
         user_group="musician",
         email="change@example.com",
         clear_name="Change User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -373,7 +378,8 @@ def test_get_db(db_session, monkeypatch):
         user_group="musician",
         email="dbtest@example.com",
         clear_name="DB Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db.add(user)
     db.commit()

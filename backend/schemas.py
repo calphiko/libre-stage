@@ -72,6 +72,10 @@ class UserGroup(str, Enum):
     editor = "editor"
     user = "user"
 
+class UserStatus(str, Enum):
+    active = "active"
+    deactivated = "deactivated"
+
 class UserCreate(BaseModel):
     user_name: str = Field(..., min_length=3, max_length=30, pattern=r'^[a-zA-Z0-9_-]+$')
     clear_name: Optional[str] = None
@@ -80,6 +84,7 @@ class UserCreate(BaseModel):
     user_group: UserGroup
     musician: bool = False
     is_singer: bool = False
+    status: UserStatus = UserStatus.active
 
 class UserOut(BaseModel):
     id: int
@@ -90,6 +95,7 @@ class UserOut(BaseModel):
     musician: bool
     is_singer: bool
     mm_username: Optional[str] = ""
+    status: UserStatus = UserStatus.active
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
 
 
