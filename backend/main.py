@@ -399,7 +399,7 @@ def get_users_list(
     current=Depends(auth.get_current_user),
     db: Session = Depends(auth.get_db)
 ):
-    users = db.query(models.User).filter(models.User.musician==1)
+    users = db.query(models.User).filter(models.User.musician==1, models.User.status=="active")
     return users
 
 @app.get("/user_todos", response_model=schemas.UserTodoList)
