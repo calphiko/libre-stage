@@ -78,6 +78,7 @@ def run():
         musician=False,
         is_singer=False,
         mm_username="",
+        status="active",
     )
     alice = User(
         user_name="alice",
@@ -88,6 +89,7 @@ def run():
         musician=True,
         is_singer=True,
         mm_username="alice",
+        status="active",
     )
     bob = User(
         user_name="bob",
@@ -98,6 +100,7 @@ def run():
         musician=True,
         is_singer=True,
         mm_username="bob",
+        status="active",
     )
     carol = User(
         user_name="carol",
@@ -108,6 +111,7 @@ def run():
         musician=True,
         is_singer=False,
         mm_username="carol",
+        status="active",
     )
     dave = User(
         user_name="dave",
@@ -118,6 +122,7 @@ def run():
         musician=True,
         is_singer=False,
         mm_username="dave",
+        status="active",
     )
     db.add_all([admin, alice, bob, carol, dave])
     db.flush()
