@@ -160,6 +160,10 @@ def authenticate_user(db: Session, username: str, password: str):
     if not verify_password(password, user.user_pw):
         return None
 
+    if user.status == "deactivated":
+        logger.warning(f"Login attempt by deactivated user: {username}")
+        return None
+
     # Auto-Upgrade: Alten Hash auf bcrypt umstellen
     if not user.user_pw.startswith(('$2b$', '$2a$', '$2y$')):
         logger.info(f"Upgrading password hash for user {username}")
@@ -247,6 +251,9 @@ def verify_refresh_token(token: str, db: Session) -> models.User:
     user = db.query(models.User).filter(models.User.id == db_token.user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+
+    if user.status == "deactivated":
+        raise HTTPException(status_code=401, detail="Account is deactivated")
 
     return user
 
@@ -373,6 +380,12 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         # JWT exp wird automatisch von jose geprüft
         if username is None or user_group is None:
             raise credentials_exception
+
+        # DB-Lookup: Status sofort prüfen (deaktivierte User sofort sperren)
+        user_db = db.query(models.User).filter(models.User.user_name == username).first()
+        if user_db and user_db.status == "deactivated":
+            raise HTTPException(status_code=401, detail="Account is deactivated")
+
         return {"user_name": username, "user_group": user_group}
     except JWTError:
         raise credentials_exception
