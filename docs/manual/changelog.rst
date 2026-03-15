@@ -3,6 +3,32 @@
 Änderungsprotokoll
 ==================
 
+v0.3.12 (2026-03-15)
+---------------------
+
+* Benutzerverwaltung: Benutzer können nicht mehr endgültig gelöscht werden –
+  stattdessen wird ein **Status** (``active`` / ``deactivated``) eingeführt
+* Benutzerverwaltung: Neuer **🚫 Deaktivieren**-Button pro Tabellenzeile deaktiviert
+  einen Benutzer nach Bestätigung; deaktivierte Benutzer können sofort über
+  **✅ Reaktivieren** wieder freigeschaltet werden
+* Benutzerverwaltung: Neue **Status-Spalte** in der Benutzertabelle zeigt
+  ``✅ aktiv`` / ``🚫 deaktiviert`` farbig an
+* Sicherheit: Beim Deaktivieren werden **alle aktiven Refresh-Tokens** des Benutzers
+  sofort widerrufen → Logout aller Geräte ohne Verzögerung
+* Sicherheit: Jeder API-Request prüft den Benutzerstatus direkt in der Datenbank –
+  deaktivierte Benutzer erhalten **sofort HTTP 401** (kein Warten auf Token-Ablauf)
+* Sicherheit: Deaktivierte Benutzer können sich **nicht einloggen** und haben
+  **kein Stimmrecht** bei Song- und Meinungsumfragen
+* Sicherheit: Admins können **ihren eigenen Account nicht deaktivieren** (Schutz
+  vor versehentlicher Aussperrung)
+* Erinnerungen & Benutzerliste: Deaktivierte Musiker erhalten **keine Erinnerungs-
+  Benachrichtigungen** mehr und erscheinen nicht in Auswahllisten
+* Datenbank: Migration ``2d3e2798b7a5`` fügt Spalte ``status VARCHAR(32) NOT NULL
+  DEFAULT 'active'`` zur Tabelle ``users`` hinzu; alle bestehenden Einträge
+  werden automatisch auf ``active`` gesetzt
+* Backend: ``DELETE /admin/users/{id}`` setzt nun ``status = deactivated`` statt
+  den Datensatz zu entfernen; neuer Endpoint ``PUT /admin/users/{id}/activate``
+
 v0.3.11 (2026-03-15)
 ---------------------
 

@@ -52,7 +52,7 @@ libreStage kennt drei Benutzerrollen:
      - Voller Zugriff auf alle Funktionen, inkl. Benutzerverwaltung
    * - **editor**
      - Kann Inhalte erstellen und bearbeiten (Gigs, Songs, Proben, Abstimmungen)
-   * - **musician**
+   * - **user**
      - Lesezugriff, eigene Todos verwalten, abstimmen, Bewertungen abgeben
 
 Berechtigungssübersicht:
@@ -64,7 +64,7 @@ Berechtigungssübersicht:
    * - Funktion
      - admin
      - editor
-     - musician
+     - user
    * - Gigs anlegen / bearbeiten
      - ✓
      - ✓
@@ -106,12 +106,16 @@ Berechtigungssübersicht:
      - ✗
      - ✗
 
+.. note::
+   **Deaktivierte Benutzer** (Status ``deactivated``) können sich nicht einloggen
+   und haben in keiner der obigen Funktionen Zugriffsrechte – unabhängig von ihrer Rolle.
+
 Benutzerverwaltung (nur Admin)
 -------------------------------
 
 Admins erreichen die Benutzerverwaltung über **Benutzerverwaltung → Alle Benutzer**.
 Die Tabelle zeigt alle angelegten Benutzer und erlaubt das direkte Bearbeiten,
-Anlegen und Löschen.
+Anlegen sowie Deaktivieren und Reaktivieren von Accounts.
 
 Benutzer anlegen
 ~~~~~~~~~~~~~~~~
@@ -148,6 +152,15 @@ Felder in der Tabelle können direkt angeklickt und bearbeitet werden –
 Änderungen werden nach Verlassen des Feldes automatisch gespeichert.
 Toggle-Schalter für **Ist Musiker** und **Ist Sänger** wirken sofort.
 
+Status-Spalte
+~~~~~~~~~~~~~
+
+Die Spalte **Status** zeigt den aktuellen Zustand jedes Accounts:
+
+* ``✅ aktiv`` – der Benutzer kann sich einloggen und die Anwendung normal nutzen
+* ``🚫 deaktiviert`` – der Benutzer ist gesperrt (kein Login, kein Stimmrecht,
+  kein Schreibzugriff); alle Daten bleiben erhalten
+
 Passwort zurücksetzen
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -155,12 +168,27 @@ Der Button **Reset Password** in der Tabellenspalte sendet dem Benutzer
 einen Zurücksetzen-Link – per **Mattermost** (falls ``mm_username`` gesetzt)
 oder per **E-Mail**.
 
-Benutzer löschen
-~~~~~~~~~~~~~~~~
+Benutzer deaktivieren
+~~~~~~~~~~~~~~~~~~~~~
 
-Der 🗑️-Button in der letzten Tabellenspalte öffnet einen Bestätigungs-Dialog.
-Nach Bestätigung wird der Benutzer unwiderruflich gelöscht.
+Der Button **🚫 Deaktivieren** in der letzten Tabellenspalte öffnet einen
+Bestätigungs-Dialog. Nach Bestätigung wird der Account deaktiviert:
 
-.. warning::
-   Das Löschen eines Benutzers entfernt alle zugehörigen Daten (Todos, Feedbacks etc.).
-   Diese Aktion kann nicht rückgängig gemacht werden.
+* Alle aktiven Sitzungen des Benutzers werden **sofort beendet** (alle
+  Refresh-Tokens werden widerrufen – Logout auf allen Geräten ohne Verzögerung)
+* Der Benutzer kann sich **nicht mehr einloggen**
+* Der Benutzer hat **kein Stimmrecht** mehr bei Song- oder Meinungsumfragen
+* Der Benutzer erhält eine **E-Mail-Benachrichtigung** über die Deaktivierung
+* Alle Daten (Todos, Feedbacks, Abstimmungseinträge) bleiben **vollständig erhalten**
+
+.. note::
+   Ein Admin kann seinen **eigenen Account nicht deaktivieren** – dies schützt
+   vor versehentlicher Aussperrung aller Administratoren.
+
+Benutzer reaktivieren
+~~~~~~~~~~~~~~~~~~~~~
+
+Bei deaktivierten Benutzern erscheint stattdessen der Button **✅ Reaktivieren**.
+Nach dem Klick wird der Account sofort wieder auf ``active`` gesetzt – ohne
+weiteren Bestätigungs-Dialog. Der Benutzer erhält eine E-Mail-Benachrichtigung
+und kann sich danach wieder normal einloggen.

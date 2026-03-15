@@ -29,7 +29,8 @@ def test_get_surveys(client, auth_headers, db_session):
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -74,7 +75,8 @@ def test_get_survey_by_id(client, auth_headers, db_session):
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -115,7 +117,8 @@ def test_create_survey(client, auth_headers, db_session):
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -173,7 +176,8 @@ def test_delete_survey(client, auth_headers, auth_headers2, wrong_auth_header, d
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -285,7 +289,8 @@ def test_add_feedback_to_survey(client, auth_headers, auth_headers2, wrong_auth_
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -417,7 +422,8 @@ def test_get_survey_with_feedback(client, auth_headers, db_session):
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()
@@ -470,7 +476,8 @@ def test_close_survey(client, auth_headers, auth_headers2, wrong_auth_header, db
         user_group="admin",
         email="test@example.com",
         clear_name="Test User",
-        musician=True
+        musician=True,
+        status="active"
     )
     db_session.add(user)
     db_session.commit()

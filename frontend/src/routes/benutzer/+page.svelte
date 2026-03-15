@@ -137,8 +137,10 @@
             <li><strong>Benutzer anlegen:</strong> Klicke auf <strong>+</strong> oberhalb der Tabelle, fülle das Formular aus (Username, E-Mail und Passwort sind Pflicht) und bestätige mit „Benutzer anlegen"</li>
             <li><strong>Benutzer bearbeiten:</strong> Felder direkt in der Tabelle anklicken und bearbeiten – wird automatisch gespeichert</li>
             <li><strong>Musiker / Sänger:</strong> Toggle-Schalter in der Tabelle – Musiker haben Stimmrecht bei Song-Abstimmungen, Sänger erscheinen als Auswahl im Setlist-Editor</li>
+            <li><strong>Status-Spalte:</strong> Zeigt ✅ aktiv oder 🚫 deaktiviert für jeden Account</li>
             <li><strong>Passwort zurücksetzen:</strong> Button „Reset Password" sendet dem Benutzer einen Reset-Link per E-Mail oder Mattermost</li>
-            <li><strong>Benutzer löschen:</strong> Klicke auf 🗑️ in der Zeile – es erscheint ein Bestätigungs-Dialog</li>
+            <li><strong>Benutzer deaktivieren:</strong> Klicke auf 🚫 „Deaktivieren" in der Zeile – der Benutzer wird sofort auf allen Geräten ausgeloggt und kann sich nicht mehr einloggen. Es erscheint ein Bestätigungs-Dialog</li>
+            <li><strong>Benutzer reaktivieren:</strong> Klicke auf ✅ „Reaktivieren" – der Benutzer kann sich danach wieder einloggen</li>
           </ul>
         </div>
 
@@ -150,6 +152,7 @@
               <li><strong>User:</strong> Kann Songs ansehen, an Abstimmungen teilnehmen, eigene Todos sehen</li>
               <li><strong>Editor:</strong> Kann zusätzlich Songs, Gigs und Proben bearbeiten</li>
               <li><strong>Admin:</strong> Vollzugriff inkl. Benutzerverwaltung</li>
+              <li><strong>Deaktiviert:</strong> Kein Login, kein Stimmrecht, kein Schreibzugriff – unabhängig von der Rolle</li>
             </ul>
           </div>
         </div>
