@@ -53,6 +53,32 @@ Probe-Fortschritt
 
 In der Probe-Karte wird angezeigt, wie viele Aufgaben bereits erledigt wurden.
 
+Vergangene Proben – Protokoll-Ansicht
+--------------------------------------
+
+Proben deren Datum in der Vergangenheit liegt, werden im Tab **Vergangene Proben**
+als schreibgeschütztes Protokoll angezeigt. Eine Bearbeitung ist nicht mehr möglich.
+
+Das Protokoll zeigt:
+
+* Den **Probenkommentar** als Freitext
+* Alle **Songs** mit Status-Badge, Todo, Probenkommentar und persönlichen Todos
+* Todo-Status: ✔ = erledigt, ⏳ = offen, mit Namensnennung des Zugewiesenen
+
+Suche in vergangenen Proben
+-----------------------------
+
+Es gibt zwei Suchebenen:
+
+**Außen – Proben-Suche** (oberhalb der Probe-Liste):
+  Filtert welche Proben-Karten angezeigt werden. Durchsucht gleichzeitig
+  Datum, Song-Titel, Interpret und Probenkommentar.
+
+**Innen – Song-Suche** (innerhalb einer aufgeklappten Probe):
+  Filtert die Song-Liste der aufgeklappten Probe nach Titel, Interpret
+  und Probenkommentar. Ein Trefferzähler „x von y Songs" erscheint
+  sobald der Filter aktiv ist.
+
 iCal-Export
 -----------
 
