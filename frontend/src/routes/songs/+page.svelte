@@ -1267,11 +1267,6 @@ let filteredSongs = $derived(songs
                                 <!-- Gesamtstimmen und Quorum-Fortschritt -->
                                 <span class="vote-total" title="{validVotes} von {totalMusicians} Stimmberechtigten haben abgestimmt{quorumTarget ? ` (Quorum: ${quorumTarget} = 75%)` : ''}">
                                     ∑ {validVotes} / {totalMusicians > 0 ? totalMusicians : '?'}
-                                    {#if quorumTarget !== null && !quorumReached}
-                                        <span class="vote-missing" title="Noch {quorumTarget - validVotes} Stimme(n) für das Quorum (75% = {quorumTarget})">
-                                            ({quorumTarget - validVotes} f. Quorum)
-                                        </span>
-                                    {/if}
                                 </span>
                                 <!-- Ja-Stimmen -->
                                 <span class="vote-badge vote-yes" title="Ja-Stimmen">
@@ -1329,13 +1324,6 @@ let filteredSongs = $derived(songs
     font-size: 0.78rem;
     font-weight: 600;
     color: inherit;
-    white-space: nowrap;
-  }
-
-  .vote-missing {
-    font-size: 0.72rem;
-    font-weight: 400;
-    opacity: 0.7;
     white-space: nowrap;
   }
 
