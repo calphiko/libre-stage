@@ -74,11 +74,12 @@ class UserGroup(str, Enum):
 
 class UserCreate(BaseModel):
     user_name: str = Field(..., min_length=3, max_length=30, pattern=r'^[a-zA-Z0-9_-]+$')
-    clear_name: Optional[str]
+    clear_name: Optional[str] = None
     email: EmailStr
     user_pw: str
     user_group: UserGroup
     musician: bool = False
+    is_singer: bool = False
 
 class UserOut(BaseModel):
     id: int
