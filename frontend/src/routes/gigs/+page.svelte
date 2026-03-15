@@ -328,7 +328,16 @@
 <div class="max-w-6xl mx-auto py-8 md:px-4">
   <div class="card bg-surface-2 rounded-3xl shadow-md md:border md:border-outline-variant p-2 md:p-8">
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-      <h2 class="h2 mb-4 text-on-surface">Gigs‑Liste</h2>
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="h2 text-on-surface">Gigs‑Liste</h2>
+        {#if canEdit}
+          <button
+            class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+            onclick={openNewGigModal}
+            title="Neuen Gig hinzufügen"
+          >+</button>
+        {/if}
+      </div>
       <button
         class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
         onclick={() => showHelp = !showHelp}
@@ -402,8 +411,7 @@
 
     <div class="mb-5 flex flex-col md:flex-row md:justify-between md:items-center">
       <div class="flex flex-wrap items-center gap-3">
-        <div>
-          <label for="jahr" class="form-label text-on-surface-variant font-medium">Jahr wählen:</label>
+        <div>          <label for="jahr" class="form-label text-on-surface-variant font-medium">Jahr wählen:</label>
           <select
               id="jahr"
               bind:value={jahr}
@@ -425,11 +433,6 @@
           📊 Saisonstatistik
         </button>
       </div>
-      {#if canEdit}
-        <button class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4" onclick={openNewGigModal}>
-              Neuen Gig hinzufügen
-        </button>
-      {/if}
     </div>
 
     {#if gigs.length > 0}

@@ -170,6 +170,19 @@ def update_user(
 
     return user_db
 
+@router.delete("/users/{user_id}")
+def delete_user(
+        user_id: int,
+        db: Session = Depends(auth.get_db),
+):
+    user_db = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user_db)
+    db.commit()
+    logger.info(f"Admin deleted user {user_id}")
+    return {"message": f"User {user_id} deleted"}
+
 @router.post("/users", response_model=schemas.UserOut)
 def create_user(
         user: schemas.UserCreate,
@@ -179,7 +192,10 @@ def create_user(
         user_name=user.user_name,
         user_pw=auth.hash_pw(user.user_pw),
         user_group=user.user_group,
-        musician=user.musician
+        musician=user.musician,
+        clear_name=user.clear_name,
+        email=user.email,
+        is_singer=user.is_singer,
     )
     db.add(db_user)
     db.commit()

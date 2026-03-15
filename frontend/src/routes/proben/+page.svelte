@@ -25,7 +25,6 @@
            getUser } from '$lib/api.js';
 
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { InfoIcon } from 'lucide-svelte';
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
   import NewRehearsalForm from './NewRehearsalForm.svelte';
@@ -44,7 +43,6 @@
 
   let error = $state('');
   let showHelp = $state(false);
-  let showNewRehearsalInfo = $state(false);
   let tabSet = $state(0);
   let expandedRehId = $state(null);
   let expandedSongId = $state(null);
@@ -53,12 +51,33 @@
   let isEditor = $derived(user && (user.user_group === 'admin' || user.user_group === 'editor'));
 
   let now = $derived(new Date());
+
+  function endOfNextDay(dateStr) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
   let upcomingRehearsals = $derived(rehearsals
-    .filter(r => new Date(r.begin) >= now)
+    .filter(r => endOfNextDay(r.begin) >= now)
     .sort((a, b) => new Date(a.begin) - new Date(b.begin)));
   let pastRehearsals = $derived(rehearsals
-    .filter(r => new Date(r.begin) < now)
+    .filter(r => endOfNextDay(r.begin) < now)
     .sort((a, b) => new Date(b.begin) - new Date(a.begin)));
+
+  let pastRehearsalsFilter = $state('');
+  let filteredPastRehearsals = $derived(pastRehearsals.filter(reh => {
+    if (!pastRehearsalsFilter.trim()) return true;
+    const q = pastRehearsalsFilter.toLowerCase();
+    const dateStr = new Date(reh.begin).toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toLowerCase();
+    const commentMatch = reh.comment?.toLowerCase().includes(q);
+    const songMatch = reh.songs?.some(s =>
+      s.title?.toLowerCase().includes(q) ||
+      s.interpret?.toLowerCase().includes(q)
+    );
+    return dateStr.includes(q) || commentMatch || songMatch;
+  }));
 
 
   function buildSongsForSearch() {
@@ -179,7 +198,16 @@
   <div class="card bg-surface-2 rounded-lg shadow-lg md:border p-2 md:p-6">
     <div class="flex flex-col gap-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="h2 text-on-surface">Proben</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="h2 text-on-surface">Proben</h2>
+          {#if isEditor}
+            <button
+              class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+              onclick={openNewRehearsalModal}
+              title="Neue Probe erstellen"
+            >+</button>
+          {/if}
+        </div>
         <button
           class="btn variant-ghost-surface btn-sm"
           onclick={() => showHelp = !showHelp}
@@ -219,6 +247,17 @@
               </ul>
             </div>
 
+            <!-- Vergangene Proben -->
+            <div>
+              <h4 class="font-semibold text-warning-500 mb-2">🕐 Vergangene Proben</h4>
+              <ul class="list-disc list-inside space-y-1 text-sm">
+                <li>Vergangene Proben werden als <strong>Protokoll</strong> (read-only) angezeigt – keine Bearbeitung möglich</li>
+                <li>Das Protokoll zeigt Probenkommentar, alle Songs mit Status, Todos und Kommentaren</li>
+                <li><strong>Suche (außen):</strong> Filtere alle vergangenen Proben nach Datum, Song-Titel, Interpret oder Kommentar</li>
+                <li><strong>Suche (innen):</strong> Innerhalb einer aufgeklappten Probe kannst du die Songs direkt durchsuchen</li>
+              </ul>
+            </div>
+
             <!-- Todos -->
             <div>
               <h4 class="font-semibold text-tertiary-500 mb-2">✅ Todos verwalten</h4>
@@ -247,34 +286,11 @@
         </div>
       {/if}
 
-      <div class="flex flex-col gap-2">
-        <div class="inline-flex items-center gap-2">
-          <button
-            class="btn variant-filled-primary btn-sm w-fit border mt-4 mb-4"
-            onclick={openNewRehearsalModal}
-          >
-            Neue Probe hinzufügen
-          </button>
-          <span
-            class="inline-block align-super cursor-help relative"
-            onclick={() => showNewRehearsalInfo = !showNewRehearsalInfo}
-          >
-            <InfoIcon class="w-4 h-4 text-primary-500" />
-            {#if showNewRehearsalInfo}
-              <div class="absolute z-10 left-6 -top-2 w-56 card p-3 variant-filled-secondary shadow-lg text-sm bg-surface-100 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded">
-                <b>Neue Probe erstellen</b>
-                <hr class="my-1">
-                <p>Hier kannst du ganz einfach eine neue Probe erstellen</p>
-              </div>
-            {/if}
-          </span>
-        </div>
-      </div>
 
       {#if rehearsals.length > 0}
         <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
           <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {upcomingRehearsals.length > 0 ? 'font-bold' : ''}">
-            <span class="hidden md:inline">Bevorstehende Proben ({upcomingRehearsals.length})</span>
+            <span class="hidden md:inline">Aktuelle Proben ({upcomingRehearsals.length})</span>
             <span class="md:hidden">📅 ({upcomingRehearsals.length})</span>
           </button>
           <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
@@ -317,26 +333,52 @@
                 Keine vergangenen Proben vorhanden.
               </div>
             {:else}
-              <div class="mt-4">
-                {#each pastRehearsals as reh (reh.id)}
-                  <RehearsalCard
-                    {reh}
-                    {songs}
-                    {songsForSearch}
-                    {users}
-                    {isEditor}
-                    expanded={expandedRehId === reh.id}
-                    {expandedSongId}
-                    ontoggle={() => toggleExpand(reh.id)}
-                    onupdate={handleCardUpdate}
-                    ondelete={handleCardDelete}
-                    onsongtoggle={handleCardSongToggle}
-                    onerror={(e) => showError(e.message)}
-                    onwarning={(e) => showWarning(e.message)}
-                    onsuccess={(e) => showSuccess(e.message)}
+              <!-- Suchfeld -->
+              <div class="mt-4 mb-3">
+                <div class="flex items-center gap-2 border border-outline-variant rounded-lg px-3 py-2 bg-surface-1">
+                  <svg class="w-5 h-5 text-on-surface-variant" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <input
+                    type="search"
+                    bind:value={pastRehearsalsFilter}
+                    placeholder="Suche nach Datum, Song oder Kommentar..."
+                    class="input border-none bg-transparent flex-1 p-0 focus:ring-0"
                   />
-                {/each}
+                </div>
+                {#if pastRehearsalsFilter && filteredPastRehearsals.length !== pastRehearsals.length}
+                  <p class="text-sm text-on-surface-variant mt-2">
+                    {filteredPastRehearsals.length} von {pastRehearsals.length} Probe{pastRehearsals.length !== 1 ? 'n' : ''}
+                  </p>
+                {/if}
               </div>
+
+              {#if filteredPastRehearsals.length === 0}
+                <p class="text-on-surface-variant italic mt-4">Keine Proben gefunden.</p>
+              {:else}
+                <div class="mt-2">
+                  {#each filteredPastRehearsals as reh (reh.id)}
+                    <RehearsalCard
+                      {reh}
+                      {songs}
+                      {songsForSearch}
+                      {users}
+                      {isEditor}
+                      isPast={true}
+                      searchQuery={pastRehearsalsFilter}
+                      expanded={expandedRehId === reh.id}
+                      {expandedSongId}
+                      ontoggle={() => toggleExpand(reh.id)}
+                      onupdate={handleCardUpdate}
+                      ondelete={handleCardDelete}
+                      onsongtoggle={handleCardSongToggle}
+                      onerror={(e) => showError(e.message)}
+                      onwarning={(e) => showWarning(e.message)}
+                      onsuccess={(e) => showSuccess(e.message)}
+                    />
+                  {/each}
+                </div>
+              {/if}
             {/if}
           {/if}
         </div>

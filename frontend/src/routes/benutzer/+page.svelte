@@ -132,10 +132,14 @@
 
         <!-- Admin-Bereich -->
         <div>
-          <h4 class="font-semibold text-warning-500 mb-2">👑 Admin-Bereich</h4>
-          <p class="text-sm">
-            Nur Admins sehen den "Alle Benutzer"-Bereich, wo sie Benutzer verwalten, Berechtigungen ändern und neue Benutzer anlegen können.
-          </p>
+          <h4 class="font-semibold text-warning-500 mb-2">👑 Admin-Bereich (nur Admins)</h4>
+          <ul class="list-disc list-inside space-y-1 text-sm">
+            <li><strong>Benutzer anlegen:</strong> Klicke auf <strong>+</strong> oberhalb der Tabelle, fülle das Formular aus (Username, E-Mail und Passwort sind Pflicht) und bestätige mit „Benutzer anlegen"</li>
+            <li><strong>Benutzer bearbeiten:</strong> Felder direkt in der Tabelle anklicken und bearbeiten – wird automatisch gespeichert</li>
+            <li><strong>Musiker / Sänger:</strong> Toggle-Schalter in der Tabelle – Musiker haben Stimmrecht bei Song-Abstimmungen, Sänger erscheinen als Auswahl im Setlist-Editor</li>
+            <li><strong>Passwort zurücksetzen:</strong> Button „Reset Password" sendet dem Benutzer einen Reset-Link per E-Mail oder Mattermost</li>
+            <li><strong>Benutzer löschen:</strong> Klicke auf 🗑️ in der Zeile – es erscheint ein Bestätigungs-Dialog</li>
+          </ul>
         </div>
 
         <!-- Berechtigungsstufen -->
