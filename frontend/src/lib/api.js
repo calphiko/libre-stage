@@ -824,6 +824,32 @@ export async function adminGetAllUsers(token) {
     return res.json();
 }
 
+export async function adminCreateUser(token, data) {
+    const res = await fetchWithAuth(`${API_URL}/admin/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Benutzer konnte nicht angelegt werden');
+    }
+    return res.json();
+}
+
+export async function adminDeleteUser(token, userId) {
+    const res = await fetchWithAuth(`${API_URL}/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Benutzer konnte nicht gelöscht werden');
+    }
+    return res.json();
+}
+
+
 export async function adminUpdateUser(token, data) {
     const response = await fetchWithAuth(`${API_URL}/admin/users/${data.id}`, {
     method: 'PUT',
