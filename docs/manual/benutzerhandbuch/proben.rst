@@ -3,84 +3,80 @@
 Proben
 ======
 
-Im Bereich **Proben** werden alle Bandproben geplant und dokumentiert.
+Im Bereich **Proben** werden Bandproben geplant, vorbereitet und im Nachgang
+als Protokoll dokumentiert.
 
 .. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/proben.png`` ablegen.
+   Screenshot folgt - bitte ``docs/manual/_static/screenshots/proben.png`` ablegen.
 
 Probe anlegen
 -------------
 
-Klicke auf **+ Neue Probe**, um das Formular zu öffnen:
+Klicke auf das **+** neben der Ueberschrift **Proben**, um das Formular zu oeffnen.
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 75
+   :widths: 30 70
 
    * - Feld
      - Beschreibung
-   * - **Datum**
-     - Datum der Probe
-   * - **Uhrzeit**
-     - Beginn der Probe
-   * - **Ort**
-     - Probenraum / Adresse
+   * - **Start (Datum & Zeit)**
+     - Pflichtfeld fuer den Beginn der Probe
+   * - **Ende (optional)**
+     - Optionales Enddatum mit Uhrzeit; muss nach dem Start liegen
    * - **Kommentar**
-     - Interne Anmerkungen zur Probe
-   * - **Songs**
-     - Liste der Songs, die in dieser Probe geübt werden sollen
+     - Freitext fuer interne Notizen
 
-Songs einer Probe zuweisen
---------------------------
+**Wichtig:** Wird keine Endzeit eingetragen, setzt das System automatisch
+**Startzeit + 2 Stunden**.
 
-Im Probe-Formular können Songs aus der Datenbank ausgewählt werden.
-Die Song-Liste kann nach Status gefiltert werden
-(konfigurierbar über ``rehearsalSongStatuses`` in ``appConfig.json``).
+Zeitraum in der Listenansicht
+-----------------------------
 
-Aufgaben (Todos)
-----------------
+Jede Probe wird als Zeitbereich angezeigt (z. B. ``18:00-20:30 Uhr``).
+Wenn Start und Ende auf verschiedenen Tagen liegen, zeigt die Karte beide Daten.
 
-Admins und Editors können Aufgaben anlegen, die Mitgliedern zugewiesen werden:
+Beim Loeschen einer Probe enthaelt der Bestaetigungsdialog ebenfalls den
+vollstaendigen Zeitraum, damit es keine Verwechslungen gibt.
 
-* **Titel** der Aufgabe
-* **Zugewiesener Benutzer** (oder alle Mitglieder)
-* **Fälligkeit** (optional)
+Songs und Todos in Proben
+-------------------------
 
-Zugewiesene Aufgaben erscheinen im Dashboard unter **Offene Aufgaben**.
+In einer aufgeklappten Probe koennen Songs hinzugefuegt und pro Song Todos,
+Status und Kommentare gepflegt werden.
 
-Probe-Fortschritt
------------------
+* Song zur Probe hinzufuegen (inkl. optionalem Todo)
+* Song-Status direkt in der Probe aendern
+* Persoenliche Todos pro Mitglied vergeben
+* Song und Probenkommentare dokumentieren
 
-In der Probe-Karte wird angezeigt, wie viele Aufgaben bereits erledigt wurden.
+Vergangene Proben - Protokoll-Ansicht
+-------------------------------------
 
-Vergangene Proben – Protokoll-Ansicht
---------------------------------------
-
-Proben deren Datum in der Vergangenheit liegt, werden im Tab **Vergangene Proben**
-als schreibgeschütztes Protokoll angezeigt. Eine Bearbeitung ist nicht mehr möglich.
+Vergangene Proben werden im Tab **Vergangene Proben** als schreibgeschuetztes
+Protokoll angezeigt.
 
 Das Protokoll zeigt:
 
-* Den **Probenkommentar** als Freitext
-* Alle **Songs** mit Status-Badge, Todo, Probenkommentar und persönlichen Todos
-* Todo-Status: ✔ = erledigt, ⏳ = offen, mit Namensnennung des Zugewiesenen
+* den Probenkommentar als Freitext
+* alle Songs inkl. Status, Todo und Kommentaren
+* persoenliche Todos mit Statussymbolen (``✔`` erledigt, ``⏳`` offen)
 
 Suche in vergangenen Proben
------------------------------
+---------------------------
 
-Es gibt zwei Suchebenen:
+Das Suchfeld oberhalb der Liste filtert vergangene Proben nach:
 
-**Außen – Proben-Suche** (oberhalb der Probe-Liste):
-  Filtert welche Proben-Karten angezeigt werden. Durchsucht gleichzeitig
-  Datum, Song-Titel, Interpret und Probenkommentar.
+* Datum
+* Song-Titel
+* Interpret
+* Probenkommentar
 
-**Innen – Song-Suche** (innerhalb einer aufgeklappten Probe):
-  Filtert die Song-Liste der aufgeklappten Probe nach Titel, Interpret
-  und Probenkommentar. Ein Trefferzähler „x von y Songs" erscheint
-  sobald der Filter aktiv ist.
+Treffer werden in der aufgeklappten Protokollansicht farblich hervorgehoben.
 
 iCal-Export
 -----------
 
-Proben erscheinen automatisch im persönlichen Kalender-Feed jedes Benutzers
-(siehe :ref:`dashboard` – Kalender-Export).
+Proben erscheinen automatisch im oeffentlichen iCal-Feed unter ``/ical/``.
+Der Kalendereintrag enthaelt den Zeitbereich (Start-Ende) im Titel und in der
+Beschreibung.

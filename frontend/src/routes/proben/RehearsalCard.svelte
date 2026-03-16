@@ -37,6 +37,36 @@
   let newSongTodo = $state('');
   let songToAddInput;
 
+  function formatTime(dateLike) {
+    return new Date(dateLike).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatRehearsalRangeLabel() {
+    const beginDate = new Date(reh.begin);
+    const endDate = reh.end ? new Date(reh.end) : null;
+    const dateLabel = beginDate.toLocaleDateString('de-DE', dateOptions);
+    const beginTime = formatTime(beginDate);
+
+    if (!endDate) return `${dateLabel}, ${beginTime} Uhr`;
+
+    const endTime = formatTime(endDate);
+    const sameDay = beginDate.toDateString() === endDate.toDateString();
+    if (sameDay) return `${dateLabel}, ${beginTime}-${endTime} Uhr`;
+
+    const endDateLabel = endDate.toLocaleDateString('de-DE', dateOptions);
+    return `${dateLabel}, ${beginTime} Uhr - ${endDateLabel}, ${endTime} Uhr`;
+  }
+
+  function formatDeleteRangeLabel() {
+    const beginDate = new Date(reh.begin);
+    const dateLabel = beginDate.toLocaleDateString('de-DE', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+    const beginTime = formatTime(beginDate);
+    const endTime = reh.end ? formatTime(reh.end) : null;
+    return endTime ? `${dateLabel} (${beginTime}-${endTime} Uhr)` : `${dateLabel} (${beginTime} Uhr)`;
+  }
+
   function highlight(text, query) {
     if (!query?.trim() || !text) return text ?? '';
     const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -46,16 +76,12 @@
     );
   }
 
-
   function handleToggle() {
     ontoggle?.({ id: reh.id });
   }
 
   function handleDelete() {
-    const dateStr = new Date(reh.begin).toLocaleDateString('de-DE', {
-      day: '2-digit', month: '2-digit', year: 'numeric'
-    });
-    ondelete?.({ id: reh.id, date: dateStr });
+    ondelete?.({ id: reh.id, date: formatDeleteRangeLabel() });
   }
 
   function handleUpdate(songId = null) {
@@ -153,7 +179,7 @@
   >
     <span class="text-sm">{expanded ? '▼' : '▶'}</span>
     <span class="text-lg font-bold">
-      {new Date(reh.begin).toLocaleString(undefined, dateOptions)}
+      {formatRehearsalRangeLabel()}
     </span>
     {#if isPast}
       <span class="ml-2 text-xs text-surface-400 italic">Protokoll</span>
@@ -279,4 +305,3 @@
   </div>
   {/if}
 </div>
-
