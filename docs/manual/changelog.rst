@@ -3,6 +3,17 @@
 Änderungsprotokoll
 ==================
 
+v0.3.13 (2026-03-16)
+---------------------
+
+* Proben: Beim Erstellen einer Probe kann jetzt optional eine **Endzeit** gesetzt werden
+* Proben: Wird keine Endzeit angegeben, setzt das Backend automatisch **Startzeit + 2 Stunden**
+* Proben: Validierung für Zeitbereiche ergänzt (Endzeit muss nach der Startzeit liegen)
+* Proben: Kartenansicht und Lösch-Bestätigung zeigen den **Zeitraum** (Start-Ende) statt nur Datum/Startzeit
+* Benachrichtigungen: Erstellungs-Text (Mattermost) zeigt den vollständigen Proben-Zeitraum
+* iCal: Öffentlicher Kalender-Export zeigt bei Proben den Zeitraum im Summary und in der Beschreibung
+* Benutzerhandbuch: Proben-Dokumentation auf das neue Zeitbereichs-Verhalten aktualisiert
+
 v0.3.12 (2026-03-15)
 ---------------------
 
