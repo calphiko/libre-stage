@@ -70,7 +70,6 @@ def get_iCal_Abo(
 ):
     from icalendar import Calendar, Event
     from io import BytesIO
-    import hashlib
 
     berlin_tz = pytz.timezone(APP_TIMEZONE)
 
@@ -124,7 +123,6 @@ def get_iCal_Abo(
     # Add rehearsals - analog mit stabilen UIDs
     for rehearsal in reh:
         event = Event()
-        event.add('summary', ICAL_REH_PREFIX)
         event.add('uid', f'rehearsal-{rehearsal.id}@{ICAL_DOMAIN}')
 
         # Stable DTSTAMP
@@ -147,15 +145,27 @@ def get_iCal_Abo(
             else:
                 dtend = rehearsal.end.astimezone(berlin_tz)
         else:
-            dtend = dtstart + timedelta(hours=3)
+            dtend = dtstart + timedelta(hours=2)
         event.add('dtend', dtend)
 
-        if hasattr(rehearsal, 'ort') and rehearsal.ort:
-            event.add('location', rehearsal.ort)
+        start_label = dtstart.strftime('%H:%M')
+        end_label = dtend.strftime('%H:%M')
+        event.add('summary', f'{ICAL_REH_PREFIX} {start_label}-{end_label} Uhr')
+
+        description_lines = [f'Zeit: {start_label}-{end_label} Uhr']
+        if getattr(rehearsal, 'comment', None):
+            description_lines.append(f'Kommentar: {rehearsal.comment}')
+
         if hasattr(rehearsal, 'songs'):
             song_titles = [song.title for song in rehearsal.songs if hasattr(song, 'title')]
             if song_titles:
-                event.add('description', "Agenda:\n" + "\n".join(f"- {t}" for t in song_titles))
+                description_lines.append('Agenda:')
+                description_lines.extend([f'- {t}' for t in song_titles])
+
+        event.add('description', "\n".join(description_lines))
+
+        if hasattr(rehearsal, 'ort') and rehearsal.ort:
+            event.add('location', rehearsal.ort)
 
         cal.add_component(event)
 

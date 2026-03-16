@@ -78,6 +78,41 @@ def test_create_rehearsal_wo_privileges(client, auth_headers2):
     data = response.json()
     assert data["detail"] == "User role does not allow to create a new rehearsal!"
 
+def test_create_rehearsal_defaults_end_to_two_hours(client, auth_headers):
+    rehearsal_data = {
+        "comment": "Default End",
+        "begin": "2024-12-20T18:00:00"
+    }
+
+    response = client.post("/reh/", json=rehearsal_data, headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()[0]
+    assert data["begin"] == "2024-12-20T18:00:00"
+    assert data["end"] == "2024-12-20T20:00:00"
+
+def test_create_rehearsal_with_explicit_end(client, auth_headers):
+    rehearsal_data = {
+        "comment": "Mit Endzeit",
+        "begin": "2024-12-20T18:00:00",
+        "end": "2024-12-20T21:15:00"
+    }
+
+    response = client.post("/reh/", json=rehearsal_data, headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()[0]
+    assert data["begin"] == "2024-12-20T18:00:00"
+    assert data["end"] == "2024-12-20T21:15:00"
+
+def test_create_rehearsal_rejects_end_before_begin(client, auth_headers):
+    rehearsal_data = {
+        "comment": "Ungueltig",
+        "begin": "2024-12-20T18:00:00",
+        "end": "2024-12-20T17:30:00"
+    }
+
+    response = client.post("/reh/", json=rehearsal_data, headers=auth_headers)
+    assert response.status_code == 422
+
 def test_update_rehearsal(client, auth_headers, db_session):
     """Test updating an existing rehearsal."""
     reh = Rehearsal(
