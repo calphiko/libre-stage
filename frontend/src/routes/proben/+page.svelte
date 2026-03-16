@@ -176,7 +176,7 @@
     modalState.trigger({
       component: NewRehearsalForm,
       title: 'Neue Probe erstellen',
-      body: 'complete the form below and then press submit!',
+      body: 'Startzeit wählen, optional Endzeit ergänzen und speichern.',
       response: (r) => r && addRehearsal(r)
     });
   }
@@ -229,7 +229,7 @@
             <div>
               <h4 class="font-semibold text-primary-500 mb-2">📋 Hauptfunktionen</h4>
               <ul class="list-disc list-inside space-y-1 text-sm">
-                <li><strong>Neue Probe hinzufügen:</strong> Klicke auf "Neue Probe hinzufügen" und wähle Datum/Zeit</li>
+                <li><strong>Neue Probe hinzufügen:</strong> Klicke auf "Neue Probe hinzufügen" und wähle Startzeit, optional auch die Endzeit</li>
                 <li><strong>Probe aufklappen:</strong> Klicke auf eine Probe, um Details zu sehen</li>
                 <li><strong>Song hinzufügen:</strong> Wähle einen Song aus und gib optional ein Todo an</li>
                 <li><strong>Song-Details ansehen:</strong> Klicke auf einen Song in der Probe für Details</li>

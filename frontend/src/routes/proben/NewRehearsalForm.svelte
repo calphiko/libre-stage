@@ -18,47 +18,53 @@
 
 <script>
   import { modalState } from '$lib/modalState.js';
-// Diese Props werden vom Modal übergeben
-  let { response = () => {}, parent } = $props();
-
-  
-
-
 
   let begin = $state('');
+  let end = $state('');
   let comment = $state('');
   let error = $state('');
 
   function submit() {
+    error = '';
 
     if (!begin) {
-      error = 'Bitte ein Datum/Zeit auswählen!';
-      console.log(error);
+      error = 'Bitte eine Startzeit auswählen.';
       return;
     }
 
-    modalState.close({begin, comment})
-    //response({ begin, comment });
-    modalState.close();
+    if (end && new Date(end) <= new Date(begin)) {
+      error = 'Die Endzeit muss nach der Startzeit liegen.';
+      return;
+    }
+
+    modalState.close({ begin, end: end || null, comment });
   }
 </script>
 
-
-<form class="card bg-surface-1 p-4 rounded shadow mb-4 modal-base" onsubmit={submit} >
+<form class="card bg-surface-1 p-4 rounded shadow mb-4 modal-base" onsubmit={(e) => { e.preventDefault(); submit(); }}>
   <h4 class="h5 mb-3">Neue Probe</h4>
+
   <div class="mb-3">
-    <label class="form-label" for="reh-date">Datum & Zeit</label>
-    <input id="reh-date" type="datetime-local" class="input" bind:value={begin} required />
-    {#if error}
-      <div class="text-error">{error}</div>
-    {/if}
+    <label class="form-label" for="reh-begin">Start (Datum & Zeit)</label>
+    <input id="reh-begin" type="datetime-local" class="input" bind:value={begin} required />
   </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="reh-end">Ende (optional)</label>
+    <input id="reh-end" type="datetime-local" class="input" bind:value={end} min={begin || undefined} />
+  </div>
+
+  {#if error}
+    <div class="mb-3 text-error">{error}</div>
+  {/if}
+
   <div class="mb-3">
     <label class="form-label" for="reh-comment">Kommentar</label>
     <textarea id="reh-comment" class="input" rows="2" bind:value={comment}></textarea>
   </div>
+
   <div class="flex justify-end gap-2 mt-2">
-    <button class="btn btn-secondary" type="button" onclick={modalState.close}>Abbrechen</button>
+    <button class="btn btn-secondary" type="button" onclick={() => modalState.close()}>Abbrechen</button>
     <button class="btn btn-primary" type="submit">Erstellen</button>
   </div>
 </form>
