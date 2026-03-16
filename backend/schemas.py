@@ -611,7 +611,14 @@ class RehListElem(BaseModel):
 
 class NewRehDict(BaseModel):
     begin: datetime
+    end: Optional[datetime] = None
     comment: Optional[str]
+
+    @model_validator(mode="after")
+    def validate_time_range(self):
+        if self.end is not None and self.end <= self.begin:
+            raise ValueError("end must be after begin")
+        return self
 
     model_config = {"from_attributes": True}
 
@@ -700,4 +707,6 @@ class PublicDate(BaseModel):
             Veranstalter=gig.organizer or "",
             Art=gig.kind_of_gig or ""
         )
+
+
 

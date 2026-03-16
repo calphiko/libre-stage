@@ -76,7 +76,10 @@ def create_new_rehearsal(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    logger.info(f"User {current['user_name']} creates new rehearsal at {data.begin}")
+    end_dt = data.end or (data.begin + timedelta(hours=2))
+    logger.info(
+        f"User {current['user_name']} creates new rehearsal from {data.begin} to {end_dt}"
+    )
 
     if current['user_group'] != 'admin' and current['user_group'] != 'editor':
         logger.error(f"Permission denied: User {current['user_name']} is not admin or editor")
@@ -84,7 +87,7 @@ def create_new_rehearsal(
 
     reh_to_add = models.Rehearsal(
         begin=data.begin,
-        end=data.begin+timedelta(hours=2),
+        end=end_dt,
         ical= "",
         comment=data.comment,
         songs=[],
@@ -96,7 +99,11 @@ def create_new_rehearsal(
     # Send Mattermost Messages
     try:
         from backend.utils import mattermost
-        message = f":mega: Neue Probe von {current['user_name']} erstellt.\n\tDiese findet am {data.begin.strftime('%d.%m.%Y um %H:%M Uhr')} statt."
+        message = (
+            f":mega: Neue Probe von {current['user_name']} erstellt.\n"
+            f"\tDiese findet am {data.begin.strftime('%d.%m.%Y')} von "
+            f"{data.begin.strftime('%H:%M')} bis {end_dt.strftime('%H:%M Uhr')} statt."
+        )
         if data.comment:
             message += f"\n> {data.comment}"
         mattermost.send_mm_message(channel=MM_CHANNEL, text=message)
