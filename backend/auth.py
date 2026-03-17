@@ -75,17 +75,17 @@ def get_token_from_cookie_or_header(request: Request) -> str | None:
     Returns:
         str | None: The raw JWT string, or ``None`` if no token was found.
     """
-    # 1. Versuche Authorization Header (primäre Methode)
+    # 1. Try Authorization Header
     auth_header = request.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
         return auth_header[7:]
 
-    # 2. Fallback auf Cookie (für Abwärtskompatibilität)
+    # 2. Fallback on Cookie
     cookie_token = request.cookies.get("access_token")
     if cookie_token:
         return cookie_token.removeprefix("Bearer ")
 
-    # 3. Kein Token gefunden
+    # 3. No Token found
     logger.warning("No authentication token found in request")
     return None
 
@@ -117,14 +117,14 @@ def verify_password(plain: str, hashed: str) -> bool:
     Returns:
         bool: ``True`` if the password matches, ``False`` otherwise.
     """
-    # Neues bcrypt-Format
+    # New bcrypt-Format
     if hashed.startswith(('$2b$', '$2a$', '$2y$')):
         try:
             return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
         except Exception:
             return False
 
-    # Alte Formate nur bis Deadline akzeptieren
+    # Accept old formats only until the deadline
     if datetime.now(timezone.utc) > LEGACY_HASH_DEADLINE:
         logger.warning("Legacy hash format rejected - deadline exceeded")
         return False
@@ -164,7 +164,7 @@ def authenticate_user(db: Session, username: str, password: str):
         logger.warning(f"Login attempt by deactivated user: {username}")
         return None
 
-    # Auto-Upgrade: Alten Hash auf bcrypt umstellen
+    # Auto-Upgrade: convert old hash to bycrypt on successful login (only if not already bcrypt)
     if not user.user_pw.startswith(('$2b$', '$2a$', '$2y$')):
         logger.info(f"Upgrading password hash for user {username}")
         user.user_pw = hash_pw(password)
