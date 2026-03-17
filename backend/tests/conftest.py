@@ -16,6 +16,7 @@
 
 import pytest
 import uuid
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -37,6 +38,28 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def mock_mattermost(monkeypatch):
+    """
+    Mock requests.post in the mattermost module so no real HTTP calls
+    are made during tests. The fixture is automatically used by every test.
+    The returned MagicMock can be requested by name to assert call details.
+
+    Example::
+
+        def test_something(client, auth_headers, mock_mattermost):
+            client.post(...)
+            assert mock_mattermost.call_count == 1
+            assert "Songvorschlag" in mock_mattermost.call_args.kwargs["json"]["text"]
+    """
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.raise_for_status = MagicMock()
+
+    with patch("backend.utils.mattermost.requests.post", return_value=mock_response) as mock_post:
+        yield mock_post
 
 
 @pytest.fixture(scope="function")
