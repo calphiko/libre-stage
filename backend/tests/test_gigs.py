@@ -625,3 +625,33 @@ def test_download_setlist_pdf_w_nonexistent_gig_id(client, auth_headers, db_sess
     assert response.status_code == 404
     assert response.json()["detail"] == "Gig not found"
 
+def test_season_statistics_generation (season_client):
+    client, headers, data = season_client
+
+    response = client.get(f"/gigs/statistics?jahr={date.today().year}", headers=headers)
+    assert response.status_code == 200
+    stats = response.json()
+    assert stats["gig_count"] == 3
+    assert stats["genre_distribution"] == {'Disco': 8, 'Oldies': 2, 'Pop': 2, 'Rock': 11}
+
+    response = client.get(f"/gigs/statistics?jahr={date.today().year+1}", headers=headers)
+    assert response.status_code == 200
+    stats = response.json()
+    assert stats["gig_count"] == 0
+
+
+def test_get_livemode_available_batch(season_client):
+    client, headers, data = season_client
+
+    gig_ids = [1,2]
+
+    response = client.post(
+        "/gigs/livemode_available_batch",
+        headers=headers,
+        json = gig_ids
+    )
+    assert response.status_code == 200
+    batch_info = response.json()
+    pprint.pprint(batch_info)
+    assert batch_info["1"]["available"] == False
+    assert len(batch_info.keys())== 2
