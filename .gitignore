@@ -52,3 +52,12 @@ API.log
 
 LogoCustom.png
 /docs/manual/_build/
+
+# Xcode / iOS
+ios/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/.build/
+*.xcuserstate
+xcuserdata/
+

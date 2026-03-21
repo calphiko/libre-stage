@@ -1,0 +1,482 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A001 /* App/LibreStageApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* App/LibreStageApp.swift */; };
+		A002 /* App/MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* App/MainTabView.swift */; };
+		A003 /* Core/SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* Core/SettingsStore.swift */; };
+		A004 /* Core/AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* Core/AuthManager.swift */; };
+		A005 /* Core/APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F005 /* Core/APIClient.swift */; };
+		A006 /* Core/KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006 /* Core/KeychainHelper.swift */; };
+		A010 /* Models/User.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* Models/User.swift */; };
+		A011 /* Models/Gig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F011 /* Models/Gig.swift */; };
+		A012 /* Models/Rehearsal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* Models/Rehearsal.swift */; };
+		A013 /* Models/Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013 /* Models/Song.swift */; };
+		A014 /* Models/Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* Models/Survey.swift */; };
+		A015 /* Models/Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015 /* Models/Todo.swift */; };
+		A020 /* Views/Auth/LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F020 /* Views/Auth/LoginView.swift */; };
+		A021 /* Views/Dashboard/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021 /* Views/Dashboard/DashboardView.swift */; };
+		A022 /* Views/Gigs/GigsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F022 /* Views/Gigs/GigsView.swift */; };
+		A023 /* Views/Gigs/GigDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F023 /* Views/Gigs/GigDetailView.swift */; };
+		A024 /* Views/Gigs/LiveModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* Views/Gigs/LiveModeView.swift */; };
+		A025 /* Views/Rehearsals/RehearsalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F025 /* Views/Rehearsals/RehearsalsView.swift */; };
+		A026 /* Views/Rehearsals/RehearsalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026 /* Views/Rehearsals/RehearsalDetailView.swift */; };
+		A026B /* Views/Rehearsals/RehearsalCreateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */; };
+		A026C /* Views/Rehearsals/RehearsalSongDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026C /* Views/Rehearsals/RehearsalSongDetailView.swift */; };
+		A026D /* Views/Rehearsals/SongPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026D /* Views/Rehearsals/SongPickerSheet.swift */; };
+		A027 /* Views/Songs/SongsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F027 /* Views/Songs/SongsView.swift */; };
+		A028 /* Views/Songs/CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F028 /* Views/Songs/CandidatesView.swift */; };
+		A029 /* Views/Surveys/SurveysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F029 /* Views/Surveys/SurveysView.swift */; };
+		A030 /* Views/Surveys/SurveyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030 /* Views/Surveys/SurveyDetailView.swift */; };
+		A030B /* Views/Surveys/TerminfindungDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030B /* Views/Surveys/TerminfindungDetailView.swift */; };
+		A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */; };
+		A030D /* Views/Surveys/NewSurveySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030D /* Views/Surveys/NewSurveySheet.swift */; };
+		A031 /* Views/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031 /* Views/Profile/ProfileView.swift */; };
+		A040 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* Views/Components/ErrorBanner.swift */; };
+		A041 /* Views/Components/SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* Views/Components/SkeletonRow.swift */; };
+		A050 /* ViewModels/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* ViewModels/DashboardViewModel.swift */; };
+		A051 /* ViewModels/GigsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* ViewModels/GigsViewModel.swift */; };
+		A052 /* ViewModels/RehearsalsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F052 /* ViewModels/RehearsalsViewModel.swift */; };
+		A053 /* ViewModels/SongsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* ViewModels/SongsViewModel.swift */; };
+		A054 /* ViewModels/SurveysViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F054 /* ViewModels/SurveysViewModel.swift */; };
+		A055 /* ViewModels/ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* ViewModels/ProfileViewModel.swift */; };
+		A060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F060 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F001 /* App/LibreStageApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/LibreStageApp.swift; sourceTree = "<group>"; };
+		F002 /* App/MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/MainTabView.swift; sourceTree = "<group>"; };
+		F003 /* Core/SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/SettingsStore.swift; sourceTree = "<group>"; };
+		F004 /* Core/AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AuthManager.swift; sourceTree = "<group>"; };
+		F005 /* Core/APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/APIClient.swift; sourceTree = "<group>"; };
+		F006 /* Core/KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/KeychainHelper.swift; sourceTree = "<group>"; };
+		F010 /* Models/User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/User.swift; sourceTree = "<group>"; };
+		F011 /* Models/Gig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Gig.swift; sourceTree = "<group>"; };
+		F012 /* Models/Rehearsal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Rehearsal.swift; sourceTree = "<group>"; };
+		F013 /* Models/Song.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Song.swift; sourceTree = "<group>"; };
+		F014 /* Models/Survey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Survey.swift; sourceTree = "<group>"; };
+		F015 /* Models/Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Todo.swift; sourceTree = "<group>"; };
+		F020 /* Views/Auth/LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Auth/LoginView.swift; sourceTree = "<group>"; };
+		F021 /* Views/Dashboard/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
+		F022 /* Views/Gigs/GigsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigsView.swift; sourceTree = "<group>"; };
+		F023 /* Views/Gigs/GigDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigDetailView.swift; sourceTree = "<group>"; };
+		F024 /* Views/Gigs/LiveModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/LiveModeView.swift; sourceTree = "<group>"; };
+		F025 /* Views/Rehearsals/RehearsalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalsView.swift; sourceTree = "<group>"; };
+		F026 /* Views/Rehearsals/RehearsalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalDetailView.swift; sourceTree = "<group>"; };
+		F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalCreateSheet.swift; sourceTree = "<group>"; };
+		F026C /* Views/Rehearsals/RehearsalSongDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalSongDetailView.swift; sourceTree = "<group>"; };
+		F026D /* Views/Rehearsals/SongPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/SongPickerSheet.swift; sourceTree = "<group>"; };
+		F027 /* Views/Songs/SongsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Songs/SongsView.swift; sourceTree = "<group>"; };
+		F028 /* Views/Songs/CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Songs/CandidatesView.swift; sourceTree = "<group>"; };
+		F029 /* Views/Surveys/SurveysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/SurveysView.swift; sourceTree = "<group>"; };
+		F030 /* Views/Surveys/SurveyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/SurveyDetailView.swift; sourceTree = "<group>"; };
+		F030B /* Views/Surveys/TerminfindungDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/TerminfindungDetailView.swift; sourceTree = "<group>"; };
+		F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/MeinungsumfrageDetailView.swift; sourceTree = "<group>"; };
+		F030D /* Views/Surveys/NewSurveySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/NewSurveySheet.swift; sourceTree = "<group>"; };
+		F031 /* Views/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
+		F040 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
+		F041 /* Views/Components/SkeletonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SkeletonRow.swift; sourceTree = "<group>"; };
+		F050 /* ViewModels/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
+		F051 /* ViewModels/GigsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/GigsViewModel.swift; sourceTree = "<group>"; };
+		F052 /* ViewModels/RehearsalsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/RehearsalsViewModel.swift; sourceTree = "<group>"; };
+		F053 /* ViewModels/SongsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SongsViewModel.swift; sourceTree = "<group>"; };
+		F054 /* ViewModels/SurveysViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SurveysViewModel.swift; sourceTree = "<group>"; };
+		F055 /* ViewModels/ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ProfileViewModel.swift; sourceTree = "<group>"; };
+		F060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		PH_FW /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GRP_APP /* LibreStage */ = {
+			isa = PBXGroup;
+			children = (
+				F001 /* App/LibreStageApp.swift */,
+				F002 /* App/MainTabView.swift */,
+				F003 /* Core/SettingsStore.swift */,
+				F004 /* Core/AuthManager.swift */,
+				F005 /* Core/APIClient.swift */,
+				F006 /* Core/KeychainHelper.swift */,
+				F010 /* Models/User.swift */,
+				F011 /* Models/Gig.swift */,
+				F012 /* Models/Rehearsal.swift */,
+				F013 /* Models/Song.swift */,
+				F014 /* Models/Survey.swift */,
+				F015 /* Models/Todo.swift */,
+				F020 /* Views/Auth/LoginView.swift */,
+				F021 /* Views/Dashboard/DashboardView.swift */,
+				F022 /* Views/Gigs/GigsView.swift */,
+				F023 /* Views/Gigs/GigDetailView.swift */,
+				F024 /* Views/Gigs/LiveModeView.swift */,
+				F025 /* Views/Rehearsals/RehearsalsView.swift */,
+				F026 /* Views/Rehearsals/RehearsalDetailView.swift */,
+				F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */,
+				F026C /* Views/Rehearsals/RehearsalSongDetailView.swift */,
+				F026D /* Views/Rehearsals/SongPickerSheet.swift */,
+				F027 /* Views/Songs/SongsView.swift */,
+				F028 /* Views/Songs/CandidatesView.swift */,
+				F029 /* Views/Surveys/SurveysView.swift */,
+				F030 /* Views/Surveys/SurveyDetailView.swift */,
+				F030B /* Views/Surveys/TerminfindungDetailView.swift */,
+				F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */,
+				F030D /* Views/Surveys/NewSurveySheet.swift */,
+				F031 /* Views/Profile/ProfileView.swift */,
+				F040 /* Views/Components/ErrorBanner.swift */,
+				F041 /* Views/Components/SkeletonRow.swift */,
+				F050 /* ViewModels/DashboardViewModel.swift */,
+				F051 /* ViewModels/GigsViewModel.swift */,
+				F052 /* ViewModels/RehearsalsViewModel.swift */,
+				F053 /* ViewModels/SongsViewModel.swift */,
+				F054 /* ViewModels/SurveysViewModel.swift */,
+				F055 /* ViewModels/ProfileViewModel.swift */,
+				F060 /* Assets.xcassets */,
+			);
+			path = LibreStage;
+			sourceTree = "<group>";
+		};
+		GRP_PROD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				PROD01 /* LibreStage.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GRP_ROOT = {
+			isa = PBXGroup;
+			children = (
+				GRP_APP /* LibreStage */,
+				GRP_PROD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TGT01 /* LibreStage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFG_LIST /* Build configuration list for PBXNativeTarget "LibreStage" */;
+			buildPhases = (
+				PH_SRC /* Sources */,
+				PH_FW /* Frameworks */,
+				PH_RES /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LibreStage;
+			packageProductDependencies = (
+			);
+			productName = LibreStage;
+			productReference = PROD01 /* LibreStage.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PROJ01 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				TargetAttributes = {
+					TGT01 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = PROJ_CFG_LIST /* Build configuration list for PBXProject "LibreStage" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = de;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				de,
+				Base,
+			);
+			mainGroup = GRP_ROOT;
+			packageReferences = (
+			);
+			productRefGroup = GRP_PROD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TGT01 /* LibreStage */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		PH_RES /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A060 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		PH_SRC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A001 /* App/LibreStageApp.swift in Sources */,
+				A002 /* App/MainTabView.swift in Sources */,
+				A003 /* Core/SettingsStore.swift in Sources */,
+				A004 /* Core/AuthManager.swift in Sources */,
+				A005 /* Core/APIClient.swift in Sources */,
+				A006 /* Core/KeychainHelper.swift in Sources */,
+				A010 /* Models/User.swift in Sources */,
+				A011 /* Models/Gig.swift in Sources */,
+				A012 /* Models/Rehearsal.swift in Sources */,
+				A013 /* Models/Song.swift in Sources */,
+				A014 /* Models/Survey.swift in Sources */,
+				A015 /* Models/Todo.swift in Sources */,
+				A020 /* Views/Auth/LoginView.swift in Sources */,
+				A021 /* Views/Dashboard/DashboardView.swift in Sources */,
+				A022 /* Views/Gigs/GigsView.swift in Sources */,
+				A023 /* Views/Gigs/GigDetailView.swift in Sources */,
+				A024 /* Views/Gigs/LiveModeView.swift in Sources */,
+				A025 /* Views/Rehearsals/RehearsalsView.swift in Sources */,
+				A026 /* Views/Rehearsals/RehearsalDetailView.swift in Sources */,
+				A026B /* Views/Rehearsals/RehearsalCreateSheet.swift in Sources */,
+				A026C /* Views/Rehearsals/RehearsalSongDetailView.swift in Sources */,
+				A026D /* Views/Rehearsals/SongPickerSheet.swift in Sources */,
+				A027 /* Views/Songs/SongsView.swift in Sources */,
+				A028 /* Views/Songs/CandidatesView.swift in Sources */,
+				A029 /* Views/Surveys/SurveysView.swift in Sources */,
+				A030 /* Views/Surveys/SurveyDetailView.swift in Sources */,
+				A030B /* Views/Surveys/TerminfindungDetailView.swift in Sources */,
+				A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */,
+				A030D /* Views/Surveys/NewSurveySheet.swift in Sources */,
+				A031 /* Views/Profile/ProfileView.swift in Sources */,
+				A040 /* Views/Components/ErrorBanner.swift in Sources */,
+				A041 /* Views/Components/SkeletonRow.swift in Sources */,
+				A050 /* ViewModels/DashboardViewModel.swift in Sources */,
+				A051 /* ViewModels/GigsViewModel.swift in Sources */,
+				A052 /* ViewModels/RehearsalsViewModel.swift in Sources */,
+				A053 /* ViewModels/SongsViewModel.swift in Sources */,
+				A054 /* ViewModels/SurveysViewModel.swift in Sources */,
+				A055 /* ViewModels/ProfileViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BC_DEBUG /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC_RELEASE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BC_TGT_DEBUG /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LibreStage/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BC_TGT_RELEASE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LibreStage/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CFG_LIST /* Build configuration list for PBXNativeTarget "LibreStage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC_TGT_DEBUG /* Debug */,
+				BC_TGT_RELEASE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		PROJ_CFG_LIST /* Build configuration list for PBXProject "LibreStage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC_DEBUG /* Debug */,
+				BC_RELEASE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PROJ01 /* Project object */;
+}

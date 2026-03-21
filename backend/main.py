@@ -342,8 +342,13 @@ def get_me(current = Depends(auth.get_current_user), db: Session = Depends(auth.
     user = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.musician == None:
-        user.musician = 0
+    # Nullable DB columns – set defaults so Pydantic serialisation never fails
+    if user.musician is None:
+        user.musician = False
+    if user.is_singer is None:
+        user.is_singer = False
+    if user.clear_name is None:
+        user.clear_name = ""
     return user
 
 @app.put("/update_user", response_model=schemas.UserOut)
@@ -369,6 +374,13 @@ def update_user(
         setattr(user_db, k, v)
     db.commit()
     db.refresh(user_db)
+    # Null-Fallbacks (analog get_me)
+    if user_db.musician is None:
+        user_db.musician = False
+    if user_db.is_singer is None:
+        user_db.is_singer = False
+    if user_db.clear_name is None:
+        user_db.clear_name = ""
     return user_db
 
 @app.put("/change_password")
