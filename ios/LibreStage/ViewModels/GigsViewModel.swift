@@ -11,6 +11,15 @@ final class GigsViewModel {
     var error: AppError?
 
     @MainActor
+    func upsertGig(_ updatedGig: GigOut) {
+        if let index = gigs.firstIndex(where: { $0.id == updatedGig.id }) {
+            gigs[index] = updatedGig
+        } else {
+            gigs.insert(updatedGig, at: 0)
+        }
+    }
+
+    @MainActor
     func load() async {
         isLoading = true
         defer { isLoading = false }
@@ -29,9 +38,21 @@ final class GigDetailViewModel {
     var setlist: GigSetlistOut? = nil
     var liveMode: GigSetListLiveMode? = nil
     var liveModeAvailability: LiveModeAvailability? = nil
+    var gigFields: [GigFieldDefinition] = GigFieldDefinition.fromConfig(nil)
     var songs: [SongOut] = []
     var isLoading = false
+    var isSaving = false
     var error: AppError?
+
+    @MainActor
+    func loadGigFieldConfig() async {
+        do {
+            let config: FrontendAppConfig = try await APIClient.shared.get(path: "/public/app_config")
+            gigFields = GigFieldDefinition.fromConfig(config)
+        } catch {
+            gigFields = GigFieldDefinition.fromConfig(nil)
+        }
+    }
 
     @MainActor
     func loadSetlist(gigId: Int) async {
@@ -68,6 +89,26 @@ final class GigDetailViewModel {
         } catch {
             self.error = .networkError(error)
         }
+    }
+
+    @MainActor
+    func saveGig(gigId: Int, draft: GigDetailsDraft) async -> GigOut? {
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            let request = try draft.toUpdateRequest(id: gigId)
+            let updated: GigOut = try await APIClient.shared.put(path: "/gigs/\(gigId)", body: request)
+            return updated
+        } catch let e as GigDetailsDraft.ValidationError {
+            error = .serverError(statusCode: 400, detail: e.localizedDescription)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+
+        return nil
     }
 
     @MainActor
