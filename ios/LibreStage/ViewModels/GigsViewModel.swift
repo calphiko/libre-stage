@@ -28,6 +28,8 @@ final class GigsViewModel {
 final class GigDetailViewModel {
     var setlist: GigSetlistOut? = nil
     var liveMode: GigSetListLiveMode? = nil
+    var liveModeAvailability: LiveModeAvailability? = nil
+    var songs: [SongOut] = []
     var isLoading = false
     var error: AppError?
 
@@ -58,17 +60,165 @@ final class GigDetailViewModel {
     }
 
     @MainActor
-    func updateSong(_ update: SongInSetLMUpdate, gigId: Int) async {
+    func loadSongs() async {
         do {
-            let updated: GigSetListLiveMode = try await APIClient.shared.patch(
-                path: "/gigs_lm/setsong/\(update.id)",
-                body: update
-            )
-            liveMode = updated
+            songs = try await APIClient.shared.get(path: "/songs/")
         } catch let e as AppError {
             error = e
         } catch {
             self.error = .networkError(error)
         }
+    }
+
+    @MainActor
+    func loadLiveModeAvailability(gigId: Int, force: Bool = false) async {
+        do {
+            liveModeAvailability = try await APIClient.shared.get(
+                path: "/gigs/\(gigId)/livemode_available",
+                queryItems: [URLQueryItem(name: "force", value: force ? "true" : "false")]
+            )
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func downloadSetlistPDF(gig: GigOut) async -> URL? {
+        await downloadGigFile(
+            path: "/gigs/\(gig.id)/setlist.pdf",
+            fallbackFilename: sanitizedFilename(base: gig.name ?? "setlist", suffix: "setlist", ext: "pdf")
+        )
+    }
+
+    @MainActor
+    func downloadGemaList(gig: GigOut) async -> URL? {
+        await downloadGigFile(
+            path: "/gigs/\(gig.id)/gemalist",
+            fallbackFilename: sanitizedFilename(base: gig.name ?? "gemaliste", suffix: "gemaliste", ext: "xlsx")
+        )
+    }
+
+    @MainActor
+    func updateSong(_ update: SongInSetLMUpdate, gigId: Int, reloadAfterUpdate: Bool = true) async {
+        do {
+            let _: SongInSetLM = try await APIClient.shared.put(
+                path: "/gigs_lm/\(gigId)/",
+                body: update
+            )
+            if reloadAfterUpdate {
+                await loadLiveMode(gigId: gigId)
+            }
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func insertSong(afterSetSongId: Int, songId: Int, gigId: Int) async -> SongInSetLM? {
+        do {
+            let inserted: SongInSetLM = try await APIClient.shared.post(
+                path: "/gigs_lm/\(gigId)/insert-song?after_setsong_id=\(afterSetSongId)&song_id=\(songId)",
+                body: EmptyInsertBody()
+            )
+            await loadLiveMode(gigId: gigId)
+            return inserted
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+        return nil
+    }
+
+    @MainActor
+    func jumpToSong(currentSongId: Int?, targetSongId: Int, gigId: Int) async -> Bool {
+        let ordered = orderedLiveSongs()
+        guard let targetIndex = ordered.firstIndex(where: { $0.id == targetSongId }) else {
+            return false
+        }
+
+        guard let currentSongId,
+              let currentIndex = ordered.firstIndex(where: { $0.id == currentSongId }) else {
+            return true
+        }
+
+        if targetIndex <= currentIndex {
+            return true
+        }
+
+        let songsToSkip = ordered[currentIndex..<targetIndex].filter {
+            !($0.uebersprungen ?? false) && $0.feedback == nil
+        }
+
+        for song in songsToSkip {
+            let update = SongInSetLMUpdate(
+                id: song.id,
+                uebersprungen: true,
+                feedback: nil,
+                includeUebersprungen: true,
+                includeFeedback: true
+            )
+            await updateSong(update, gigId: gigId, reloadAfterUpdate: false)
+        }
+
+        await loadLiveMode(gigId: gigId)
+        return true
+    }
+
+    func orderedLiveSongs() -> [SongInSetLM] {
+        guard let liveMode else { return [] }
+        return liveMode.sets
+            .sorted { $0.position < $1.position }
+            .flatMap { set in
+                set.songs.sorted { $0.position < $1.position }
+            }
+    }
+
+    func firstUnmarkedSongId() -> Int? {
+        orderedLiveSongs().first(where: { !($0.uebersprungen ?? false) && $0.feedback == nil })?.id
+    }
+
+    func filteredSongsForInsert(query: String) -> [SongOut] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return Array(songs.prefix(25)) }
+        return songs.filter { song in
+            let title = song.title ?? ""
+            let interpret = song.interpret ?? ""
+            return title.localizedCaseInsensitiveContains(trimmed)
+                || interpret.localizedCaseInsensitiveContains(trimmed)
+        }
+        .prefix(25)
+        .map { $0 }
+    }
+
+    private struct EmptyInsertBody: Encodable {}
+
+    @MainActor
+    private func downloadGigFile(path: String, fallbackFilename: String) async -> URL? {
+        do {
+            let downloaded = try await APIClient.shared.download(path: path)
+            let filename = downloaded.suggestedFilename?.isEmpty == false ? downloaded.suggestedFilename! : fallbackFilename
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+            try downloaded.data.write(to: url, options: .atomic)
+            return url
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+        return nil
+    }
+
+    private func sanitizedFilename(base: String, suffix: String, ext: String) -> String {
+        let cleanedBase = base
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let stem = cleanedBase.isEmpty ? suffix : cleanedBase
+        return "\(stem)_\(suffix).\(ext)"
     }
 }
