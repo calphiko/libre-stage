@@ -76,10 +76,10 @@ struct RehearsalsView: View {
                     NavigationLink {
                         RehearsalDetailView(rehearsal: reh, vm: vm)
                     } label: {
-                        RehearsalRow(reh: reh, vm: vm)
+                        RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        if isEditor {
+                        if isEditor && !vm.isPast(reh) {
                             Button(role: .destructive) {
                                 Task { await vm.delete(reh) }
                             } label: {
@@ -111,7 +111,7 @@ struct RehearsalsView: View {
                         NavigationLink {
                             RehearsalDetailView(rehearsal: reh, vm: vm)
                         } label: {
-                            RehearsalRow(reh: reh, vm: vm, isPast: true)
+                            RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
                         }
                     }
                 }
