@@ -8,6 +8,7 @@ import Foundation
 final class SongsViewModel {
     var songs: [SongOut] = []
     var candidates: [SongCandidateOut] = []
+    var totalEligibleVoters: Int = 0
     var isLoading = false
     var error: AppError?
     var searchText = ""
@@ -38,7 +39,10 @@ final class SongsViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            candidates = try await APIClient.shared.get(path: "/songs/candidates/")
+            async let fetchedCandidates: [SongCandidateOut] = APIClient.shared.get(path: "/songs/candidates/")
+            async let users: [UserListElem] = APIClient.shared.get(path: "/user_list")
+            candidates = try await fetchedCandidates
+            totalEligibleVoters = try await users.count
         } catch let e as AppError {
             error = e
         } catch {
@@ -47,12 +51,11 @@ final class SongsViewModel {
     }
 
     @MainActor
-    func submitFeedback(songId: Int, userId: Int, feedback: String) async {
-        let body = SongFeedbackIn(song_id: songId, user_id: userId, feedback: feedback)
+    func submitCandidateFeedback(songId: Int, feedbacks: [SongFeedbackIn]) async {
         do {
-            let _: EmptyResponse = try await APIClient.shared.post(
-                path: "/songs/\(songId)/feedback",
-                body: body
+            let _: [SongFeedbackBase] = try await APIClient.shared.put(
+                path: "/songs/candidates/feedback/\(songId)",
+                body: feedbacks
             )
             await loadCandidates()
         } catch let e as AppError {
@@ -61,5 +64,23 @@ final class SongsViewModel {
             self.error = .networkError(error)
         }
     }
+
+    @MainActor
+    func acceptCandidate(songId: Int) async {
+        do {
+            let _: [SongOut] = try await APIClient.shared.put(
+                path: "/songs/candidates/accept/\(songId)",
+                body: EmptyBody()
+            )
+            await loadCandidates()
+            await loadSongs()
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
 }
+
+private struct EmptyBody: Encodable {}
 
