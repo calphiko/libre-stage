@@ -34,7 +34,15 @@ struct SongsView: View {
                 }
                 Section("Repertoire (\(vm.filtered.count))") {
                     ForEach(vm.filtered) { song in
-                        SongRow(song: song)
+                        if let songId = song.id {
+                            NavigationLink {
+                                SongDetailsView(songId: songId, initialTitle: song.title)
+                            } label: {
+                                SongRow(song: song)
+                            }
+                        } else {
+                            SongRow(song: song)
+                        }
                     }
                 }
             }
