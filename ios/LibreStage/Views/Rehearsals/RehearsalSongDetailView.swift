@@ -18,6 +18,14 @@ struct RehearsalSongDetailView: View {
 
     var body: some View {
         List {
+            Section("Song") {
+                NavigationLink {
+                    SongDetailsView(songId: song.id_song, initialTitle: song.title)
+                } label: {
+                    Label("Song-Details anzeigen", systemImage: "music.note.list")
+                }
+            }
+
             // MARK: - Status-Buttons
             Section("Status") {
                 ScrollView(.horizontal, showsIndicators: false) {
