@@ -162,7 +162,9 @@ struct AppConfigOption: Codable {
 
 struct FrontendAppConfig: Codable {
     let genres: [AppConfigOption]
+    let gigTypes: [AppConfigOption]
     let songStatuses: [AppConfigOption]
+    let gigStatuses: [AppConfigOption]
     let tonekeys: [AppConfigOption]
 }
 
