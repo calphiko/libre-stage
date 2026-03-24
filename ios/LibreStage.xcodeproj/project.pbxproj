@@ -45,6 +45,8 @@
 		A053 /* ViewModels/SongsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* ViewModels/SongsViewModel.swift */; };
 		A054 /* ViewModels/SurveysViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F054 /* ViewModels/SurveysViewModel.swift */; };
 		A055 /* ViewModels/ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* ViewModels/ProfileViewModel.swift */; };
+		A056 /* ViewModels/SongDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F056 /* ViewModels/SongDetailsViewModel.swift */; };
+		A057 /* Views/Songs/SongDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* Views/Songs/SongDetailsView.swift */; };
 		A060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F060 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +89,8 @@
 		F053 /* ViewModels/SongsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SongsViewModel.swift; sourceTree = "<group>"; };
 		F054 /* ViewModels/SurveysViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SurveysViewModel.swift; sourceTree = "<group>"; };
 		F055 /* ViewModels/ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ProfileViewModel.swift; sourceTree = "<group>"; };
+		F056 /* ViewModels/SongDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SongDetailsViewModel.swift; sourceTree = "<group>"; };
+		F057 /* Views/Songs/SongDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Songs/SongDetailsView.swift; sourceTree = "<group>"; };
 		F060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -129,6 +133,7 @@
 				F026D /* Views/Rehearsals/SongPickerSheet.swift */,
 				F027 /* Views/Songs/SongsView.swift */,
 				F028 /* Views/Songs/CandidatesView.swift */,
+				F057 /* Views/Songs/SongDetailsView.swift */,
 				F029 /* Views/Surveys/SurveysView.swift */,
 				F030 /* Views/Surveys/SurveyDetailView.swift */,
 				F030B /* Views/Surveys/TerminfindungDetailView.swift */,
@@ -143,6 +148,7 @@
 				F053 /* ViewModels/SongsViewModel.swift */,
 				F054 /* ViewModels/SurveysViewModel.swift */,
 				F055 /* ViewModels/ProfileViewModel.swift */,
+				F056 /* ViewModels/SongDetailsViewModel.swift */,
 				F060 /* Assets.xcassets */,
 			);
 			path = LibreStage;
@@ -275,6 +281,8 @@
 				A053 /* ViewModels/SongsViewModel.swift in Sources */,
 				A054 /* ViewModels/SurveysViewModel.swift in Sources */,
 				A055 /* ViewModels/ProfileViewModel.swift in Sources */,
+				A056 /* ViewModels/SongDetailsViewModel.swift in Sources */,
+				A057 /* Views/Songs/SongDetailsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -422,7 +430,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -451,7 +459,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
