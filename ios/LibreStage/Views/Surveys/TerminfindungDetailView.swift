@@ -17,6 +17,9 @@ struct TerminfindungDetailView: View {
     /// Best available user – parameter takes precedence, then session user, then local fetch.
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
 
+    /// Only musicians are allowed to participate in appointment surveys.
+    private var canParticipate: Bool { me?.musician ?? false }
+
     init(surveyId: Int, passedUser: UserOut? = nil) {
         self.surveyId = surveyId
         self.passedUser = passedUser
@@ -87,45 +90,51 @@ struct TerminfindungDetailView: View {
             // ── Meine Stimmen ────────────────────────────────────────
             Section {
                 if let me {
-                    ForEach(sortedFields(survey)) { field in
-                        let myFb = field.feedbacks.first { $0.id_user == me.id }
-                        Button {
-                            guard !survey.closed && !isUpdating else { return }
-                            Task {
-                                isUpdating = true
-                                await castFeedback(survey: survey, field: field,
-                                                   userId: me.id,
-                                                   newValue: nextValue(myFb?.value))
-                                isUpdating = false
-                            }
-                        } label: {
-                            HStack(spacing: 12) {
-                                feedbackIcon(myFb?.value)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(formatDate(field.field_text))
-                                        .font(.subheadline).foregroundStyle(.primary)
-                                    Text(labelFor(myFb?.value))
-                                        .font(.caption).foregroundStyle(.secondary)
+                    if canParticipate {
+                        ForEach(sortedFields(survey)) { field in
+                            let myFb = field.feedbacks.first { $0.id_user == me.id }
+                            Button {
+                                guard canParticipate && !survey.closed && !isUpdating else { return }
+                                Task {
+                                    isUpdating = true
+                                    await castFeedback(survey: survey, field: field,
+                                                       userId: me.id,
+                                                       newValue: nextValue(myFb?.value))
+                                    isUpdating = false
                                 }
-                                Spacer()
-                                if !survey.closed {
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption2).foregroundStyle(.tertiary)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    feedbackIcon(myFb?.value)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(formatDate(field.field_text))
+                                            .font(.subheadline).foregroundStyle(.primary)
+                                        Text(labelFor(myFb?.value))
+                                            .font(.caption).foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if !survey.closed && canParticipate {
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption2).foregroundStyle(.tertiary)
+                                    }
                                 }
+                                .padding(.vertical, 2)
+                                .contentShape(Rectangle())
                             }
-                            .padding(.vertical, 2)
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
+                            .disabled(survey.closed || isUpdating || !canParticipate)
+                            .listRowBackground(colorFor(myFb?.value).opacity(0.12))
                         }
-                        .buttonStyle(.plain)
-                        .disabled(survey.closed || isUpdating)
-                        .listRowBackground(colorFor(myFb?.value).opacity(0.12))
-                    }
-                    if isUpdating {
-                        HStack {
-                            ProgressView().padding(.trailing, 4)
-                            Text("Wird gespeichert…")
-                                .font(.caption).foregroundStyle(.secondary)
+                        if isUpdating {
+                            HStack {
+                                ProgressView().padding(.trailing, 4)
+                                Text("Wird gespeichert…")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
+                    } else {
+                        Text("An Terminumfragen können nur Musiker teilnehmen.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
@@ -148,8 +157,11 @@ struct TerminfindungDetailView: View {
             } header: {
                 Text("Meine Stimmen")
             } footer: {
-                if me != nil && !survey.closed {
+                if me != nil && canParticipate && !survey.closed {
                     Text("Tippen: Ja → Vielleicht → Nein → leer")
+                        .font(.caption2)
+                } else if me != nil && !canParticipate {
+                    Text("Nur Musiker können an dieser Terminumfrage teilnehmen.")
                         .font(.caption2)
                 }
             }
@@ -296,6 +308,11 @@ struct TerminfindungDetailView: View {
     @MainActor
     private func castFeedback(survey: SurveyQuestionOut, field: SurveyFieldsOut,
                                userId: Int, newValue: String?) async {
+        guard canParticipate else {
+            vm.error = .serverError(statusCode: 403, detail: "An Terminumfragen können nur Musiker teilnehmen.")
+            return
+        }
+
         var payload: [SurveyFeedbackPayload] = []
         for f in survey.fields {
             if f.id == field.id {
