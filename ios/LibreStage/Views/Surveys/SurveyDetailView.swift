@@ -11,10 +11,12 @@ struct SurveyDetailView: View {
     let surveyType: String          // "Terminfindung" or "Meinungsumfrage"
 
     var body: some View {
-        if surveyType == "Terminfindung" {
-            TerminfindungDetailView(surveyId: surveyId)
-        } else {
-            MeinungsumfrageDetailView(surveyId: surveyId)
+        Group {
+            if surveyType == "Terminfindung" {
+                TerminfindungDetailView(surveyId: surveyId)
+            } else {
+                MeinungsumfrageDetailView(surveyId: surveyId)
+            }
         }
     }
 }
