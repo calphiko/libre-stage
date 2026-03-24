@@ -7,7 +7,7 @@ import Charts
 
 struct MeinungsumfrageDetailView: View {
     let surveyId: Int
-    let passedUser: UserOut? = nil
+    let passedUser: UserOut?
     @Environment(AuthManager.self) private var authManager
     @State private var vm = SurveysViewModel()
     @State private var localUser: UserOut? = nil
@@ -15,6 +15,11 @@ struct MeinungsumfrageDetailView: View {
     @State private var expandedId: Int? = nil
 
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
+
+    init(surveyId: Int, passedUser: UserOut? = nil) {
+        self.surveyId = surveyId
+        self.passedUser = passedUser
+    }
 
     private static let palette: [Color] = [
         .blue, .orange, .green, .red, .purple, .cyan, .yellow, .pink, .mint, .teal
@@ -76,6 +81,25 @@ struct MeinungsumfrageDetailView: View {
                 if survey.closed {
                     Text("Archiviert \u{2013} keine Stimmabgabe mehr m\u{F6}glich.")
                         .font(.caption).foregroundStyle(.secondary).italic()
+                }
+            }
+
+            if me == nil {
+                Section("Anmeldung") {
+                    Text("Benutzerkontext konnte nicht geladen werden. Abstimmen ist erst nach erfolgreicher Anmeldung möglich.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        Button("Erneut versuchen") {
+                            Task { await ensureUserContext() }
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("Erneut einloggen") {
+                            Task { await authManager.logout() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 }
             }
 
