@@ -59,8 +59,25 @@ final class APIClient {
     private static let debugNetworkLogging = false
     #endif
 
-    // Prevents concurrent refresh races
-    private var isRefreshing = false
+    // Coalesces concurrent refresh calls into one running task.
+    private actor RefreshCoordinator {
+        private var runningTask: Task<Void, Error>?
+
+        func refresh(using action: @escaping () async throws -> Void) async throws {
+            if let runningTask {
+                return try await runningTask.value
+            }
+
+            let task = Task {
+                try await action()
+            }
+            runningTask = task
+            defer { runningTask = nil }
+            try await task.value
+        }
+    }
+
+    private let refreshCoordinator = RefreshCoordinator()
 
     // MARK: - Base URL
 
@@ -106,6 +123,30 @@ final class APIClient {
 
     func delete(path: String) async throws {
         let _: EmptyResponse = try await perform(method: "DELETE", path: path, body: nil as EmptyBody?)
+    }
+
+    struct DownloadedFile {
+        let data: Data
+        let suggestedFilename: String?
+    }
+
+    func download(path: String, queryItems: [URLQueryItem] = []) async throws -> DownloadedFile {
+        let request = try buildRequest(
+            method: "GET",
+            path: path,
+            queryItems: queryItems,
+            body: nil as EmptyBody?,
+            requiresAuth: true
+        )
+
+        let (data, response) = try await performRequest(request)
+        guard let http = response as? HTTPURLResponse else {
+            throw AppError.networkError(URLError(.badServerResponse))
+        }
+
+        try validateStatus(http.statusCode, data: data)
+        let filename = Self.parseFilename(from: http.value(forHTTPHeaderField: "Content-Disposition"))
+        return DownloadedFile(data: data, suggestedFilename: filename)
     }
 
     // MARK: - Health
@@ -156,17 +197,20 @@ final class APIClient {
             throw AppError.networkError(URLError(.badServerResponse))
         }
 
-        // Auto-refresh on 401
-        if http.statusCode == 401 && requiresAuth && !isRefreshing {
-            isRefreshing = true
-            defer { isRefreshing = false }
-            try await refreshAccessToken()
+        // Auto-refresh on 401. Parallel callers await the same refresh task.
+        if http.statusCode == 401 && requiresAuth {
+            try await refreshCoordinator.refresh { [self] in
+                try await refreshAccessToken()
+            }
+
             // Retry with new token
             let retryRequest = try buildRequest(method: method, path: path, queryItems: queryItems, body: body, requiresAuth: requiresAuth)
             let (retryData, retryResponse) = try await performRequest(retryRequest)
-            if let retryHttp = retryResponse as? HTTPURLResponse {
-                try validateStatus(retryHttp.statusCode, data: retryData)
+
+            guard let retryHttp = retryResponse as? HTTPURLResponse else {
+                throw AppError.networkError(URLError(.badServerResponse))
             }
+            try validateStatus(retryHttp.statusCode, data: retryData)
             return retryData
         }
 
@@ -249,5 +293,22 @@ final class APIClient {
         }
         let refreshed = try decoder.decode(RefreshResponse.self, from: data)
         KeychainHelper.save(service: "de.librestage.app", account: "access_token", value: refreshed.access_token)
+        KeychainHelper.save(service: "de.librestage.app", account: "refresh_token", value: refreshed.refresh_token)
+    }
+
+    private static func parseFilename(from contentDisposition: String?) -> String? {
+        guard let contentDisposition else { return nil }
+
+        if let quotedRange = contentDisposition.range(of: "filename=\""),
+           let endQuote = contentDisposition[quotedRange.upperBound...].firstIndex(of: "\"") {
+            return String(contentDisposition[quotedRange.upperBound..<endQuote])
+        }
+
+        if let plainRange = contentDisposition.range(of: "filename=") {
+            let value = contentDisposition[plainRange.upperBound...]
+            return value.split(separator: ";").first.map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+        }
+
+        return nil
     }
 }
