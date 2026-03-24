@@ -1,6 +1,6 @@
 # libre-stage iOS App
 
-Native SwiftUI-App für [libre-stage](https://github.com/libre-stage/libre-stage) – die interne Band-Management-Plattform.
+This is a full vibe coding experiment. Currently, the status of the app is really buggy and not working. Native SwiftUI-App für [libre-stage](https://github.com/libre-stage/libre-stage) – die interne Band-Management-Plattform.
 
 ## Voraussetzungen
 
