@@ -17,6 +17,10 @@ final class DashboardViewModel {
              + t.surveys_to_feedback.count
     }
 
+    var todoBadgeCount: Int {
+        todoList?.todo.filter { !$0.done }.count ?? 0
+    }
+
     var surveyBadgeCount: Int {
         todoList?.surveys_to_feedback.count ?? 0
     }
