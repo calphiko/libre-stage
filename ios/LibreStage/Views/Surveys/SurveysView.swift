@@ -118,7 +118,11 @@ struct SurveysView: View {
         } message: { result in
             Text(reminderMessage(result))
         }
-        .errorBanner($vm.error)
+        .errorBanner(
+            $vm.error,
+            actionTitle: vm.error?.isUnauthorized == true ? "Erneut einloggen" : nil,
+            onAction: vm.error?.isUnauthorized == true ? { Task { await authManager.logout() } } : nil
+        )
         .task { await vm.loadList() }
         .onChange(of: vm.reminderResult) { _, new in
             if new != nil { showReminderAlert = true }
