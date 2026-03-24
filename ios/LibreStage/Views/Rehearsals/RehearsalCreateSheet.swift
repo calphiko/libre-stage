@@ -50,10 +50,11 @@ struct RehearsalCreateSheet: View {
                     Button("Erstellen") {
                         Task {
                             isSaving = true
+                            let normalizedComment = comment.trimmingCharacters(in: .whitespacesAndNewlines)
                             let request = RehCreateRequest(
                                 begin: Self.isoFormatter.string(from: beginDate),
                                 end: hasEnd ? Self.isoFormatter.string(from: endDate) : nil,
-                                comment: comment.isEmpty ? nil : comment
+                                comment: normalizedComment.isEmpty ? "" : normalizedComment
                             )
                             await onCreate(request)
                             isSaving = false
