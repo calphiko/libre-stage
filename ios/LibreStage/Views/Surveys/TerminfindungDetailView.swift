@@ -6,7 +6,7 @@ import SwiftUI
 
 struct TerminfindungDetailView: View {
     let surveyId:   Int
-    let passedUser: UserOut? = nil    // provided by SurveysView at nav time
+    let passedUser: UserOut?    // provided by SurveysView at nav time
     @Environment(AuthManager.self) private var authManager
 
     @State private var vm         = SurveysViewModel()
@@ -16,6 +16,11 @@ struct TerminfindungDetailView: View {
 
     /// Best available user – parameter takes precedence, then session user, then local fetch.
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
+
+    init(surveyId: Int, passedUser: UserOut? = nil) {
+        self.surveyId = surveyId
+        self.passedUser = passedUser
+    }
 
     // MARK: - Body
 
@@ -123,10 +128,21 @@ struct TerminfindungDetailView: View {
                         }
                     }
                 } else {
-                    HStack {
-                        ProgressView().padding(.trailing, 6)
-                        Text("Benutzer wird geladen…")
-                            .font(.subheadline).foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Benutzerkontext konnte nicht geladen werden.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        HStack(spacing: 8) {
+                            Button("Erneut versuchen") {
+                                Task { await ensureUserContext() }
+                            }
+                            .buttonStyle(.bordered)
+
+                            Button("Erneut einloggen") {
+                                Task { await authManager.logout() }
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
                     }
                 }
             } header: {
