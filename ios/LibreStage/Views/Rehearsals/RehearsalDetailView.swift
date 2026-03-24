@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct RehearsalDetailView: View {
-    // Unveränderliche Referenz auf die Original-Probe (für isPast-Berechnung)
+    // Unveränderliche Referenz auf die Original-Probe
     let rehearsal: RehListElem
     let vm: RehearsalsViewModel
 
@@ -23,12 +23,7 @@ struct RehearsalDetailView: View {
     }
 
     var isPast: Bool {
-        guard let d = vm.parseDate(localReh.begin) else { return false }
-        let cal = Calendar.current
-        var comps = cal.dateComponents([.year, .month, .day], from: d)
-        comps.day = (comps.day ?? 0) + 1
-        comps.hour = 23; comps.minute = 59; comps.second = 59
-        return (cal.date(from: comps) ?? Date.distantPast) < Date()
+        vm.isPast(localReh)
     }
 
     var isEditor: Bool { authManager.userRole == .admin || authManager.userRole == .editor }
@@ -172,7 +167,11 @@ struct RehearsalDetailView: View {
     // MARK: - Aktionen
 
     private func save() {
-        Task { await vm.update(localReh) }
+        Task {
+            if let fresh = await vm.update(localReh) {
+                localReh = fresh
+            }
+        }
     }
 
     private func addSong(_ song: SongOut, todo: String) {
