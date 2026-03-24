@@ -25,15 +25,22 @@ final class SurveysViewModel {
 
     // MARK: - Load
 
+    private func loadUsersSilently() async {
+        do {
+            users = try await APIClient.shared.get(path: "/user_list")
+        } catch {
+            // Non-critical for surveys; names fall back to user IDs.
+        }
+    }
+
     @MainActor
     func loadList() async {
         isLoading = true
+        error = nil
         defer { isLoading = false }
         do {
-            async let s: [SurveyList]   = APIClient.shared.get(path: "/surveys/")
-            async let u: [UserListElem] = APIClient.shared.get(path: "/user_list")
-            surveys = try await s
-            users   = try await u
+            surveys = try await APIClient.shared.get(path: "/surveys/")
+            await loadUsersSilently()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }
@@ -41,11 +48,12 @@ final class SurveysViewModel {
     @MainActor
     func loadDetail(id: Int) async {
         isLoading = true
+        error = nil
         defer { isLoading = false }
         do {
             detail = try await APIClient.shared.get(path: "/surveys/\(id)")
             if users.isEmpty {
-                users = try await APIClient.shared.get(path: "/user_list")
+                await loadUsersSilently()
             }
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
