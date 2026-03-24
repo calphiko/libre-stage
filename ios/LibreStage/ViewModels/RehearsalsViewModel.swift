@@ -18,17 +18,19 @@ final class RehearsalsViewModel {
     // MARK: - Abgeleitete Listen
 
     var upcomingRehearsals: [RehListElem] {
-        let now = Date()
         return rehearsals
-            .filter { endOfNextDay($0.begin) >= now }
-            .sorted { $0.begin < $1.begin }
+            .filter { !isPast($0) }
+            .sorted {
+                (parseDate($0.begin) ?? Date.distantFuture) < (parseDate($1.begin) ?? Date.distantFuture)
+            }
     }
 
     var pastRehearsals: [RehListElem] {
-        let now = Date()
         return rehearsals
-            .filter { endOfNextDay($0.begin) < now }
-            .sorted { $0.begin > $1.begin }
+            .filter { isPast($0) }
+            .sorted {
+                (parseDate($0.begin) ?? Date.distantPast) > (parseDate($1.begin) ?? Date.distantPast)
+            }
     }
 
     // MARK: - Laden
@@ -69,20 +71,24 @@ final class RehearsalsViewModel {
     // MARK: - Aktualisieren
 
     @MainActor
-    func update(_ rehearsal: RehListElem) async {
+    func update(_ rehearsal: RehListElem) async -> RehListElem? {
         do {
-            let updated: [RehListElem] = try await APIClient.shared.put(path: "/reh/", body: rehearsal)
+            let request = RehUpdateRequest(from: rehearsal)
+            let updated: [RehListElem] = try await APIClient.shared.put(path: "/reh/", body: request)
             if let idx = rehearsals.firstIndex(where: { $0.id == rehearsal.id }),
                let fresh = updated.first(where: { $0.id == rehearsal.id }) {
                 rehearsals[idx] = fresh
+                return fresh
             } else {
                 rehearsals = updated
+                return updated.first(where: { $0.id == rehearsal.id })
             }
         } catch let e as AppError {
             error = e
         } catch {
             self.error = .networkError(error)
         }
+        return nil
     }
 
     // MARK: - Löschen
@@ -134,10 +140,28 @@ final class RehearsalsViewModel {
         if let d = f.date(from: str) { return d }
         f.formatOptions = [.withInternetDateTime]
         if let d = f.date(from: str) { return d }
+
+        // Fallbacks fuer APIs ohne Zeitzone (z. B. 2026-03-23T19:00:00)
+        let posix = Locale(identifier: "en_US_POSIX")
+        let tz = TimeZone.current
+        let apiFormatters = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd"
+        ]
+        for format in apiFormatters {
+            let df = DateFormatter()
+            df.locale = posix
+            df.timeZone = tz
+            df.dateFormat = format
+            if let d = df.date(from: str) { return d }
+        }
+
         // Fallback: "yyyy-MM-dd HH:mm:ss" (DB-Format)
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        df.locale = Locale(identifier: "de_DE")
+        df.locale = posix
+        df.timeZone = tz
         return df.date(from: str)
     }
 
@@ -168,22 +192,44 @@ final class RehearsalsViewModel {
     }
 
     func formatRangeLabel(_ reh: RehListElem) -> String {
-        let dateStr = formatDate(reh.begin)
-        let beginTime = formatTime(reh.begin)
-        guard let end = reh.end else { return "\(dateStr), \(beginTime) Uhr" }
-        let endTime = formatTime(end)
-        return "\(dateStr), \(beginTime)–\(endTime) Uhr"
+        guard let beginDate = parseDate(reh.begin) else { return reh.begin }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "de_DE")
+        dateFormatter.dateFormat = "dd.MM.yyyy"
+
+        let timeFormatter = DateFormatter()
+        timeFormatter.locale = Locale(identifier: "de_DE")
+        timeFormatter.dateFormat = "HH:mm"
+
+        let dateText = dateFormatter.string(from: beginDate)
+        let beginTime = timeFormatter.string(from: beginDate)
+
+        guard let endDate = eventEndDate(for: reh) else {
+            return "\(dateText) - \(beginTime)"
+        }
+
+        let endTime = timeFormatter.string(from: endDate)
+        if Calendar.current.isDate(beginDate, inSameDayAs: endDate) {
+            return "\(dateText) - \(beginTime) - \(endTime)"
+        }
+
+        let endDateText = dateFormatter.string(from: endDate)
+        return "\(dateText) - \(beginTime) - \(endDateText) \(endTime)"
+    }
+
+    func isPast(_ reh: RehListElem, now: Date = Date()) -> Bool {
+        guard let boundary = eventEndDate(for: reh) else { return false }
+        return boundary < now
     }
 
     // MARK: - Privat
 
-    private func endOfNextDay(_ str: String) -> Date {
-        guard let d = parseDate(str) else { return Date.distantPast }
-        let cal = Calendar.current
-        var comps = cal.dateComponents([.year, .month, .day], from: d)
-        comps.day = (comps.day ?? 0) + 1
-        comps.hour = 23; comps.minute = 59; comps.second = 59
-        return cal.date(from: comps) ?? Date.distantPast
+    private func eventEndDate(for reh: RehListElem) -> Date? {
+        if let end = reh.end, let endDate = parseDate(end) {
+            return endDate
+        }
+        return parseDate(reh.begin)
     }
 
     func clearError() { error = nil }
