@@ -9,15 +9,28 @@ import UIKit
 
 struct GigDetailView: View {
     let gig: GigOut
+    let onGigUpdated: ((GigOut) -> Void)?
     @State private var vm = GigDetailViewModel()
+    @State private var isEditing = false
+    @State private var draft = GigDetailsDraft()
+    @State private var editableGig: GigOut?
     @State private var shareURL: URL? = nil
     @State private var showShareSheet = false
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
     @Environment(AuthManager.self) private var authManager
 
+    init(gig: GigOut, onGigUpdated: ((GigOut) -> Void)? = nil) {
+        self.gig = gig
+        self.onGigUpdated = onGigUpdated
+    }
+
     private var canEdit: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
+    }
+
+    private var currentGig: GigOut {
+        editableGig ?? gig
     }
 
     var body: some View {
@@ -28,14 +41,49 @@ struct GigDetailView: View {
                 List {
                     // MARK: Gig Info
                     Section("Infos") {
-                        GigInfoRow(label: "Datum",       value: gig.datum)
-                        GigInfoRow(label: "Venue",       value: gig.venue)
-                        GigInfoRow(label: "Veranstalter",value: gig.organizer)
-                        GigInfoRow(label: "Art",         value: gig.kind_of_gig)
-                        GigInfoRow(label: "Einlass",     value: gig.doors)
-                        GigInfoRow(label: "Beginn",      value: gig.begin)
-                        GigInfoRow(label: "Ende",        value: gig.end)
-                        GigInfoRow(label: "Status",      value: gig.status)
+                        if isEditing {
+                            ForEach(vm.gigFields) { field in
+                                gigEditorView(for: field)
+                            }
+                        } else {
+                            ForEach(vm.gigFields) { field in
+                                GigInfoRow(label: field.label, value: gigDisplayValue(for: field))
+                            }
+                        }
+                    }
+
+                    if canEdit {
+                        Section {
+                            if isEditing {
+                                Button {
+                                    Task {
+                                        if let updated = await vm.saveGig(gigId: gig.id, draft: draft) {
+                                            editableGig = updated
+                                            draft = GigDetailsDraft(gig: updated)
+                                            isEditing = false
+                                            onGigUpdated?(updated)
+                                        }
+                                    }
+                                } label: {
+                                    if vm.isSaving {
+                                        ProgressView()
+                                    } else {
+                                        Text("Speichern")
+                                    }
+                                }
+                                .disabled(vm.isSaving)
+
+                                Button("Abbrechen", role: .cancel) {
+                                    draft = GigDetailsDraft(gig: currentGig)
+                                    isEditing = false
+                                }
+                            } else {
+                                Button("Bearbeiten") {
+                                    draft = GigDetailsDraft(gig: currentGig)
+                                    isEditing = true
+                                }
+                            }
+                        }
                     }
 
                     // MARK: Live-Modus (nur Editor/Admin)
@@ -45,7 +93,7 @@ struct GigDetailView: View {
                     Section("Aktionen") {
                         Button {
                             Task {
-                                if let fileURL = await vm.downloadSetlistPDF(gig: gig) {
+                                if let fileURL = await vm.downloadSetlistPDF(gig: currentGig) {
                                     shareURL = fileURL
                                     showShareSheet = true
                                 } else {
@@ -58,7 +106,7 @@ struct GigDetailView: View {
 
                         Button {
                             Task {
-                                if let fileURL = await vm.downloadGemaList(gig: gig) {
+                                if let fileURL = await vm.downloadGemaList(gig: currentGig) {
                                     shareURL = fileURL
                                     showShareSheet = true
                                 } else {
@@ -73,7 +121,7 @@ struct GigDetailView: View {
                         if canEdit {
                             if vm.liveModeAvailability?.available == true {
                                 NavigationLink {
-                                    LiveModeView(gig: gig)
+                                    LiveModeView(gig: currentGig)
                                 } label: {
                                     HStack {
                                         Label("Live-Modus starten", systemImage: "bolt.fill")
@@ -137,10 +185,15 @@ struct GigDetailView: View {
                 ContentUnavailableView("Keine Setlist", systemImage: "music.note.list")
             }
         }
-        .navigationTitle(gig.name ?? "Gig")
+        .navigationTitle(currentGig.name ?? "Gig")
         .navigationBarTitleDisplayMode(.inline)
         .errorBanner($vm.error)
         .task {
+            if editableGig == nil {
+                editableGig = gig
+                draft = GigDetailsDraft(gig: gig)
+            }
+            await vm.loadGigFieldConfig()
             await vm.loadSetlist(gigId: gig.id)
             if canEdit {
                 await vm.loadLiveModeAvailability(gigId: gig.id)
@@ -186,6 +239,126 @@ struct GigDetailView: View {
             downloadErrorMessage = "\(documentName) konnte nicht heruntergeladen werden. Bitte später erneut versuchen."
         }
         showDownloadErrorAlert = true
+    }
+
+    @ViewBuilder
+    private func gigEditorView(for field: GigFieldDefinition) -> some View {
+        switch field.type {
+        case .option:
+            Picker(field.required ? "\(field.label) *" : field.label, selection: gigBinding(for: field.key)) {
+                if !field.required {
+                    Text("-").tag("")
+                }
+                ForEach(field.options) { option in
+                    Text(option.label).tag(option.key)
+                }
+            }
+        case .time:
+            HStack {
+                DatePicker(
+                    field.required ? "\(field.label) *" : field.label,
+                    selection: timeBinding(for: field.key),
+                    displayedComponents: .hourAndMinute
+                )
+                if !field.required {
+                    Button("Loeschen") {
+                        draft.setValue("", for: field.key)
+                    }
+                    .font(.caption)
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.secondary)
+                }
+            }
+        case .date:
+            DatePicker(
+                field.required ? "\(field.label) *" : field.label,
+                selection: dateBinding(for: field.key),
+                displayedComponents: .date
+            )
+        case .text:
+            TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
+        }
+    }
+
+    private func gigBinding(for key: String) -> Binding<String> {
+        Binding(
+            get: { draft.value(for: key) },
+            set: { draft.setValue($0, for: key) }
+        )
+    }
+
+    private func gigDisplayValue(for field: GigFieldDefinition) -> String? {
+        let raw = draft.value(for: field.key)
+        guard !raw.isEmpty else { return nil }
+
+        if field.type == .option,
+           let option = field.options.first(where: { $0.key == raw }) {
+            return option.label
+        }
+
+        return raw
+    }
+
+    private func dateBinding(for key: String) -> Binding<Date> {
+        Binding(
+            get: { parseISODate(draft.value(for: key)) ?? Date() },
+            set: { draft.setValue(formatISODate($0), for: key) }
+        )
+    }
+
+    private func timeBinding(for key: String) -> Binding<Date> {
+        Binding(
+            get: { parseTime(draft.value(for: key)) ?? defaultTimeDate() },
+            set: { draft.setValue(formatTime($0), for: key) }
+        )
+    }
+
+    private func parseISODate(_ value: String) -> Date? {
+        guard !value.isEmpty else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: value)
+    }
+
+    private func formatISODate(_ value: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: value)
+    }
+
+    private func parseTime(_ value: String) -> Date? {
+        guard !value.isEmpty else { return nil }
+        let parts = value.split(separator: ":")
+        guard parts.count >= 2,
+              let hour = Int(parts[0]),
+              let minute = Int(parts[1]),
+              (0...23).contains(hour),
+              (0...59).contains(minute) else {
+            return nil
+        }
+
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = hour
+        components.minute = minute
+        components.second = 0
+        return Calendar.current.date(from: components)
+    }
+
+    private func formatTime(_ value: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: value)
+    }
+
+    private func defaultTimeDate() -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 20
+        components.minute = 0
+        components.second = 0
+        return Calendar.current.date(from: components) ?? Date()
     }
 }
 
