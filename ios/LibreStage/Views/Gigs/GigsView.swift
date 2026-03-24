@@ -17,7 +17,9 @@ struct GigsView: View {
                 } else {
                     List(vm.gigs) { gig in
                         NavigationLink {
-                            GigDetailView(gig: gig)
+                            GigDetailView(gig: gig) { updatedGig in
+                                vm.upsertGig(updatedGig)
+                            }
                         } label: {
                             GigRow(gig: gig)
                         }
