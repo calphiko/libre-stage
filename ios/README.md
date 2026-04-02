@@ -1,6 +1,6 @@
 # libre-stage iOS App
 
-This is a full vibe coding experiment. Currently, the status of the app is really buggy and not working. Native SwiftUI-App für [libre-stage](https://github.com/libre-stage/libre-stage) – die interne Band-Management-Plattform.
+Native SwiftUI-App für [libre-stage](https://github.com/libre-stage/libre-stage) – die interne Band-Management-Plattform.
 
 ## Voraussetzungen
 
@@ -17,8 +17,7 @@ This is a full vibe coding experiment. Currently, the status of the app is reall
 open ios/LibreStage.xcodeproj
 ```
 
-Beim ersten Öffnen lädt Xcode automatisch die SPM-Abhängigkeit:
-- [KeychainAccess](https://github.com/kishikawakatsuki/KeychainAccess) ≥ 4.2.2
+Das Projekt nutzt keine externen SPM-Abhängigkeiten für die Auth-Speicherung; Tokens werden nativ über das Security-Framework im Keychain gespeichert.
 
 ## Struktur
 
@@ -66,4 +65,9 @@ ios/
 - [ ] AppIcon in `Assets.xcassets/AppIcon.appiconset/` als 1024×1024px PNG hinterlegen
 - [ ] Bundle-ID in Build Settings anpassen (`de.libre-stage.app`)
 - [ ] TestFlight-Distribution einrichten (Apple Developer Account erforderlich)
+
+## Release-Hinweis
+
+- Vor App-Store- oder TestFlight-Upload die Checkliste in `ios/APP_STORE_RELEASE_CHECKLIST.md` vollständig abhaken.
+- Das Xcode-Projekt hat kein fest verdrahtetes Team; setze dein Team lokal in `Signing & Capabilities`.
 
