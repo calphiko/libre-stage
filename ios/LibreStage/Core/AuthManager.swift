@@ -111,7 +111,7 @@ final class AuthManager {
     @MainActor
     func logout() async {
         let body = LogoutRequest(refresh_token: refreshToken)
-        try? await APIClient.shared.post(path: "/logout", body: body) as EmptyResponse
+        _ = try? await APIClient.shared.post(path: "/logout", body: body) as EmptyResponse
         clearSession()
     }
 
