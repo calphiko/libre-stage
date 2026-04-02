@@ -37,6 +37,7 @@
 		A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */; };
 		A030D /* Views/Surveys/NewSurveySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030D /* Views/Surveys/NewSurveySheet.swift */; };
 		A031 /* Views/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031 /* Views/Profile/ProfileView.swift */; };
+		A031B /* Views/Profile/AboutAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031B /* Views/Profile/AboutAppView.swift */; };
 		A040 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* Views/Components/ErrorBanner.swift */; };
 		A041 /* Views/Components/SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* Views/Components/SkeletonRow.swift */; };
 		A050 /* ViewModels/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* ViewModels/DashboardViewModel.swift */; };
@@ -81,6 +82,7 @@
 		F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/MeinungsumfrageDetailView.swift; sourceTree = "<group>"; };
 		F030D /* Views/Surveys/NewSurveySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/NewSurveySheet.swift; sourceTree = "<group>"; };
 		F031 /* Views/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
+		F031B /* Views/Profile/AboutAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/AboutAppView.swift; sourceTree = "<group>"; };
 		F040 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
 		F041 /* Views/Components/SkeletonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SkeletonRow.swift; sourceTree = "<group>"; };
 		F050 /* ViewModels/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */,
 				F030D /* Views/Surveys/NewSurveySheet.swift */,
 				F031 /* Views/Profile/ProfileView.swift */,
+				F031B /* Views/Profile/AboutAppView.swift */,
 				F040 /* Views/Components/ErrorBanner.swift */,
 				F041 /* Views/Components/SkeletonRow.swift */,
 				F050 /* ViewModels/DashboardViewModel.swift */,
@@ -273,6 +276,7 @@
 				A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */,
 				A030D /* Views/Surveys/NewSurveySheet.swift in Sources */,
 				A031 /* Views/Profile/ProfileView.swift in Sources */,
+				A031B /* Views/Profile/AboutAppView.swift in Sources */,
 				A040 /* Views/Components/ErrorBanner.swift in Sources */,
 				A041 /* Views/Components/SkeletonRow.swift in Sources */,
 				A050 /* ViewModels/DashboardViewModel.swift in Sources */,
