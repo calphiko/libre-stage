@@ -13,6 +13,7 @@ enum AppError: Error {
     case networkError(Error)
     case decodingError(Error)
     case invalidURL
+    case insecureConnectionNotAllowed
 
     var localizedMessage: String {
         switch self {
@@ -22,6 +23,8 @@ enum AppError: Error {
         case .networkError(let e):     return "Netzwerkfehler: \(e.localizedDescription)"
         case .decodingError(let e):    return "Datenfehler: \(e.localizedDescription)"
         case .invalidURL:              return "Ungültige Server-URL."
+        case .insecureConnectionNotAllowed:
+            return "Unsichere HTTP-Verbindungen sind nicht erlaubt. Bitte eine https://-URL verwenden."
         }
     }
 
@@ -81,10 +84,6 @@ final class APIClient {
 
     // MARK: - Base URL
 
-    private var baseURL: String {
-        Self.normalizeURL(SettingsStore.shared.backendURL)
-    }
-
     /// Ensures the URL has a scheme (defaults to https) and no trailing slash.
     static func normalizeURL(_ raw: String) -> String {
         var url = raw.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -93,6 +92,30 @@ final class APIClient {
             url = "https://\(url)"
         }
         return url
+    }
+
+    private static func validatedBaseURL(_ raw: String) throws -> URL {
+        let normalized = normalizeURL(raw)
+        guard let url = URL(string: normalized),
+              let scheme = url.scheme?.lowercased() else {
+            throw AppError.invalidURL
+        }
+
+        if scheme == "https" {
+            return url
+        }
+
+        #if DEBUG
+        if scheme == "http", let host = url.host?.lowercased(), isDebugLocalHost(host) {
+            return url
+        }
+        #endif
+
+        throw AppError.insecureConnectionNotAllowed
+    }
+
+    private static func isDebugLocalHost(_ host: String) -> Bool {
+        host == "localhost" || host == "127.0.0.1" || host == "::1"
     }
 
     // MARK: - Public API
@@ -152,8 +175,10 @@ final class APIClient {
     // MARK: - Health
 
     func checkHealth(serverURL: String) async throws {
-        let clean = Self.normalizeURL(serverURL)
-        guard let url = URL(string: "\(clean)/health") else { throw AppError.invalidURL }
+        let baseURL = try Self.validatedBaseURL(serverURL)
+        guard let url = URL(string: "/health", relativeTo: baseURL)?.absoluteURL else {
+            throw AppError.invalidURL
+        }
         var request = URLRequest(url: url, timeoutInterval: 5)
         request.httpMethod = "GET"
         let (_, response) = try await session.data(for: request)
@@ -244,7 +269,11 @@ final class APIClient {
         body: Body?,
         requiresAuth: Bool
     ) throws -> URLRequest {
-        var components = URLComponents(string: "\(baseURL)\(path)")
+        let baseURL = try Self.validatedBaseURL(SettingsStore.shared.backendURL)
+        guard let endpoint = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw AppError.invalidURL
+        }
+        var components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false)
         if !queryItems.isEmpty { components?.queryItems = queryItems }
         guard let url = components?.url else { throw AppError.invalidURL }
 
@@ -281,7 +310,10 @@ final class APIClient {
         struct RefreshBody: Encodable { let refresh_token: String }
         struct RefreshResponse: Decodable { let access_token: String; let refresh_token: String }
 
-        guard let url = URL(string: "\(baseURL)/refresh") else { throw AppError.invalidURL }
+        let baseURL = try Self.validatedBaseURL(SettingsStore.shared.backendURL)
+        guard let url = URL(string: "/refresh", relativeTo: baseURL)?.absoluteURL else {
+            throw AppError.invalidURL
+        }
         var request = URLRequest(url: url, timeoutInterval: 15)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
