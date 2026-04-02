@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
-import UIKit
 import UserNotifications
 
 @main
@@ -31,20 +30,18 @@ struct ContentRoot: View {
         }
         .onChange(of: authManager.isLoggedIn) { _, isLoggedIn in
             if !isLoggedIn {
-                UIApplication.shared.applicationIconBadgeNumber = 0
-                if #available(iOS 16.0, *) {
-                    Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
-                }
+                Task { await clearBadge() }
             }
         }
         .task {
             if !authManager.isLoggedIn {
-                UIApplication.shared.applicationIconBadgeNumber = 0
-                if #available(iOS 16.0, *) {
-                    try? await UNUserNotificationCenter.current().setBadgeCount(0)
-                }
+                await clearBadge()
             }
         }
+    }
+
+    private func clearBadge() async {
+        try? await UNUserNotificationCenter.current().setBadgeCount(0)
     }
 }
 
