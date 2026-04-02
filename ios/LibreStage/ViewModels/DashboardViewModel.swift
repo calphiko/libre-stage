@@ -7,8 +7,9 @@ import Foundation
 @Observable
 final class DashboardViewModel {
     var todoList: UserTodoList? = nil
-    var isLoading = false
+    var currentSeasonStatistics: SeasonStatistics? = nil
     var error: AppError?
+    var isLoading = false
 
     var totalBadgeCount: Int {
         guard let t = todoList else { return 0 }
@@ -31,10 +32,18 @@ final class DashboardViewModel {
         defer { isLoading = false }
         do {
             todoList = try await APIClient.shared.get(path: "/user_todos")
+
+            let currentYear = Calendar.current.component(.year, from: Date())
+            currentSeasonStatistics = try await APIClient.shared.get(
+                path: "/gigs/statistics",
+                queryItems: [URLQueryItem(name: "jahr", value: String(currentYear))]
+            )
         } catch let e as AppError {
             error = e
+            currentSeasonStatistics = nil
         } catch {
             self.error = .networkError(error)
+            currentSeasonStatistics = nil
         }
     }
 
