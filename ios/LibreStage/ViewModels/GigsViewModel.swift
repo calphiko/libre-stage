@@ -7,8 +7,10 @@ import Foundation
 @Observable
 final class GigsViewModel {
     var gigs: [GigOut] = []
-    var isLoading = false
+    var seasonStatistics: SeasonStatistics? = nil
     var error: AppError?
+    var isLoading = false
+    var isSeasonStatisticsLoading = false
 
     @MainActor
     func upsertGig(_ updatedGig: GigOut) {
@@ -31,6 +33,21 @@ final class GigsViewModel {
             self.error = .networkError(error)
         }
     }
+
+    @MainActor
+    func loadSeasonStatistics(year: Int?) async {
+        isSeasonStatisticsLoading = true
+        defer { isSeasonStatisticsLoading = false }
+
+        do {
+            let query = year.map { [URLQueryItem(name: "jahr", value: String($0))] } ?? []
+            seasonStatistics = try await APIClient.shared.get(path: "/gigs/statistics", queryItems: query)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
 }
 
 @Observable
@@ -41,7 +58,9 @@ final class GigDetailViewModel {
     var gigFields: [GigFieldDefinition] = GigFieldDefinition.fromConfig(nil)
     var songs: [SongOut] = []
     var isLoading = false
+    var gigStatistics: GigStatistics? = nil
     var isSaving = false
+    var isGigStatisticsLoading = false
     var error: AppError?
 
     @MainActor
@@ -118,6 +137,20 @@ final class GigDetailViewModel {
                 path: "/gigs/\(gigId)/livemode_available",
                 queryItems: [URLQueryItem(name: "force", value: force ? "true" : "false")]
             )
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func loadGigStatistics(gigId: Int) async {
+        isGigStatisticsLoading = true
+        defer { isGigStatisticsLoading = false }
+
+        do {
+            gigStatistics = try await APIClient.shared.get(path: "/gigs/\(gigId)/statistics")
         } catch let e as AppError {
             error = e
         } catch {
