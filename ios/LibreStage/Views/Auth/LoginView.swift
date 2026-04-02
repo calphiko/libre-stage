@@ -30,7 +30,7 @@ struct LoginView: View {
                 // Form
                 VStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 4) {
-                        TextField("Server-URL (z. B. https://band.example.com)", text: $serverURL)
+                        TextField("Server-URL (https://...)", text: $serverURL)
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
@@ -91,7 +91,11 @@ struct LoginView: View {
         do {
             try await APIClient.shared.checkHealth(serverURL: normalizedURL)
         } catch {
-            healthError = "Server nicht erreichbar: \(error.localizedDescription)"
+            if let appError = error as? AppError {
+                healthError = appError.localizedMessage
+            } else {
+                healthError = "Server nicht erreichbar: \(error.localizedDescription)"
+            }
             isCheckingHealth = false
             return
         }
