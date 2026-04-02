@@ -16,6 +16,7 @@ struct GigDetailView: View {
     @State private var editableGig: GigOut?
     @State private var shareURL: URL? = nil
     @State private var showShareSheet = false
+    @State private var showGigStats = false
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
     @Environment(AuthManager.self) private var authManager
@@ -91,6 +92,12 @@ struct GigDetailView: View {
 
                     // MARK: Aktionen (für alle)
                     Section("Aktionen") {
+                        Button {
+                            showGigStats = true
+                        } label: {
+                            Label("Gig-Statistiken", systemImage: "chart.bar.fill")
+                        }
+
                         Button {
                             Task {
                                 if let fileURL = await vm.downloadSetlistPDF(gig: currentGig) {
@@ -208,6 +215,9 @@ struct GigDetailView: View {
             Text("Datei heruntergeladen: \(shareURL?.lastPathComponent ?? "")")
                 .padding()
 #endif
+        }
+        .sheet(isPresented: $showGigStats) {
+            GigStatisticsSheet(vm: vm, gig: currentGig)
         }
         .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
             Button("OK", role: .cancel) {}
@@ -411,6 +421,135 @@ private struct SetlistSongRow: View {
                     .clipShape(Capsule())
             }
         }
+    }
+}
+
+private struct GigStatisticsSheet: View {
+    @Bindable var vm: GigDetailViewModel
+    let gig: GigOut
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if vm.isGigStatisticsLoading {
+                    Section {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
+                } else if let stats = vm.gigStatistics {
+                    Section("Uebersicht") {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                            GigKpiTile(title: "Songs", value: String(stats.song_count), icon: "music.note.list", tint: .blue)
+                            GigKpiTile(title: "Uebersprungen", value: String(stats.skipped_count), icon: "forward.fill", tint: .orange)
+                            GigKpiTile(title: "Eingeschoben", value: String(stats.inserted_count), icon: "pin.fill", tint: .green)
+                            if let avg = stats.feedback_avg {
+                                GigKpiTile(title: "Live", value: "\(feedbackEmoji(for: avg)) \(String(format: "%.2f", avg))", icon: "star.fill", tint: .yellow)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+
+                    if !stats.genre_distribution.isEmpty {
+                        Section("Genres") {
+                            ForEach(stats.genre_distribution.sorted(by: { $0.value > $1.value }), id: \.key) { entry in
+                                LabeledContent(entry.key, value: String(entry.value))
+                            }
+                        }
+                    }
+
+                    if !stats.sets.isEmpty {
+                        ForEach(stats.sets) { setEntry in
+                            Section(setEntry.set_name) {
+                                if let setAvg = setEntry.feedback_avg {
+                                    LabeledContent("Set-Bewertung", value: String(format: "%.2f", setAvg))
+                                }
+                                ForEach(setEntry.songs) { song in
+                                    HStack(spacing: 10) {
+                                        Text("\(song.position)")
+                                            .font(.caption.monospacedDigit())
+                                            .foregroundStyle(.secondary)
+                                            .frame(width: 18, alignment: .trailing)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(song.title).font(.body)
+                                            Text(song.interpret).font(.caption).foregroundStyle(.secondary)
+                                        }
+                                        Spacer()
+                                        if let fb = song.feedback {
+                                            Text(feedbackEmoji(for: fb))
+                                        }
+                                        if song.uebersprungen == true {
+                                            Text("⏭")
+                                        }
+                                        if song.eingeschoben == true {
+                                            Text("📌")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Section {
+                        Text("Keine Gig-Statistiken verfuegbar.")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .navigationTitle(gig.name ?? "Gig-Statistik")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Schliessen") { dismiss() }
+                }
+            }
+            .task {
+                await vm.loadGigStatistics(gigId: gig.id)
+            }
+        }
+    }
+
+    private func feedbackEmoji(for value: Int) -> String {
+        switch value {
+        case 3: return "😊"
+        case 2: return "😐"
+        case 1: return "😞"
+        default: return "-"
+        }
+    }
+
+    private func feedbackEmoji(for avg: Double) -> String {
+        if avg >= 2.5 { return "😊" }
+        if avg >= 1.5 { return "😐" }
+        return "😞"
+    }
+}
+
+private struct GigKpiTile: View {
+    let title: String
+    let value: String
+    let icon: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: icon)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.title3.bold())
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+        .padding(10)
+        .background(Color.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
