@@ -391,3 +391,76 @@ struct LiveModeAvailability: Codable {
     let gig_date: String?
 }
 
+// MARK: - Statistics
+
+struct GigOverviewEntry: Codable, Identifiable {
+    let gig_id: Int
+    let gig_name: String
+    let gig_date: String
+    let song_count: Int
+    let skipped_count: Int
+    let inserted_count: Int
+    let feedback_avg: Double?
+
+    var id: Int { gig_id }
+}
+
+struct TopSongEntry: Codable, Identifiable {
+    let song_id: Int
+    let title: String
+    let interpret: String
+    let count: Int
+
+    var id: Int { song_id }
+}
+
+struct SeasonStatistics: Codable {
+    let jahr: Int?
+    let gig_count: Int
+    let played_gig_count: Int
+    let total_songs: Int
+    let unique_songs: Int
+    let skipped_count: Int
+    let inserted_count: Int
+    let feedback_count: Int
+    let feedback_avg: Double?
+    let feedback_distribution: [String: Int]
+    let genre_distribution: [String: Int]
+    let top_songs: [TopSongEntry]
+    let gigs_overview: [GigOverviewEntry]
+}
+
+struct GigStatsSongEntry: Codable, Identifiable {
+    let song_id: Int
+    let title: String
+    let interpret: String
+    let position: Int
+    let feedback: Int?
+    let uebersprungen: Bool?
+    let eingeschoben: Bool?
+
+    var id: Int { song_id * 10_000 + position }
+}
+
+struct GigStatsSetEntry: Codable, Identifiable {
+    let set_name: String
+    let feedback_avg: Double?
+    let songs: [GigStatsSongEntry]
+
+    var id: String { set_name }
+}
+
+struct GigStatistics: Codable {
+    let gig_id: Int
+    let gig_name: String
+    let gig_date: String
+    let song_count: Int
+    let skipped_count: Int
+    let inserted_count: Int
+    let feedback_count: Int
+    let feedback_avg: Double?
+    let feedback_distribution: [String: Int]
+    let genre_distribution: [String: Int]
+    let sets: [GigStatsSetEntry]
+}
+
