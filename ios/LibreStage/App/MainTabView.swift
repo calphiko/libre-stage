@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
-import UIKit
 import UserNotifications
 
 struct MainTabView: View {
@@ -100,10 +99,7 @@ struct MainTabView: View {
     @MainActor
     private func setAppIconBadge(_ value: Int) async {
         let count = max(0, value)
-        if #available(iOS 16.0, *) {
-            try? await UNUserNotificationCenter.current().setBadgeCount(count)
-        }
-        UIApplication.shared.applicationIconBadgeNumber = count
+        try? await UNUserNotificationCenter.current().setBadgeCount(count)
     }
 
     @MainActor
