@@ -415,9 +415,12 @@ private struct LiveModeSongCard: View {
                         (song.uebersprungen ?? false) ? "Rückgängig" : "Überspringen",
                         systemImage: (song.uebersprungen ?? false) ? "arrow.uturn.backward" : "forward.fill"
                     )
-                    .font(.caption)
+                    .font(.headline)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                 }
                 .buttonStyle(.bordered)
+                .controlSize(.large)
                 .disabled(!canWrite)
 
                 Spacer()
@@ -431,8 +434,9 @@ private struct LiveModeSongCard: View {
                         onFeedback(rating)
                     } label: {
                         Text(emoji)
-                            .font(.title3)
-                            .padding(6)
+                            .font(.largeTitle)
+                            .padding(10)
+                            .frame(minWidth: 52, minHeight: 52)
                             .background(song.feedback == rating ? Color.accentColor.opacity(0.2) : Color.clear)
                             .clipShape(Circle())
                     }
