@@ -56,6 +56,14 @@ struct ProfileView: View {
                     }
                 }
 
+                Section("App") {
+                    NavigationLink {
+                        AboutAppView()
+                    } label: {
+                        Label("Über diese App", systemImage: "info.circle")
+                    }
+                }
+
                 // MARK: Logout
                 Section {
                     Button(role: .destructive) {
