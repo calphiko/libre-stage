@@ -19,6 +19,7 @@ struct GigDetailView: View {
     @State private var showGigStats = false
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
+    @State private var selectedSongForDetails: GigSongDetailSheetItem?
     @Environment(AuthManager.self) private var authManager
 
     init(gig: GigOut, onGigUpdated: ((GigOut) -> Void)? = nil) {
@@ -169,11 +170,12 @@ struct GigDetailView: View {
                     ForEach(setlist.sets) { set in
                         Section(set.setlist_name ?? set.set_name ?? "Set") {
                             ForEach(Array(set.songs.enumerated()), id: \.element.id) { idx, song in
-                                NavigationLink {
-                                    SongDetailsView(songId: song.song_id, initialTitle: song.title)
+                                Button {
+                                    selectedSongForDetails = GigSongDetailSheetItem(id: song.song_id, title: song.title)
                                 } label: {
                                     SetlistSongRow(index: idx + 1, song: song)
                                 }
+                                .buttonStyle(.plain)
                             }
                             if let pause = set.pause {
                                 Label("Pause: \(pause)", systemImage: "pause.circle")
@@ -215,6 +217,11 @@ struct GigDetailView: View {
             Text("Datei heruntergeladen: \(shareURL?.lastPathComponent ?? "")")
                 .padding()
 #endif
+        }
+        .sheet(item: $selectedSongForDetails) { item in
+            NavigationStack {
+                SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+            }
         }
         .sheet(isPresented: $showGigStats) {
             GigStatisticsSheet(vm: vm, gig: currentGig)
@@ -422,6 +429,11 @@ private struct SetlistSongRow: View {
             }
         }
     }
+}
+
+private struct GigSongDetailSheetItem: Identifiable {
+    let id: Int
+    let title: String?
 }
 
 private struct GigStatisticsSheet: View {
