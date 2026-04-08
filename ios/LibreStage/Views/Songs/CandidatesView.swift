@@ -5,8 +5,14 @@
 import SwiftUI
 
 struct CandidatesView: View {
+    let modalPresentation: Bool
     @State private var vm = SongsViewModel()
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.dismiss) private var dismiss
+
+    init(modalPresentation: Bool = false) {
+        self.modalPresentation = modalPresentation
+    }
 
     private var isEditor: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
@@ -49,6 +55,15 @@ struct CandidatesView: View {
             }
         }
         .navigationTitle("Kandidaten")
+        .toolbar {
+            if modalPresentation {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Fertig") {
+                        dismiss()
+                    }
+                }
+            }
+        }
         .errorBanner($vm.error)
         .task { await vm.loadCandidates() }
     }
@@ -142,9 +157,9 @@ private struct CandidateRow: View {
             // Vote buttons
             HStack(spacing: 10) {
                 Text("Dein Vote:").font(.caption).foregroundStyle(.secondary)
-                voteButton(icon: "👍", value: "a")
-                voteButton(icon: "👎", value: "na")
-                voteButton(icon: "🤷", value: "o")
+                voteButton(systemImage: "hand.thumbsup.fill", value: "a")
+                voteButton(systemImage: "hand.thumbsdown.fill", value: "na")
+                voteButton(systemImage: "person.fill.questionmark", value: "o")
                 if !canVote {
                     Text("--")
                         .font(.caption2)
@@ -153,20 +168,20 @@ private struct CandidateRow: View {
             }
 
             HStack(spacing: 8) {
-                Text("👍 \(stats.yes)")
+                Label("\(stats.yes)", systemImage: "hand.thumbsup.fill")
                     .font(.caption)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Color.green.opacity(0.15))
                     .clipShape(Capsule())
 
-                Text("👎 \(stats.no)")
+                Label("\(stats.no)", systemImage: "hand.thumbsdown.fill")
                     .font(.caption)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Color.red.opacity(0.15))
                     .clipShape(Capsule())
 
                 if stats.abstain > 0 {
-                    Text("🤷 \(stats.abstain)")
+                    Label("\(stats.abstain)", systemImage: "person.fill.questionmark")
                         .font(.caption)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(Color.orange.opacity(0.15))
@@ -217,22 +232,27 @@ private struct CandidateRow: View {
     }
 
     @ViewBuilder
-    private func voteButton(icon: String, value: String) -> some View {
+    private func voteButton(systemImage: String, value: String) -> some View {
+        let isSelected = myFeedback == value
         Button {
             guard canVote else { return }
             submitVote(value)
         } label: {
-            Text(icon)
-                .font(.title3)
-                .padding(6)
-                .background(myFeedback == value ? Color.accentColor.opacity(0.2) : Color.clear)
-                .clipShape(Circle())
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(isSelected ? Color.accentColor.opacity(0.22) : Color.secondary.opacity(0.12))
+                )
                 .overlay(
                     Circle()
-                        .stroke(myFeedback == value ? Color.accentColor : Color.clear, lineWidth: 2)
+                        .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: isSelected ? 2 : 1)
                 )
         }
         .buttonStyle(.plain)
+        .contentShape(Circle())
+        .opacity(canVote ? 1.0 : 0.55)
         .disabled(!canVote)
     }
 
