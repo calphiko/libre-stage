@@ -20,6 +20,7 @@ struct ProfileView: View {
 
     // Logout confirmation
     @State private var showLogoutConfirm = false
+    @State private var showAboutSheet = false
 
     var body: some View {
         NavigationStack {
@@ -57,8 +58,8 @@ struct ProfileView: View {
                 }
 
                 Section("App") {
-                    NavigationLink {
-                        AboutAppView()
+                    Button {
+                        showAboutSheet = true
                     } label: {
                         Label("Über diese App", systemImage: "info.circle")
                     }
@@ -131,6 +132,11 @@ struct ProfileView: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
             .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showAboutSheet) {
+            NavigationStack {
+                AboutAppView(modalPresentation: true)
+            }
         }
         // MARK: - Logout Confirmation
         .confirmationDialog("Wirklich abmelden?", isPresented: $showLogoutConfirm, titleVisibility: .visible) {
