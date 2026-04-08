@@ -6,11 +6,17 @@ import SwiftUI
 
 struct SongsView: View {
     @State private var vm = SongsViewModel()
+    @State private var selectedSongForDetails: SongsDetailSheetItem?
 
     var body: some View {
         NavigationStack {
             contentView
                 .navigationTitle("Songs")
+        }
+        .sheet(item: $selectedSongForDetails) { item in
+            NavigationStack {
+                SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+            }
         }
         .errorBanner($vm.error)
         .task { await vm.loadSongs() }
@@ -35,11 +41,12 @@ struct SongsView: View {
                 Section("Repertoire (\(vm.filtered.count))") {
                     ForEach(vm.filtered) { song in
                         if let songId = song.id {
-                            NavigationLink {
-                                SongDetailsView(songId: songId, initialTitle: song.title)
+                            Button {
+                                selectedSongForDetails = SongsDetailSheetItem(id: songId, title: song.title)
                             } label: {
                                 SongRow(song: song)
                             }
+                            .buttonStyle(.plain)
                         } else {
                             SongRow(song: song)
                         }
@@ -50,6 +57,11 @@ struct SongsView: View {
             .refreshable { await vm.loadSongs() }
         }
     }
+}
+
+private struct SongsDetailSheetItem: Identifiable {
+    let id: Int
+    let title: String?
 }
 
 private struct SongRow: View {
