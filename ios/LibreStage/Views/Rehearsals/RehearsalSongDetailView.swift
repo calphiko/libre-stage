@@ -15,15 +15,17 @@ struct RehearsalSongDetailView: View {
     @State private var commentDraft = ""
     @State private var setlistCommentDraft = ""
     @State private var todoDraft = ""
+    @State private var selectedSongForDetails: RehearsalSongDetailSheetItem?
 
     var body: some View {
         List {
             Section("Song") {
-                NavigationLink {
-                    SongDetailsView(songId: song.id_song, initialTitle: song.title)
+                Button {
+                    selectedSongForDetails = RehearsalSongDetailSheetItem(id: song.id_song, title: song.title)
                 } label: {
                     Label("Song-Details anzeigen", systemImage: "music.note.list")
                 }
+                .buttonStyle(.plain)
             }
 
             // MARK: - Status-Buttons
@@ -163,6 +165,11 @@ struct RehearsalSongDetailView: View {
         }
         .navigationTitle("\(song.interpret) – \(song.title)")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $selectedSongForDetails) { item in
+            NavigationStack {
+                SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+            }
+        }
     }
 
     // MARK: - Hilfsmethoden
@@ -194,5 +201,10 @@ struct RehearsalSongDetailView: View {
         newTodoUserId = nil
         newTodoText = ""
     }
+}
+
+private struct RehearsalSongDetailSheetItem: Identifiable {
+    let id: Int
+    let title: String?
 }
 
