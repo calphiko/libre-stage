@@ -5,6 +5,17 @@
 import SwiftUI
 
 struct TerminfindungDetailView: View {
+    private struct DateVoteStats: Identifiable {
+        let id: Int
+        let fieldText: String
+        let yes: Int
+        let maybe: Int
+        let no: Int
+
+        var total: Int { yes + maybe + no }
+        var score: Int { yes - no }
+    }
+
     let surveyId:   Int
     let passedUser: UserOut?    // provided by SurveysView at nav time
     @Environment(AuthManager.self) private var authManager
@@ -87,12 +98,39 @@ struct TerminfindungDetailView: View {
                 }
             }
 
-            // ── Meine Stimmen ────────────────────────────────────────
+            // ── Termine (mein Votum + Auswertung) ───────────────────
             Section {
                 if let me {
-                    if canParticipate {
-                        ForEach(sortedFields(survey)) { field in
-                            let myFb = field.feedbacks.first { $0.id_user == me.id }
+                    let topFieldId = voteStats(survey).first?.id
+
+                    ForEach(sortedFields(survey)) { field in
+                        let myFb = field.feedbacks.first { $0.id_user == me.id }
+                        let yes = field.feedbacks.filter { $0.value == "a" }.count
+                        let maybe = field.feedbacks.filter { $0.value == "m" }.count
+                        let no = field.feedbacks.filter { $0.value == "o" }.count
+                        let total = yes + maybe + no
+                        let score = yes - no
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(spacing: 8) {
+                                Text(formatDate(field.field_text))
+                                    .font(.subheadline)
+                                    .fontWeight(field.id == topFieldId ? .semibold : .regular)
+                                if field.id == topFieldId {
+                                    Text("Top")
+                                        .font(.caption2.bold())
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.green.opacity(0.14))
+                                        .foregroundStyle(.green)
+                                        .clipShape(Capsule())
+                                }
+                                Spacer()
+                                Text(score > 0 ? "+\(score)" : "\(score)")
+                                    .font(.headline)
+                                    .foregroundStyle(score > 0 ? .green : score < 0 ? .red : .secondary)
+                            }
+
                             Button {
                                 guard canParticipate && !survey.closed && !isUpdating else { return }
                                 Task {
@@ -103,38 +141,45 @@ struct TerminfindungDetailView: View {
                                     isUpdating = false
                                 }
                             } label: {
-                                HStack(spacing: 12) {
+                                HStack(spacing: 8) {
                                     feedbackIcon(myFb?.value)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(formatDate(field.field_text))
-                                            .font(.subheadline).foregroundStyle(.primary)
-                                        Text(labelFor(myFb?.value))
-                                            .font(.caption).foregroundStyle(.secondary)
-                                    }
+                                    Text("Mein Votum: \(labelFor(myFb?.value))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                     Spacer()
-                                    if !survey.closed && canParticipate {
+                                    if canParticipate && !survey.closed {
                                         Image(systemName: "chevron.right")
-                                            .font(.caption2).foregroundStyle(.tertiary)
+                                            .font(.caption2)
+                                            .foregroundStyle(.tertiary)
                                     }
                                 }
-                                .padding(.vertical, 2)
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .disabled(survey.closed || isUpdating || !canParticipate)
-                            .listRowBackground(colorFor(myFb?.value).opacity(0.12))
-                        }
-                        if isUpdating {
-                            HStack {
-                                ProgressView().padding(.trailing, 4)
-                                Text("Wird gespeichert…")
-                                    .font(.caption).foregroundStyle(.secondary)
+
+                            HStack(spacing: 6) {
+                                scoreChip("checkmark.circle.fill", yes, .green)
+                                scoreChip("questionmark.circle.fill", maybe, .yellow)
+                                scoreChip("xmark.circle.fill", no, .red)
+                                Spacer()
+                                Text("\(total) Stimmen")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
+
+                            stackedVoteBar(yes: yes, maybe: maybe, no: no)
                         }
-                    } else {
-                        Text("An Terminumfragen können nur Musiker teilnehmen.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        .padding(.vertical, 6)
+                        .listRowBackground(colorFor(myFb?.value).opacity(0.1))
+                    }
+
+                    if isUpdating {
+                        HStack {
+                            ProgressView().padding(.trailing, 4)
+                            Text("Wird gespeichert…")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
@@ -155,7 +200,7 @@ struct TerminfindungDetailView: View {
                     }
                 }
             } header: {
-                Text("Meine Stimmen")
+                Text("Termine")
             } footer: {
                 if me != nil && canParticipate && !survey.closed {
                     Text("Tippen: Ja → Vielleicht → Nein → leer")
@@ -195,30 +240,6 @@ struct TerminfindungDetailView: View {
                 }
             }
 
-            // ── Summen ───────────────────────────────────────────────
-            Section("Summen") {
-                ForEach(sortedFields(survey)) { field in
-                    let yes   = field.feedbacks.filter { $0.value == "a" }.count
-                    let no    = field.feedbacks.filter { $0.value == "o" }.count
-                    let maybe = field.feedbacks.filter { $0.value == "m" }.count
-                    let score = yes - no
-                    HStack {
-                        Text(formatDate(field.field_text)).font(.subheadline)
-                        Spacer()
-                        HStack(spacing: 5) {
-                            scoreChip("checkmark.circle.fill",    yes,   .green)
-                            scoreChip("questionmark.circle.fill", maybe, .yellow)
-                            scoreChip("xmark.circle.fill",        no,    .red)
-                        }
-                        Text(score > 0 ? "+\(score)" : "\(score)")
-                            .font(.headline)
-                            .foregroundStyle(score > 0 ? .green : score < 0 ? .red : .secondary)
-                            .frame(minWidth: 30, alignment: .trailing)
-                    }
-                    .padding(.vertical, 2)
-                    .listRowBackground(heatmapColor(field).opacity(0.14))
-                }
-            }
         }
     }
 
@@ -248,6 +269,25 @@ struct TerminfindungDetailView: View {
 
     private func sortedFields(_ s: SurveyQuestionOut) -> [SurveyFieldsOut] {
         s.fields.sorted { dateFromText($0.field_text) < dateFromText($1.field_text) }
+    }
+
+    private func voteStats(_ survey: SurveyQuestionOut) -> [DateVoteStats] {
+        survey.fields
+            .map { field in
+                DateVoteStats(
+                    id: field.id,
+                    fieldText: field.field_text,
+                    yes: field.feedbacks.filter { $0.value == "a" }.count,
+                    maybe: field.feedbacks.filter { $0.value == "m" }.count,
+                    no: field.feedbacks.filter { $0.value == "o" }.count
+                )
+            }
+            .sorted { lhs, rhs in
+                if lhs.score != rhs.score { return lhs.score > rhs.score }
+                if lhs.yes != rhs.yes { return lhs.yes > rhs.yes }
+                if lhs.maybe != rhs.maybe { return lhs.maybe > rhs.maybe }
+                return dateFromText(lhs.fieldText) < dateFromText(rhs.fieldText)
+            }
     }
 
     private func otherUsers(_ s: SurveyQuestionOut, me: UserOut?) -> [UserListElem] {
@@ -281,10 +321,26 @@ struct TerminfindungDetailView: View {
         }
     }
 
-    private func heatmapColor(_ field: SurveyFieldsOut) -> Color {
-        let s = field.feedbacks.filter { $0.value == "a" }.count
-                - field.feedbacks.filter { $0.value == "o" }.count
-        return s > 0 ? .green : s < 0 ? .red : .clear
+    @ViewBuilder
+    private func stackedVoteBar(yes: Int, maybe: Int, no: Int) -> some View {
+        let total = max(yes + maybe + no, 1)
+
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(Color.green)
+                    .frame(width: width * CGFloat(yes) / CGFloat(total))
+                Rectangle()
+                    .fill(Color.yellow)
+                    .frame(width: width * CGFloat(maybe) / CGFloat(total))
+                Rectangle()
+                    .fill(Color.red)
+                    .frame(width: width * CGFloat(no) / CGFloat(total))
+            }
+            .clipShape(Capsule())
+        }
+        .frame(height: 10)
     }
 
     private func dateFromText(_ t: String) -> Date {
