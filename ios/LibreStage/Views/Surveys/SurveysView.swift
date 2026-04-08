@@ -179,7 +179,7 @@ struct SurveysView: View {
                                     Button(role: .destructive) {
                                         surveyToDelete = survey
                                     } label: {
-                                        Label("L\u{F6}schen", systemImage: "trash.fill")
+                                        Image(systemName: "trash.fill")
                                             .font(.caption)
                                     }
                                     .buttonStyle(.bordered)
