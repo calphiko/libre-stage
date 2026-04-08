@@ -7,6 +7,7 @@ import SwiftUI
 struct SongsView: View {
     @State private var vm = SongsViewModel()
     @State private var selectedSongForDetails: SongsDetailSheetItem?
+    @State private var showCandidatesSheet = false
 
     var body: some View {
         NavigationStack {
@@ -16,6 +17,11 @@ struct SongsView: View {
         .sheet(item: $selectedSongForDetails) { item in
             NavigationStack {
                 SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+            }
+        }
+        .sheet(isPresented: $showCandidatesSheet) {
+            NavigationStack {
+                CandidatesView(modalPresentation: true)
             }
         }
         .errorBanner($vm.error)
@@ -31,12 +37,13 @@ struct SongsView: View {
         } else {
             List {
                 Section {
-                    NavigationLink {
-                        CandidatesView()
+                    Button {
+                        showCandidatesSheet = true
                     } label: {
                         Label("Song-Kandidaten bewerten", systemImage: "hand.thumbsup")
                             .foregroundStyle(Color.accentColor)
                     }
+                    .buttonStyle(.plain)
                 }
                 Section("Repertoire (\(vm.filtered.count))") {
                     ForEach(vm.filtered) { song in
@@ -99,3 +106,4 @@ private struct SongRow: View {
         .padding(.vertical, 2)
     }
 }
+
