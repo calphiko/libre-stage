@@ -7,6 +7,7 @@ import SwiftUI
 struct SongDetailsView: View {
 	let songId: Int
 	let initialTitle: String?
+	let modalPresentation: Bool
 
 	@State private var vm = SongDetailsViewModel()
 	@State private var selectedTab: SongDetailsTab = .details
@@ -14,10 +15,12 @@ struct SongDetailsView: View {
 	@State private var draft = SongDetailsDraft()
 
 	@Environment(AuthManager.self) private var authManager
+	@Environment(\.dismiss) private var dismiss
 
-	init(songId: Int, initialTitle: String? = nil) {
+	init(songId: Int, initialTitle: String? = nil, modalPresentation: Bool = false) {
 		self.songId = songId
 		self.initialTitle = initialTitle
+		self.modalPresentation = modalPresentation
 	}
 
 	private var canEdit: Bool {
@@ -43,6 +46,15 @@ struct SongDetailsView: View {
 		}
 		.navigationTitle(vm.song?.title ?? initialTitle ?? "Song")
 		.navigationBarTitleDisplayMode(.inline)
+		.toolbar {
+			if modalPresentation {
+				ToolbarItem(placement: .topBarTrailing) {
+					Button("Fertig") {
+						dismiss()
+					}
+				}
+			}
+		}
 		.errorBanner($vm.error)
 		.task {
 			await vm.loadSongFieldConfig()
@@ -429,5 +441,4 @@ private struct SingerMultiSelectField: View {
 		selection.removeAll { $0 == singer }
 	}
 }
-
 
