@@ -7,6 +7,12 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(DashboardViewModel.self) private var vm
+    @State private var showCandidatesSheet = false
+
+    private var currentSeasonTitle: String {
+        let year = Calendar.current.component(.year, from: Date())
+        return "Aktuelle Saison \(year)"
+    }
 
     var body: some View {
         @Bindable var vm = vm
@@ -17,7 +23,7 @@ struct DashboardView: View {
                 } else if let list = vm.todoList {
                     List {
                         // MARK: Current season stats
-                        Section("Aktuelle Saison \(Calendar.current.component(.year, from: Date()))") {
+                        Section {
                             if let stats = vm.currentSeasonStatistics {
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                                     SeasonStatTile(
@@ -59,6 +65,8 @@ struct DashboardView: View {
                                 Text("Saisonstatistik wird geladen oder ist nicht verfuegbar.")
                                     .foregroundStyle(.secondary)
                             }
+                        } header: {
+                            Text(currentSeasonTitle)
                         }
 
                         // MARK: To-dos
@@ -81,8 +89,8 @@ struct DashboardView: View {
                             if list.songs_to_feedback.isEmpty {
                                 Text("Keine offenen Votes").foregroundStyle(.secondary)
                             } else {
-                                NavigationLink("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
-                                    CandidatesView()
+                                Button("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
+                                    showCandidatesSheet = true
                                 }
                             }
                         }
@@ -119,6 +127,11 @@ struct DashboardView: View {
                             .font(.headline)
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $showCandidatesSheet) {
+            NavigationStack {
+                CandidatesView(modalPresentation: true)
             }
         }
         .errorBanner($vm.error)
