@@ -5,6 +5,13 @@
 import SwiftUI
 
 struct AboutAppView: View {
+    let modalPresentation: Bool
+    @Environment(\.dismiss) private var dismiss
+
+    init(modalPresentation: Bool = false) {
+        self.modalPresentation = modalPresentation
+    }
+
     var body: some View {
         List {
             Section("libre-stage") {
@@ -28,6 +35,15 @@ struct AboutAppView: View {
         }
         .navigationTitle("Über diese App")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if modalPresentation {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Fertig") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 
     private var appVersion: String {
