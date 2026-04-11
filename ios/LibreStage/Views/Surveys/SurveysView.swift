@@ -32,10 +32,16 @@ struct SurveysView: View {
     private func surveyDestination(_ survey: SurveyList) -> some View {
         if survey.kind_of_survey == "Terminfindung" {
             TerminfindungDetailView(surveyId: survey.id,
-                                    passedUser: authManager.currentUser)
+                                    passedUser: authManager.currentUser,
+                                    onFeedbackChanged: {
+                                        Task { await vm.loadList() }
+                                    })
         } else {
             MeinungsumfrageDetailView(surveyId: survey.id,
-                                      passedUser: authManager.currentUser)
+                                      passedUser: authManager.currentUser,
+                                      onFeedbackChanged: {
+                                          Task { await vm.loadList() }
+                                      })
         }
     }
 
@@ -155,7 +161,7 @@ struct SurveysView: View {
                     ForEach(vm.activeSurveys) { survey in
                         Section {
                             NavigationLink(value: survey) {
-                                SurveyRow(survey: survey, vm: vm)
+                                SurveyRow(survey: survey, vm: vm, highlightNeedsVote: needsVote(survey))
                             }
 
                             if canManage(survey) {
@@ -213,7 +219,7 @@ struct SurveysView: View {
                         ForEach(filteredClosedSurveys) { survey in
                             Section {
                                 NavigationLink(value: survey) {
-                                    SurveyRow(survey: survey, vm: vm)
+                                    SurveyRow(survey: survey, vm: vm, highlightNeedsVote: false)
                                 }
                                 if isOwner(survey) || authManager.userRole == .admin {
                                     Button(role: .destructive) {
@@ -243,6 +249,7 @@ struct SurveysView: View {
 
     private func isOwner(_ s: SurveyList) -> Bool { s.user_created == authManager.currentUser?.id }
     private func canManage(_ s: SurveyList) -> Bool { isOwner(s) || authManager.userRole == .admin }
+    private func needsVote(_ s: SurveyList) -> Bool { vm.pendingSurveyIds.contains(s.id) }
 }
 
 // MARK: - SurveyRow
@@ -250,6 +257,7 @@ struct SurveysView: View {
 struct SurveyRow: View {
     let survey: SurveyList
     let vm: SurveysViewModel
+    let highlightNeedsVote: Bool
 
     private var statusLabel: String {
         if survey.closed   { return "Archiviert" }
@@ -289,6 +297,11 @@ struct SurveyRow: View {
                     .foregroundStyle(statusColor)
                     .clipShape(Capsule())
             }
+            if highlightNeedsVote {
+                Label("Deine Abstimmung fehlt", systemImage: "exclamationmark.circle.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
             HStack {
                 Label(
                     survey.kind_of_survey == "Terminfindung" ? "Terminfindung" : "Meinungsumfrage",
@@ -301,5 +314,8 @@ struct SurveyRow: View {
             }
         }
         .padding(.vertical, 4)
+        .padding(.horizontal, 6)
+        .background(highlightNeedsVote ? Color.orange.opacity(0.08) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
