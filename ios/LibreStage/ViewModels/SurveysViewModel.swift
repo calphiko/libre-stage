@@ -10,6 +10,7 @@ final class SurveysViewModel {
     var surveys: [SurveyList] = []
     var detail: SurveyQuestionOut? = nil
     var users: [UserListElem] = []
+    var pendingSurveyIds: Set<Int> = []
     var isLoading = false
     var error: AppError?
     var reminderResult: ReminderResponse? = nil
@@ -33,6 +34,16 @@ final class SurveysViewModel {
         }
     }
 
+    private func loadPendingSurveysSilently() async {
+        do {
+            let todoList: UserTodoList = try await APIClient.shared.get(path: "/user_todos")
+            pendingSurveyIds = Set(todoList.surveys_to_feedback.map(\.id))
+        } catch {
+            // Non-critical for surveys; only affects highlighting.
+            pendingSurveyIds = []
+        }
+    }
+
     @MainActor
     func loadList() async {
         isLoading = true
@@ -41,8 +52,13 @@ final class SurveysViewModel {
         do {
             surveys = try await APIClient.shared.get(path: "/surveys/")
             await loadUsersSilently()
+            await loadPendingSurveysSilently()
         } catch let e as AppError { error = e
-        } catch { self.error = .networkError(error) }
+            pendingSurveyIds = []
+        } catch {
+            pendingSurveyIds = []
+            self.error = .networkError(error)
+        }
     }
 
     @MainActor
@@ -104,6 +120,8 @@ final class SurveysViewModel {
             )
             // Always reload via GET to guarantee SwiftUI sees the change
             detail = try await APIClient.shared.get(path: "/surveys/\(surveyId)")
+            // Keep list highlighting in sync with changed vote state.
+            await loadPendingSurveysSilently()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }
