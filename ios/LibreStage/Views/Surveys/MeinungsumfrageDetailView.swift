@@ -8,6 +8,7 @@ import Charts
 struct MeinungsumfrageDetailView: View {
     let surveyId: Int
     let passedUser: UserOut?
+    let onFeedbackChanged: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
     @State private var vm = SurveysViewModel()
     @State private var localUser: UserOut? = nil
@@ -16,9 +17,10 @@ struct MeinungsumfrageDetailView: View {
 
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
 
-    init(surveyId: Int, passedUser: UserOut? = nil) {
+    init(surveyId: Int, passedUser: UserOut? = nil, onFeedbackChanged: (() -> Void)? = nil) {
         self.surveyId = surveyId
         self.passedUser = passedUser
+        self.onFeedbackChanged = onFeedbackChanged
     }
 
     private static let palette: [Color] = [
@@ -314,6 +316,9 @@ struct MeinungsumfrageDetailView: View {
             }
         }
         await vm.updateFeedback(surveyId: surveyId, feedbacks: payload)
+        if vm.error == nil {
+            onFeedbackChanged?()
+        }
     }
 }
 
