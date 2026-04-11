@@ -18,6 +18,7 @@ struct TerminfindungDetailView: View {
 
     let surveyId:   Int
     let passedUser: UserOut?    // provided by SurveysView at nav time
+    let onFeedbackChanged: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
 
     @State private var vm         = SurveysViewModel()
@@ -31,9 +32,10 @@ struct TerminfindungDetailView: View {
     /// Only musicians are allowed to participate in appointment surveys.
     private var canParticipate: Bool { me?.musician ?? false }
 
-    init(surveyId: Int, passedUser: UserOut? = nil) {
+    init(surveyId: Int, passedUser: UserOut? = nil, onFeedbackChanged: (() -> Void)? = nil) {
         self.surveyId = surveyId
         self.passedUser = passedUser
+        self.onFeedbackChanged = onFeedbackChanged
     }
 
     // MARK: - Body
@@ -388,5 +390,8 @@ struct TerminfindungDetailView: View {
             }
         }
         await vm.updateFeedback(surveyId: surveyId, feedbacks: payload)
+        if vm.error == nil {
+            onFeedbackChanged?()
+        }
     }
 }
