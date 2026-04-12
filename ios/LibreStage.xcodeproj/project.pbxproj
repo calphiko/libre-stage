@@ -50,6 +50,7 @@
 		A057 /* Views/Songs/SongDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* Views/Songs/SongDetailsView.swift */; };
 		A060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F060 /* Assets.xcassets */; };
 		A061 /* Core/AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F061 /* Core/AppTheme.swift */; };
+		A062 /* Core/SongRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F062 /* Core/SongRecognitionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -96,6 +97,7 @@
 		F057 /* Views/Songs/SongDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Songs/SongDetailsView.swift; sourceTree = "<group>"; };
 		F060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F061 /* Core/AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AppTheme.swift; sourceTree = "<group>"; };
+		F062 /* Core/SongRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/SongRecognitionService.swift; sourceTree = "<group>"; };
 		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -156,6 +158,7 @@
 				F056 /* ViewModels/SongDetailsViewModel.swift */,
 				F060 /* Assets.xcassets */,
 				F061 /* Core/AppTheme.swift */,
+				F062 /* Core/SongRecognitionService.swift */,
 			);
 			path = LibreStage;
 			sourceTree = "<group>";
@@ -292,6 +295,7 @@
 				A056 /* ViewModels/SongDetailsViewModel.swift in Sources */,
 				A057 /* Views/Songs/SongDetailsView.swift in Sources */,
 				A061 /* Core/AppTheme.swift in Sources */,
+				A062 /* Core/SongRecognitionService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +432,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LibreStage/Info.plist;
@@ -456,6 +461,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LibreStage/Info.plist;
