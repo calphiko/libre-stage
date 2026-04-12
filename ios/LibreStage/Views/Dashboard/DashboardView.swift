@@ -7,6 +7,7 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(DashboardViewModel.self) private var vm
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showCandidatesSheet = false
 
     private var currentSeasonTitle: String {
@@ -17,100 +18,107 @@ struct DashboardView: View {
     var body: some View {
         @Bindable var vm = vm
         NavigationStack {
-            Group {
-                if vm.isLoading && vm.todoList == nil {
-                    SkeletonList()
-                } else if let list = vm.todoList {
-                    List {
-                        // MARK: Current season stats
-                        Section {
-                            if let stats = vm.currentSeasonStatistics {
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                                    SeasonStatTile(
-                                        title: "Gigs",
-                                        value: String(stats.gig_count),
-                                        icon: "music.mic",
-                                        tint: .blue
-                                    )
-                                    SeasonStatTile(
-                                        title: "Songs",
-                                        value: String(stats.total_songs),
-                                        icon: "music.note.list",
-                                        tint: .purple
-                                    )
-                                    SeasonStatTile(
-                                        title: "Uebersprungen",
-                                        value: String(stats.skipped_count),
-                                        icon: "forward.fill",
-                                        tint: .orange
-                                    )
-                                    SeasonStatTile(
-                                        title: "Eingeschoben",
-                                        value: String(stats.inserted_count),
-                                        icon: "pin.fill",
-                                        tint: .green
-                                    )
+            ZStack {
+                AppTheme.shellGradient(for: colorScheme).ignoresSafeArea()
 
-                                    if let avg = stats.feedback_avg {
+                Group {
+                    if vm.isLoading && vm.todoList == nil {
+                        SkeletonList()
+                    } else if let list = vm.todoList {
+                        List {
+                            Section {
+                                if let stats = vm.currentSeasonStatistics {
+                                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                                         SeasonStatTile(
-                                            title: "Live-Bewertung",
-                                            value: "\(feedbackEmoji(for: avg)) \(String(format: "%.2f", avg))",
-                                            icon: "star.fill",
-                                            tint: .yellow
+                                            title: "Gigs",
+                                            value: String(stats.gig_count),
+                                            icon: "music.mic",
+                                            tint: .blue
                                         )
+                                        SeasonStatTile(
+                                            title: "Songs",
+                                            value: String(stats.total_songs),
+                                            icon: "music.note.list",
+                                            tint: .purple
+                                        )
+                                        SeasonStatTile(
+                                            title: "Uebersprungen",
+                                            value: String(stats.skipped_count),
+                                            icon: "forward.fill",
+                                            tint: .orange
+                                        )
+                                        SeasonStatTile(
+                                            title: "Eingeschoben",
+                                            value: String(stats.inserted_count),
+                                            icon: "pin.fill",
+                                            tint: .green
+                                        )
+
+                                        if let avg = stats.feedback_avg {
+                                            SeasonStatTile(
+                                                title: "Live-Bewertung",
+                                                value: "\(feedbackEmoji(for: avg)) \(String(format: "%.2f", avg))",
+                                                icon: "star.fill",
+                                                tint: .yellow
+                                            )
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
+                                } else {
+                                    Text("Saisonstatistik wird geladen oder ist nicht verfuegbar.")
+                                        .foregroundStyle(.secondary)
+                                }
+                            } header: {
+                                Text(currentSeasonTitle)
+                            }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                            Section("Proben-To-dos") {
+                                let open = list.todo.filter { !$0.done }
+                                if open.isEmpty {
+                                    Label("Alle erledigt 🎉", systemImage: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                } else {
+                                    ForEach(open) { todo in
+                                        TodoRow(todo: todo) {
+                                            Task { await vm.markDone(todo) }
+                                        }
                                     }
                                 }
-                                .padding(.vertical, 2)
-                            } else {
-                                Text("Saisonstatistik wird geladen oder ist nicht verfuegbar.")
-                                    .foregroundStyle(.secondary)
                             }
-                        } header: {
-                            Text(currentSeasonTitle)
-                        }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
-                        // MARK: To-dos
-                        Section("Proben-To-dos") {
-                            let open = list.todo.filter { !$0.done }
-                            if open.isEmpty {
-                                Label("Alle erledigt 🎉", systemImage: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                            } else {
-                                ForEach(open) { todo in
-                                    TodoRow(todo: todo) {
-                                        Task { await vm.markDone(todo) }
+                            Section("Ausstehende Song-Votes (\(list.songs_to_feedback.count))") {
+                                if list.songs_to_feedback.isEmpty {
+                                    Text("Keine offenen Votes").foregroundStyle(.secondary)
+                                } else {
+                                    Button("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
+                                        showCandidatesSheet = true
                                     }
                                 }
                             }
-                        }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
-                        // MARK: Song-Votes
-                        Section("Ausstehende Song-Votes (\(list.songs_to_feedback.count))") {
-                            if list.songs_to_feedback.isEmpty {
-                                Text("Keine offenen Votes").foregroundStyle(.secondary)
-                            } else {
-                                Button("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
-                                    showCandidatesSheet = true
-                                }
-                            }
-                        }
-
-                        // MARK: Surveys
-                        Section("Offene Umfragen (\(list.surveys_to_feedback.count))") {
-                            if list.surveys_to_feedback.isEmpty {
-                                Text("Keine offenen Umfragen").foregroundStyle(.secondary)
-                            } else {
-                                ForEach(list.surveys_to_feedback) { s in
-                                    NavigationLink(s.rf_survey) {
-                                        SurveyDetailView(surveyId: s.id, surveyType: s.kind_of_survey)
+                            Section("Offene Umfragen (\(list.surveys_to_feedback.count))") {
+                                if list.surveys_to_feedback.isEmpty {
+                                    Text("Keine offenen Umfragen").foregroundStyle(.secondary)
+                                } else {
+                                    ForEach(list.surveys_to_feedback) { s in
+                                        NavigationLink(s.rf_survey) {
+                                            SurveyDetailView(surveyId: s.id, surveyType: s.kind_of_survey)
+                                        }
                                     }
                                 }
                             }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                         }
+                        .scrollContentBackground(.hidden)
+                        .background(.clear)
+                        .listStyle(.insetGrouped)
+                        .refreshable { await vm.load() }
+                    } else {
+                        ContentUnavailableView("Nichts gefunden", systemImage: "tray")
                     }
-                    .refreshable { await vm.load() }
-                } else {
-                    ContentUnavailableView("Nichts gefunden", systemImage: "tray")
                 }
             }
             .navigationTitle("Dashboard")
@@ -125,9 +133,11 @@ struct DashboardView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                         Text("Dashboard")
                             .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                     }
                 }
             }
+            .headerBodyBlend()
         }
         .sheet(isPresented: $showCandidatesSheet) {
             NavigationStack {
@@ -146,6 +156,7 @@ struct DashboardView: View {
 }
 
 private struct SeasonStatTile: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let value: String
     let icon: String
@@ -164,8 +175,12 @@ private struct SeasonStatTile: View {
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         .padding(10)
-        .background(Color.secondary.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .background(AppTheme.tileBackground(for: colorScheme))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
@@ -191,4 +206,3 @@ private struct TodoRow: View {
         }
     }
 }
-
