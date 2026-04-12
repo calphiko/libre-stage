@@ -5,9 +5,16 @@
 import SwiftUI
 
 struct GigsView: View {
+    @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var vm = GigsViewModel()
     @State private var showSeasonStats = false
     @State private var seasonStatsPreset: Int?
+    @State private var showCreateGigSheet = false
+
+    private var canEdit: Bool {
+        authManager.userRole == .admin || authManager.userRole == .editor
+    }
 
     private var gigsBySeason: [(title: String, gigs: [GigOut])] {
         let grouped = Dictionary(grouping: vm.gigs) { gig in
@@ -101,20 +108,42 @@ struct GigsView: View {
                 }
             }
             .navigationTitle("Gigs")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showSeasonStats = true
-                    } label: {
-                        Label("Saisonstatistik", systemImage: "chart.bar.doc.horizontal")
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("Gigs")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                    }
+                }
+                if canEdit {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showCreateGigSheet = true
+                        } label: {
+                            Label("Gig hinzufuegen", systemImage: "plus")
+                        }
                     }
                 }
             }
+            .headerBodyBlend()
         }
         .errorBanner($vm.error)
-        .task { await vm.load() }
+        .task {
+            await vm.loadGigFieldConfig()
+            await vm.load()
+        }
         .sheet(isPresented: $showSeasonStats) {
             SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
+        }
+        .sheet(isPresented: $showCreateGigSheet) {
+            CreateGigSheet(vm: vm)
         }
     }
 
@@ -344,3 +373,128 @@ private struct GigRow: View {
     }
 }
 
+private struct CreateGigSheet: View {
+    @Bindable var vm: GigsViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var draft = GigDetailsDraft()
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Gig") {
+                    ForEach(vm.gigFields) { field in
+                        gigEditorView(for: field)
+                    }
+                }
+
+                if vm.isCreatingGig {
+                    Section {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Neuer Gig")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Speichern") {
+                        Task {
+                            if await vm.createGig(draft: draft) != nil {
+                                dismiss()
+                            }
+                        }
+                    }
+                    .disabled(vm.isCreatingGig)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func gigEditorView(for field: GigFieldDefinition) -> some View {
+        switch field.type {
+        case .option:
+            Picker(field.required ? "\(field.label) *" : field.label, selection: gigBinding(for: field.key)) {
+                if !field.required {
+                    Text("-").tag("")
+                }
+                ForEach(field.options) { option in
+                    Text(option.label).tag(option.key)
+                }
+            }
+        case .time:
+            HStack {
+                DatePicker(
+                    field.required ? "\(field.label) *" : field.label,
+                    selection: timeBinding(for: field.key),
+                    displayedComponents: .hourAndMinute
+                )
+                if !field.required {
+                    Button("Loeschen") {
+                        draft.setValue("", for: field.key)
+                    }
+                    .font(.caption)
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.secondary)
+                }
+            }
+        case .date:
+            DatePicker(
+                field.required ? "\(field.label) *" : field.label,
+                selection: dateBinding(for: field.key),
+                displayedComponents: .date
+            )
+        case .text:
+            TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
+        }
+    }
+
+    private func gigBinding(for key: String) -> Binding<String> {
+        Binding(
+            get: { draft.value(for: key) },
+            set: { draft.setValue($0, for: key) }
+        )
+    }
+
+    private func dateBinding(for key: String) -> Binding<Date> {
+        Binding(
+            get: {
+                let current = draft.value(for: key)
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.dateFormat = "yyyy-MM-dd"
+                return formatter.date(from: current) ?? Date()
+            },
+            set: { newDate in
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.dateFormat = "yyyy-MM-dd"
+                draft.setValue(formatter.string(from: newDate), for: key)
+            }
+        )
+    }
+
+    private func timeBinding(for key: String) -> Binding<Date> {
+        Binding(
+            get: {
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.dateFormat = "HH:mm"
+                return formatter.date(from: draft.value(for: key)) ?? Date()
+            },
+            set: { newDate in
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.dateFormat = "HH:mm"
+                draft.setValue(formatter.string(from: newDate), for: key)
+            }
+        )
+    }
+}
