@@ -6,6 +6,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var vm = ProfileViewModel()
 
     // Password change state
@@ -75,6 +76,22 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profil")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("Profil")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                    }
+                }
+            }
+            .headerBodyBlend()
         }
         // MARK: - Password Sheet
         .sheet(isPresented: $showPasswordSheet) {
