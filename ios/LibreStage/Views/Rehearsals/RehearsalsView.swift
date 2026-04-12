@@ -10,6 +10,7 @@ struct RehearsalsView: View {
     @State private var selectedTab = 0
     @State private var pastSearchQuery = ""
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
 
     var isEditor: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
@@ -41,7 +42,20 @@ struct RehearsalsView: View {
                 }
             }
             .navigationTitle("Proben")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("Proben")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                    }
+                }
                 if isEditor {
                     ToolbarItem(placement: .primaryAction) {
                         Button { showCreateSheet = true } label: {
@@ -50,6 +64,7 @@ struct RehearsalsView: View {
                     }
                 }
             }
+            .headerBodyBlend()
             .sheet(isPresented: $showCreateSheet) {
                 RehearsalCreateSheet { request in
                     await vm.create(request)
