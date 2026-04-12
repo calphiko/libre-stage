@@ -201,12 +201,6 @@ struct SongFieldDefinition: Identifiable {
             SongFieldDefinition(key: "title", label: "Titel", type: .text, required: true, options: []),
             SongFieldDefinition(key: "interpret", label: "Interpret", type: .text, required: true, options: []),
             SongFieldDefinition(key: "genre", label: "Genre", type: .option, required: true, options: genres),
-            SongFieldDefinition(key: "singer_lead", label: "Sänger", type: .singerList, required: false, options: []),
-            SongFieldDefinition(key: "singer_background", label: "Background Gesang", type: .singerList, required: false, options: []),
-            SongFieldDefinition(key: "composer", label: "Komponist", type: .text, required: false, options: []),
-            SongFieldDefinition(key: "texter", label: "Texter", type: .text, required: false, options: []),
-            SongFieldDefinition(key: "publisher", label: "Publisher", type: .text, required: false, options: []),
-            SongFieldDefinition(key: "arrangement", label: "Arrangement", type: .text, required: false, options: []),
             SongFieldDefinition(key: "tone_key", label: "Tonart", type: .option, required: false, options: toneKeys),
             SongFieldDefinition(key: "status", label: "Status", type: .option, required: true, options: statuses),
             SongFieldDefinition(key: "comment", label: "Setlistenkommentar", type: .text, required: false, options: []),
@@ -273,6 +267,25 @@ struct SongUpdateRequest: Encodable {
         try c.encodeIfPresent(text, forKey: .text)
         try c.encodeIfPresent(duration, forKey: .duration)
     }
+}
+
+struct SongCreateRequest: Encodable {
+    let title: String
+    let interpret: String
+    let genre: String
+    let singer_background: String?
+    let singer_lead: String?
+    let composer: String?
+    let texter: String?
+    let publisher: String?
+    let arrangement: String?
+    let tone_key: String?
+    let status: String
+    let comment: String?
+    let ytlink: String?
+    let brass: Int?
+    let text: String?
+    let duration: String?
 }
 
 struct SongDetailsDraft {
@@ -422,6 +435,57 @@ struct SongDetailsDraft {
 
         return SongUpdateRequest(
             id: id,
+            title: trimmedTitle,
+            interpret: trimmedInterpret,
+            genre: trimmedGenre,
+            singer_background: nilIfEmptySingers(singer_background),
+            singer_lead: nilIfEmptySingers(singer_lead),
+            composer: nilIfEmpty(composer),
+            texter: nilIfEmpty(texter),
+            publisher: nilIfEmpty(publisher),
+            arrangement: nilIfEmpty(arrangement),
+            tone_key: nilIfEmpty(tone_key),
+            status: trimmedStatus,
+            comment: nilIfEmpty(comment),
+            ytlink: nilIfEmpty(ytlink),
+            brass: brass,
+            text: nilIfEmpty(text),
+            duration: nilIfEmpty(duration)
+        )
+    }
+
+    func toCreateRequest() throws -> SongCreateRequest {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedInterpret = interpret.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedGenre = genre.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedStatus = status.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedTitle.isEmpty { throw ValidationError.missingField("Titel") }
+        if trimmedInterpret.isEmpty { throw ValidationError.missingField("Interpret") }
+        if trimmedGenre.isEmpty { throw ValidationError.missingField("Genre") }
+        if trimmedStatus.isEmpty { throw ValidationError.missingField("Status") }
+
+        let trimmedBrass = brassText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let brass: Int?
+        if trimmedBrass.isEmpty {
+            brass = nil
+        } else if let value = Int(trimmedBrass) {
+            brass = value
+        } else {
+            throw ValidationError.invalidBrass
+        }
+
+        func nilIfEmpty(_ value: String) -> String? {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+
+        func nilIfEmptySingers(_ values: [String]) -> String? {
+            let joined = Self.joinSingers(values)
+            return joined.isEmpty ? nil : joined
+        }
+
+        return SongCreateRequest(
             title: trimmedTitle,
             interpret: trimmedInterpret,
             genre: trimmedGenre,
