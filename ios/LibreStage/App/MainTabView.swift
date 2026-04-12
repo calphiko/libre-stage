@@ -8,6 +8,7 @@ import UserNotifications
 struct MainTabView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     @State private var dashboardViewModel = DashboardViewModel()
     @State private var selectedTab = 0
     @State private var songVoteBadgeCount = 0
@@ -48,6 +49,10 @@ struct MainTabView: View {
                 .tabItem { Label("Profil", systemImage: "person.circle") }
                 .tag(5)
         }
+        .tint(.cyan)
+        .background(AppTheme.shellGradient(for: colorScheme).ignoresSafeArea())
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .environment(dashboardViewModel)
         .task {
             await requestBadgePermissionIfNeeded()
@@ -109,4 +114,3 @@ struct MainTabView: View {
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.badge])
     }
 }
-
