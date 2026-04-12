@@ -6,6 +6,7 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var serverURL = SettingsStore.shared.backendURL
     @State private var username  = ""
@@ -14,65 +15,112 @@ struct LoginView: View {
     @State private var healthError: String?
     @State private var fieldError: String?
 
+    private var appVersionLabel: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-"
+        return "iOS App v\(version)"
+    }
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
-                // Logo
-                Image("AppLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+            ZStack {
+                AppTheme.shellGradient(for: colorScheme)
+                    .ignoresSafeArea()
 
-                Text("libre-stage")
-                    .font(.largeTitle.bold())
+                ScrollView {
+                    VStack(spacing: 22) {
+                        VStack(spacing: 10) {
+                            Image("AppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 96, height: 96)
+                                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                                .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 6)
 
-                // Form
-                VStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        TextField("Server-URL (https://...)", text: $serverURL)
-                            .keyboardType(.URL)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .textFieldStyle(.roundedBorder)
-                        if let err = healthError {
-                            Text(err).font(.caption).foregroundStyle(.red)
+                            Text("libre-stage")
+                                .font(.system(size: 34, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+
+                            Text("Band-Orga mit Groove statt Tabellenchaos")
+                                .font(.subheadline)
+                                .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
                         }
-                    }
+                        .padding(.top, 32)
 
-                    TextField("Benutzername", text: $username)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .textFieldStyle(.roundedBorder)
+                        VStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Server")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                TextField("https://dein-server.tld", text: $serverURL)
+                                    .keyboardType(.URL)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .textFieldStyle(.roundedBorder)
 
-                    SecureField("Passwort", text: $password)
-                        .textFieldStyle(.roundedBorder)
+                                if let err = healthError {
+                                    Text(err)
+                                        .font(.caption)
+                                        .foregroundStyle(.red)
+                                }
+                            }
 
-                    if let err = fieldError ?? authManager.loginError {
-                        Text(err).font(.caption).foregroundStyle(.red)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Benutzername")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                TextField("z. B. calle", text: $username)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .textFieldStyle(.roundedBorder)
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Passwort")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                SecureField("Passwort", text: $password)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+
+                            if let err = fieldError ?? authManager.loginError {
+                                Text(err)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+                            Button {
+                                Task { await connect() }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    if authManager.isLoading || isCheckingHealth {
+                                        ProgressView()
+                                            .tint(.white)
+                                    }
+                                    Text((authManager.isLoading || isCheckingHealth) ? "Verbinde..." : "Verbinden")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.white)
+                            .background(Color.cyan.gradient)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .disabled(serverURL.isEmpty  || username.isEmpty || password.isEmpty || authManager.isLoading || isCheckingHealth)
+                            .opacity(serverURL.isEmpty || username.isEmpty || password.isEmpty ? 0.6 : 1)
+                        }
+                        .glassCardStyle()
+                        .padding(.horizontal)
+
+                        Text(appVersionLabel)
+                            .font(.caption2)
+                            .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
+                            .padding(.bottom, 20)
                     }
                 }
-                .padding(.horizontal)
-
-                // Button
-                Button {
-                    Task { await connect() }
-                } label: {
-                    if authManager.isLoading || isCheckingHealth {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else {
-                        Text("Verbinden")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal)
-                .disabled(serverURL.isEmpty || username.isEmpty || password.isEmpty || authManager.isLoading || isCheckingHealth)
             }
-            .padding(.vertical, 40)
+            .navigationBarHidden(true)
         }
     }
 
