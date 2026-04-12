@@ -9,7 +9,9 @@ final class SongsViewModel {
     var songs: [SongOut] = []
     var candidates: [SongCandidateOut] = []
     var totalEligibleVoters: Int = 0
+    var songFields: [SongFieldDefinition] = SongFieldDefinition.fromConfig(nil)
     var isLoading = false
+    var isCreatingSong = false
     var error: AppError?
     var searchText = ""
 
@@ -48,6 +50,38 @@ final class SongsViewModel {
         } catch {
             self.error = .networkError(error)
         }
+    }
+
+    @MainActor
+    func loadSongFieldConfig() async {
+        do {
+            let config: FrontendAppConfig = try await APIClient.shared.get(path: "/public/app_config")
+            songFields = SongFieldDefinition.fromConfig(config)
+        } catch {
+            songFields = SongFieldDefinition.fromConfig(nil)
+        }
+    }
+
+
+    @MainActor
+    func createSong(draft: SongDetailsDraft) async -> SongOut? {
+        isCreatingSong = true
+        defer { isCreatingSong = false }
+
+        do {
+            let request = try draft.toCreateRequest()
+            let created: SongOut = try await APIClient.shared.post(path: "/songs/", body: request)
+            await loadSongs()
+            return created
+        } catch let e as SongDetailsDraft.ValidationError {
+            error = .serverError(statusCode: 400, detail: e.localizedDescription)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+
+        return nil
     }
 
     @MainActor
