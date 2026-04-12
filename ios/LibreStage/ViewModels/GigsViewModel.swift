@@ -8,9 +8,11 @@ import Foundation
 final class GigsViewModel {
     var gigs: [GigOut] = []
     var seasonStatistics: SeasonStatistics? = nil
+    var gigFields: [GigFieldDefinition] = GigFieldDefinition.fromConfig(nil)
     var error: AppError?
     var isLoading = false
     var isSeasonStatisticsLoading = false
+    var isCreatingGig = false
 
     @MainActor
     func upsertGig(_ updatedGig: GigOut) {
@@ -47,6 +49,37 @@ final class GigsViewModel {
         } catch {
             self.error = .networkError(error)
         }
+    }
+
+    @MainActor
+    func loadGigFieldConfig() async {
+        do {
+            let config: FrontendAppConfig = try await APIClient.shared.get(path: "/public/app_config")
+            gigFields = GigFieldDefinition.fromConfig(config)
+        } catch {
+            gigFields = GigFieldDefinition.fromConfig(nil)
+        }
+    }
+
+    @MainActor
+    func createGig(draft: GigDetailsDraft) async -> GigOut? {
+        isCreatingGig = true
+        defer { isCreatingGig = false }
+
+        do {
+            let request = try draft.toCreateRequest()
+            let createdList: [GigOut] = try await APIClient.shared.post(path: "/gigs/", body: request)
+            gigs = createdList
+            return createdList.last
+        } catch let e as GigDetailsDraft.ValidationError {
+            error = .serverError(statusCode: 400, detail: e.localizedDescription)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+
+        return nil
     }
 }
 
