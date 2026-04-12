@@ -7,10 +7,15 @@ import SwiftUI
 /// Slide-in error banner at the top of the screen.
 /// Auto-dismisses after 4 seconds.
 struct ErrorBanner: View {
+    @Environment(\.colorScheme) private var colorScheme
     let message: String
     var actionTitle: String? = nil
     var onAction: (() -> Void)? = nil
     var onDismiss: (() -> Void)?
+
+    private var bannerRed: Color {
+        colorScheme == .dark ? Color(red: 0.72, green: 0.12, blue: 0.12) : Color(red: 0.82, green: 0.17, blue: 0.17)
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -19,10 +24,12 @@ struct ErrorBanner: View {
             Text(message)
                 .foregroundStyle(.white)
                 .font(.subheadline)
+                .fontWeight(.medium)
             if let actionTitle, let onAction {
                 Button(actionTitle) { onAction() }
                     .buttonStyle(.bordered)
                     .tint(.white)
+                    .foregroundStyle(.red)
                     .font(.caption.bold())
             }
             Spacer()
@@ -34,10 +41,15 @@ struct ErrorBanner: View {
             }
         }
         .padding()
-        .background(Color.red.gradient)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(bannerRed.opacity(0.92))
+        .background(.ultraThinMaterial)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .padding(.horizontal)
-        .shadow(radius: 6)
+        .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
     }
 }
 
@@ -79,4 +91,3 @@ extension View {
         modifier(ErrorBannerModifier(error: error, actionTitle: actionTitle, onAction: onAction))
     }
 }
-
