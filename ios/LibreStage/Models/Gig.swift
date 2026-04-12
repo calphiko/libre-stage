@@ -124,6 +124,19 @@ struct GigUpdateRequest: Encodable {
     let publish: Int?
 }
 
+struct GigCreateRequest: Encodable {
+    let name: String
+    let datum: String
+    let venue: String?
+    let kind_of_gig: String
+    let doors: String?
+    let begin: String
+    let end: String?
+    let organizer: String?
+    let status: String?
+    let publish: Int?
+}
+
 struct GigDetailsDraft {
     var name: String = ""
     var datum: String = ""
@@ -232,6 +245,50 @@ struct GigDetailsDraft {
 
         return GigUpdateRequest(
             id: id,
+            name: trimmedName,
+            datum: trimmedDate,
+            venue: nilIfEmpty(venue),
+            kind_of_gig: trimmedKind,
+            doors: normalizedDoors,
+            begin: normalizedBegin,
+            end: normalizedEnd,
+            organizer: nilIfEmpty(organizer),
+            status: nilIfEmpty(status),
+            publish: publish
+        )
+    }
+
+    func toCreateRequest() throws -> GigCreateRequest {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDate = datum.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedKind = kind_of_gig.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedBegin = begin.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedName.isEmpty { throw ValidationError.missingField("Name") }
+        if trimmedDate.isEmpty { throw ValidationError.missingField("Datum") }
+        if trimmedKind.isEmpty { throw ValidationError.missingField("Veranstaltungsart") }
+        if trimmedBegin.isEmpty { throw ValidationError.missingField("Spielbeginn") }
+
+        let normalizedBegin = try normalizeTime(trimmedBegin, field: "Spielbeginn")
+        let normalizedDoors = try normalizeOptionalTime(doors, field: "Einlass")
+        let normalizedEnd = try normalizeOptionalTime(end, field: "Spielende")
+
+        let trimmedPublish = publishText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let publish: Int?
+        if trimmedPublish.isEmpty {
+            publish = nil
+        } else if let value = Int(trimmedPublish), value == 0 || value == 1 {
+            publish = value
+        } else {
+            throw ValidationError.invalidPublish
+        }
+
+        func nilIfEmpty(_ value: String) -> String? {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+
+        return GigCreateRequest(
             name: trimmedName,
             datum: trimmedDate,
             venue: nilIfEmpty(venue),
