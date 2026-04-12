@@ -7,6 +7,7 @@ import SwiftUI
 struct SurveysView: View {
     @State private var vm = SurveysViewModel()
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var selectedTab      = 0
     @State private var closedSearchText = ""
@@ -70,13 +71,27 @@ struct SurveysView: View {
                 }
             }
             .navigationTitle("Umfragen")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("Umfragen")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button { showNewSheet = true } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
+            .headerBodyBlend()
             .sheet(isPresented: $showNewSheet) {
                 NewSurveySheet { newSurvey in
                     await vm.createSurvey(newSurvey)
