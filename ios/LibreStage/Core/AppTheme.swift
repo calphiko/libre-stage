@@ -50,8 +50,8 @@ enum AppTheme {
 
     static func rowBackground(for colorScheme: ColorScheme) -> Color {
         colorScheme == .dark
-            ? Color.white.opacity(0.10)
-            : Color(.secondarySystemBackground).opacity(0.62)
+            ? Color.white.opacity(0.08)
+            : Color(.secondarySystemBackground).opacity(0.48)
     }
 
     static func tileBackground(for colorScheme: ColorScheme) -> Color {
@@ -91,8 +91,41 @@ extension View {
         modifier(GlassCardModifier())
     }
 
+    func appShellBackground() -> some View {
+        modifier(AppShellBackgroundModifier())
+    }
+
+    func softCardContainer() -> some View {
+        modifier(SoftCardContainerModifier())
+    }
+
     func headerBodyBlend() -> some View {
         modifier(HeaderBodyBlendModifier())
+    }
+}
+
+private struct SoftCardContainerModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .listStyle(.insetGrouped)
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+            .scrollContentBackground(.hidden)
+            .background(.clear)
+    }
+}
+
+private struct AppShellBackgroundModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        ZStack {
+            AppTheme.shellGradient(for: colorScheme).ignoresSafeArea()
+            content
+                .scrollContentBackground(.hidden)
+                .background(.clear)
+        }
     }
 }
 
