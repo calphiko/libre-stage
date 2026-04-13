@@ -100,6 +100,8 @@ struct SongPickerSheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .searchable(text: $searchText, prompt: "Interpret oder Titel suchen")
             .navigationTitle("Song hinzufügen")
             .navigationBarTitleDisplayMode(.inline)
