@@ -27,7 +27,7 @@ ios/
 ├── Package.swift               ← SPM-Abhängigkeiten (für Referenz)
 └── LibreStage/
     ├── App/                    ← Einstiegspunkt, TabView
-    ├── Core/                   ← APIClient, AuthManager, SettingsStore
+    ├── Core/                   ← APIClient, AuthManager, SettingsStore, IncomingSongRouteStore
     ├── Models/                 ← Codable Datenmodelle (Spiegel der Backend-Schemas)
     ├── ViewModels/             ← @Observable ViewModels je Feature
     ├── Views/
@@ -39,7 +39,11 @@ ios/
     │   ├── Surveys/            ← SurveysView, SurveyDetailView
     │   ├── Profile/            ← ProfileView (Passwort, Server-URL, Logout)
     │   └── Components/         ← ErrorBanner, SkeletonRow
-    └── Assets.xcassets/
+    ├── Assets.xcassets/
+    └── LibreStageShareExtension/   ← iOS Share Extension (Shazam-Integration)
+        ├── ShareViewController.swift
+        ├── Info.plist
+        └── LibreStageShareExtension.entitlements
 ```
 
 ## Erster Start
@@ -71,3 +75,24 @@ ios/
 - Vor App-Store- oder TestFlight-Upload die Checkliste in `ios/APP_STORE_RELEASE_CHECKLIST.md` vollständig abhaken.
 - Das Xcode-Projekt hat kein fest verdrahtetes Team; setze dein Team lokal in `Signing & Capabilities`.
 
+## Shazam-Integration (Song teilen)
+
+Songs, die in der **Shazam**-App erkannt wurden, können direkt zu LibreStage geteilt werden:
+
+1. Song in Shazam erkennen lassen.
+2. Im Shazam-Ergebnis auf **Teilen** tippen.
+3. Im iOS-Share-Sheet **LibreStage** auswählen.
+4. Im erscheinenden Dialog auf **Posten** tippen.
+5. LibreStage öffnet sich automatisch auf dem **Songs-Tab** und das **Neuer-Song-Formular** wird mit Titel und Interpret vorausgefüllt.
+
+### Technische Details
+
+| Komponente | Aufgabe |
+|---|---|
+| `LibreStageShareExtension/ShareViewController.swift` | Liest `NSExtensionItem.attributedTitle` (Songtitel) und `attributedContentText` (Interpret) aus dem Shazam-Share; fällt zurück auf Textparsing und URL-Slug |
+| `Core/IncomingSongRouteStore.swift` | Liest den gespeicherten Payload aus der gemeinsamen App Group und erstellt `AddSongPrefillRequest` |
+| `App/MainTabView.swift` | Wechselt auf den Songs-Tab und übergibt den Prefill |
+| `Views/Songs/SongsView.swift` | Öffnet `CreateSongSheet` mit vorausgefüllten Feldern |
+
+**App Group**: `group.de.librestage.app` (in beiden Entitlements-Dateien eingetragen)  
+**Deep-Link-Schema**: `librestage-calle-2j4quq2xrg://add-song`
