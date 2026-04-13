@@ -89,6 +89,7 @@ struct GigsView: View {
                                 Label("Alle Saisons", systemImage: "chart.xyaxis.line")
                             }
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                         ForEach(gigsBySeason, id: \.title) { season in
                             Section(season.title) {
@@ -102,11 +103,14 @@ struct GigsView: View {
                                     }
                                 }
                             }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                         }
                     }
+                    .listStyle(.insetGrouped)
                     .refreshable { await vm.load() }
                 }
             }
+            .appShellBackground()
             .navigationTitle("Gigs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -256,6 +260,8 @@ private struct SeasonStatisticsSheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Saisonstatistik")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -397,6 +403,8 @@ private struct CreateGigSheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Neuer Gig")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
