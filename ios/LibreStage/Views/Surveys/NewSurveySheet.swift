@@ -92,6 +92,8 @@ struct NewSurveySheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Neue Abstimmung")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
