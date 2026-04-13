@@ -81,6 +81,8 @@ struct ProfileView: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -127,6 +129,8 @@ struct ProfileView: View {
                         Button("Abbrechen", role: .cancel) { showPasswordSheet = false }
                     }
                 }
+                .softCardContainer()
+                .appShellBackground()
                 .navigationTitle("Passwort")
                 .navigationBarTitleDisplayMode(.inline)
             }
@@ -151,6 +155,8 @@ struct ProfileView: View {
                         Button("Abbrechen", role: .cancel) { showURLSheet = false }
                     }
                 }
+                .softCardContainer()
+                .appShellBackground()
                 .navigationTitle("Server-URL")
                 .navigationBarTitleDisplayMode(.inline)
             }
