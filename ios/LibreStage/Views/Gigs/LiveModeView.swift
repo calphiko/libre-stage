@@ -256,6 +256,8 @@ struct LiveModeView: View {
                         }
                     }
                 }
+                .softCardContainer()
+                .appShellBackground()
                 .searchable(text: $insertSearchQuery, prompt: "Song suchen")
                 .navigationTitle("Song einschieben")
                 .toolbar {
