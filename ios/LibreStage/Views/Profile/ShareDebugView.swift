@@ -13,6 +13,8 @@ private struct ShareDebugPayload: Codable {
     let texts: [String]
     let urlString: String?
     let typeIdentifiersPerProvider: [[String]]
+    let resolvedTitle: String?
+    let resolvedArtist: String?
 }
 
 private enum ShareDebugConfig {
@@ -37,7 +39,7 @@ struct ShareDebugView: View {
                     ContentUnavailableView(
                         "Kein Debug-Dump vorhanden",
                         systemImage: "ladybug",
-                        description: Text("Teile zuerst einen Song aus Shazam, dann erscheint hier der rohe Payload.")
+                        description: Text("Teile zuerst einen Song aus Shazam, Apple Music, Spotify oder TIDAL, dann erscheint hier der rohe Payload.")
                     )
                 }
             }
@@ -83,6 +85,11 @@ struct ShareDebugView: View {
             Section("NSExtensionItem-Metadaten") {
                 row(label: "attributedTitle",       value: p.itemTitle)
                 row(label: "attributedContentText", value: p.itemBody)
+            }
+
+            Section("Aufgeloeste Songdaten") {
+                row(label: "resolvedTitle",  value: p.resolvedTitle)
+                row(label: "resolvedArtist", value: p.resolvedArtist)
             }
 
             Section("Text-Anhaenge (\(p.texts.count))") {
@@ -162,6 +169,8 @@ struct ShareDebugView: View {
             "",
             "attributedTitle:       \(p.itemTitle ?? "nil")",
             "attributedContentText: \(p.itemBody ?? "nil")",
+            "resolvedTitle:         \(p.resolvedTitle ?? "nil")",
+            "resolvedArtist:        \(p.resolvedArtist ?? "nil")",
             "",
             "Text-Anhaenge (\(p.texts.count)):",
         ]
