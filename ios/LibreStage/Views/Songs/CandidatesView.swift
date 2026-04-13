@@ -51,9 +51,11 @@ struct CandidatesView: View {
                         }
                     )
                 }
+                .softCardContainer()
                 .refreshable { await vm.loadCandidates() }
             }
         }
+        .appShellBackground()
         .navigationTitle("Kandidaten")
         .toolbar {
             if modalPresentation {
