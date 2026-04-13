@@ -427,7 +427,7 @@ private struct CreateSongSheet: View {
         if !autofilledKeys.isEmpty {
             let title = initialPrefill.title.isEmpty ? "(kein Titel)" : initialPrefill.title
             let artist = initialPrefill.interpret.isEmpty ? "(kein Interpret)" : initialPrefill.interpret
-            recognitionResultHint = "Uebernommen aus Shazam: \(title) - \(artist)"
+            recognitionResultHint = "Uebernommen aus Share-Link: \(title) - \(artist)"
         }
     }
 }
