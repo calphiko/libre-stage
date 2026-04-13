@@ -14,8 +14,7 @@ struct GigDetailView: View {
     @State private var isEditing = false
     @State private var draft = GigDetailsDraft()
     @State private var editableGig: GigOut?
-    @State private var shareURL: URL? = nil
-    @State private var showShareSheet = false
+    @State private var shareItem: ShareSheetItem? = nil
     @State private var showGigStats = false
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
@@ -40,6 +39,7 @@ struct GigDetailView: View {
             if vm.isLoading && vm.setlist == nil {
                 SkeletonList()
             } else if let setlist = vm.setlist {
+                let hasSongsInSetlist = setlist.sets.contains { !$0.songs.isEmpty }
                 List {
                     // MARK: Gig Info
                     Section("Infos") {
@@ -100,10 +100,9 @@ struct GigDetailView: View {
                         }
 
                         Button {
-                            Task {
+                            Task { @MainActor in
                                 if let fileURL = await vm.downloadSetlistPDF(gig: currentGig) {
-                                    shareURL = fileURL
-                                    showShareSheet = true
+                                    shareItem = ShareSheetItem(url: fileURL)
                                 } else {
                                     presentDownloadError(documentName: "Setliste")
                                 }
@@ -111,12 +110,12 @@ struct GigDetailView: View {
                         } label: {
                             Label("Setliste herunterladen", systemImage: "arrow.down.doc")
                         }
+                        .disabled(!hasSongsInSetlist)
 
                         Button {
-                            Task {
+                            Task { @MainActor in
                                 if let fileURL = await vm.downloadGemaList(gig: currentGig) {
-                                    shareURL = fileURL
-                                    showShareSheet = true
+                                    shareItem = ShareSheetItem(url: fileURL)
                                 } else {
                                     presentDownloadError(documentName: "GEMA-Liste")
                                 }
@@ -124,6 +123,7 @@ struct GigDetailView: View {
                         } label: {
                             Label("GEMA-Liste herunterladen", systemImage: "tablecells.badge.ellipsis")
                         }
+                        .disabled(!hasSongsInSetlist)
 
 
                         if canEdit {
@@ -186,6 +186,7 @@ struct GigDetailView: View {
                     }
 
                 }
+                .softCardContainer()
                 .refreshable {
                     await vm.loadSetlist(gigId: gig.id)
                     await vm.loadLiveModeAvailability(gigId: gig.id)
@@ -194,6 +195,7 @@ struct GigDetailView: View {
                 ContentUnavailableView("Keine Setlist", systemImage: "music.note.list")
             }
         }
+        .appShellBackground()
         .navigationTitle(currentGig.name ?? "Gig")
         .navigationBarTitleDisplayMode(.inline)
         .errorBanner($vm.error)
@@ -208,13 +210,11 @@ struct GigDetailView: View {
                 await vm.loadLiveModeAvailability(gigId: gig.id)
             }
         }
-        .sheet(isPresented: $showShareSheet) {
+        .sheet(item: $shareItem) { item in
 #if canImport(UIKit)
-            if let shareURL {
-                ShareSheet(activityItems: [shareURL])
-            }
+            ShareSheet(activityItems: [item.url])
 #else
-            Text("Datei heruntergeladen: \(shareURL?.lastPathComponent ?? "")")
+            Text("Datei heruntergeladen: \(item.url.lastPathComponent)")
                 .padding()
 #endif
         }
@@ -436,6 +436,11 @@ private struct GigSongDetailSheetItem: Identifiable {
     let title: String?
 }
 
+private struct ShareSheetItem: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 private struct GigStatisticsSheet: View {
     @Bindable var vm: GigDetailViewModel
     let gig: GigOut
@@ -512,6 +517,8 @@ private struct GigStatisticsSheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle(gig.name ?? "Gig-Statistik")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
