@@ -36,7 +36,7 @@ struct LoginView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                                 .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 6)
 
-                            Text("libre-stage")
+                            Text("libreStage")
                                 .font(.system(size: 34, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
 
