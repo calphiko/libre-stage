@@ -91,6 +91,15 @@ struct LibreStageApp: App {
         tabAppearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.92)
         UITabBar.appearance().standardAppearance = tabAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+        // Form/List-Eingabefelder an das weiche Kartenlayout anpassen.
+        let tableTextField = UITextField.appearance(whenContainedInInstancesOf: [UITableView.self])
+        tableTextField.backgroundColor = .clear
+        tableTextField.borderStyle = .none
+
+        let tableTextView = UITextView.appearance(whenContainedInInstancesOf: [UITableView.self])
+        tableTextView.backgroundColor = .clear
+
         #endif
     }
 }
