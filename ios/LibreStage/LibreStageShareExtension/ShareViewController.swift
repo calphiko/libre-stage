@@ -280,7 +280,7 @@ final class ShareViewController: UIViewController {
             if let pair = parseTitleArtist(from: itemTitle) { return pair }
             if let bodyRaw = payload.itemBody, !bodyRaw.isEmpty {
                 let a = stripArtistPrefix(bodyRaw)
-                if !a.isEmpty { return SongMetadata(title: itemTitle, artist: a) }
+                if !a.isEmpty, !looksLikeURLText(a) { return SongMetadata(title: itemTitle, artist: a) }
             }
             for text in payload.texts {
                 let a = extractArtist(fromText: text, knownTitle: itemTitle)
@@ -556,13 +556,21 @@ final class ShareViewController: UIViewController {
         let cleaned = description.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return "" }
 
-        if let delimiterRange = cleaned.range(of: "  ") {
-            return String(cleaned[..<delimiterRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        if let delimiterRange = cleaned.range(of: " • ") {
-            return String(cleaned[..<delimiterRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        for separator in [" · ", " • ", "  "] {
+            if let delimiterRange = cleaned.range(of: separator) {
+                return String(cleaned[..<delimiterRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
         }
         return cleaned
+    }
+
+    private func looksLikeURLText(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
+            return true
+        }
+        return URL(string: trimmed)?.scheme != nil
     }
 
     private func extractAppleMusicArtist(from description: String) -> String {
