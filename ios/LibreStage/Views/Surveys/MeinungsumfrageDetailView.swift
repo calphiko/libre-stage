@@ -45,6 +45,7 @@ struct MeinungsumfrageDetailView: View {
                 ContentUnavailableView("Umfrage nicht gefunden", systemImage: "chart.bar")
             }
         }
+        .appShellBackground()
         .navigationTitle(vm.detail?.rf_survey ?? "Umfrage")
         .navigationBarTitleDisplayMode(.inline)
         .errorBanner(
@@ -163,6 +164,7 @@ struct MeinungsumfrageDetailView: View {
                 }
             }
         }
+        .softCardContainer()
     }
 
     // MARK: - Option Row
