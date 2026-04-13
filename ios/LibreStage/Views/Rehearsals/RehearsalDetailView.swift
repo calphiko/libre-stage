@@ -37,6 +37,7 @@ struct RehearsalDetailView: View {
                 editView
             }
         }
+        .appShellBackground()
         .navigationTitle(vm.formatRangeLabel(localReh))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -90,6 +91,7 @@ struct RehearsalDetailView: View {
                 }
             }
         }
+        .softCardContainer()
     }
 
     // MARK: - Edit-Ansicht (bevorstehende Probe)
@@ -144,6 +146,7 @@ struct RehearsalDetailView: View {
                 }
             }
         }
+        .softCardContainer()
         .sheet(isPresented: $showSongPicker) {
             SongPickerSheet(
                 songs: vm.songs,
