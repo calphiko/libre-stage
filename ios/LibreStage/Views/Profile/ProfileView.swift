@@ -22,6 +22,7 @@ struct ProfileView: View {
     // Logout confirmation
     @State private var showLogoutConfirm = false
     @State private var showAboutSheet = false
+    @State private var showShareDebugSheet = false
 
     var body: some View {
         NavigationStack {
@@ -63,6 +64,11 @@ struct ProfileView: View {
                         showAboutSheet = true
                     } label: {
                         Label("Über diese App", systemImage: "info.circle")
+                    }
+                    Button {
+                        showShareDebugSheet = true
+                    } label: {
+                        Label("Share-Diagnose (Shazam)", systemImage: "ladybug")
                     }
                 }
 
@@ -154,6 +160,9 @@ struct ProfileView: View {
             NavigationStack {
                 AboutAppView(modalPresentation: true)
             }
+        }
+        .sheet(isPresented: $showShareDebugSheet) {
+            ShareDebugView(modalPresentation: true)
         }
         // MARK: - Logout Confirmation
         .confirmationDialog("Wirklich abmelden?", isPresented: $showLogoutConfirm, titleVisibility: .visible) {
