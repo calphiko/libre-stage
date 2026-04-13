@@ -11,53 +11,69 @@ struct SongsView: View {
     @State private var selectedSongForDetails: SongsDetailSheetItem?
     @State private var showCandidatesSheet = false
     @State private var showCreateSongSheet = false
+    @State private var createSongPrefill: AddSongPrefillRequest?
+    private var externalAddSongPrefill: Binding<AddSongPrefillRequest?>
+
+    init(externalAddSongPrefill: Binding<AddSongPrefillRequest?> = .constant(nil)) {
+        self.externalAddSongPrefill = externalAddSongPrefill
+    }
 
     var body: some View {
-        NavigationStack {
-            contentView
-                .navigationTitle("Songs")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        HStack(spacing: 8) {
-                            Image("AppLogo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                            Text("Songs")
-                                .font(.headline)
-                                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                        }
-                    }
-                    ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            showCreateSongSheet = true
-                        } label: {
-                            Label("Song hinzufuegen", systemImage: "plus")
-                        }
+        contentView
+            .navigationTitle("Songs")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("Songs")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                     }
                 }
-                .headerBodyBlend()
-        }
-        .sheet(item: $selectedSongForDetails) { item in
-            NavigationStack {
-                SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        createSongPrefill = nil
+                        showCreateSongSheet = true
+                    } label: {
+                        Label("Song hinzufuegen", systemImage: "plus")
+                    }
+                }
             }
-        }
-        .sheet(isPresented: $showCandidatesSheet) {
-            NavigationStack {
-                CandidatesView(modalPresentation: true)
+            .headerBodyBlend()
+            .sheet(item: $selectedSongForDetails) { item in
+                NavigationStack {
+                    SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+                }
             }
-        }
-        .sheet(isPresented: $showCreateSongSheet) {
-            CreateSongSheet(vm: vm)
-        }
-        .errorBanner($vm.error)
-        .task {
-            await vm.loadSongFieldConfig()
-            await vm.loadSongs()
-        }
+            .sheet(isPresented: $showCandidatesSheet) {
+                NavigationStack {
+                    CandidatesView(modalPresentation: true)
+                }
+            }
+            .sheet(isPresented: $showCreateSongSheet) {
+                CreateSongSheet(vm: vm, initialPrefill: createSongPrefill)
+            }
+            .errorBanner($vm.error)
+            .task {
+                consumeExternalAddSongPrefillIfNeeded()
+                await vm.loadSongFieldConfig()
+                await vm.loadSongs()
+            }
+            .onChange(of: externalAddSongPrefill.wrappedValue?.id) { _, _ in
+                consumeExternalAddSongPrefillIfNeeded()
+            }
+    }
+
+    private func consumeExternalAddSongPrefillIfNeeded() {
+        guard let request = externalAddSongPrefill.wrappedValue else { return }
+        createSongPrefill = request
+        showCreateSongSheet = true
+        externalAddSongPrefill.wrappedValue = nil
     }
 
     @ViewBuilder
@@ -100,6 +116,7 @@ struct SongsView: View {
 
 private struct CreateSongSheet: View {
     @Bindable var vm: SongsViewModel
+    let initialPrefill: AddSongPrefillRequest?
     @Environment(\.dismiss) private var dismiss
     @State private var draft = SongDetailsDraft()
     @State private var isRecognizingSong = false
@@ -109,6 +126,7 @@ private struct CreateSongSheet: View {
     @State private var audioLevel: Double = 0
     @State private var recognitionTimeoutSeconds: Double = 20
     @State private var highlightedAutofillFields: Set<String> = []
+    @State private var hasAppliedInitialPrefill = false
 
     var body: some View {
         NavigationStack {
@@ -217,6 +235,7 @@ private struct CreateSongSheet: View {
             .task {
                 songRecognitionAvailable = SongRecognitionService.isRecognitionAvailable
                 setDefaultValuesIfNeeded()
+                applyInitialPrefillIfNeeded()
             }
             .onDisappear {
                 stopRecognitionIfNeeded()
@@ -385,6 +404,30 @@ private struct CreateSongSheet: View {
             } else if let first = field.options.first {
                 draft.setValue(first.key, for: field.key)
             }
+        }
+    }
+
+    private func applyInitialPrefillIfNeeded() {
+        guard !hasAppliedInitialPrefill else { return }
+        hasAppliedInitialPrefill = true
+        guard let initialPrefill else { return }
+
+        var autofilledKeys: [String] = []
+        if !initialPrefill.title.isEmpty {
+            draft.setValue(initialPrefill.title, for: "title")
+            autofilledKeys.append("title")
+        }
+        if !initialPrefill.interpret.isEmpty {
+            draft.setValue(initialPrefill.interpret, for: "interpret")
+            autofilledKeys.append("interpret")
+        }
+
+        flashAutofillHighlight(for: autofilledKeys)
+        triggerAutofillHaptic(for: autofilledKeys)
+        if !autofilledKeys.isEmpty {
+            let title = initialPrefill.title.isEmpty ? "(kein Titel)" : initialPrefill.title
+            let artist = initialPrefill.interpret.isEmpty ? "(kein Interpret)" : initialPrefill.interpret
+            recognitionResultHint = "Uebernommen aus Shazam: \(title) - \(artist)"
         }
     }
 }
