@@ -40,6 +40,8 @@ struct RehearsalCreateSheet: View {
                         .lineLimit(3...6)
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Neue Probe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
