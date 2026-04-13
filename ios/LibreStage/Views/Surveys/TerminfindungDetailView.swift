@@ -52,6 +52,7 @@ struct TerminfindungDetailView: View {
                                        systemImage: "calendar.badge.exclamationmark")
             }
         }
+        .appShellBackground()
         .navigationTitle(vm.detail?.rf_survey ?? "Umfrage")
         .navigationBarTitleDisplayMode(.inline)
         .errorBanner(
@@ -243,6 +244,7 @@ struct TerminfindungDetailView: View {
             }
 
         }
+        .softCardContainer()
     }
 
     // MARK: - Sub-views
