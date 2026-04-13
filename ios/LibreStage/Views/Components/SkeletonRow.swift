@@ -33,6 +33,7 @@ struct SkeletonList: View {
                 SkeletonRow()
             }
         }
+        .softCardContainer()
     }
 }
 
