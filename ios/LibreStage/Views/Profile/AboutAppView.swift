@@ -33,6 +33,8 @@ struct AboutAppView: View {
                 }
             }
         }
+        .softCardContainer()
+        .appShellBackground()
         .navigationTitle("Über diese App")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
