@@ -75,21 +75,20 @@ ios/
 - Vor App-Store- oder TestFlight-Upload die Checkliste in `ios/APP_STORE_RELEASE_CHECKLIST.md` vollständig abhaken.
 - Das Xcode-Projekt hat kein fest verdrahtetes Team; setze dein Team lokal in `Signing & Capabilities`.
 
-## Shazam-Integration (Song teilen)
+## Share-Integration (Song teilen)
 
-Songs, die in der **Shazam**-App erkannt wurden, können direkt zu LibreStage geteilt werden:
+Songs koennen direkt aus **Shazam**, **Apple Music**, **Spotify** und **TIDAL** zu LibreStage geteilt werden:
 
-1. Song in Shazam erkennen lassen.
-2. Im Shazam-Ergebnis auf **Teilen** tippen.
-3. Im iOS-Share-Sheet **LibreStage** auswählen.
-4. Im erscheinenden Dialog auf **Posten** tippen.
-5. LibreStage öffnet sich automatisch auf dem **Songs-Tab** und das **Neuer-Song-Formular** wird mit Titel und Interpret vorausgefüllt.
+1. In der jeweiligen App beim Song auf **Teilen** tippen.
+2. Im iOS-Share-Sheet **LibreStage** auswählen.
+3. Im erscheinenden Dialog auf **Posten** tippen.
+4. LibreStage öffnet sich automatisch auf dem **Songs-Tab** und das **Neuer-Song-Formular** wird mit Titel und Interpret vorausgefüllt.
 
 ### Technische Details
 
 | Komponente | Aufgabe |
 |---|---|
-| `LibreStageShareExtension/ShareViewController.swift` | Liest `NSExtensionItem.attributedTitle` (Songtitel) und `attributedContentText` (Interpret) aus dem Shazam-Share; fällt zurück auf Textparsing und URL-Slug |
+| `LibreStageShareExtension/ShareViewController.swift` | Liest `NSExtensionItem.attributedTitle` und `attributedContentText` aus Share-Payloads (Shazam/Apple Music/Spotify/TIDAL); faellt auf Text-/URL-Parsing zurueck und nutzt bei Streaming-Links OpenGraph-Metadaten der oeffentlichen Track-Seiten |
 | `Core/IncomingSongRouteStore.swift` | Liest den gespeicherten Payload aus der gemeinsamen App Group und erstellt `AddSongPrefillRequest` |
 | `App/MainTabView.swift` | Wechselt auf den Songs-Tab und übergibt den Prefill |
 | `Views/Songs/SongsView.swift` | Öffnet `CreateSongSheet` mit vorausgefüllten Feldern |
