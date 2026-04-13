@@ -41,6 +41,7 @@ struct RehearsalsView: View {
                     }
                 }
             }
+            .appShellBackground()
             .navigationTitle("Proben")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -87,23 +88,27 @@ struct RehearsalsView: View {
             )
         } else {
             List {
-                ForEach(vm.upcomingRehearsals) { reh in
-                    NavigationLink {
-                        RehearsalDetailView(rehearsal: reh, vm: vm)
-                    } label: {
-                        RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        if isEditor && !vm.isPast(reh) {
-                            Button(role: .destructive) {
-                                Task { await vm.delete(reh) }
-                            } label: {
-                                Label("Löschen", systemImage: "trash")
+                Section("Aktuelle Proben") {
+                    ForEach(vm.upcomingRehearsals) { reh in
+                        NavigationLink {
+                            RehearsalDetailView(rehearsal: reh, vm: vm)
+                        } label: {
+                            RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if isEditor && !vm.isPast(reh) {
+                                Button(role: .destructive) {
+                                    Task { await vm.delete(reh) }
+                                } label: {
+                                    Label("Löschen", systemImage: "trash")
+                                }
                             }
                         }
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
+            .listStyle(.insetGrouped)
             .refreshable { await vm.load() }
         }
     }
@@ -118,19 +123,26 @@ struct RehearsalsView: View {
             List {
                 let results = vm.filteredPastRehearsals(query: pastSearchQuery)
                 if results.isEmpty {
-                    Text("Keine Proben gefunden.")
-                        .foregroundStyle(.secondary)
-                        .italic()
+                    Section("Vergangene Proben") {
+                        Text("Keine Proben gefunden.")
+                            .foregroundStyle(.secondary)
+                            .italic()
+                    }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 } else {
-                    ForEach(results) { reh in
-                        NavigationLink {
-                            RehearsalDetailView(rehearsal: reh, vm: vm)
-                        } label: {
-                            RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
+                    Section("Vergangene Proben") {
+                        ForEach(results) { reh in
+                            NavigationLink {
+                                RehearsalDetailView(rehearsal: reh, vm: vm)
+                            } label: {
+                                RehearsalRow(reh: reh, vm: vm, isPast: vm.isPast(reh))
+                            }
                         }
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
             }
+            .listStyle(.insetGrouped)
             .searchable(text: $pastSearchQuery, prompt: "Datum, Song oder Kommentar suchen")
             .refreshable { await vm.load() }
         }
