@@ -70,6 +70,7 @@ struct SurveysView: View {
                     }
                 }
             }
+            .appShellBackground()
             .navigationTitle("Umfragen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -209,8 +210,11 @@ struct SurveysView: View {
                                 .padding(.vertical, 2)
                             }
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
                 }
+                .listSectionSpacing(.custom(0))
+                .softCardContainer()
                 // navigationDestination direkt auf der List – stabile Registrierung
                 .navigationDestination(for: SurveyList.self) { survey in
                     surveyDestination(survey)
@@ -247,9 +251,12 @@ struct SurveysView: View {
                                     .tint(.red)
                                 }
                             }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                         }
                     }
                 }
+                .listSectionSpacing(.custom(0))
+                .softCardContainer()
                 // navigationDestination direkt auf der List – stabile Registrierung
                 .navigationDestination(for: SurveyList.self) { survey in
                     surveyDestination(survey)
