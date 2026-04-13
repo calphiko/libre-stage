@@ -8,9 +8,56 @@ import UIKit
 #endif
 import UserNotifications
 
+// MARK: - AppDelegate (UIWindowScene.ActivationRequestOptions, iOS 17+)
+
+/// Stellt sicher, dass die LibreStage-Scene beim URL-Open aus der Share Extension
+/// zuverlässig in den Vordergrund geholt wird – auch auf iPadOS mit mehreren Scenes.
+final class AppDelegate: NSObject, UIApplicationDelegate {
+
+    /// Wird aufgerufen, wenn iOS die App per URL-Scheme öffnet (u. a. aus Share Extensions).
+    /// Ab iOS 17 aktivieren wir die vorderste inaktive/hintergründige Scene
+    /// explizit über UIWindowScene.ActivationRequestOptions.
+    func application(
+        _ application: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        if #available(iOS 17.0, *) {
+            activateForegroundScene(in: application)
+        }
+        // Eigentliches URL-Routing übernimmt SwiftUI via onOpenURL.
+        return true
+    }
+
+    @available(iOS 17.0, *)
+    private func activateForegroundScene(in application: UIApplication) {
+        // Bevorzuge eine bereits halbaktive Scene; falle auf die erste verfügbare zurück.
+        let targetSession = application.openSessions.first(where: {
+            ($0.scene?.activationState == .foregroundInactive ||
+             $0.scene?.activationState == .background)
+        }) ?? application.openSessions.first
+
+        guard let session = targetSession else { return }
+
+        let activationOptions = UIWindowScene.ActivationRequestOptions()
+        // requestingScene bleibt nil – keine andere Scene stellt die Anfrage.
+        application.requestSceneSessionActivation(
+            session,
+            userActivity: nil,
+            options: activationOptions,
+            errorHandler: nil
+        )
+    }
+}
+
+// MARK: - App
+
 @main
 struct LibreStageApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     @State private var authManager = AuthManager()
+    @State private var incomingSongRouteStore = IncomingSongRouteStore()
 
     init() {
         applyGlobalAppearance()
@@ -20,6 +67,10 @@ struct LibreStageApp: App {
         WindowGroup {
             ContentRoot()
                 .environment(authManager)
+                .environment(incomingSongRouteStore)
+                .onOpenURL { url in
+                    incomingSongRouteStore.handleIncomingURL(url)
+                }
         }
     }
 
