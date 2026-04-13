@@ -7,12 +7,14 @@ import UserNotifications
 
 struct MainTabView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(IncomingSongRouteStore.self) private var incomingSongRouteStore
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @State private var dashboardViewModel = DashboardViewModel()
     @State private var selectedTab = 0
     @State private var songVoteBadgeCount = 0
     @State private var requestedBadgePermission = false
+    @State private var deepLinkSongPrefill: AddSongPrefillRequest?
 
     private var appIconBadgeCount: Int {
         dashboardViewModel.todoBadgeCount
@@ -40,10 +42,12 @@ struct MainTabView: View {
                 .tag(3)
                 .badge(dashboardViewModel.surveyBadgeCount)
 
-            SongsView()
-                .tabItem { Label("Songs", systemImage: "music.note") }
-                .tag(4)
-                .badge(songVoteBadgeCount)
+            NavigationStack {
+                SongsView(externalAddSongPrefill: $deepLinkSongPrefill)
+            }
+            .tabItem { Label("Songs", systemImage: "music.note") }
+            .tag(4)
+            .badge(songVoteBadgeCount)
 
             ProfileView()
                 .tabItem { Label("Profil", systemImage: "person.circle") }
@@ -57,17 +61,32 @@ struct MainTabView: View {
         .task {
             await requestBadgePermissionIfNeeded()
             await refreshAllBadges()
+            incomingSongRouteStore.importSharedHandoverIfAvailable()
+            adoptIncomingSongPrefillIfNeeded()
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
+            incomingSongRouteStore.importSharedHandoverIfAvailable()
+            adoptIncomingSongPrefillIfNeeded()
             Task { await refreshAllBadges() }
         }
         .onChange(of: selectedTab) { _, _ in
             Task { await refreshAllBadges() }
         }
+        .onChange(of: incomingSongRouteStore.pendingAddSongPrefill?.id) { _, newValue in
+            guard newValue != nil else { return }
+            adoptIncomingSongPrefillIfNeeded()
+        }
         .onChange(of: appIconBadgeCount) { _, newValue in
             Task { await setAppIconBadge(newValue) }
         }
+    }
+
+    private func adoptIncomingSongPrefillIfNeeded() {
+        guard let pending = incomingSongRouteStore.pendingAddSongPrefill else { return }
+        deepLinkSongPrefill = pending
+        incomingSongRouteStore.pendingAddSongPrefill = nil
+        selectedTab = 4
     }
 
     @MainActor
