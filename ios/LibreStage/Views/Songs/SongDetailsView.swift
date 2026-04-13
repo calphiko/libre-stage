@@ -44,6 +44,7 @@ struct SongDetailsView: View {
 				}
 			}
 		}
+		.appShellBackground()
 		.navigationTitle(vm.song?.title ?? initialTitle ?? "Song")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -141,6 +142,7 @@ struct SongDetailsView: View {
 				}
 			}
 		}
+		.softCardContainer()
 	}
 
 	@ViewBuilder
@@ -256,6 +258,7 @@ struct SongDetailsView: View {
 				}
 			}
 		}
+		.softCardContainer()
 	}
 
 	private var rehearsalsTab: some View {
@@ -302,6 +305,7 @@ struct SongDetailsView: View {
 				}
 			}
 		}
+		.softCardContainer()
 	}
 }
 
