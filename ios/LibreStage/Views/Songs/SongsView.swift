@@ -20,6 +20,7 @@ struct SongsView: View {
 
     var body: some View {
         contentView
+            .appShellBackground()
             .navigationTitle("Songs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -93,23 +94,32 @@ struct SongsView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
                 Section("Repertoire (\(vm.filtered.count))") {
                     ForEach(vm.filtered) { song in
-                        if let songId = song.id {
-                            Button {
-                                selectedSongForDetails = SongsDetailSheetItem(id: songId, title: song.title)
-                            } label: {
-                                SongRow(song: song)
-                            }
-                            .buttonStyle(.plain)
-                        } else {
-                            SongRow(song: song)
-                        }
+                        songRow(for: song)
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
+            .listStyle(.insetGrouped)
             .searchable(text: $vm.searchText, prompt: "Titel oder Interpret suchen")
             .refreshable { await vm.loadSongs() }
+        }
+    }
+
+    @ViewBuilder
+    private func songRow(for song: SongOut) -> some View {
+        if let songId = song.id {
+            Button {
+                selectedSongForDetails = SongsDetailSheetItem(id: songId, title: song.title)
+            } label: {
+                SongRow(song: song)
+            }
+            .buttonStyle(.plain)
+        } else {
+            SongRow(song: song)
         }
     }
 }
@@ -118,6 +128,7 @@ private struct CreateSongSheet: View {
     @Bindable var vm: SongsViewModel
     let initialPrefill: AddSongPrefillRequest?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var draft = SongDetailsDraft()
     @State private var isRecognizingSong = false
     @State private var recognitionResultHint = ""
@@ -196,7 +207,7 @@ private struct CreateSongSheet: View {
                             .listRowBackground(
                                 highlightedAutofillFields.contains(field.key)
                                 ? Color.green.opacity(0.18)
-                                : Color.clear
+                                : AppTheme.rowBackground(for: colorScheme)
                             )
                             .animation(.easeInOut(duration: 0.25), value: highlightedAutofillFields)
                     }
@@ -212,6 +223,8 @@ private struct CreateSongSheet: View {
                     }
                 }
             }
+            .softCardContainer()
+            .appShellBackground()
             .navigationTitle("Neuer Song")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
