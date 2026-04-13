@@ -43,6 +43,7 @@ struct ShareDebugView: View {
                     )
                 }
             }
+            .appShellBackground()
             .navigationTitle("Share-Debug")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -132,6 +133,7 @@ struct ShareDebugView: View {
                 }
             }
         }
+        .softCardContainer()
     }
 
     @ViewBuilder
