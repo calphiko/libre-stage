@@ -36,8 +36,9 @@
 		A030B /* Views/Surveys/TerminfindungDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030B /* Views/Surveys/TerminfindungDetailView.swift */; };
 		A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */; };
 		A030D /* Views/Surveys/NewSurveySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030D /* Views/Surveys/NewSurveySheet.swift */; };
-		A031 /* Views/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031 /* Views/Profile/ProfileView.swift */; };
-		A031B /* Views/Profile/AboutAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031B /* Views/Profile/AboutAppView.swift */; };
+             A031 /* Views/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031 /* Views/Profile/ProfileView.swift */; };
+             A031B /* Views/Profile/AboutAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031B /* Views/Profile/AboutAppView.swift */; };
+             A031C /* Views/Profile/ShareDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031C /* Views/Profile/ShareDebugView.swift */; };
 		A040 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* Views/Components/ErrorBanner.swift */; };
 		A041 /* Views/Components/SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* Views/Components/SkeletonRow.swift */; };
 		A050 /* ViewModels/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* ViewModels/DashboardViewModel.swift */; };
@@ -51,7 +52,33 @@
 		A060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F060 /* Assets.xcassets */; };
 		A061 /* Core/AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F061 /* Core/AppTheme.swift */; };
 		A062 /* Core/SongRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F062 /* Core/SongRecognitionService.swift */; };
+		A063 /* Core/IncomingSongRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F063 /* Core/IncomingSongRouteStore.swift */; };
+		A070 /* LibreStageShareExtension/ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F070 /* LibreStageShareExtension/ShareViewController.swift */; };
+		A072 /* LibreStageShareExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = PROD02 /* LibreStageShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		PROXY01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJ01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TGT02;
+			remoteInfo = LibreStageShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		PH_EMBED /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A072 /* LibreStageShareExtension.appex in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		F001 /* App/LibreStageApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/LibreStageApp.swift; sourceTree = "<group>"; };
@@ -83,8 +110,9 @@
 		F030B /* Views/Surveys/TerminfindungDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/TerminfindungDetailView.swift; sourceTree = "<group>"; };
 		F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/MeinungsumfrageDetailView.swift; sourceTree = "<group>"; };
 		F030D /* Views/Surveys/NewSurveySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Surveys/NewSurveySheet.swift; sourceTree = "<group>"; };
-		F031 /* Views/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
-		F031B /* Views/Profile/AboutAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/AboutAppView.swift; sourceTree = "<group>"; };
+            F031 /* Views/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
+            F031B /* Views/Profile/AboutAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/AboutAppView.swift; sourceTree = "<group>"; };
+            F031C /* Views/Profile/ShareDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ShareDebugView.swift; sourceTree = "<group>"; };
 		F040 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
 		F041 /* Views/Components/SkeletonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SkeletonRow.swift; sourceTree = "<group>"; };
 		F050 /* ViewModels/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
@@ -98,11 +126,22 @@
 		F060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F061 /* Core/AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AppTheme.swift; sourceTree = "<group>"; };
 		F062 /* Core/SongRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/SongRecognitionService.swift; sourceTree = "<group>"; };
+		F063 /* Core/IncomingSongRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/IncomingSongRouteStore.swift; sourceTree = "<group>"; };
+		F070 /* LibreStageShareExtension/ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibreStageShareExtension/ShareViewController.swift; sourceTree = "<group>"; };
+		F071 /* LibreStageShareExtension/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = LibreStageShareExtension/Info.plist; sourceTree = "<group>"; };
 		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		PROD02 /* LibreStageShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LibreStageShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		PH_FW /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		PH_FW_EXT /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -145,8 +184,9 @@
 				F030B /* Views/Surveys/TerminfindungDetailView.swift */,
 				F030C /* Views/Surveys/MeinungsumfrageDetailView.swift */,
 				F030D /* Views/Surveys/NewSurveySheet.swift */,
-				F031 /* Views/Profile/ProfileView.swift */,
-				F031B /* Views/Profile/AboutAppView.swift */,
+                            F031 /* Views/Profile/ProfileView.swift */,
+                            F031B /* Views/Profile/AboutAppView.swift */,
+                            F031C /* Views/Profile/ShareDebugView.swift */,
 				F040 /* Views/Components/ErrorBanner.swift */,
 				F041 /* Views/Components/SkeletonRow.swift */,
 				F050 /* ViewModels/DashboardViewModel.swift */,
@@ -159,6 +199,9 @@
 				F060 /* Assets.xcassets */,
 				F061 /* Core/AppTheme.swift */,
 				F062 /* Core/SongRecognitionService.swift */,
+				F063 /* Core/IncomingSongRouteStore.swift */,
+				F070 /* LibreStageShareExtension/ShareViewController.swift */,
+				F071 /* LibreStageShareExtension/Info.plist */,
 			);
 			path = LibreStage;
 			sourceTree = "<group>";
@@ -167,6 +210,7 @@
 			isa = PBXGroup;
 			children = (
 				PROD01 /* LibreStage.app */,
+				PROD02 /* LibreStageShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -189,10 +233,12 @@
 				PH_SRC /* Sources */,
 				PH_FW /* Frameworks */,
 				PH_RES /* Resources */,
+				PH_EMBED /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				TDEP01 /* PBXTargetDependency */,
 			);
 			name = LibreStage;
 			packageProductDependencies = (
@@ -200,6 +246,25 @@
 			productName = LibreStage;
 			productReference = PROD01 /* LibreStage.app */;
 			productType = "com.apple.product-type.application";
+		};
+		TGT02 /* LibreStageShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFG_LIST_EXT /* Build configuration list for PBXNativeTarget "LibreStageShareExtension" */;
+			buildPhases = (
+				PH_SRC_EXT /* Sources */,
+				PH_FW_EXT /* Frameworks */,
+				PH_RES_EXT /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LibreStageShareExtension;
+			packageProductDependencies = (
+			);
+			productName = LibreStageShareExtension;
+			productReference = PROD02 /* LibreStageShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -212,6 +277,9 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					TGT01 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					TGT02 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -233,6 +301,7 @@
 			projectRoot = "";
 			targets = (
 				TGT01 /* LibreStage */,
+				TGT02 /* LibreStageShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -243,6 +312,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A060 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		PH_RES_EXT /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,8 +358,9 @@
 				A030B /* Views/Surveys/TerminfindungDetailView.swift in Sources */,
 				A030C /* Views/Surveys/MeinungsumfrageDetailView.swift in Sources */,
 				A030D /* Views/Surveys/NewSurveySheet.swift in Sources */,
-				A031 /* Views/Profile/ProfileView.swift in Sources */,
-				A031B /* Views/Profile/AboutAppView.swift in Sources */,
+                            A031 /* Views/Profile/ProfileView.swift in Sources */,
+                            A031B /* Views/Profile/AboutAppView.swift in Sources */,
+                            A031C /* Views/Profile/ShareDebugView.swift in Sources */,
 				A040 /* Views/Components/ErrorBanner.swift in Sources */,
 				A041 /* Views/Components/SkeletonRow.swift in Sources */,
 				A050 /* ViewModels/DashboardViewModel.swift in Sources */,
@@ -296,10 +373,27 @@
 				A057 /* Views/Songs/SongDetailsView.swift in Sources */,
 				A061 /* Core/AppTheme.swift in Sources */,
 				A062 /* Core/SongRecognitionService.swift in Sources */,
+				A063 /* Core/IncomingSongRouteStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		PH_SRC_EXT /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A070 /* LibreStageShareExtension/ShareViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TDEP01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TGT02 /* LibreStageShareExtension */;
+			targetProxy = PROXY01 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		BC_DEBUG /* Debug */ = {
@@ -429,8 +523,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LibreStage/LibreStage.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
 				ENABLE_PREVIEWS = YES;
@@ -444,7 +539,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -453,13 +548,64 @@
 			};
 			name = Debug;
 		};
+		BC_TGT_EXT_DEBUG /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = LibreStage/LibreStageShareExtension/LibreStageShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LibreStage/LibreStageShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.4.3;
+				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BC_TGT_EXT_RELEASE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = LibreStage/LibreStageShareExtension/LibreStageShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LibreStage/LibreStageShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.4.3;
+				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		BC_TGT_RELEASE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LibreStage/LibreStage.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 2J4QUQ2XRG;
 				ENABLE_PREVIEWS = YES;
@@ -473,7 +619,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -490,6 +636,15 @@
 			buildConfigurations = (
 				BC_TGT_DEBUG /* Debug */,
 				BC_TGT_RELEASE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CFG_LIST_EXT /* Build configuration list for PBXNativeTarget "LibreStageShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC_TGT_EXT_DEBUG /* Debug */,
+				BC_TGT_EXT_RELEASE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
