@@ -253,6 +253,12 @@ class Gig(Base):
     sets: Mapped[list["GigSet"]] = relationship(
         "GigSet", back_populates="gig", order_by="GigSet.position"
     )
+    schedule_items: Mapped[list["GigScheduleItem"]] = relationship(
+        "GigScheduleItem",
+        back_populates="gig",
+        order_by="GigScheduleItem.item_datetime",
+        cascade="all, delete-orphan",
+    )
 
     def debug_dump(self, schedule=None):
         """
@@ -567,6 +573,24 @@ class GigSet(Base):
 
     gig: Mapped["Gig"] = relationship("Gig", back_populates="sets")
     set: Mapped["Set"] = relationship("Set", back_populates="gig_links")
+
+
+class GigScheduleItem(Base):
+    """Additional freely editable timeline items for a gig."""
+
+    __tablename__ = "gig_schedule_items"
+    __table_args__ = (
+        UniqueConstraint("gig_id", "item_datetime", name="_gig_schedule_uc"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    gig_id = Column(Integer, ForeignKey("gigs.id"), nullable=False)
+    item_datetime = Column(DateTime, nullable=False)
+    was = Column(String(512), nullable=False)
+    wer = Column(String(512), nullable=False)
+    wo = Column(String(512), nullable=False)
+
+    gig: Mapped["Gig"] = relationship("Gig", back_populates="schedule_items")
 
 
 class Surveys(Base):
