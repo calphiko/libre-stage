@@ -2,7 +2,7 @@
 
 **A comprehensive internal management platform for bands and music ensembles**
 
-![Version](https://img.shields.io/badge/version-v0.3.13-blue)
+![Version](https://img.shields.io/badge/version-v0.3.14-blue)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.135.0-teal)
 ![Svelte](https://img.shields.io/badge/Svelte-5.29.0-orange)
@@ -20,7 +20,7 @@ libreStage is a self-hosted web application designed to manage band operations i
 - **Survey System**: Gather feedback from band members on song candidates
 - **Calendar Integration**: iCal export for gigs and rehearsals
 - **User Management**: Role-based access control (admin, editor, musician)
-- **PDF Generation**: Professional setlist and GEMA report PDFs
+- **PDF Generation**: Professional setlist PDFs plus modern schedule PDFs (landscape, auto line-wrap, logo-adaptive dark theme, watermark)
 - **Mattermost Integration**: Optional notifications for new songs, gigs, rehearsals
 
 ## 🏗️ Architecture
