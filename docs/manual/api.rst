@@ -52,7 +52,7 @@ Endpunkt-Übersicht
       - Setlist-PDF generieren
    * - GET
       - ``/gigs/{id}/schedule.pdf``
-      - Ablaufplan-PDF generieren (Querformat, Stammdaten, adaptive Farben, Logo-Wasserzeichen)
+      - Ablaufplan-PDF generieren (Hochformat, Stammdaten, adaptive Farben, Logo-Wasserzeichen)
    * - GET
      - ``/gigs/{id}/gema``
      - GEMA-Excel-Export
