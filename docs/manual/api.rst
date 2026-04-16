@@ -48,8 +48,11 @@ Endpunkt-Übersicht
      - ``/gigs``
      - Neuen Gig anlegen
    * - GET
-     - ``/gigs/{id}/pdf``
-     - Setlist-PDF generieren
+      - ``/gigs/{id}/setlist.pdf``
+      - Setlist-PDF generieren
+   * - GET
+      - ``/gigs/{id}/schedule.pdf``
+      - Ablaufplan-PDF generieren (Querformat, Stammdaten, adaptive Farben, Logo-Wasserzeichen)
    * - GET
      - ``/gigs/{id}/gema``
      - GEMA-Excel-Export
