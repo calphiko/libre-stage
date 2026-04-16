@@ -47,7 +47,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment
 from io import BytesIO
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
@@ -259,11 +259,11 @@ def _raise_if_schedule_conflict(
 
 
 def _build_schedule_pdf(gig: models.Gig) -> bytes:
-    """Render schedule items (fixed + dynamic) to a printable landscape PDF."""
+    """Render schedule items (fixed + dynamic) to a printable portrait PDF."""
     schedule = _build_schedule_response(gig)
     buffer = BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=landscape(A4), pageCompression=0)
-    page_width, page_height = landscape(A4)
+    pdf = canvas.Canvas(buffer, pagesize=A4, pageCompression=0)
+    page_width, page_height = A4
 
     left_margin = 36
     right_margin = page_width - 36
@@ -272,11 +272,22 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
     row_padding = 4
     row_line_height = 12
 
+    table_width = right_margin - left_margin
+    time_col_width = 96
+    was_col_width = 180
+    wer_col_width = 110
+    wo_col_width = max(90, table_width - time_col_width - was_col_width - wer_col_width)
+    was_col_width = max(140, table_width - time_col_width - wer_col_width - wo_col_width)
+
     columns = [
-        ("Zeit", left_margin, 120),
-        ("Was", left_margin + 120, 280),
-        ("Wer", left_margin + 400, 170),
-        ("Wo", left_margin + 570, right_margin - (left_margin + 570)),
+        ("Zeit", left_margin, time_col_width),
+        ("Was", left_margin + time_col_width, was_col_width),
+        ("Wer", left_margin + time_col_width + was_col_width, wer_col_width),
+        (
+            "Wo",
+            left_margin + time_col_width + was_col_width + wer_col_width,
+            wo_col_width,
+        ),
     ]
 
     root_dir = Path(__file__).resolve().parents[2]
