@@ -20,7 +20,7 @@ libreStage is a self-hosted web application designed to manage band operations i
 - **Survey System**: Gather feedback from band members on song candidates
 - **Calendar Integration**: iCal export for gigs and rehearsals
 - **User Management**: Role-based access control (admin, editor, musician)
-- **PDF Generation**: Professional setlist PDFs plus modern schedule PDFs (landscape, auto line-wrap, logo-adaptive dark theme, watermark)
+- **PDF Generation**: Professional setlist PDFs plus modern schedule PDFs (portrait, auto line-wrap, logo-adaptive dark theme, watermark)
 - **Mattermost Integration**: Optional notifications for new songs, gigs, rehearsals
 
 ## 🏗️ Architecture
