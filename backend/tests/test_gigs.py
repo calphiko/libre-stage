@@ -786,9 +786,9 @@ def test_get_gig_schedule_pdf(client, auth_headers, db_session):
     media_box_idx = content.find(b"/MediaBox")
     assert media_box_idx >= 0
     media_box = content[media_box_idx:media_box_idx + 100]
-    assert b"841.8898" in media_box
     assert b"595.2756" in media_box
-    assert media_box.find(b"841.8898") < media_box.find(b"595.2756")
+    assert b"841.8898" in media_box
+    assert media_box.find(b"595.2756") < media_box.find(b"841.8898")
 
     assert b"Ablaufplan" in content
     assert b"Gig: Schedule PDF" in content
