@@ -77,7 +77,7 @@ Enthalten sind:
 * Gig-Stammdaten (Name, Datum, Typ, Veranstalter, Ort, Einlass/Beginn/Ende)
 * Alle Ablauf-Einträge in einer tabellarischen Ansicht (Zeit, Was, Wer, Wo)
 * Automatische Zeilenumbrüche bei langen Texten
-* Querformat für bessere Lesbarkeit bei vielen Spalten
+* Hochformat (A4) mit optimierten Spaltenbreiten
 
 Das Layout ist modernisiert und enthält ein dezentes Logo-Wasserzeichen.
 Die Farbgestaltung passt sich automatisch an das hinterlegte Logo an
