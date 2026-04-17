@@ -1,0 +1,160 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, libreStage contributors
+# This file is distributed under the same license as the libreStage package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libreStage 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-17 18:46+0200\n"
+"PO-Revision-Date: 2026-04-17 19:00+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../datenschutz.rst:2
+msgid "Datenschutzrichtlinie (iOS-App)"
+msgstr "Privacy Policy (iOS App)"
+
+#: ../../datenschutz.rst:4
+msgid "Stand: 17. April 2026"
+msgstr "Version date: April 17, 2026"
+
+#: ../../datenschutz.rst:6
+msgid "Diese Datenschutzrichtlinie gilt fuer die mobile App **libre-stage (iOS)**. Die App ist ein Client fuer selbst betriebene libre-stage-Server."
+msgstr "This privacy policy applies to the **libre-stage (iOS)** mobile app. The app is a client for self-hosted libre-stage servers."
+
+#: ../../datenschutz.rst:10
+msgid "1. Verantwortliche Stelle"
+msgstr "1. Data Controller"
+
+#: ../../datenschutz.rst:12
+msgid "Verantwortlich fuer die Verarbeitung personenbezogener Daten ist die jeweilige Band, Organisation oder Person, die den verbundenen libre-stage-Server betreibt. Wenn du unsicher bist, wer in deinem Fall verantwortlich ist, wende dich an die in deiner Instanz benannte Administratorin oder den Administrator."
+msgstr "The band, organization, or individual operating the connected libre-stage server is responsible for processing personal data. If you are unsure who is responsible in your case, contact the administrator designated in your instance."
+
+#: ../../datenschutz.rst:18
+msgid "2. Welche Daten verarbeitet werden"
+msgstr "2. What Data Is Processed"
+
+#: ../../datenschutz.rst:20
+msgid "Kontodaten: Benutzername, Klarname, E-Mail-Adresse, Rollen- und Statusinformationen."
+msgstr "Account data: username, display name, email address, role, and status information."
+
+#: ../../datenschutz.rst:21
+msgid "Inhaltsdaten: von dir erfasste oder gelesene Inhalte wie Songs, Proben, Gigs, Umfragen und Kommentare."
+msgstr "Content data: content you create or view, such as songs, rehearsals, gigs, surveys, and comments."
+
+#: ../../datenschutz.rst:23
+msgid "Technische Daten: Server-URL der Instanz, Sitzungs-Token und app-interne Diagnoseinformationen."
+msgstr "Technical data: instance server URL, session tokens, and app-internal diagnostic information."
+
+#: ../../datenschutz.rst:27
+msgid "3. Zwecke der Verarbeitung"
+msgstr "3. Purposes of Processing"
+
+#: ../../datenschutz.rst:29
+msgid "Bereitstellung von Login, Sitzungsverwaltung und Zugriff auf die Funktionen der Band-Organisation."
+msgstr "Providing login, session management, and access to the band's organizational features."
+
+#: ../../datenschutz.rst:31
+msgid "Synchronisierung und Darstellung von Daten des verbundenen libre-stage-Servers."
+msgstr "Synchronizing and displaying data from the connected libre-stage server."
+
+#: ../../datenschutz.rst:32
+msgid "Fehleranalyse durch freiwillig genutzte Diagnosefunktionen in der App."
+msgstr "Analyzing errors via diagnostic features used voluntarily in the app."
+
+#: ../../datenschutz.rst:35
+msgid "4. Rechtsgrundlagen"
+msgstr "4. Legal Bases"
+
+#: ../../datenschutz.rst:37
+msgid "Die Verarbeitung erfolgt je nach Einsatzszenario insbesondere auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertrag/Nutzerverhaeltnis), lit. f DSGVO (berechtigtes Interesse an sicherem und stabilem Betrieb) und - falls erforderlich - lit. a DSGVO (Einwilligung)."
+msgstr "Depending on the usage scenario, processing is carried out in particular on the basis of Art. 6(1)(b) GDPR (contract/user relationship), Art. 6(1)(f) GDPR (legitimate interest in secure and stable operation), and, where required, Art. 6(1)(a) GDPR (consent)."
+
+#: ../../datenschutz.rst:43
+msgid "5. Speicherung und Sicherheit"
+msgstr "5. Storage and Security"
+
+#: ../../datenschutz.rst:45
+msgid "Anmeldetoken werden auf dem Geraet im iOS-Keychain gespeichert."
+msgstr "Login tokens are stored on the device in the iOS Keychain."
+
+#: ../../datenschutz.rst:46
+msgid "Die Kommunikation mit dem Server erfolgt ueber dessen API-Endpunkte."
+msgstr "Communication with the server takes place via its API endpoints."
+
+#: ../../datenschutz.rst:47
+msgid "Die App speichert keine vollstaendige Offline-Kopie aller Daten; Inhalte werden ueberwiegend live vom Server geladen."
+msgstr "The app does not store a complete offline copy of all data; content is predominantly loaded live from the server."
+
+#: ../../datenschutz.rst:51
+msgid "6. Empfaenger und Drittland"
+msgstr "6. Recipients and Third Countries"
+
+#: ../../datenschutz.rst:53
+msgid "Empfaenger der Daten ist primaer der von dir konfigurierte libre-stage-Server. Ob und in welchem Umfang weitere Auftragsverarbeiter oder Drittdienste eingesetzt werden, richtet sich nach der Server-Instanz und liegt in der Verantwortung der betreibenden Stelle."
+msgstr "The primary recipient of the data is the libre-stage server you configured. Whether and to what extent additional processors or third-party services are used depends on the server instance and is the responsibility of the operating entity."
+
+#: ../../datenschutz.rst:59
+msgid "7. Speicherdauer"
+msgstr "7. Retention Period"
+
+#: ../../datenschutz.rst:61
+msgid "Die Speicherdauer richtet sich nach den Einstellungen und Prozessen der jeweiligen libre-stage-Instanz. Lokal gespeicherte Anmeldedaten verbleiben bis zur Abmeldung oder bis zur Entfernung der App auf dem Geraet."
+msgstr "Retention periods depend on the settings and processes of the respective libre-stage instance. Locally stored login data remains until logout or until the app is removed from the device."
+
+#: ../../datenschutz.rst:66
+msgid "8. Deine Rechte"
+msgstr "8. Your Rights"
+
+#: ../../datenschutz.rst:68
+msgid "Auskunft ueber verarbeitete personenbezogene Daten"
+msgstr "Access to personal data being processed"
+
+#: ../../datenschutz.rst:69
+msgid "Berichtigung unrichtiger Daten"
+msgstr "Rectification of inaccurate data"
+
+#: ../../datenschutz.rst:70
+msgid "Loeschung oder Einschraenkung der Verarbeitung"
+msgstr "Erasure or restriction of processing"
+
+#: ../../datenschutz.rst:71
+msgid "Widerspruch gegen bestimmte Verarbeitungen"
+msgstr "Objection to certain processing activities"
+
+#: ../../datenschutz.rst:72
+msgid "Datenuebertragbarkeit, soweit anwendbar"
+msgstr "Data portability, where applicable"
+
+#: ../../datenschutz.rst:73
+msgid "Beschwerde bei einer zustaendigen Datenschutzaufsichtsbehoerde"
+msgstr "Complaint to a competent data protection supervisory authority"
+
+#: ../../datenschutz.rst:76
+msgid "9. Bereitstellungspflicht"
+msgstr "9. Requirement to Provide Data"
+
+#: ../../datenschutz.rst:78
+msgid "Ohne die fuer Login und Nutzung erforderlichen Daten ist ein Zugriff auf die App-Funktionen nicht oder nur eingeschraenkt moeglich."
+msgstr "Without the data required for login and use, access to app features is not possible or only possible to a limited extent."
+
+#: ../../datenschutz.rst:82
+msgid "10. Aenderungen"
+msgstr "10. Changes"
+
+#: ../../datenschutz.rst:84
+msgid "Diese Datenschutzrichtlinie kann bei technischen oder rechtlichen Aenderungen aktualisiert werden. Massgeblich ist die jeweils in der App angezeigte Fassung mit Stand-Datum."
+msgstr "This privacy policy may be updated in case of technical or legal changes. The version date shown in the app is authoritative."
+
+#: ../../datenschutz.rst:90
+msgid "Die HTML-Fassung fuer externe Nutzung liegt unter ``docs/datenschutzrichtlinie-ios.html``."
+msgstr "The HTML version for external use is available at ``docs/datenschutzrichtlinie-ios.html``."
+
