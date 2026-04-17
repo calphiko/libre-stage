@@ -348,6 +348,75 @@ export async function getGigs(token, jahr = '') {
   return res.json();
 }
 
+export async function getGigSchedule(token, gigId) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error('Ablaufplan konnte nicht geladen werden');
+  return res.json();
+}
+
+export async function getGigSchedulePDF(token, gigId) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule.pdf`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error('Ablaufplan-PDF konnte nicht geladen werden');
+  return res.blob();
+}
+
+export async function createGigScheduleItem(token, gigId, payload) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Ablaufplan-Eintrag konnte nicht erstellt werden');
+  }
+  return res.json();
+}
+
+export async function updateGigScheduleItem(token, gigId, itemId, payload) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/${itemId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Ablaufplan-Eintrag konnte nicht aktualisiert werden');
+  }
+  return res.json();
+}
+
+export async function updateGigScheduleBulk(token, gigId, payload) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Ablaufplan konnte nicht gespeichert werden');
+  }
+  return res.json();
+}
+
+export async function deleteGigScheduleItem(token, gigId, itemId) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/${itemId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Ablaufplan-Eintrag konnte nicht geloescht werden');
+  }
+  return res.json();
+}
+
 export async function updateGig(gigId, data, token) {
     const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}`, {
       method: 'PUT',

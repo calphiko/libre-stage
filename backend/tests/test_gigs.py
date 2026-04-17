@@ -625,3 +625,263 @@ def test_download_setlist_pdf_w_nonexistent_gig_id(client, auth_headers, db_sess
     assert response.status_code == 404
     assert response.json()["detail"] == "Gig not found"
 
+def test_season_statistics_generation (season_client):
+    client, headers, data = season_client
+
+    response = client.get(f"/gigs/statistics?jahr={date.today().year}", headers=headers)
+    assert response.status_code == 200
+    stats = response.json()
+    assert stats["gig_count"] == 3
+    assert stats["genre_distribution"] == {'Disco': 8, 'Oldies': 2, 'Pop': 2, 'Rock': 11}
+
+    response = client.get(f"/gigs/statistics?jahr={date.today().year+1}", headers=headers)
+    assert response.status_code == 200
+    stats = response.json()
+    assert stats["gig_count"] == 0
+
+
+def test_get_livemode_available_batch(season_client):
+    client, headers, data = season_client
+
+    gig_ids = [1,2]
+
+    response = client.post(
+        "/gigs/livemode_available_batch",
+        headers=headers,
+        json = gig_ids
+    )
+    assert response.status_code == 200
+    batch_info = response.json()
+    pprint.pprint(batch_info)
+    assert batch_info["1"]["available"] == False
+    assert len(batch_info.keys())== 2
+
+
+def test_get_gig_schedule_includes_fixed_and_dynamic_items(client, auth_headers, db_session):
+    from backend.models import Gig, GigScheduleItem
+
+    gig = Gig(
+        name="Schedule Gig",
+        datum=date(2030, 5, 20),
+        kind_of_gig="Concert",
+        venue="Hall",
+        doors=time(18, 0),
+        begin=time(19, 0),
+        end=time(22, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    db_session.add(GigScheduleItem(
+        gig_id=gig.id,
+        item_datetime=datetime(2030, 5, 20, 17, 30, 0),
+        was="Soundcheck",
+        wer="Band",
+        wo="Stage",
+    ))
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/schedule/", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["items"]) == 4
+    assert data["items"][0]["item_datetime"] == "2030-05-20T17:30:00"
+    assert data["items"][0]["is_fixed"] is False
+    assert data["items"][1]["is_fixed"] is True
+    assert data["items"][1]["was"] == "Einlass"
+
+
+def test_create_gig_schedule_item_conflict_with_fixed_time_returns_409(client, auth_headers, db_session):
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Schedule Conflict",
+        datum=date(2031, 6, 15),
+        kind_of_gig="Festival",
+        venue="Main Stage",
+        doors=time(18, 0),
+        begin=time(19, 0),
+        end=time(22, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    payload = {
+        "item_datetime": "2031-06-15T19:00:00",
+        "was": "Eigener Eintrag",
+        "wer": "Band",
+        "wo": "Backstage",
+    }
+    response = client.post(f"/gigs/{gig.id}/schedule/", json=payload, headers=auth_headers)
+    assert response.status_code == 409
+    assert "festem Eintrag" in response.json()["detail"]
+
+
+def test_schedule_write_requires_editor_permissions(client, auth_headers2, db_session):
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Schedule Perm",
+        datum=date(2032, 7, 1),
+        kind_of_gig="Open Air",
+        venue="Park",
+        begin=time(20, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    payload = {
+        "item_datetime": "2032-07-01T18:00:00",
+        "was": "Aufbau",
+        "wer": "Crew",
+        "wo": "Park",
+    }
+    response = client.post(f"/gigs/{gig.id}/schedule/", json=payload, headers=auth_headers2)
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Not enough permissions"
+
+
+def test_get_gig_schedule_pdf(client, auth_headers, db_session):
+    from backend.models import Gig, GigScheduleItem
+
+    gig = Gig(
+        name="Schedule PDF",
+        datum=date(2033, 8, 10),
+        organizer="Event Team",
+        kind_of_gig="Festival",
+        venue="Open Air",
+        doors=time(17, 0),
+        begin=time(18, 0),
+        end=time(21, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    db_session.add(GigScheduleItem(
+        gig_id=gig.id,
+        item_datetime=datetime(2033, 8, 10, 16, 30, 0),
+        was=(
+            "Aufbau mit sehr langem Beschreibungstext fuer die komplette Produktionsabnahme "
+            "inklusive Backline, Licht und Stageplot LONGTEXTENDMARKER"
+        ),
+        wer="Crew Team A und Team B fuer Monitor und FoH",
+        wo="Buehne Nordseite mit Nebenbuehne und Lagerflaeche",
+    ))
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/schedule.pdf", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF-")
+
+    content = response.content
+    media_box_idx = content.find(b"/MediaBox")
+    assert media_box_idx >= 0
+    media_box = content[media_box_idx:media_box_idx + 100]
+    assert b"595.2756" in media_box
+    assert b"841.8898" in media_box
+    assert media_box.find(b"595.2756") < media_box.find(b"841.8898")
+
+    assert b"Ablaufplan" in content
+    assert b"Gig: Schedule PDF" in content
+    assert b"Art: Festival" in content
+    assert b"Veranstalter: Event Team" in content
+    assert b"Ort: Open Air" in content
+    assert b"Einlass/Beginn/Ende: 17:00 / 18:00 / 21:00" in content
+    assert b"LONGTEXTENDMARKER" in content
+    assert b"Generiert mit libreStage |" in content
+    assert b"pakleds-patentoffice.de" in content
+    assert b"https://pakleds-patentoffice.de" in content
+    assert b"/Subtype /Image" in content
+
+
+def test_bulk_update_gig_schedule_allows_time_swap(client, auth_headers, db_session):
+    from backend.models import Gig, GigScheduleItem
+
+    gig = Gig(
+        name="Bulk Swap",
+        datum=date(2034, 1, 10),
+        kind_of_gig="Concert",
+        venue="Hall",
+        doors=time(18, 0),
+        begin=time(19, 0),
+        end=time(22, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    item1 = GigScheduleItem(gig_id=gig.id, item_datetime=datetime(2034, 1, 10, 14, 0), was="Aufbau", wer="Crew", wo="Buehne")
+    item2 = GigScheduleItem(gig_id=gig.id, item_datetime=datetime(2034, 1, 10, 15, 0), was="Soundcheck", wer="Band", wo="Buehne")
+    db_session.add_all([item1, item2])
+    db_session.commit()
+    db_session.refresh(item1)
+    db_session.refresh(item2)
+
+    payload = {
+        "items": [
+            {
+                "id": item1.id,
+                "item_datetime": "2034-01-10T15:00:00",
+                "was": "Aufbau",
+                "wer": "Crew",
+                "wo": "Buehne",
+            },
+            {
+                "id": item2.id,
+                "item_datetime": "2034-01-10T14:00:00",
+                "was": "Soundcheck",
+                "wer": "Band",
+                "wo": "Buehne",
+            },
+        ]
+    }
+
+    response = client.put(f"/gigs/{gig.id}/schedule/", json=payload, headers=auth_headers)
+    assert response.status_code == 200
+    items = [i for i in response.json()["items"] if not i["is_fixed"]]
+    assert len(items) == 2
+    assert sorted(i["item_datetime"] for i in items) == ["2034-01-10T14:00:00", "2034-01-10T15:00:00"]
+
+
+def test_bulk_update_gig_schedule_rejects_fixed_collision(client, auth_headers, db_session):
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Bulk Conflict",
+        datum=date(2034, 1, 11),
+        kind_of_gig="Concert",
+        venue="Hall",
+        doors=time(18, 0),
+        begin=time(19, 0),
+        end=time(22, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    payload = {
+        "items": [
+            {
+                "item_datetime": "2034-01-11T19:00:00",
+                "was": "Kollision",
+                "wer": "Band",
+                "wo": "Backstage",
+            }
+        ]
+    }
+
+    response = client.put(f"/gigs/{gig.id}/schedule/", json=payload, headers=auth_headers)
+    assert response.status_code == 409
+
+
