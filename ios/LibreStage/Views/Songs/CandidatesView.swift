@@ -106,7 +106,7 @@ private struct CandidateRow: View {
 
     private var quorumTarget: Int? {
         guard totalEligibleVoters > 0 else { return nil }
-        return max(3, Int(Double(totalEligibleVoters) * 0.75))
+        return Int(ceil(Double(totalEligibleVoters) * 0.75))
     }
 
     private var quorumReached: Bool {
@@ -201,12 +201,12 @@ private struct CandidateRow: View {
             }
 
             if let quorumTarget {
-                Text("Quorum: \(stats.sum)/\(quorumTarget) (75%)")
+                Text("Quorum: \(stats.sum)/\(quorumTarget) (50%)")
                     .font(.caption2)
                     .foregroundStyle(quorumReached ? .green : .secondary)
             }
 
-            if canAccept && canAcceptSong {
+            if canAccept {
                 Button {
                     onAccept()
                 } label: {
@@ -215,6 +215,14 @@ private struct CandidateRow: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)
+                .disabled(!canAcceptSong)
+                .opacity(canAcceptSong ? 1.0 : 0.45)
+
+                if !canAcceptSong {
+                    Text("Freigabe erst bei Quorum und mindestens 50% Ja-Stimmen.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if let my = myFeedback {
