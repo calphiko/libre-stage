@@ -448,6 +448,41 @@ struct LiveModeAvailability: Codable {
     let gig_date: String?
 }
 
+// MARK: - Gig Schedule
+
+struct GigScheduleItemOut: Codable, Identifiable {
+    let id: Int?
+    let gig_id: Int
+    let item_datetime: String
+    let was: String
+    let wer: String
+    let wo: String
+    let is_fixed: Bool
+
+    var stableId: String {
+        if let id {
+            return "id-\(id)"
+        }
+        return "fixed-\(item_datetime)-\(was)-\(wer)-\(wo)"
+    }
+}
+
+struct GigScheduleOut: Codable {
+    let items: [GigScheduleItemOut]
+}
+
+struct GigScheduleBulkItemIn: Encodable {
+    let id: Int?
+    let item_datetime: String
+    let was: String
+    let wer: String
+    let wo: String
+}
+
+struct GigScheduleBulkUpdateIn: Encodable {
+    let items: [GigScheduleBulkItemIn]
+}
+
 // MARK: - Statistics
 
 struct GigOverviewEntry: Codable, Identifiable {
