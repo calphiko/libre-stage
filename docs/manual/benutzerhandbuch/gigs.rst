@@ -67,6 +67,22 @@ Setlist-PDF generieren
 Der Button **PDF** erzeugt ein druckfertiges PDF der Setlist mit allen Sets, Songs,
 Tonarten, Dauern, Sängern sowie Gesamtspieldauer und Pausenzeiten.
 
+Ablaufplan-PDF generieren
+-------------------------
+
+Der Button **Ablaufplan-PDF** erzeugt ein separates PDF für den zeitlichen Ablauf eines Gigs.
+
+Enthalten sind:
+
+* Gig-Stammdaten (Name, Datum, Typ, Veranstalter, Ort, Einlass/Beginn/Ende)
+* Alle Ablauf-Einträge in einer tabellarischen Ansicht (Zeit, Was, Wer, Wo)
+* Automatische Zeilenumbrüche bei langen Texten
+* Hochformat (A4) mit optimierten Spaltenbreiten
+
+Das Layout ist modernisiert und enthält ein dezentes Logo-Wasserzeichen.
+Die Farbgestaltung passt sich automatisch an das hinterlegte Logo an
+(``LogoCustom.png`` bzw. ``Logo.png``).
+
 GEMA-Export (Excel)
 --------------------
 
