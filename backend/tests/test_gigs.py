@@ -797,6 +797,9 @@ def test_get_gig_schedule_pdf(client, auth_headers, db_session):
     assert b"Ort: Open Air" in content
     assert b"Einlass/Beginn/Ende: 17:00 / 18:00 / 21:00" in content
     assert b"LONGTEXTENDMARKER" in content
+    assert b"Generiert mit libreStage |" in content
+    assert b"pakleds-patentoffice.de" in content
+    assert b"https://pakleds-patentoffice.de" in content
     assert b"/Subtype /Image" in content
 
 
