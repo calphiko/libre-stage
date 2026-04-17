@@ -40,4 +40,5 @@ Plattform.
    :maxdepth: 1
    :caption: Weitere Informationen
 
+   datenschutz
    changelog
