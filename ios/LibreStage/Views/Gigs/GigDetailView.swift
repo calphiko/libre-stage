@@ -16,6 +16,7 @@ struct GigDetailView: View {
     @State private var editableGig: GigOut?
     @State private var shareItem: ShareSheetItem? = nil
     @State private var showGigStats = false
+    @State private var showGigSchedule = false
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
     @State private var selectedSongForDetails: GigSongDetailSheetItem?
@@ -93,6 +94,12 @@ struct GigDetailView: View {
 
                     // MARK: Aktionen (für alle)
                     Section("Aktionen") {
+                        Button {
+                            showGigSchedule = true
+                        } label: {
+                            Label("Ablaufplan", systemImage: "calendar.badge.clock")
+                        }
+
                         Button {
                             showGigStats = true
                         } label: {
@@ -225,6 +232,9 @@ struct GigDetailView: View {
         }
         .sheet(isPresented: $showGigStats) {
             GigStatisticsSheet(vm: vm, gig: currentGig)
+        }
+        .sheet(isPresented: $showGigSchedule) {
+            GigScheduleSheet(vm: vm, gig: currentGig, canEdit: canEdit)
         }
         .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
             Button("OK", role: .cancel) {}
