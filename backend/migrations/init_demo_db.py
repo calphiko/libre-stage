@@ -23,7 +23,6 @@ Usage:
 """
 
 import sys
-import os
 from pathlib import Path
 from datetime import date, time, datetime, timedelta, timezone
 
@@ -37,7 +36,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.models import (
     Base, User, Song, SongCandidateFeedback,
     Rehearsal, RehSong, RehTodo,
-    Gig, Set, SetSong, GigSet,
+    Gig, Set, SetSong, GigSet, GigScheduleItem,
     Surveys, SurveyFields, SurveyFeedback,
 )
 
@@ -285,9 +284,10 @@ def run():
     set1b_songs[3].feedback = 3
     set1b_songs[4].feedback = 3
 
+    gig1_date = date.today() - timedelta(days=30)
     gig1 = Gig(
         name="Stadtfest Musterstadt",
-        datum=date.today() - timedelta(days=30),
+        datum=gig1_date,
         organizer="Stadtmarketing GmbH",
         kind_of_gig="Stadtfest",
         venue="Marktplatz Musterstadt",
@@ -308,9 +308,10 @@ def run():
     set2b = make_set("Set 2 – Clubabend", "2. Set", 15, [1, 7, 5, 8, 9])
     set2c = make_set("Set 3 – Clubabend", "3. Set",  0, [11, 12, 13])
 
+    gig2_date = date.today() + timedelta(days=14)
     gig2 = Gig(
         name="Clubabend im Blue Note",
-        datum=date.today() + timedelta(days=14),
+        datum=gig2_date,
         organizer="Blue Note Club",
         kind_of_gig="Privatveranstaltung",
         venue="Blue Note Club, Hauptstraße 42",
@@ -328,9 +329,10 @@ def run():
     db.flush()
 
     # Gig 3 – Anfrage (noch offen)
+    gig3_date = date.today() + timedelta(days=60)
     gig3 = Gig(
         name="Sommerfest Musterfirma AG",
-        datum=date.today() + timedelta(days=60),
+        datum=gig3_date,
         organizer="Musterfirma AG",
         kind_of_gig="Privatveranstaltung",
         venue="Firmencampus, Industriestraße 1",
@@ -342,6 +344,94 @@ def run():
     )
     db.add(gig3)
     db.flush()
+
+    # Zusätzliche Ablaufplan-Einträge (naive UTC datetimes, kollisionsfrei zu doors/begin/end)
+    db.add_all([
+        GigScheduleItem(
+            gig_id=gig1.id,
+            item_datetime=datetime.combine(gig1_date - timedelta(days=1), time(16, 0)),
+            was="Aufbau",
+            wer="Band + Technik",
+            wo="Buehne",
+        ),
+        GigScheduleItem(
+            gig_id=gig1.id,
+            item_datetime=datetime.combine(gig1_date, time(15, 30)),
+            was="Anfahrt",
+            wer="Alle",
+            wo="Treffpunkt Proberaum",
+        ),
+        GigScheduleItem(
+            gig_id=gig1.id,
+            item_datetime=datetime.combine(gig1_date, time(17, 30)),
+            was="Soundcheck",
+            wer="Band",
+            wo="Buehne",
+        ),
+        GigScheduleItem(
+            gig_id=gig1.id,
+            item_datetime=datetime.combine(gig1_date, time(22, 30)),
+            was="Abbau",
+            wer="Band + Technik",
+            wo="Buehne",
+        ),
+        GigScheduleItem(
+            gig_id=gig2.id,
+            item_datetime=datetime.combine(gig2_date - timedelta(days=1), time(20, 0)),
+            was="Material checken",
+            wer="Backline Team",
+            wo="Proberaum",
+        ),
+        GigScheduleItem(
+            gig_id=gig2.id,
+            item_datetime=datetime.combine(gig2_date, time(18, 45)),
+            was="Load in",
+            wer="Band",
+            wo="Seiteneingang",
+        ),
+        GigScheduleItem(
+            gig_id=gig2.id,
+            item_datetime=datetime.combine(gig2_date, time(20, 0)),
+            was="Soundcheck",
+            wer="Band",
+            wo="Buehne",
+        ),
+        GigScheduleItem(
+            gig_id=gig2.id,
+            item_datetime=datetime.combine(gig2_date, time(23, 45)),
+            was="Abbau",
+            wer="Band + Club Crew",
+            wo="Club",
+        ),
+        GigScheduleItem(
+            gig_id=gig3.id,
+            item_datetime=datetime.combine(gig3_date - timedelta(days=1), time(19, 0)),
+            was="Generalprobe",
+            wer="Band",
+            wo="Proberaum",
+        ),
+        GigScheduleItem(
+            gig_id=gig3.id,
+            item_datetime=datetime.combine(gig3_date, time(15, 0)),
+            was="Aufbau",
+            wer="Band",
+            wo="Firmencampus",
+        ),
+        GigScheduleItem(
+            gig_id=gig3.id,
+            item_datetime=datetime.combine(gig3_date, time(16, 30)),
+            was="Soundcheck",
+            wer="Band",
+            wo="Buehne",
+        ),
+        GigScheduleItem(
+            gig_id=gig3.id,
+            item_datetime=datetime.combine(gig3_date, time(21, 30)),
+            was="Abbau",
+            wer="Band",
+            wo="Buehne",
+        ),
+    ])
 
     # ── UMFRAGE ──────────────────────────────────────────────────────────────
     survey = Surveys(

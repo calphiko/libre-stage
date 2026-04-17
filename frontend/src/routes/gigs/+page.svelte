@@ -20,7 +20,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getGigs, updateGig, getSetlistPDF, addNewGig, delGig, getGigSetlistAvailability, getGemaListFile, logout as apiLogout, getLiveModeAvailability, getLiveModeAvailabilityBatch} from '$lib/api.js';
+  import { getUser, getGigs, updateGig, getSetlistPDF, addNewGig, delGig, getGigSetlistAvailability, getGemaListFile, logout as apiLogout, getLiveModeAvailability, getLiveModeAvailabilityBatch, getGigSchedule } from '$lib/api.js';
   import { formatTime } from '$lib/common.js';
   import { gigFields, getGigFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
@@ -31,6 +31,7 @@
   import LiveModeModal from '$lib/components/LiveModeModal.svelte';
   import SeasonStatsModal from './SeasonStatsModal.svelte';
   import GigStatsModal from './GigStatsModal.svelte';
+  import GigScheduleModal from './GigScheduleModal.svelte';
 
   const { showError, showSuccess, showWarning } = createMessageHelpers();
 
@@ -49,6 +50,8 @@
   let editGigId = $state(null);
     let liveModeStatus = $state({}); // Key: gigId, Value: { available, can_force, forced, reason }
   let editBuffer = $state({});
+  let scheduleByGigId = $state({});
+  let scheduleLoadingByGigId = $state({});
 
   let gigFieldsDetails = $derived(getGigFieldsDetails($appConfig));
 
@@ -210,8 +213,48 @@
     return dt.toLocaleDateString('de-DE');
   }
 
-  function toggleExpand(id) {
-    expandedGigId = expandedGigId === id ? null : id;
+  async function loadScheduleForGig(gigId) {
+    if (scheduleByGigId[gigId] || scheduleLoadingByGigId[gigId]) return;
+    scheduleLoadingByGigId[gigId] = true;
+    scheduleLoadingByGigId = { ...scheduleLoadingByGigId };
+
+    try {
+      scheduleByGigId[gigId] = await getGigSchedule(null, gigId);
+      scheduleByGigId = { ...scheduleByGigId };
+    } catch (e) {
+      showError(e.message ?? 'Ablaufplan konnte nicht geladen werden');
+    } finally {
+      scheduleLoadingByGigId[gigId] = false;
+      scheduleLoadingByGigId = { ...scheduleLoadingByGigId };
+    }
+  }
+
+  function handleScheduleUpdated(gigId, scheduleData) {
+    scheduleByGigId[gigId] = scheduleData;
+    scheduleByGigId = { ...scheduleByGigId };
+  }
+
+  async function openScheduleModal(gig) {
+    await loadScheduleForGig(gig.id);
+    modalState.trigger({
+      component: GigScheduleModal,
+      meta: {
+        gig,
+        canEdit,
+        scheduleData: scheduleByGigId[gig.id] ?? null,
+        onScheduleUpdated: (data) => handleScheduleUpdated(gig.id, data)
+      },
+      backdropClasses: 'bg-surface-500/50 backdrop-blur-sm'
+    });
+  }
+
+  async function toggleExpand(id) {
+    if (expandedGigId === id) {
+      expandedGigId = null;
+      return;
+    }
+
+    expandedGigId = id;
   }
 
   let canEdit = $derived(user && (user.user_group === 'editor' || user.user_group === 'admin'));
@@ -585,6 +628,13 @@
                               >
                                 Setliste bearbeiten
                               </button>
+                              <button
+                                type="button"
+                                onclick={() => openScheduleModal(gig)}
+                                class="btn variant-filled-primary btn-sm"
+                              >
+                                📋 Ablaufplan
+                              </button>
 
                               <!-- Live-Mode Button basierend auf Verfügbarkeit -->
                               {#if liveModeStatus[gig.id]}
@@ -773,6 +823,13 @@
                         class="btn variant-filled-primary btn-sm w-full"
                       >
                         Setliste bearbeiten
+                      </button>
+                      <button
+                        type="button"
+                        onclick={() => openScheduleModal(gig)}
+                        class="btn variant-filled-primary btn-sm w-full"
+                      >
+                        📋 Ablaufplan
                       </button>
 
                       <!-- Live-Mode Button basierend auf Verfügbarkeit -->
