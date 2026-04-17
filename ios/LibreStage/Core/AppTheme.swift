@@ -102,6 +102,10 @@ extension View {
     func headerBodyBlend() -> some View {
         modifier(HeaderBodyBlendModifier())
     }
+
+    func formFieldSurface() -> some View {
+        modifier(FormFieldSurfaceModifier())
+    }
 }
 
 private struct SoftCardContainerModifier: ViewModifier {
@@ -111,8 +115,70 @@ private struct SoftCardContainerModifier: ViewModifier {
         content
             .listStyle(.insetGrouped)
             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+            .textFieldStyle(SoftCardTextFieldStyle())
+            .labeledContentStyle(SoftCardLabeledContentStyle())
             .scrollContentBackground(.hidden)
             .background(.clear)
+    }
+}
+
+private struct SoftCardTextFieldStyle: TextFieldStyle {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func _body(configuration: TextField<_Label>) -> some View {
+        configuration
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(AppTheme.tileBackground(for: colorScheme))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+            )
+    }
+}
+
+private struct SoftCardLabeledContentStyle: LabeledContentStyle {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            configuration.label
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            configuration.content
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(AppTheme.tileBackground(for: colorScheme))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
+    }
+}
+
+private struct FormFieldSurfaceModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(AppTheme.tileBackground(for: colorScheme))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+            )
     }
 }
 
