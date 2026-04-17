@@ -86,6 +86,7 @@ final class GigsViewModel {
 @Observable
 final class GigDetailViewModel {
     var setlist: GigSetlistOut? = nil
+    var gigSchedule: GigScheduleOut? = nil
     var liveMode: GigSetListLiveMode? = nil
     var liveModeAvailability: LiveModeAvailability? = nil
     var gigFields: [GigFieldDefinition] = GigFieldDefinition.fromConfig(nil)
@@ -93,6 +94,8 @@ final class GigDetailViewModel {
     var isLoading = false
     var gigStatistics: GigStatistics? = nil
     var isSaving = false
+    var isGigScheduleLoading = false
+    var isGigScheduleSaving = false
     var isGigStatisticsLoading = false
     var error: AppError?
 
@@ -117,6 +120,38 @@ final class GigDetailViewModel {
         } catch {
             self.error = .networkError(error)
         }
+    }
+
+    @MainActor
+    func loadGigSchedule(gigId: Int) async {
+        isGigScheduleLoading = true
+        defer { isGigScheduleLoading = false }
+
+        do {
+            gigSchedule = try await APIClient.shared.get(path: "/gigs/\(gigId)/schedule/")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func saveGigScheduleBulk(gigId: Int, payload: GigScheduleBulkUpdateIn) async -> GigScheduleOut? {
+        isGigScheduleSaving = true
+        defer { isGigScheduleSaving = false }
+
+        do {
+            let updated: GigScheduleOut = try await APIClient.shared.put(path: "/gigs/\(gigId)/schedule/", body: payload)
+            gigSchedule = updated
+            return updated
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+
+        return nil
     }
 
     @MainActor
@@ -196,6 +231,14 @@ final class GigDetailViewModel {
         await downloadGigFile(
             path: "/gigs/\(gig.id)/setlist.pdf",
             fallbackFilename: sanitizedFilename(base: gig.name ?? "setlist", suffix: "setlist", ext: "pdf")
+        )
+    }
+
+    @MainActor
+    func downloadSchedulePDF(gig: GigOut) async -> URL? {
+        await downloadGigFile(
+            path: "/gigs/\(gig.id)/schedule.pdf",
+            fallbackFilename: sanitizedFilename(base: gig.name ?? "ablaufplan", suffix: "ablaufplan", ext: "pdf")
         )
     }
 
