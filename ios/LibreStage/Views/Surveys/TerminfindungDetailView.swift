@@ -20,6 +20,7 @@ struct TerminfindungDetailView: View {
     let passedUser: UserOut?    // provided by SurveysView at nav time
     let onFeedbackChanged: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var vm         = SurveysViewModel()
     @State private var localUser: UserOut? = nil   // fallback if passedUser is nil
@@ -100,6 +101,7 @@ struct TerminfindungDetailView: View {
                         .font(.caption).foregroundStyle(.secondary).italic()
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // ── Termine (mein Votum + Auswertung) ───────────────────
             Section {
@@ -241,6 +243,7 @@ struct TerminfindungDetailView: View {
                         }
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
 
         }

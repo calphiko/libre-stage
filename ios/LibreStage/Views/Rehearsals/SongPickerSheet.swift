@@ -55,6 +55,7 @@ struct SongPickerSheet: View {
 
                     Section("Todo (optional)") {
                         TextField("Was gibts zu tun?", text: $todoText)
+                            .formFieldSurface()
                     }
 
                     Section {

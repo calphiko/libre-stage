@@ -10,6 +10,7 @@ struct MeinungsumfrageDetailView: View {
     let passedUser: UserOut?
     let onFeedbackChanged: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var vm = SurveysViewModel()
     @State private var localUser: UserOut? = nil
     @State private var isUpdating = false
@@ -86,6 +87,7 @@ struct MeinungsumfrageDetailView: View {
                         .font(.caption).foregroundStyle(.secondary).italic()
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             if me == nil {
                 Section("Anmeldung") {
@@ -104,6 +106,7 @@ struct MeinungsumfrageDetailView: View {
                         .buttonStyle(.borderedProminent)
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
 
             // ── Balkendiagramm ─────────────────────────────────────────
@@ -137,6 +140,7 @@ struct MeinungsumfrageDetailView: View {
                     }
                     .padding(.top, 2)
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
 
             // ── Optionen ───────────────────────────────────────────────

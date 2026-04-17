@@ -16,6 +16,7 @@ struct SongDetailsView: View {
 
 	@Environment(AuthManager.self) private var authManager
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.colorScheme) private var colorScheme
 
 	init(songId: Int, initialTitle: String? = nil, modalPresentation: Bool = false) {
 		self.songId = songId
@@ -95,6 +96,7 @@ struct SongDetailsView: View {
 						editorView(for: field)
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
 				Section {
 					Button {
@@ -122,6 +124,7 @@ struct SongDetailsView: View {
 						}
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else if let song = vm.song {
 				Section("Details") {
 					ForEach(vm.songFields) { field in
@@ -131,6 +134,7 @@ struct SongDetailsView: View {
 						)
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
 				if canEdit {
 					Section {
@@ -139,6 +143,7 @@ struct SongDetailsView: View {
 							isEditing = true
 						}
 					}
+					.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 				}
 			}
 		}
@@ -154,6 +159,7 @@ struct SongDetailsView: View {
 				options: vm.singerOptions,
 				selection: singerBinding(for: field.key)
 			)
+			.formFieldSurface()
 		case .option:
 			Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
 				if !field.required {
@@ -163,18 +169,22 @@ struct SongDetailsView: View {
 					Text(option.label).tag(option.key)
 				}
 			}
+			.pickerStyle(.menu)
+			.formFieldSurface()
 		case .time:
 			TextField(
 				field.required ? "\(field.label) * (HH:MM:SS)" : "\(field.label) (HH:MM:SS)",
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
+			.formFieldSurface()
 		case .date:
 			TextField(
 				field.required ? "\(field.label) * (YYYY-MM-DD)" : "\(field.label) (YYYY-MM-DD)",
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
+			.formFieldSurface()
 		case .text:
 			if field.key == "text" || field.key == "comment" {
 				TextField(
@@ -183,8 +193,10 @@ struct SongDetailsView: View {
 					axis: .vertical
 				)
 				.lineLimit(3...8)
+				.formFieldSurface()
 			} else {
 				TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
+					.formFieldSurface()
 			}
 		}
 	}
@@ -225,21 +237,24 @@ struct SongDetailsView: View {
 						Spacer()
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else if let stats = vm.statistics {
 				Section("Uebersicht") {
-					LabeledContent("Proben", value: String(stats.rehearsal_count))
-					LabeledContent("Auftritte", value: String(stats.gig_count))
-					LabeledContent("Uebersprungen", value: String(stats.skipped_count))
-					LabeledContent("Eingeschoben", value: String(stats.inserted_count))
+					SongDetailLine(label: "Proben", value: String(stats.rehearsal_count))
+					SongDetailLine(label: "Auftritte", value: String(stats.gig_count))
+					SongDetailLine(label: "Uebersprungen", value: String(stats.skipped_count))
+					SongDetailLine(label: "Eingeschoben", value: String(stats.inserted_count))
 					if let avg = stats.feedback_avg {
-						LabeledContent("Live-Bewertung", value: String(format: "%.2f", avg))
+						SongDetailLine(label: "Live-Bewertung", value: String(format: "%.2f", avg))
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
 				Section("Zeitraum") {
 					SongDetailLine(label: "Erste Probe", value: stats.first_rehearsal)
 					SongDetailLine(label: "Letzte Probe", value: stats.last_rehearsal)
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
 				if !stats.gigs_played.isEmpty {
 					Section("Gespielte Gigs") {
@@ -250,12 +265,14 @@ struct SongDetailsView: View {
 							}
 						}
 					}
+					.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 				}
 			} else {
 				Section {
 					Text("Statistiken konnten nicht geladen werden.")
 						.foregroundStyle(.secondary)
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			}
 		}
 		.softCardContainer()
@@ -271,11 +288,13 @@ struct SongDetailsView: View {
 						Spacer()
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else if vm.rehearsalHistory.isEmpty {
 				Section {
 					Text("Keine Probenhistorie vorhanden.")
 						.foregroundStyle(.secondary)
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else {
 				Section("Letzte Proben") {
 					ForEach(vm.rehearsalHistory) { entry in
@@ -303,6 +322,7 @@ struct SongDetailsView: View {
 						.padding(.vertical, 2)
 					}
 				}
+				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			}
 		}
 		.softCardContainer()
@@ -353,7 +373,13 @@ private struct SongDetailLine: View {
 
 	var body: some View {
 		if let value, !value.isEmpty {
-			LabeledContent(label, value: value)
+			HStack(alignment: .firstTextBaseline, spacing: 12) {
+				Text(label)
+					.foregroundStyle(.secondary)
+				Spacer(minLength: 8)
+				Text(value)
+					.multilineTextAlignment(.trailing)
+			}
 		}
 	}
 }

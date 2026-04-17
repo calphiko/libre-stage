@@ -15,6 +15,7 @@ struct RehearsalDetailView: View {
     @State private var showDeleteConfirm = false
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     init(rehearsal: RehListElem, vm: RehearsalsViewModel) {
         self.rehearsal = rehearsal
@@ -75,10 +76,12 @@ struct RehearsalDetailView: View {
             Section("Zeitraum") {
                 timeInfoRows
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             if let comment = localReh.comment, !comment.isEmpty {
                 Section("Probenkommentar") {
                     Text(comment).foregroundStyle(.secondary)
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
             Section("Songs (\(localReh.songs.count))") {
                 if localReh.songs.isEmpty {
@@ -90,6 +93,7 @@ struct RehearsalDetailView: View {
                     }
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
         }
         .softCardContainer()
     }
@@ -101,6 +105,7 @@ struct RehearsalDetailView: View {
             Section("Zeitraum") {
                 timeInfoRows
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             Section("Probenkommentar") {
                 TextField("Kommentar zur Probe …", text: Binding(
@@ -108,12 +113,14 @@ struct RehearsalDetailView: View {
                     set: { localReh.comment = $0.isEmpty ? nil : $0 }
                 ), axis: .vertical)
                 .lineLimit(3...8)
+                .formFieldSurface()
                 .onSubmit { save() }
                 if localReh.comment?.isEmpty == false {
                     Button("Speichern") { save() }
                         .font(.caption)
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             Section {
                 Button {
@@ -124,6 +131,7 @@ struct RehearsalDetailView: View {
             } header: {
                 Text("Songs (\(localReh.songs.count))")
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             if !localReh.songs.isEmpty {
                 Section {
@@ -144,6 +152,7 @@ struct RehearsalDetailView: View {
                         save()
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
         }
         .softCardContainer()
@@ -161,9 +170,9 @@ struct RehearsalDetailView: View {
 
     @ViewBuilder
     private var timeInfoRows: some View {
-        LabeledContent("Beginn", value: vm.formatDateTime(localReh.begin))
+        RehearsalInfoRow(label: "Beginn", value: vm.formatDateTime(localReh.begin))
         if let end = localReh.end {
-            LabeledContent("Ende", value: vm.formatTime(end) + " Uhr")
+            RehearsalInfoRow(label: "Ende", value: vm.formatTime(end) + " Uhr")
         }
     }
 
@@ -195,6 +204,21 @@ struct RehearsalDetailView: View {
         )
         localReh.songs.append(newSong)
         save()
+    }
+}
+
+private struct RehearsalInfoRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            Text(value)
+                .multilineTextAlignment(.trailing)
+        }
     }
 }
 

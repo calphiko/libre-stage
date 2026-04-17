@@ -198,6 +198,7 @@ private struct CreateSongSheet: View {
                             Text("30s").tag(30.0)
                         }
                         .pickerStyle(.segmented)
+                        .formFieldSurface()
                     }
                 }
 
@@ -373,6 +374,7 @@ private struct CreateSongSheet: View {
                 field.required ? "\(field.label) * (Name + Name)" : "\(field.label) (Name + Name)",
                 text: binding(for: field.key)
             )
+            .formFieldSurface()
         case .option:
             Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
                 if !field.required {
@@ -382,20 +384,25 @@ private struct CreateSongSheet: View {
                     Text(option.label).tag(option.key)
                 }
             }
+            .pickerStyle(.menu)
+            .formFieldSurface()
         case .time:
             TextField(
                 field.required ? "\(field.label) * (HH:MM:SS)" : "\(field.label) (HH:MM:SS)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
+            .formFieldSurface()
         case .date:
             TextField(
                 field.required ? "\(field.label) * (YYYY-MM-DD)" : "\(field.label) (YYYY-MM-DD)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
+            .formFieldSurface()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
+                .formFieldSurface()
         }
     }
 

@@ -52,6 +52,7 @@ struct NewSurveySheet: View {
                 // Titel
                 Section("Titel") {
                     TextField("z.B. Probentermin Oktober", text: $title)
+                        .formFieldSurface()
                 }
 
                 // Art
@@ -142,6 +143,7 @@ struct NewSurveySheet: View {
                 Section("Termin hinzuf\u{FC}gen") {
                     DatePicker("Datum & Zeit", selection: $newDate,
                                displayedComponents: [.date, .hourAndMinute])
+                    .formFieldSurface()
                     Button { addDate(newDate) } label: {
                         Label("Hinzuf\u{FC}gen", systemImage: "plus.circle.fill")
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -152,11 +154,14 @@ struct NewSurveySheet: View {
                 Section("Zeitraum & Uhrzeit") {
                     DatePicker("Von",     selection: $rangeFrom,
                                displayedComponents: .date)
+                    .formFieldSurface()
                     DatePicker("Bis",     selection: $rangeTo,
                                in: rangeFrom...,
                                displayedComponents: .date)
+                    .formFieldSurface()
                     DatePicker("Uhrzeit", selection: $rangeTime,
                                displayedComponents: .hourAndMinute)
+                    .formFieldSurface()
                 }
                 Section("Wochentage") {
                     HStack(spacing: 6) {
@@ -200,6 +205,7 @@ struct NewSurveySheet: View {
         Section("Option hinzuf\u{FC}gen") {
             HStack {
                 TextField("Neue Option \u{2026}", text: $newOption)
+                    .formFieldSurface()
                     .onSubmit { addOption() }
                 Button { addOption() } label: {
                     Image(systemName: "plus.circle.fill").foregroundStyle(.blue)

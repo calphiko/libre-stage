@@ -437,6 +437,8 @@ private struct CreateGigSheet: View {
                     Text(option.label).tag(option.key)
                 }
             }
+            .pickerStyle(.menu)
+            .formFieldSurface()
         case .time:
             HStack {
                 DatePicker(
@@ -453,14 +455,17 @@ private struct CreateGigSheet: View {
                     .foregroundStyle(.secondary)
                 }
             }
+            .formFieldSurface()
         case .date:
             DatePicker(
                 field.required ? "\(field.label) *" : field.label,
                 selection: dateBinding(for: field.key),
                 displayedComponents: .date
             )
+            .formFieldSurface()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
+                .formFieldSurface()
         }
     }
 

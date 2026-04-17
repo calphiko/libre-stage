@@ -30,14 +30,17 @@ struct RehearsalCreateSheet: View {
             Form {
                 Section("Zeitraum") {
                     DatePicker("Beginn", selection: $beginDate, displayedComponents: [.date, .hourAndMinute])
+                        .formFieldSurface()
                     Toggle("Ende festlegen", isOn: $hasEnd)
                     if hasEnd {
                         DatePicker("Ende", selection: $endDate, in: beginDate..., displayedComponents: [.date, .hourAndMinute])
+                            .formFieldSurface()
                     }
                 }
                 Section("Kommentar") {
                     TextField("Optional", text: $comment, axis: .vertical)
                         .lineLimit(3...6)
+                        .formFieldSurface()
                 }
             }
             .softCardContainer()

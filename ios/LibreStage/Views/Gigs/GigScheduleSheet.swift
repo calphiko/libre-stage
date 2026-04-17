@@ -20,6 +20,8 @@ struct GigScheduleSheet: View {
     @State private var shareItem: GigScheduleShareSheetItem?
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
+    @State private var showAddRowSheet = false
+    @State private var newRowDraft = GigScheduleNewRowDraft(dateTime: Date(), was: "", wer: "", wo: "")
 
     var body: some View {
         NavigationStack {
@@ -82,6 +84,7 @@ struct GigScheduleSheet: View {
                 inlineError = ""
                 if newValue {
                     buildFormRowsFromSchedule()
+                    resetNewRowDraft()
                 }
             }
             .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
@@ -97,16 +100,20 @@ struct GigScheduleSheet: View {
                     .padding()
 #endif
             }
+            .sheet(isPresented: $showAddRowSheet) {
+                addRowSheet
+            }
         }
     }
 
     private var editSection: some View {
         Section("Ablaufplan bearbeiten") {
             Button {
-                addRow()
+                openAddRowSheet()
             } label: {
-                Label("Eintrag hinzufuegen", systemImage: "plus")
+                Label("Neuen Eintrag anlegen", systemImage: "plus.circle.fill")
             }
+            .buttonStyle(.borderedProminent)
 
             if formRows.filter({ !$0.isFixed }).isEmpty {
                 Text("Keine flexiblen Eintraege vorhanden.")
@@ -122,13 +129,17 @@ struct GigScheduleSheet: View {
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .disabled(row.isFixed)
+                    .formFieldSurface()
 
                     TextField("Was", text: $row.was)
                         .disabled(row.isFixed)
+                        .formFieldSurface()
                     TextField("Wer", text: $row.wer)
                         .disabled(row.isFixed)
+                        .formFieldSurface()
                     TextField("Wo", text: $row.wo)
                         .disabled(row.isFixed)
+                        .formFieldSurface()
 
                     HStack {
                         if row.isFixed {
@@ -166,6 +177,50 @@ struct GigScheduleSheet: View {
                 Text(inlineError)
                     .font(.footnote)
                     .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private var addRowSheet: some View {
+        NavigationStack {
+            Form {
+                Section("Neuer Eintrag") {
+                    DatePicker(
+                        "Zeitpunkt",
+                        selection: $newRowDraft.dateTime,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .formFieldSurface()
+                    TextField("Was", text: $newRowDraft.was)
+                        .formFieldSurface()
+                    TextField("Wer", text: $newRowDraft.wer)
+                        .formFieldSurface()
+                    TextField("Wo", text: $newRowDraft.wo)
+                        .formFieldSurface()
+                }
+
+                Section {
+                    Text("Der Eintrag wird nach dem Hinzufuegen unten in der Bearbeitungsliste angezeigt und kann dort weiter angepasst werden.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .softCardContainer()
+            .appShellBackground()
+            .navigationTitle("Eintrag hinzufuegen")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen") {
+                        showAddRowSheet = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Hinzufuegen") {
+                        addRowFromDraft()
+                    }
+                    .disabled(!isNewRowDraftValid)
+                }
             }
         }
     }
@@ -219,20 +274,44 @@ struct GigScheduleSheet: View {
         formRows = rows.sorted(by: sortRows)
     }
 
-    private func addRow() {
+    private func openAddRowSheet() {
+        resetNewRowDraft()
+        showAddRowSheet = true
+    }
+
+    private func resetNewRowDraft() {
+        let initialDate: Date
+        if let gigDate = parseGigDate() {
+            initialDate = gigDate
+        } else {
+            initialDate = Date()
+        }
+        newRowDraft = GigScheduleNewRowDraft(dateTime: initialDate, was: "", wer: "", wo: "")
+    }
+
+    private var isNewRowDraftValid: Bool {
+        !trimmed(newRowDraft.was).isEmpty
+            && !trimmed(newRowDraft.wer).isEmpty
+            && !trimmed(newRowDraft.wo).isEmpty
+    }
+
+    private func addRowFromDraft() {
+        let split = formatDateTimeForInputs(newRowDraft.dateTime)
         formRows.append(
             GigScheduleFormRow(
                 rowKey: "new-\(newRowCounter)",
                 itemId: nil,
                 isFixed: false,
-                date: gig.datum ?? todayDateString(),
-                time: "",
-                was: "",
-                wer: "",
-                wo: ""
+                date: split.date,
+                time: split.time,
+                was: trimmed(newRowDraft.was),
+                wer: trimmed(newRowDraft.wer),
+                wo: trimmed(newRowDraft.wo)
             )
         )
+        formRows.sort(by: sortRows)
         newRowCounter += 1
+        showAddRowSheet = false
     }
 
     private func removeRow(_ rowKey: String) {
@@ -368,6 +447,18 @@ struct GigScheduleSheet: View {
         return (dateFormatter.string(from: value), timeFormatter.string(from: value))
     }
 
+    private func parseGigDate() -> Date? {
+        guard let dateString = gig.datum else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: dateString)
+    }
+
+    private func trimmed(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func formatDateTime(_ value: String) -> String {
         let parser = DateFormatter()
         parser.locale = Locale(identifier: "en_US_POSIX")
@@ -411,6 +502,13 @@ private struct GigScheduleFormRow: Identifiable {
 private struct GigScheduleShareSheetItem: Identifiable {
     let id = UUID()
     let url: URL
+}
+
+private struct GigScheduleNewRowDraft {
+    var dateTime: Date
+    var was: String
+    var wer: String
+    var wo: String
 }
 
 #if canImport(UIKit)

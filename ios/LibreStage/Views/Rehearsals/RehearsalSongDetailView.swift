@@ -16,6 +16,7 @@ struct RehearsalSongDetailView: View {
     @State private var setlistCommentDraft = ""
     @State private var todoDraft = ""
     @State private var selectedSongForDetails: RehearsalSongDetailSheetItem?
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         List {
@@ -27,6 +28,7 @@ struct RehearsalSongDetailView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Status-Buttons
             Section("Status") {
@@ -56,6 +58,7 @@ struct RehearsalSongDetailView: View {
                     .padding(.vertical, 4)
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Erledigt-Toggle
             Section {
@@ -71,6 +74,7 @@ struct RehearsalSongDetailView: View {
                 }
                 .tint(.green)
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Felder
             Section("Felder") {
@@ -80,6 +84,7 @@ struct RehearsalSongDetailView: View {
                         get: { song.todo ?? "" },
                         set: { song.todo = $0.isEmpty ? nil : $0 }
                     ))
+                    .formFieldSurface()
                     .onSubmit { onUpdate() }
                 }
 
@@ -89,6 +94,7 @@ struct RehearsalSongDetailView: View {
                         get: { song.setlist_comment ?? "" },
                         set: { song.setlist_comment = $0.isEmpty ? nil : $0 }
                     ))
+                    .formFieldSurface()
                     .onSubmit { onUpdate() }
                 }
 
@@ -99,12 +105,14 @@ struct RehearsalSongDetailView: View {
                         set: { song.comment = $0.isEmpty ? nil : $0 }
                     ), axis: .vertical)
                     .lineLimit(2...5)
+                    .formFieldSurface()
                     .onSubmit { onUpdate() }
                 }
 
                 Button("Felder speichern") { onUpdate() }
                     .font(.caption)
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Todos
             Section("Todos fürs nächste Mal") {
@@ -136,6 +144,7 @@ struct RehearsalSongDetailView: View {
                     }
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Neues Todo hinzufügen
             if !users.isEmpty {
@@ -146,9 +155,12 @@ struct RehearsalSongDetailView: View {
                             Text(u.clear_name).tag(u.id as Int?)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .formFieldSurface()
 
                     HStack {
                         TextField("Was soll getan werden?", text: $newTodoText)
+                            .formFieldSurface()
                         Button {
                             addTodo()
                         } label: {
@@ -161,6 +173,7 @@ struct RehearsalSongDetailView: View {
                         .disabled(newTodoUserId == nil || newTodoText.isEmpty)
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
         }
         .softCardContainer()

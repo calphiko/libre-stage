@@ -107,8 +107,11 @@ struct ProfileView: View {
                 Form {
                     Section("Passwort ändern") {
                         SecureField("Aktuelles Passwort", text: $oldPassword)
+                            .formFieldSurface()
                         SecureField("Neues Passwort",     text: $newPassword)
+                            .formFieldSurface()
                         SecureField("Neues Passwort (Wiederholung)", text: $confirmPassword)
+                            .formFieldSurface()
                     }
                     if let err = vm.passwordError {
                         Section {
@@ -145,6 +148,7 @@ struct ProfileView: View {
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
+                            .formFieldSurface()
                     }
                     Section {
                         Button("Speichern & neu einloggen") {

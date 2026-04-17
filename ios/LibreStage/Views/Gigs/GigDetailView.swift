@@ -21,6 +21,7 @@ struct GigDetailView: View {
     @State private var downloadErrorMessage = ""
     @State private var selectedSongForDetails: GigSongDetailSheetItem?
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.colorScheme) private var colorScheme
 
     init(gig: GigOut, onGigUpdated: ((GigOut) -> Void)? = nil) {
         self.gig = gig
@@ -54,6 +55,7 @@ struct GigDetailView: View {
                             }
                         }
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                     if canEdit {
                         Section {
@@ -87,6 +89,7 @@ struct GigDetailView: View {
                                 }
                             }
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
 
                     // MARK: Live-Modus (nur Editor/Admin)
@@ -172,6 +175,7 @@ struct GigDetailView: View {
 
                         }
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                     // MARK: Setlist
                     ForEach(setlist.sets) { set in
@@ -190,6 +194,7 @@ struct GigDetailView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
 
                 }
@@ -407,7 +412,13 @@ private struct GigInfoRow: View {
 
     var body: some View {
         if let value, !value.isEmpty {
-            LabeledContent(label, value: value)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(label)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                Text(value)
+                    .multilineTextAlignment(.trailing)
+            }
         }
     }
 }
