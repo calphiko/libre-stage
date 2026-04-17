@@ -65,6 +65,13 @@ struct ProfileView: View {
                     } label: {
                         Label("Über diese App", systemImage: "info.circle")
                     }
+
+                    NavigationLink {
+                        PrivacyPolicyView()
+                    } label: {
+                        Label("Datenschutz", systemImage: "hand.raised")
+                    }
+
                     Button {
                         showShareDebugSheet = true
                     } label: {
