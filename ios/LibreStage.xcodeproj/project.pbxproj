@@ -24,6 +24,7 @@
 		A022 /* Views/Gigs/GigsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F022 /* Views/Gigs/GigsView.swift */; };
 		A023 /* Views/Gigs/GigDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F023 /* Views/Gigs/GigDetailView.swift */; };
 		A024 /* Views/Gigs/LiveModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* Views/Gigs/LiveModeView.swift */; };
+		A024B /* Views/Gigs/GigScheduleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024B /* Views/Gigs/GigScheduleSheet.swift */; };
 		A025 /* Views/Rehearsals/RehearsalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F025 /* Views/Rehearsals/RehearsalsView.swift */; };
 		A026 /* Views/Rehearsals/RehearsalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026 /* Views/Rehearsals/RehearsalDetailView.swift */; };
 		A026B /* Views/Rehearsals/RehearsalCreateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */; };
@@ -98,6 +99,7 @@
 		F022 /* Views/Gigs/GigsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigsView.swift; sourceTree = "<group>"; };
 		F023 /* Views/Gigs/GigDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigDetailView.swift; sourceTree = "<group>"; };
 		F024 /* Views/Gigs/LiveModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/LiveModeView.swift; sourceTree = "<group>"; };
+		F024B /* Views/Gigs/GigScheduleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigScheduleSheet.swift; sourceTree = "<group>"; };
 		F025 /* Views/Rehearsals/RehearsalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalsView.swift; sourceTree = "<group>"; };
 		F026 /* Views/Rehearsals/RehearsalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalDetailView.swift; sourceTree = "<group>"; };
 		F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Rehearsals/RehearsalCreateSheet.swift; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 				F022 /* Views/Gigs/GigsView.swift */,
 				F023 /* Views/Gigs/GigDetailView.swift */,
 				F024 /* Views/Gigs/LiveModeView.swift */,
+				F024B /* Views/Gigs/GigScheduleSheet.swift */,
 				F025 /* Views/Rehearsals/RehearsalsView.swift */,
 				F026 /* Views/Rehearsals/RehearsalDetailView.swift */,
 				F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */,
@@ -346,6 +349,7 @@
 				A022 /* Views/Gigs/GigsView.swift in Sources */,
 				A023 /* Views/Gigs/GigDetailView.swift in Sources */,
 				A024 /* Views/Gigs/LiveModeView.swift in Sources */,
+				A024B /* Views/Gigs/GigScheduleSheet.swift in Sources */,
 				A025 /* Views/Rehearsals/RehearsalsView.swift in Sources */,
 				A026 /* Views/Rehearsals/RehearsalDetailView.swift in Sources */,
 				A026B /* Views/Rehearsals/RehearsalCreateSheet.swift in Sources */,
