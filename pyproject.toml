@@ -1,6 +1,6 @@
 [project]
 name = "libre-stage"
-version = "0.1.0"
+version = "0.3.14"
 description = "Band rehearsal and gig management software"
 requires-python = ">=3.11"
 dependencies = [
@@ -78,7 +78,13 @@ pythonpath = ["."]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --strict-markers --cov=backend --cov-report=html --cov-report=term-missing"
+addopts = "-v --strict-markers --cov=backend --cov-report=html --cov-report=term-missing "
 
-
+[tool.coverage.run]
+omit = [
+    "backend/migrations/*",
+    "backend/tests/*",
+    "backend/alembic/*",
+    "*/conftest.py"
+]
 

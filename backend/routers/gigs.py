@@ -28,9 +28,12 @@ Prefix: ``/gigs``  |  Tag: ``gigs``
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
-from datetime import time
+from datetime import date, datetime, time, timedelta
+import colorsys
 import logging
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from pathlib import Path
 
 from typing import List
 
@@ -43,6 +46,12 @@ from backend import models, schemas, auth
 import openpyxl
 from openpyxl.styles import Font, Alignment
 from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfgen import canvas
+from PIL import Image
 
 import os
 from dotenv import load_dotenv
@@ -69,6 +78,483 @@ class LogFilter(logging.Filter):  # pragma: no cover
 
 uvicorn_logger = logging.getLogger("uvicorn.access")
 uvicorn_logger.addFilter(LogFilter())
+
+
+DEFAULT_SCHEDULE_PALETTE = {
+    "bg": colors.HexColor("#0B1220"),
+    "card": colors.HexColor("#111827"),
+    "primary": colors.HexColor("#60A5FA"),
+    "text": colors.HexColor("#E2E8F0"),
+    "muted": colors.HexColor("#94A3B8"),
+    "header_bg": colors.HexColor("#1E293B"),
+    "row_alt": colors.HexColor("#0F172A"),
+    "line": colors.HexColor("#334155"),
+    "fixed": colors.HexColor("#123129"),
+}
+
+
+def _mix_color(a: colors.Color, b: colors.Color, weight_b: float) -> colors.Color:
+    w = max(0.0, min(1.0, weight_b))
+    return colors.Color(
+        red=a.red * (1 - w) + b.red * w,
+        green=a.green * (1 - w) + b.green * w,
+        blue=a.blue * (1 - w) + b.blue * w,
+    )
+
+
+def _relative_luminance(c: colors.Color) -> float:
+    def channel(v: float) -> float:
+        if v <= 0.03928:
+            return v / 12.92
+        return ((v + 0.055) / 1.055) ** 2.4
+
+    r = channel(c.red)
+    g = channel(c.green)
+    b = channel(c.blue)
+    return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
+
+
+def _contrast_ratio(a: colors.Color, b: colors.Color) -> float:
+    l1 = _relative_luminance(a)
+    l2 = _relative_luminance(b)
+    lighter = max(l1, l2)
+    darker = min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _ensure_contrast(fg: colors.Color, bg: colors.Color, min_ratio: float) -> colors.Color:
+    if _contrast_ratio(fg, bg) >= min_ratio:
+        return fg
+
+    if _contrast_ratio(colors.black, bg) >= _contrast_ratio(colors.white, bg):
+        return colors.black
+    return colors.white
+
+
+def _extract_logo_accent(logo_path: Path) -> tuple[float, float, float] | None:
+    try:
+        with Image.open(logo_path) as image:
+            image = image.convert("RGBA")
+            image.thumbnail((120, 120))
+
+            best_score = -1.0
+            best_rgb: tuple[float, float, float] | None = None
+            for count, rgba in image.getcolors(maxcolors=120 * 120) or []:
+                r, g, b, a = rgba
+                if a < 96:
+                    continue
+
+                rf, gf, bf = r / 255.0, g / 255.0, b / 255.0
+                _, saturation, value = colorsys.rgb_to_hsv(rf, gf, bf)
+                if value < 0.14 or value > 0.92:
+                    continue
+
+                # Prefer saturated mid-bright colors as accent candidates.
+                score = ((saturation * 0.8) + ((1.0 - abs(value - 0.55)) * 0.2)) * count
+                if score > best_score:
+                    best_score = score
+                    best_rgb = (rf, gf, bf)
+
+            return best_rgb
+    except Exception:  # pragma: no cover - palette fallback is intentional
+        logger.debug("Could not extract palette color from logo", exc_info=True)
+        return None
+
+
+def _resolve_schedule_palette(logo_path: Path | None) -> dict[str, colors.Color]:
+    palette = dict(DEFAULT_SCHEDULE_PALETTE)
+    if logo_path is None:
+        return palette
+
+    accent_rgb = _extract_logo_accent(logo_path)
+    if accent_rgb is None:
+        return palette
+
+    accent = colors.Color(*accent_rgb)
+    if _relative_luminance(accent) < 0.26:
+        accent = _mix_color(accent, colors.white, 0.30)
+    if _relative_luminance(accent) > 0.70:
+        accent = _mix_color(accent, colors.black, 0.24)
+
+    base_bg = colors.HexColor("#0A0F1A")
+    bg = _mix_color(base_bg, accent, 0.10)
+    card = _mix_color(base_bg, accent, 0.18)
+    header_bg = _mix_color(base_bg, accent, 0.26)
+
+    text = _ensure_contrast(colors.HexColor("#E2E8F0"), card, 7.0)
+    muted = _ensure_contrast(_mix_color(text, accent, 0.38), card, 4.5)
+
+    palette["bg"] = bg
+    palette["card"] = card
+    palette["primary"] = accent
+    palette["text"] = text
+    palette["muted"] = muted
+    palette["header_bg"] = header_bg
+    palette["row_alt"] = _mix_color(card, colors.black, 0.16)
+    palette["line"] = _mix_color(_ensure_contrast(colors.HexColor("#64748B"), card, 2.0), accent, 0.20)
+    palette["fixed"] = _mix_color(_mix_color(card, accent, 0.24), colors.HexColor("#14532D"), 0.20)
+    return palette
+
+
+def _fixed_schedule_points(gig: models.Gig) -> list[tuple[str, datetime]]:
+    """Build fixed schedule timestamps from gig base data (naive UTC)."""
+    fixed_points: list[tuple[str, datetime]] = []
+    if gig.datum is None:
+        return fixed_points
+
+    for label, t in (("Einlass", gig.doors), ("Beginn", gig.begin), ("Ende", gig.end)):
+        if t is not None:
+            fixed_points.append((label, datetime.combine(gig.datum, t)))
+    return fixed_points
+
+
+def _build_schedule_response(gig: models.Gig) -> schemas.GigScheduleOut:
+    fixed_items = [
+        schemas.GigScheduleItemOut(
+            id=None,
+            gig_id=gig.id,
+            item_datetime=item_dt,
+            was=label,
+            wer="",
+            wo="",
+            is_fixed=True,
+        )
+        for label, item_dt in _fixed_schedule_points(gig)
+    ]
+    dynamic_items = [
+        schemas.GigScheduleItemOut.model_validate(item, from_attributes=True)
+        for item in gig.schedule_items
+    ]
+
+    all_items = fixed_items + dynamic_items
+    all_items.sort(key=lambda item: (item.item_datetime, 0 if item.is_fixed else 1))
+    return schemas.GigScheduleOut(items=all_items)
+
+
+def _raise_if_schedule_conflict(
+    db: Session,
+    gig: models.Gig,
+    item_datetime: datetime,
+    exclude_item_id: int | None = None,
+) -> None:
+    existing_query = db.query(models.GigScheduleItem).filter(
+        models.GigScheduleItem.gig_id == gig.id,
+        models.GigScheduleItem.item_datetime == item_datetime,
+    )
+    if exclude_item_id is not None:
+        existing_query = existing_query.filter(models.GigScheduleItem.id != exclude_item_id)
+
+    if existing_query.first() is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Zeitpunkt kollidiert mit einem vorhandenen Ablaufplan-Eintrag.",
+        )
+
+    for label, fixed_dt in _fixed_schedule_points(gig):
+        if fixed_dt == item_datetime:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Zeitpunkt kollidiert mit festem Eintrag: {label}.",
+            )
+
+
+def _build_schedule_pdf(gig: models.Gig) -> bytes:
+    """Render schedule items (fixed + dynamic) to a printable portrait PDF."""
+    schedule = _build_schedule_response(gig)
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4, pageCompression=0)
+    page_width, page_height = A4
+
+    left_margin = 36
+    right_margin = page_width - 36
+    bottom_margin = 52
+    table_header_height = 20
+    row_padding = 4
+    row_line_height = 12
+
+    table_width = right_margin - left_margin
+    time_col_width = 96
+    was_col_width = 180
+    wer_col_width = 110
+    wo_col_width = max(90, table_width - time_col_width - was_col_width - wer_col_width)
+    was_col_width = max(140, table_width - time_col_width - wer_col_width - wo_col_width)
+
+    columns = [
+        ("Zeit", left_margin, time_col_width),
+        ("Was", left_margin + time_col_width, was_col_width),
+        ("Wer", left_margin + time_col_width + was_col_width, wer_col_width),
+        (
+            "Wo",
+            left_margin + time_col_width + was_col_width + wer_col_width,
+            wo_col_width,
+        ),
+    ]
+    footer_prefix = "Generiert mit libreStage | "
+    footer_domain = "pakleds-patentoffice.de"
+    footer_url = "https://pakleds-patentoffice.de"
+    footer_text = f"{footer_prefix}{footer_domain}"
+
+    root_dir = Path(__file__).resolve().parents[2]
+    logo_reader: ImageReader | None = None
+    logo_size: tuple[float, float] | None = None
+
+    def _logo_path() -> Path | None:
+        for filename in ("LogoCustom.png", "Logo.png"):
+            candidate = root_dir / filename
+            if candidate.is_file():
+                return candidate
+        return None
+
+    palette = _resolve_schedule_palette(_logo_path())
+
+    def _get_logo_reader() -> ImageReader | None:
+        nonlocal logo_reader, logo_size
+        if logo_reader is not None:
+            return logo_reader
+
+        logo_path = _logo_path()
+        if logo_path is None:
+            return None
+
+        try:
+            logo_reader = ImageReader(str(logo_path))
+            logo_size = logo_reader.getSize()
+            return logo_reader
+        except Exception:  # pragma: no cover - logo rendering should not break export
+            logger.warning("Could not load logo for schedule PDF", exc_info=True)
+            return None
+
+    def _format_time(value: time | None) -> str:
+        return value.strftime("%H:%M") if value else "-"
+
+    def _wrap_text(text: str, max_width: float, font_name: str, font_size: int) -> list[str]:
+        content = (text or "-").strip() or "-"
+        words = content.split()
+        if not words:
+            return ["-"]
+
+        lines: list[str] = []
+        current = ""
+        for word in words:
+            trial = f"{current} {word}" if current else word
+            if pdfmetrics.stringWidth(trial, font_name, font_size) <= max_width:
+                current = trial
+                continue
+
+            if current:
+                lines.append(current)
+                current = ""
+
+            # Break very long tokens that do not fit into one column line.
+            if pdfmetrics.stringWidth(word, font_name, font_size) <= max_width:
+                current = word
+                continue
+
+            chunk = ""
+            for char in word:
+                trial_chunk = f"{chunk}{char}"
+                if pdfmetrics.stringWidth(trial_chunk, font_name, font_size) <= max_width:
+                    chunk = trial_chunk
+                else:
+                    if chunk:
+                        lines.append(chunk)
+                    chunk = char
+            current = chunk
+
+        if current:
+            lines.append(current)
+        return lines
+
+    def draw_table_header(y: float) -> float:
+        pdf.setFillColor(palette["header_bg"])
+        pdf.roundRect(left_margin, y - table_header_height + 4, right_margin - left_margin, table_header_height, 4, stroke=0, fill=1)
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.setFillColor(palette["text"])
+        for title, x, _ in columns:
+            pdf.drawString(x + 4, y - 10, title)
+        pdf.setStrokeColor(palette["line"])
+        pdf.setLineWidth(0.8)
+        pdf.line(left_margin, y - table_header_height, right_margin, y - table_header_height)
+        return y - table_header_height - 6
+
+    def draw_watermark() -> None:
+        img = _get_logo_reader()
+        if img is None or not logo_size:
+            return
+
+        img_width, img_height = logo_size
+        max_width = page_width * 0.55
+        max_height = page_height * 0.55
+        ratio = min(max_width / img_width, max_height / img_height)
+        render_w = img_width * ratio
+        render_h = img_height * ratio
+        x = (page_width - render_w) / 2
+        y = (page_height - render_h) / 2 - 28
+
+        pdf.saveState()
+        # Keep watermark subtle so table data stays readable.
+        if hasattr(pdf, "setFillAlpha"):
+            pdf.setFillAlpha(0.05)
+            pdf.setStrokeAlpha(0.05)
+        pdf.drawImage(
+            img,
+            x,
+            y,
+            width=render_w,
+            height=render_h,
+            preserveAspectRatio=True,
+            mask="auto",
+        )
+        pdf.restoreState()
+
+    def draw_footer() -> None:
+        pdf.setFillColor(palette["muted"])
+        pdf.setFont("Helvetica", 8)
+        footer_y = 20
+        footer_font = "Helvetica"
+        footer_size = 8
+        full_width = pdfmetrics.stringWidth(footer_text, footer_font, footer_size)
+        prefix_width = pdfmetrics.stringWidth(footer_prefix, footer_font, footer_size)
+        start_x = (page_width - full_width) / 2
+
+        pdf.drawString(start_x, footer_y, footer_prefix)
+        pdf.setFillColor(palette["primary"])
+        pdf.drawString(start_x + prefix_width, footer_y, footer_domain)
+        pdf.linkURL(
+            footer_url,
+            (start_x + prefix_width, footer_y - 2, start_x + full_width, footer_y + footer_size + 1),
+            relative=0,
+            thickness=0,
+        )
+
+    def draw_header() -> float:
+        pdf.setFillColor(palette["bg"])
+        pdf.rect(0, 0, page_width, page_height, stroke=0, fill=1)
+
+        draw_watermark()
+        draw_footer()
+
+        card_height = 134
+        card_y = page_height - 26 - card_height
+        pdf.setFillColor(palette["card"])
+        pdf.roundRect(left_margin, card_y, right_margin - left_margin, card_height, 8, stroke=0, fill=1)
+        pdf.setStrokeColor(palette["line"])
+        pdf.setLineWidth(0.8)
+        pdf.roundRect(left_margin, card_y, right_margin - left_margin, card_height, 8, stroke=1, fill=0)
+
+        pdf.setFillColor(palette["primary"])
+        pdf.rect(left_margin, card_y + card_height - 8, right_margin - left_margin, 8, stroke=0, fill=1)
+
+        img = _get_logo_reader()
+        if img is not None and logo_size:
+            try:
+                img_width, img_height = logo_size
+                max_logo_width = 150
+                max_logo_height = 50
+                ratio = min(max_logo_width / img_width, max_logo_height / img_height)
+                render_w = img_width * ratio
+                render_h = img_height * ratio
+                pdf.drawImage(
+                    img,
+                    right_margin - 14 - render_w,
+                    card_y + card_height - 20 - render_h,
+                    width=render_w,
+                    height=render_h,
+                    preserveAspectRatio=True,
+                    mask="auto",
+                )
+            except Exception:  # pragma: no cover - logo rendering should not break export
+                logger.warning("Could not render logo in schedule PDF", exc_info=True)
+
+        title_x = left_margin + 14
+        title_y = card_y + card_height - 26
+        pdf.setFillColor(palette["text"])
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawString(title_x, title_y, "Ablaufplan")
+        pdf.setFont("Helvetica", 16)
+        pdf.setFillColor(palette["muted"])
+        pdf.drawString(title_x, title_y - 20, f"Gig: {gig.name}")
+        pdf.setFont("Helvetica", 11)
+        date_str = gig.datum.strftime("%d.%m.%Y") if gig.datum else "-"
+        base_fields = [
+            f"Datum: {date_str}",
+            f"Art: {gig.kind_of_gig or '-'}",
+            f"Veranstalter: {gig.organizer or '-'}",
+            f"Ort: {gig.venue or '-'}",
+            f"Einlass/Beginn/Ende: {_format_time(gig.doors)} / {_format_time(gig.begin)} / {_format_time(gig.end)}",
+            f"Export: {datetime.now().strftime('%d.%m.%Y %H:%M')}",
+        ]
+        info_y = title_y - 36
+        pdf.setFillColor(palette["text"])
+        pdf.setFont("Helvetica", 11)
+        for field in base_fields:
+            pdf.drawString(title_x, info_y, field)
+            info_y -= 13
+
+        return draw_table_header(card_y - 11)
+
+    schedule_font_name = "Helvetica"
+    schedule_font_size = 9
+    font_ascent = pdfmetrics.getAscent(schedule_font_name)
+    font_descent = pdfmetrics.getDescent(schedule_font_name)
+    baseline_center_offset = ((font_ascent + font_descent) / 2000.0) * schedule_font_size
+
+    y = draw_header()
+    pdf.setFont(schedule_font_name, schedule_font_size)
+    row_index = 0
+
+    for item in schedule.items:
+        dt_str = item.item_datetime.strftime("%d.%m.%Y %H:%M")
+        was_str = item.was + (" [fix]" if item.is_fixed else "")
+
+        wrapped = {
+            "Zeit": _wrap_text(dt_str, columns[0][2] - 4, "Helvetica", 9),
+            "Was": _wrap_text(was_str, columns[1][2] - 4, "Helvetica", 9),
+            "Wer": _wrap_text(item.wer or "-", columns[2][2] - 4, "Helvetica", 9),
+            "Wo": _wrap_text(item.wo or "-", columns[3][2] - 4, "Helvetica", 9),
+        }
+        row_lines = max(len(lines) for lines in wrapped.values())
+        row_height = row_lines * row_line_height + row_padding * 2
+
+        if y - row_height < bottom_margin:
+            pdf.showPage()
+            y = draw_header()
+            pdf.setFont(schedule_font_name, schedule_font_size)
+
+        row_top = y + 4
+        row_bottom = row_top - row_height
+        if item.is_fixed:
+            fill = palette["fixed"]
+        elif row_index % 2:
+            fill = palette["row_alt"]
+        else:
+            fill = None
+
+        if fill is not None:
+            pdf.setFillColor(fill)
+            pdf.rect(left_margin, row_bottom, right_margin - left_margin, row_height, stroke=0, fill=1)
+
+        for idx in range(row_lines):
+            line_center = row_top - row_padding - (idx * row_line_height) - (row_line_height / 2)
+            line_y = line_center - baseline_center_offset
+            for title, x, _ in columns:
+                lines = wrapped[title]
+                if idx < len(lines):
+                    if title == "Zeit":
+                        pdf.setFillColor(palette["muted"])
+                    else:
+                        pdf.setFillColor(palette["text"])
+                    pdf.drawString(x + 4, line_y, lines[idx])
+
+        y -= row_height
+        pdf.setStrokeColor(palette["line"])
+        pdf.setLineWidth(0.5)
+        pdf.line(left_margin, y + 2, right_margin, y + 2)
+        row_index += 1
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer.getvalue()
 
 
 @router.get("/", response_model=List[schemas.GigOut])
@@ -368,6 +854,209 @@ def get_gig_statistics(
         genre_distribution=genre_counts,
         sets=set_entries,
     )
+
+
+@router.get("/{gig_id}/schedule/", response_model=schemas.GigScheduleOut)
+def get_gig_schedule(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+    return _build_schedule_response(gig)
+
+
+@router.get("/{gig_id}/schedule.pdf", response_class=Response)
+def get_gig_schedule_pdf(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    pdf_bytes = _build_schedule_pdf(gig)
+    safe_name = "".join(ch if ch.isalnum() else "_" for ch in (gig.name or "gig"))
+    headers = {"Content-Disposition": f"attachment; filename=Ablaufplan_{safe_name}_{gig_id}.pdf"}
+    return Response(pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+@router.post("/{gig_id}/schedule/", response_model=schemas.GigScheduleOut)
+def create_gig_schedule_item(
+    gig_id: int,
+    payload: schemas.GigScheduleItemIn,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    if not check_editor(current):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    _raise_if_schedule_conflict(db, gig, payload.item_datetime)
+
+    item = models.GigScheduleItem(gig_id=gig_id, **payload.model_dump())
+    db.add(item)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Zeitpunkt ist bereits belegt.")
+
+    db.refresh(gig)
+    return _build_schedule_response(gig)
+
+
+@router.put("/{gig_id}/schedule/", response_model=schemas.GigScheduleOut)
+def update_gig_schedule_bulk(
+    gig_id: int,
+    payload: schemas.GigScheduleBulkUpdateIn,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    if not check_editor(current):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    fixed_datetimes = {fixed_dt for _, fixed_dt in _fixed_schedule_points(gig)}
+    payload_datetimes: set[datetime] = set()
+    payload_ids: set[int] = set()
+
+    for item in payload.items:
+        if item.item_datetime in payload_datetimes:
+            raise HTTPException(status_code=409, detail="Zeitpunkt doppelt im Ablaufplan-Payload.")
+        payload_datetimes.add(item.item_datetime)
+
+        if item.item_datetime in fixed_datetimes:
+            raise HTTPException(status_code=409, detail="Zeitpunkt kollidiert mit einem festen Eintrag.")
+
+        if item.id is not None:
+            if item.id in payload_ids:
+                raise HTTPException(status_code=409, detail="Eintrag-ID doppelt im Ablaufplan-Payload.")
+            payload_ids.add(item.id)
+
+    existing_items = db.query(models.GigScheduleItem).filter_by(gig_id=gig_id).all()
+    existing_by_id = {item.id: item for item in existing_items}
+
+    unknown_ids = [item_id for item_id in payload_ids if item_id not in existing_by_id]
+    if unknown_ids:
+        raise HTTPException(status_code=404, detail="Schedule item not found")
+
+    try:
+        # Replace-all behavior: remove dynamic items not present in payload.
+        for item in existing_items:
+            if item.id not in payload_ids:
+                db.delete(item)
+
+        db.flush()
+
+        updates = []
+        for item_data in payload.items:
+            if item_data.id is not None:
+                updates.append((existing_by_id[item_data.id], item_data))
+
+        # Move updated rows to guaranteed-free temporary datetimes first so swaps are possible.
+        if updates:
+            used_datetimes = {item.item_datetime for item in existing_items}
+            used_datetimes.update(fixed_datetimes)
+            used_datetimes.update(payload_datetimes)
+            temp_anchor = datetime(9999, 12, 31, 23, 59, 59)
+            temp_offset_seconds = 0
+
+            for item, _ in updates:
+                temp_dt = temp_anchor - timedelta(seconds=temp_offset_seconds)
+                while temp_dt in used_datetimes:
+                    temp_offset_seconds += 1
+                    temp_dt = temp_anchor - timedelta(seconds=temp_offset_seconds)
+                temp_offset_seconds += 1
+                used_datetimes.add(temp_dt)
+                item.item_datetime = temp_dt
+
+            db.flush()
+
+        for item_data in payload.items:
+            if item_data.id is not None:
+                item = existing_by_id[item_data.id]
+                item.item_datetime = item_data.item_datetime
+                item.was = item_data.was
+                item.wer = item_data.wer
+                item.wo = item_data.wo
+            else:
+                db.add(models.GigScheduleItem(gig_id=gig_id, **item_data.model_dump(exclude={"id"})))
+
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Zeitpunkt ist bereits belegt.")
+
+    db.refresh(gig)
+    return _build_schedule_response(gig)
+
+
+@router.put("/{gig_id}/schedule/{item_id}", response_model=schemas.GigScheduleOut)
+def update_gig_schedule_item(
+    gig_id: int,
+    item_id: int,
+    payload: schemas.GigScheduleItemIn,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    if not check_editor(current):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    item = db.query(models.GigScheduleItem).filter_by(id=item_id, gig_id=gig_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Schedule item not found")
+
+    _raise_if_schedule_conflict(db, gig, payload.item_datetime, exclude_item_id=item_id)
+
+    for key, value in payload.model_dump().items():
+        setattr(item, key, value)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Zeitpunkt ist bereits belegt.")
+
+    db.refresh(gig)
+    return _build_schedule_response(gig)
+
+
+@router.delete("/{gig_id}/schedule/{item_id}", response_model=schemas.GigScheduleOut)
+def delete_gig_schedule_item(
+    gig_id: int,
+    item_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    if not check_editor(current):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    item = db.query(models.GigScheduleItem).filter_by(id=item_id, gig_id=gig_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Schedule item not found")
+
+    db.delete(item)
+    db.commit()
+    db.refresh(gig)
+    return _build_schedule_response(gig)
 
 
 @router.put("/{gig_id}", response_model=schemas.GigOut)
@@ -873,4 +1562,5 @@ def is_setlist_available(
     is_available = set_available and setsong_available
     logger.info(f"Setlist availability for gig_id={gig_id}: {is_available}")
     return {"setlist_available": is_available}
+
 

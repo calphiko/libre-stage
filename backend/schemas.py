@@ -339,6 +339,41 @@ class GigOut(BaseModel):
 
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
 
+
+class GigScheduleItemIn(BaseModel):
+    item_datetime: datetime
+    was: str = Field(..., max_length=512)
+    wer: str = Field(..., max_length=512)
+    wo: str = Field(..., max_length=512)
+
+
+class GigScheduleItemOut(BaseModel):
+    id: Optional[int] = None
+    gig_id: int
+    item_datetime: datetime
+    was: str
+    wer: str
+    wo: str
+    is_fixed: bool = False
+
+    model_config = {"from_attributes": True}
+
+
+class GigScheduleOut(BaseModel):
+    items: List[GigScheduleItemOut] = Field(default_factory=list)
+
+
+class GigScheduleBulkItemIn(BaseModel):
+    id: Optional[int] = None
+    item_datetime: datetime
+    was: str = Field(..., max_length=512)
+    wer: str = Field(..., max_length=512)
+    wo: str = Field(..., max_length=512)
+
+
+class GigScheduleBulkUpdateIn(BaseModel):
+    items: List[GigScheduleBulkItemIn] = Field(default_factory=list)
+
 class SetOut(BaseModel):
     id: int
     position: int
