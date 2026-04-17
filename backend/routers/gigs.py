@@ -267,7 +267,7 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
 
     left_margin = 36
     right_margin = page_width - 36
-    bottom_margin = 36
+    bottom_margin = 52
     table_header_height = 20
     row_padding = 4
     row_line_height = 12
@@ -289,6 +289,10 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
             wo_col_width,
         ),
     ]
+    footer_prefix = "Generiert mit libreStage | "
+    footer_domain = "pakleds-patentoffice.de"
+    footer_url = "https://pakleds-patentoffice.de"
+    footer_text = f"{footer_prefix}{footer_domain}"
 
     root_dir = Path(__file__).resolve().parents[2]
     logo_reader: ImageReader | None = None
@@ -403,11 +407,32 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
         )
         pdf.restoreState()
 
+    def draw_footer() -> None:
+        pdf.setFillColor(palette["muted"])
+        pdf.setFont("Helvetica", 8)
+        footer_y = 20
+        footer_font = "Helvetica"
+        footer_size = 8
+        full_width = pdfmetrics.stringWidth(footer_text, footer_font, footer_size)
+        prefix_width = pdfmetrics.stringWidth(footer_prefix, footer_font, footer_size)
+        start_x = (page_width - full_width) / 2
+
+        pdf.drawString(start_x, footer_y, footer_prefix)
+        pdf.setFillColor(palette["primary"])
+        pdf.drawString(start_x + prefix_width, footer_y, footer_domain)
+        pdf.linkURL(
+            footer_url,
+            (start_x + prefix_width, footer_y - 2, start_x + full_width, footer_y + footer_size + 1),
+            relative=0,
+            thickness=0,
+        )
+
     def draw_header() -> float:
         pdf.setFillColor(palette["bg"])
         pdf.rect(0, 0, page_width, page_height, stroke=0, fill=1)
 
         draw_watermark()
+        draw_footer()
 
         card_height = 134
         card_y = page_height - 26 - card_height
