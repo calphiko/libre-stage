@@ -251,6 +251,9 @@ private struct CreateSongSheet: View {
                 setDefaultValuesIfNeeded()
                 applyInitialPrefillIfNeeded()
             }
+            .onChange(of: initialPrefill?.id) { _, _ in
+                applyInitialPrefillIfNeeded()
+            }
             .onDisappear {
                 stopRecognitionIfNeeded()
             }
@@ -428,9 +431,9 @@ private struct CreateSongSheet: View {
     }
 
     private func applyInitialPrefillIfNeeded() {
+        guard let initialPrefill else { return }
         guard !hasAppliedInitialPrefill else { return }
         hasAppliedInitialPrefill = true
-        guard let initialPrefill else { return }
 
         var autofilledKeys: [String] = []
         if !initialPrefill.title.isEmpty {
