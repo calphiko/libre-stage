@@ -28,7 +28,7 @@ Prefix: ``/gigs``  |  Tag: ``gigs``
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 import colorsys
 import logging
 from sqlalchemy.orm import Session
@@ -950,22 +950,48 @@ def update_gig_schedule_bulk(
     if unknown_ids:
         raise HTTPException(status_code=404, detail="Schedule item not found")
 
-    # Replace-all behavior: remove dynamic items not present in payload.
-    for item in existing_items:
-        if item.id not in payload_ids:
-            db.delete(item)
-
-    for item_data in payload.items:
-        if item_data.id is not None:
-            item = existing_by_id[item_data.id]
-            item.item_datetime = item_data.item_datetime
-            item.was = item_data.was
-            item.wer = item_data.wer
-            item.wo = item_data.wo
-        else:
-            db.add(models.GigScheduleItem(gig_id=gig_id, **item_data.model_dump(exclude={"id"})))
-
     try:
+        # Replace-all behavior: remove dynamic items not present in payload.
+        for item in existing_items:
+            if item.id not in payload_ids:
+                db.delete(item)
+
+        db.flush()
+
+        updates = []
+        for item_data in payload.items:
+            if item_data.id is not None:
+                updates.append((existing_by_id[item_data.id], item_data))
+
+        # Move updated rows to guaranteed-free temporary datetimes first so swaps are possible.
+        if updates:
+            used_datetimes = {item.item_datetime for item in existing_items}
+            used_datetimes.update(fixed_datetimes)
+            used_datetimes.update(payload_datetimes)
+            temp_anchor = datetime(9999, 12, 31, 23, 59, 59)
+            temp_offset_seconds = 0
+
+            for item, _ in updates:
+                temp_dt = temp_anchor - timedelta(seconds=temp_offset_seconds)
+                while temp_dt in used_datetimes:
+                    temp_offset_seconds += 1
+                    temp_dt = temp_anchor - timedelta(seconds=temp_offset_seconds)
+                temp_offset_seconds += 1
+                used_datetimes.add(temp_dt)
+                item.item_datetime = temp_dt
+
+            db.flush()
+
+        for item_data in payload.items:
+            if item_data.id is not None:
+                item = existing_by_id[item_data.id]
+                item.item_datetime = item_data.item_datetime
+                item.was = item_data.was
+                item.wer = item_data.wer
+                item.wo = item_data.wo
+            else:
+                db.add(models.GigScheduleItem(gig_id=gig_id, **item_data.model_dump(exclude={"id"})))
+
         db.commit()
     except IntegrityError:
         db.rollback()

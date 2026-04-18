@@ -3,6 +3,18 @@
 Änderungsprotokoll
 ==================
 
+v0.3.15 (2026-04-18)
+---------------------
+
+* Songs: Beim Anlegen eines Songs prueft das Formular jetzt live die Kombination
+  aus **Titel** und **Interpret** gegen bestehende Eintraege (inkl. kleiner
+  Schreibabweichungen)
+* Songs: Bei wahrscheinlicher Dublette erscheint direkt unter **Interpret** ein
+  Warning-Hinweis mit dem Status des bereits vorhandenen Songs
+* Songs: Das Speichern bleibt trotz Hinweis weiterhin moeglich
+* Benutzerhandbuch: Abschnitt ``Song anlegen`` um die neue Dublettenwarnung
+  ergaenzt
+
 v0.3.13 (2026-03-16)
 ---------------------
 

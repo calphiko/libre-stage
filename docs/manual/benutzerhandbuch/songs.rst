@@ -43,6 +43,13 @@ Klicke auf **+ Neuer Song**, um das Formular zu öffnen.
    * - **Sänger**
      - Hauptsänger aus der Sängerliste
 
+.. tip::
+   Beim Ausfuellen von **Titel** und **Interpret** erfolgt direkt im Formular
+   eine Live-Pruefung auf wahrscheinliche Dubletten (inklusive kleiner
+   Schreibfehler oder Abweichungen). Wenn ein aehnlicher Song bereits existiert,
+   erscheint unter dem Feld **Interpret** ein Warning-Hinweis mit dessen Status.
+   Das Speichern bleibt trotzdem moeglich.
+
 Status-Workflow
 ---------------
 
