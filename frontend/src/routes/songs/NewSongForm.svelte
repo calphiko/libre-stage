@@ -20,15 +20,28 @@
   import { modalState } from '$lib/modalState.js';
   import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
+  import { findBestSongDuplicate } from '$lib/songDuplicateCheck.js';
+  import { fade, fly } from 'svelte/transition';
 
   // Diese Props werden vom Modal übergeben
-  let { response = () => {}, parent } = $props();
+  let { response = () => {}, parent, existingSongs = [] } = $props();
 
   
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
   let song = $state({});
+  let duplicateMatch = $state(null);
+
+  function getStatusLabel(statusKey) {
+    const found = ($appConfig?.songStatuses ?? []).find((s) => s?.key === statusKey);
+    return found?.label ?? statusKey ?? 'unbekannt';
+  }
+
+  function checkDuplicate() {
+    const result = findBestSongDuplicate(song, existingSongs);
+    duplicateMatch = result?.song ?? null;
+  }
 
   function submit() {
     //console.log("Song: ", song);
@@ -88,6 +101,16 @@
                       type="text"
                       class="input flex-grow-1"
                       bind:value={song[songField.key]}
+                      oninput={() => {
+                        if (songField.key === 'title' || songField.key === 'interpret') {
+                          checkDuplicate();
+                        }
+                      }}
+                          onchange={() => {
+                            if (songField.key === 'title' || songField.key === 'interpret') {
+                              checkDuplicate();
+                            }
+                          }}
                       placeholder={songField.label}
                       required={songField.required}
                       minlength="1"
@@ -96,6 +119,30 @@
                     />
                   {/if}
                 </div>
+
+                {#if songField.key === 'interpret' && duplicateMatch}
+                  <div
+                    class="mt-2 mb-3"
+                    in:fade={{ duration: 220 }}
+                    out:fade={{ duration: 140 }}
+                  >
+                  <div
+                    class="alert variant-soft-warning rounded-xl border border-warning-300/50 shadow-sm"
+                    role="status"
+                    aria-live="polite"
+                    in:fly={{ y: -6, duration: 220 }}
+                    out:fly={{ y: -4, duration: 140 }}
+                  >
+                    <div class="alert-message flex items-start gap-2 leading-relaxed">
+                      <span class="text-warning-600 dark:text-warning-400 mt-[1px]">⚠</span>
+                      <span>
+                        Dieser Song ist wahrscheinlich bereits vorhanden: <strong>{duplicateMatch.interpret} - {duplicateMatch.title}</strong>
+                        (Status: <strong>{getStatusLabel(duplicateMatch.status)}</strong>). Du kannst trotzdem speichern.
+                      </span>
+                    </div>
+                  </div>
+                  </div>
+                {/if}
             {/if}
           {/each}
 
