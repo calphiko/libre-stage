@@ -129,6 +129,7 @@ private struct CreateSongSheet: View {
     let initialPrefill: AddSongPrefillRequest?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var draft = SongDetailsDraft()
     @State private var isRecognizingSong = false
     @State private var recognitionResultHint = ""
@@ -138,6 +139,8 @@ private struct CreateSongSheet: View {
     @State private var recognitionTimeoutSeconds: Double = 20
     @State private var highlightedAutofillFields: Set<String> = []
     @State private var hasAppliedInitialPrefill = false
+    @State private var duplicateMatch: SongOut?
+    @State private var duplicateWarningPulse = false
 
     var body: some View {
         NavigationStack {
@@ -211,6 +214,19 @@ private struct CreateSongSheet: View {
                                 : AppTheme.rowBackground(for: colorScheme)
                             )
                             .animation(.easeInOut(duration: 0.25), value: highlightedAutofillFields)
+
+                        if field.key == "interpret", let duplicateMatch {
+                            duplicateWarningView(for: duplicateMatch)
+                                .padding(.top, 4)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .scaleEffect(duplicateWarningPulse ? 1.02 : 1.0)
+                                .animation(
+                                    reduceMotion
+                                    ? .easeOut(duration: 0.01)
+                                    : .spring(response: 0.28, dampingFraction: 0.66),
+                                    value: duplicateWarningPulse
+                                )
+                        }
                     }
                 }
 
@@ -248,16 +264,51 @@ private struct CreateSongSheet: View {
             }
             .task {
                 songRecognitionAvailable = SongRecognitionService.isRecognitionAvailable
+                if vm.songs.isEmpty {
+                    await vm.loadSongs()
+                }
                 setDefaultValuesIfNeeded()
                 applyInitialPrefillIfNeeded()
+                checkDuplicate()
             }
             .onChange(of: initialPrefill?.id) { _, _ in
                 applyInitialPrefillIfNeeded()
+            }
+            .onChange(of: draft.title) { _, _ in
+                checkDuplicate()
+            }
+            .onChange(of: draft.interpret) { _, _ in
+                checkDuplicate()
+            }
+            .onChange(of: vm.songs.count) { _, _ in
+                checkDuplicate()
+            }
+            .onChange(of: duplicateMatchIdentity(duplicateMatch)) { _, newIdentity in
+                guard newIdentity != nil else { return }
+                triggerDuplicateWarningPulse()
             }
             .onDisappear {
                 stopRecognitionIfNeeded()
             }
         }
+    }
+
+    @ViewBuilder
+    private func duplicateWarningView(for duplicateMatch: SongOut) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            Text(
+                "Dieser Song ist wahrscheinlich bereits vorhanden: " +
+                "\(duplicateMatch.interpret ?? "-") - \(duplicateMatch.title ?? "-") " +
+                "(Status: \(statusLabel(for: duplicateMatch.status))). Du kannst trotzdem speichern."
+            )
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+        .padding(10)
+        .background(Color.orange.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func recognizeSong() {
@@ -295,6 +346,8 @@ private struct CreateSongSheet: View {
                     draft.setValue(match.interpret, for: "interpret")
                     autofilledKeys.append("interpret")
                 }
+
+                checkDuplicate()
 
                 flashAutofillHighlight(for: autofilledKeys)
                 triggerAutofillHaptic(for: autofilledKeys)
@@ -369,6 +422,44 @@ private struct CreateSongSheet: View {
         SongRecognitionService.shared.stopRecognition()
     }
 
+    private func checkDuplicate() {
+        let newMatch = SongsCreateDuplicateCheck.findBestSongDuplicate(candidate: draft, songs: vm.songs)?.song
+        let oldIdentity = duplicateMatchIdentity(duplicateMatch)
+        let newIdentity = duplicateMatchIdentity(newMatch)
+
+        guard oldIdentity != newIdentity else { return }
+
+        if reduceMotion {
+            duplicateMatch = newMatch
+        } else {
+            withAnimation(.easeInOut(duration: 0.22)) {
+                duplicateMatch = newMatch
+            }
+        }
+    }
+
+    private func statusLabel(for statusKey: String?) -> String {
+        guard let statusKey, !statusKey.isEmpty else { return "unbekannt" }
+        let statusField = vm.songFields.first(where: { $0.key == "status" })
+        return statusField?.options.first(where: { $0.key == statusKey })?.label ?? statusKey
+    }
+
+    private func duplicateMatchIdentity(_ song: SongOut?) -> String? {
+        guard let song else { return nil }
+        return "\(song.id.map(String.init) ?? "nil")|\(SongsCreateDuplicateCheck.normalizeSongText(song.title))|\(SongsCreateDuplicateCheck.normalizeSongText(song.interpret))"
+    }
+
+    private func triggerDuplicateWarningPulse() {
+        guard !reduceMotion else { return }
+
+        duplicateWarningPulse = false
+        Task { @MainActor in
+            duplicateWarningPulse = true
+            try? await Task.sleep(for: .seconds(0.16))
+            duplicateWarningPulse = false
+        }
+    }
+
     @ViewBuilder
     private func editorView(for field: SongFieldDefinition) -> some View {
         switch field.type {
@@ -412,7 +503,12 @@ private struct CreateSongSheet: View {
     private func binding(for key: String) -> Binding<String> {
         Binding(
             get: { draft.value(for: key) },
-            set: { draft.setValue($0, for: key) }
+            set: {
+                draft.setValue($0, for: key)
+                if key == "title" || key == "interpret" {
+                    checkDuplicate()
+                }
+            }
         )
     }
 
@@ -444,6 +540,8 @@ private struct CreateSongSheet: View {
             draft.setValue(initialPrefill.interpret, for: "interpret")
             autofilledKeys.append("interpret")
         }
+
+        checkDuplicate()
 
         flashAutofillHighlight(for: autofilledKeys)
         triggerAutofillHaptic(for: autofilledKeys)
@@ -493,6 +591,125 @@ private struct SongRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+private struct SongsDuplicateMatch {
+    let score: Double
+    let song: SongOut
+}
+
+private enum SongsCreateDuplicateCheck {
+    static func findBestSongDuplicate(candidate: SongDetailsDraft, songs: [SongOut]) -> SongsDuplicateMatch? {
+        let candidateTitle = normalizeSongText(candidate.title)
+        let candidateInterpret = normalizeSongText(candidate.interpret)
+
+        guard !candidateTitle.isEmpty, !candidateInterpret.isEmpty else {
+            return nil
+        }
+
+        var bestMatch: SongsDuplicateMatch?
+
+        for song in songs {
+            let songTitle = normalizeSongText(song.title)
+            let songInterpret = normalizeSongText(song.interpret)
+            guard !songTitle.isEmpty, !songInterpret.isEmpty else {
+                continue
+            }
+
+            let exact = candidateTitle == songTitle && candidateInterpret == songInterpret
+            let titleScore = bestFieldScore(candidateTitle, songTitle)
+            let interpretScore = bestFieldScore(candidateInterpret, songInterpret)
+            let combinedScore = exact ? 1 : titleScore * 0.6 + interpretScore * 0.4
+
+            let passesBalancedThreshold =
+                exact ||
+                (titleScore >= 0.84 && interpretScore >= 0.84) ||
+                combinedScore >= 0.88
+
+            guard passesBalancedThreshold else {
+                continue
+            }
+
+            if bestMatch == nil || combinedScore > (bestMatch?.score ?? 0) {
+                bestMatch = SongsDuplicateMatch(score: combinedScore, song: song)
+            }
+        }
+
+        return bestMatch
+    }
+
+    static func normalizeSongText(_ value: String?) -> String {
+        let base = (value ?? "")
+            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+
+        let alnumSeparated = base.replacingOccurrences(
+            of: "[^a-z0-9]+",
+            with: " ",
+            options: .regularExpression
+        )
+
+        return alnumSeparated
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+
+    private static func sortTokens(_ value: String) -> String {
+        normalizeSongText(value)
+            .split(separator: " ")
+            .map(String.init)
+            .sorted()
+            .joined(separator: " ")
+    }
+
+    private static func similarity(_ left: String, _ right: String) -> Double {
+        if left.isEmpty || right.isEmpty {
+            return 0
+        }
+        if left == right {
+            return 1
+        }
+
+        let maxLen = max(left.count, right.count)
+        if maxLen == 0 {
+            return 1
+        }
+
+        let distance = levenshteinDistance(left, right)
+        return 1 - (Double(distance) / Double(maxLen))
+    }
+
+    private static func bestFieldScore(_ left: String, _ right: String) -> Double {
+        let direct = similarity(normalizeSongText(left), normalizeSongText(right))
+        let tokenSorted = similarity(sortTokens(left), sortTokens(right))
+        return max(direct, tokenSorted)
+    }
+
+    private static func levenshteinDistance(_ left: String, _ right: String) -> Int {
+        if left == right { return 0 }
+        if left.isEmpty { return right.count }
+        if right.isEmpty { return left.count }
+
+        let leftChars = Array(left)
+        let rightChars = Array(right)
+
+        var previous = Array(0...rightChars.count)
+        var current = Array(repeating: 0, count: rightChars.count + 1)
+
+        for (i, leftChar) in leftChars.enumerated() {
+            current[0] = i + 1
+            for (j, rightChar) in rightChars.enumerated() {
+                let cost = leftChar == rightChar ? 0 : 1
+                current[j + 1] = min(
+                    previous[j + 1] + 1,
+                    current[j] + 1,
+                    previous[j] + cost
+                )
+            }
+            swap(&previous, &current)
+        }
+
+        return previous[rightChars.count]
     }
 }
 
