@@ -201,7 +201,7 @@ private struct CreateSongSheet: View {
                             Text("30s").tag(30.0)
                         }
                         .pickerStyle(.segmented)
-                        .formFieldSurface()
+                        .listAlignedFieldSurface()
                     }
                 }
 
@@ -241,6 +241,7 @@ private struct CreateSongSheet: View {
                 }
             }
             .softCardContainer()
+            .textFieldStyle(.plain)
             .appShellBackground()
             .navigationTitle("Neuer Song")
             .navigationBarTitleDisplayMode(.inline)
@@ -468,7 +469,7 @@ private struct CreateSongSheet: View {
                 field.required ? "\(field.label) * (Name + Name)" : "\(field.label) (Name + Name)",
                 text: binding(for: field.key)
             )
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .option:
             Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
                 if !field.required {
@@ -479,24 +480,24 @@ private struct CreateSongSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .time:
             TextField(
                 field.required ? "\(field.label) * (HH:MM:SS)" : "\(field.label) (HH:MM:SS)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .date:
             TextField(
                 field.required ? "\(field.label) * (YYYY-MM-DD)" : "\(field.label) (YYYY-MM-DD)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
-                .formFieldSurface()
+                .listAlignedFieldSurface()
         }
     }
 

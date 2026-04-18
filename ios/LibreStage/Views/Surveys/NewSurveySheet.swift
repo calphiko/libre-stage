@@ -7,6 +7,7 @@ import SwiftUI
 struct NewSurveySheet: View {
     let onCreate: (SurveyIn) async -> Void
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var title   = ""
     @State private var kind    = "Terminfindung"
@@ -52,8 +53,9 @@ struct NewSurveySheet: View {
                 // Titel
                 Section("Titel") {
                     TextField("z.B. Probentermin Oktober", text: $title)
-                        .formFieldSurface()
+                        .listAlignedFieldSurface()
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 // Art
                 Section("Art der Abstimmung") {
@@ -64,6 +66,7 @@ struct NewSurveySheet: View {
                     .pickerStyle(.segmented)
                     .onChange(of: kind) { _, _ in fields = []; genError = "" }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 // Felder
                 if kind == "Terminfindung" {
@@ -91,9 +94,11 @@ struct NewSurveySheet: View {
                         }
                         .onDelete { off in fields.remove(atOffsets: off) }
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
             }
             .softCardContainer()
+            .textFieldStyle(.plain)
             .appShellBackground()
             .navigationTitle("Neue Abstimmung")
             .navigationBarTitleDisplayMode(.inline)
@@ -139,30 +144,33 @@ struct NewSurveySheet: View {
             Section {
                 Toggle("Zeitraum generieren", isOn: $useRange.animation())
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             if !useRange {
                 Section("Termin hinzuf\u{FC}gen") {
                     DatePicker("Datum & Zeit", selection: $newDate,
                                displayedComponents: [.date, .hourAndMinute])
-                    .formFieldSurface()
+                    .listAlignedFieldSurface()
                     Button { addDate(newDate) } label: {
                         Label("Hinzuf\u{FC}gen", systemImage: "plus.circle.fill")
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                     .buttonStyle(.borderedProminent)
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             } else {
                 Section("Zeitraum & Uhrzeit") {
                     DatePicker("Von",     selection: $rangeFrom,
                                displayedComponents: .date)
-                    .formFieldSurface()
+                    .listAlignedFieldSurface()
                     DatePicker("Bis",     selection: $rangeTo,
                                in: rangeFrom...,
                                displayedComponents: .date)
-                    .formFieldSurface()
+                    .listAlignedFieldSurface()
                     DatePicker("Uhrzeit", selection: $rangeTime,
                                displayedComponents: .hourAndMinute)
-                    .formFieldSurface()
+                    .listAlignedFieldSurface()
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 Section("Wochentage") {
                     HStack(spacing: 6) {
                         ForEach(weekdayList, id: \.0) { calDay, label in
@@ -195,6 +203,7 @@ struct NewSurveySheet: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(selectedWeekdays.isEmpty)
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
         }
     }
@@ -205,7 +214,7 @@ struct NewSurveySheet: View {
         Section("Option hinzuf\u{FC}gen") {
             HStack {
                 TextField("Neue Option \u{2026}", text: $newOption)
-                    .formFieldSurface()
+                    .listAlignedFieldSurface()
                     .onSubmit { addOption() }
                 Button { addOption() } label: {
                     Image(systemName: "plus.circle.fill").foregroundStyle(.blue)
@@ -214,6 +223,7 @@ struct NewSurveySheet: View {
                 .disabled(newOption.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
+        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
     }
 
     // MARK: - Logic

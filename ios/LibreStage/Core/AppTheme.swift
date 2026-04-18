@@ -106,6 +106,10 @@ extension View {
     func formFieldSurface() -> some View {
         modifier(FormFieldSurfaceModifier())
     }
+
+    func listAlignedFieldSurface() -> some View {
+        modifier(ListAlignedFieldSurfaceModifier())
+    }
 }
 
 private struct SoftCardContainerModifier: ViewModifier {
@@ -179,6 +183,15 @@ private struct FormFieldSurfaceModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
             )
+    }
+}
+
+private struct ListAlignedFieldSurfaceModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        // Keep controls aligned with list rows while preserving transparent surfaces.
+        content
+            .padding(.vertical, 4)
+            .background(.clear)
     }
 }
 

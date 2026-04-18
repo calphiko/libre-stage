@@ -382,6 +382,7 @@ private struct GigRow: View {
 private struct CreateGigSheet: View {
     @Bindable var vm: GigsViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var draft = GigDetailsDraft()
 
     var body: some View {
@@ -390,6 +391,7 @@ private struct CreateGigSheet: View {
                 Section("Gig") {
                     ForEach(vm.gigFields) { field in
                         gigEditorView(for: field)
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
                 }
 
@@ -404,6 +406,7 @@ private struct CreateGigSheet: View {
                 }
             }
             .softCardContainer()
+            .textFieldStyle(.plain)
             .appShellBackground()
             .navigationTitle("Neuer Gig")
             .navigationBarTitleDisplayMode(.inline)
@@ -438,7 +441,7 @@ private struct CreateGigSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .time:
             HStack {
                 DatePicker(
@@ -455,17 +458,17 @@ private struct CreateGigSheet: View {
                     .foregroundStyle(.secondary)
                 }
             }
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .date:
             DatePicker(
                 field.required ? "\(field.label) *" : field.label,
                 selection: dateBinding(for: field.key),
                 displayedComponents: .date
             )
-            .formFieldSurface()
+            .listAlignedFieldSurface()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
-                .formFieldSurface()
+                .listAlignedFieldSurface()
         }
     }
 
