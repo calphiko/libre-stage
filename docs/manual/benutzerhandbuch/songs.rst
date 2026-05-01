@@ -6,8 +6,10 @@ Song-Datenbank
 Die Song-Datenbank enthält das gesamte Repertoire der Band.
 Admins und Editors können Songs anlegen, bearbeiten und archivieren.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/songs.png`` ablegen.
+.. image:: ../_static/screenshots/songs_overview.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
 
 Song anlegen
 ------------
@@ -42,6 +44,18 @@ Klicke auf **+ Neuer Song**, um das Formular zu öffnen.
      - Aktueller Status im Workflow (s. u.)
    * - **Sänger**
      - Hauptsänger aus der Sängerliste
+
+.. image:: ../_static/screenshots/songs_new.png
+   :alt: Song Formular Screenshot
+   :width: 500px
+   :align: center
+
+.. tip::
+   Beim Ausfuellen von **Titel** und **Interpret** erfolgt direkt im Formular
+   eine Live-Pruefung auf wahrscheinliche Dubletten (inklusive kleiner
+   Schreibfehler oder Abweichungen). Wenn ein aehnlicher Song bereits existiert,
+   erscheint unter dem Feld **Interpret** ein Warning-Hinweis mit dessen Status.
+   Das Speichern bleibt trotzdem moeglich.
 
 Status-Workflow
 ---------------
@@ -86,12 +100,22 @@ Ein Klick auf einen Song öffnet die Detailansicht mit:
 * **Feedback-Verteilung:** Balkendiagramm der Bewertungen aus dem Live-Modus
 * **Häufige Begleiter:** Welche anderen Songs erscheinen am häufigsten in derselben Setlist?
 
+.. image:: ../_static/screenshots/songs_details.png
+   :alt: Songs Detail Screenshot
+   :width: 500px
+   :align: center
+
 Song-Vorschläge & Abstimmung
 -----------------------------
 
 Neu eingereichte Songs erhalten zunächst den Status **vorschlag** und erscheinen
 im Tab **Vorschläge** der Song-Seite. Dort können alle stimmberechtigten
 Bandmitglieder (Musiker) ihr Votum abgeben, bevor ein Song offiziell übernommen wird.
+
+.. image:: ../_static/screenshots/songs_vorschlaege.png
+   :alt: Songs Vorschläge Screenshot
+   :width: 500px
+   :align: center
 
 Abstimmen
 ~~~~~~~~~
