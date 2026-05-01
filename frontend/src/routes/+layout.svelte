@@ -154,7 +154,7 @@
 
 		<!-- Footer -->
 		{#if user.user_name}
-			<footer class="bg-surface-100 dark:bg-surface-800 p-4 text-center text-sm text-surface-600 dark:text-surface-300">
+			<footer class="footer bg-surface-100 dark:bg-surface-800 p-1 text-center text-sm text-surface-600 dark:text-surface-300">
 				<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span><br>
 				<span>{version_description} • © {new Date().getFullYear()} <a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a> <a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Dokumentation</a></span>
 			</footer>
