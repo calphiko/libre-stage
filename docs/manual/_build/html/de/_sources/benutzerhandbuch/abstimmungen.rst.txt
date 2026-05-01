@@ -5,8 +5,10 @@ Abstimmungen
 
 Im Bereich **Abstimmungen** können drei Typen von Umfragen erstellt werden.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/abstimmungen.png`` ablegen.
+.. image:: ../_static/screenshots/abstimmungen.png
+   :alt: Abstimmungen Screenshot
+   :width: 500px
+   :align: center
 
 Abstimmung anlegen
 ------------------

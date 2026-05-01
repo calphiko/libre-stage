@@ -6,8 +6,10 @@ Setlist-Editor
 Der Setlist-Editor ermöglicht es, Setlists für Gigs zu erstellen und zu bearbeiten.
 Er unterstützt mehrere Sets, Drag & Drop sowie automatische Zeitberechnung.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/setlist_editor.png`` ablegen.
+.. image:: ../_static/screenshots/gigs_setlist_editor.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
 
 Sets anlegen
 ------------

@@ -5,15 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stichwortverzeichnis &mdash; libreStage v0.3.6 Dokumentation</title>
+  <title>Stichwortverzeichnis &mdash; libreStage v0.3.15 v0.3.15 Dokumentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=cdff926e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=0b63f664"></script>
+      <script src="_static/documentation_options.js?v=112a6a06"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -33,7 +34,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            libreStage
+            libreStage v0.3.15
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -86,6 +87,7 @@
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#status-workflow">Status-Workflow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#setlist-verwalten">Setlist verwalten</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#setlist-pdf-generieren">Setlist-PDF generieren</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#ablaufplan-pdf-generieren">Ablaufplan-PDF generieren</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#gema-export-excel">GEMA-Export (Excel)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/gigs.html#statistiken">Statistiken</a></li>
 </ul>
@@ -125,14 +127,22 @@
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#status-workflow">Status-Workflow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#filtern-und-suchen">Filtern und Suchen</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#song-details-und-statistiken">Song-Details und Statistiken</a></li>
-<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#bewertungen-songvoting">Bewertungen (Songvoting)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/songs.html#song-vorschlage-abstimmung">Song-Vorschläge &amp; Abstimmung</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/songs.html#abstimmen">Abstimmen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/songs.html#abstimmungsergebnis-auf-einen-blick">Abstimmungsergebnis auf einen Blick</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/songs.html#freigabe-kriterien">Freigabe-Kriterien</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/songs.html#song-ubernehmen">Song übernehmen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/songs.html#personliche-abstimmung">Persönliche Abstimmung</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="benutzerhandbuch/proben.html">Proben</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#probe-anlegen">Probe anlegen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#songs-einer-probe-zuweisen">Songs einer Probe zuweisen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#aufgaben-todos">Aufgaben (Todos)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#probe-fortschritt">Probe-Fortschritt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#zeitraum-in-der-listenansicht">Zeitraum in der Listenansicht</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#songs-und-todos-in-proben">Songs und Todos in Proben</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#vergangene-proben-protokoll-ansicht">Vergangene Proben - Protokoll-Ansicht</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#suche-in-vergangenen-proben">Suche in vergangenen Proben</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/proben.html#ical-export">iCal-Export</a></li>
 </ul>
 </li>
@@ -153,7 +163,15 @@
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#passwort-andern">Passwort ändern</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#passwort-vergessen">Passwort vergessen</a></li>
 <li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#rollen-und-berechtigungen">Rollen und Berechtigungen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzerverwaltung-nur-admin">Benutzerverwaltung (nur Admin)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzerverwaltung-nur-admin">Benutzerverwaltung (nur Admin)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzer-anlegen">Benutzer anlegen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzer-bearbeiten">Benutzer bearbeiten</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#status-spalte">Status-Spalte</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#passwort-zurucksetzen">Passwort zurücksetzen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzer-deaktivieren">Benutzer deaktivieren</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benutzerhandbuch/benutzer.html#benutzer-reaktivieren">Benutzer reaktivieren</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -232,6 +250,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id6"><code class="docutils literal notranslate"><span class="pre">User.musician</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/models.html#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -354,6 +373,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id54"><code class="docutils literal notranslate"><span class="pre">Gig.status</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id55"><code class="docutils literal notranslate"><span class="pre">Gig.publish</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id56"><code class="docutils literal notranslate"><span class="pre">Gig.sets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.Gig.schedule_items"><code class="docutils literal notranslate"><span class="pre">Gig.schedule_items</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.Gig.debug_dump"><code class="docutils literal notranslate"><span class="pre">Gig.debug_dump()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.Gig.to_dict"><code class="docutils literal notranslate"><span class="pre">Gig.to_dict()</span></code></a></li>
 </ul>
@@ -469,6 +489,16 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id102"><code class="docutils literal notranslate"><span class="pre">GigSet.set</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.id"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.gig_id"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.gig_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.item_datetime"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.item_datetime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.was"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.was</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.wer"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.wer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.wo"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.wo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.GigScheduleItem.gig"><code class="docutils literal notranslate"><span class="pre">GigScheduleItem.gig</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/models.html#backend.models.Surveys"><code class="docutils literal notranslate"><span class="pre">Surveys</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.Surveys.id"><code class="docutils literal notranslate"><span class="pre">Surveys.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.Surveys.kind_of_survey"><code class="docutils literal notranslate"><span class="pre">Surveys.kind_of_survey</span></code></a></li>
@@ -548,6 +578,11 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserGroup.user"><code class="docutils literal notranslate"><span class="pre">UserGroup.user</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserStatus"><code class="docutils literal notranslate"><span class="pre">UserStatus</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserStatus.active"><code class="docutils literal notranslate"><span class="pre">UserStatus.active</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserStatus.deactivated"><code class="docutils literal notranslate"><span class="pre">UserStatus.deactivated</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate"><code class="docutils literal notranslate"><span class="pre">UserCreate</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.user_name"><code class="docutils literal notranslate"><span class="pre">UserCreate.user_name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.clear_name"><code class="docutils literal notranslate"><span class="pre">UserCreate.clear_name</span></code></a></li>
@@ -555,6 +590,8 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.user_pw"><code class="docutils literal notranslate"><span class="pre">UserCreate.user_pw</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.user_group"><code class="docutils literal notranslate"><span class="pre">UserCreate.user_group</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.musician"><code class="docutils literal notranslate"><span class="pre">UserCreate.musician</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.is_singer"><code class="docutils literal notranslate"><span class="pre">UserCreate.is_singer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.status"><code class="docutils literal notranslate"><span class="pre">UserCreate.status</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserCreate.model_config"><code class="docutils literal notranslate"><span class="pre">UserCreate.model_config</span></code></a></li>
 </ul>
 </li>
@@ -567,6 +604,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserOut.musician"><code class="docutils literal notranslate"><span class="pre">UserOut.musician</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserOut.is_singer"><code class="docutils literal notranslate"><span class="pre">UserOut.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserOut.mm_username"><code class="docutils literal notranslate"><span class="pre">UserOut.mm_username</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserOut.status"><code class="docutils literal notranslate"><span class="pre">UserOut.status</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.UserOut.model_config"><code class="docutils literal notranslate"><span class="pre">UserOut.model_config</span></code></a></li>
 </ul>
 </li>
@@ -736,6 +774,44 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigOut.id"><code class="docutils literal notranslate"><span class="pre">GigOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigOut.publish"><code class="docutils literal notranslate"><span class="pre">GigOut.publish</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigOut.model_config"><code class="docutils literal notranslate"><span class="pre">GigOut.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.item_datetime"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn.item_datetime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.was"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn.was</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.wer"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn.wer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.wo"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn.wo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.model_config"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.id"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.gig_id"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.gig_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.item_datetime"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.item_datetime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.was"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.was</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.wer"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.wer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.wo"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.wo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.is_fixed"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.is_fixed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.model_config"><code class="docutils literal notranslate"><span class="pre">GigScheduleItemOut.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleOut"><code class="docutils literal notranslate"><span class="pre">GigScheduleOut</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleOut.items"><code class="docutils literal notranslate"><span class="pre">GigScheduleOut.items</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleOut.model_config"><code class="docutils literal notranslate"><span class="pre">GigScheduleOut.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.id"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.item_datetime"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.item_datetime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.was"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.was</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.wer"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.wer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.wo"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.wo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.model_config"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkItemIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn.items"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkUpdateIn.items</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">GigScheduleBulkUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.SetOut"><code class="docutils literal notranslate"><span class="pre">SetOut</span></code></a><ul>
@@ -1016,7 +1092,9 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict"><code class="docutils literal notranslate"><span class="pre">NewRehDict</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict.begin"><code class="docutils literal notranslate"><span class="pre">NewRehDict.begin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict.end"><code class="docutils literal notranslate"><span class="pre">NewRehDict.end</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict.comment"><code class="docutils literal notranslate"><span class="pre">NewRehDict.comment</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict.validate_time_range"><code class="docutils literal notranslate"><span class="pre">NewRehDict.validate_time_range()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.NewRehDict.model_config"><code class="docutils literal notranslate"><span class="pre">NewRehDict.model_config</span></code></a></li>
 </ul>
 </li>
@@ -1113,6 +1191,8 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.LogFilter"><code class="docutils literal notranslate"><span class="pre">LogFilter</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.get_all_users"><code class="docutils literal notranslate"><span class="pre">get_all_users()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.update_user"><code class="docutils literal notranslate"><span class="pre">update_user()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.deactivate_user"><code class="docutils literal notranslate"><span class="pre">deactivate_user()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.activate_user"><code class="docutils literal notranslate"><span class="pre">activate_user()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.create_user"><code class="docutils literal notranslate"><span class="pre">create_user()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/admin.html#backend.routers.admin.trigger_password_reset"><code class="docutils literal notranslate"><span class="pre">trigger_password_reset()</span></code></a></li>
 </ul>
@@ -1129,6 +1209,12 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.get_livemode_available_batch"><code class="docutils literal notranslate"><span class="pre">get_livemode_available_batch()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.is_livemode_available"><code class="docutils literal notranslate"><span class="pre">is_livemode_available()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_statistics"><code class="docutils literal notranslate"><span class="pre">get_gig_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_schedule"><code class="docutils literal notranslate"><span class="pre">get_gig_schedule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_schedule_pdf"><code class="docutils literal notranslate"><span class="pre">get_gig_schedule_pdf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.create_gig_schedule_item"><code class="docutils literal notranslate"><span class="pre">create_gig_schedule_item()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.update_gig_schedule_bulk"><code class="docutils literal notranslate"><span class="pre">update_gig_schedule_bulk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.update_gig_schedule_item"><code class="docutils literal notranslate"><span class="pre">update_gig_schedule_item()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.delete_gig_schedule_item"><code class="docutils literal notranslate"><span class="pre">delete_gig_schedule_item()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.update_gig"><code class="docutils literal notranslate"><span class="pre">update_gig()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.parse_name"><code class="docutils literal notranslate"><span class="pre">parse_name()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/gigs.html#backend.routers.gigs.download_gemalist"><code class="docutils literal notranslate"><span class="pre">download_gemalist()</span></code></a></li>
@@ -1239,7 +1325,26 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Weitere Informationen</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="datenschutz.html">Datenschutzrichtlinie (iOS-App)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#verantwortliche-stelle">1. Verantwortliche Stelle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#welche-daten-verarbeitet-werden">2. Welche Daten verarbeitet werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#zwecke-der-verarbeitung">3. Zwecke der Verarbeitung</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#rechtsgrundlagen">4. Rechtsgrundlagen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#speicherung-und-sicherheit">5. Speicherung und Sicherheit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#empfaenger-und-drittland">6. Empfaenger und Drittland</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#speicherdauer">7. Speicherdauer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#deine-rechte">8. Deine Rechte</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#bereitstellungspflicht">9. Bereitstellungspflicht</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datenschutz.html#aenderungen">10. Aenderungen</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Änderungsprotokoll</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-15-2026-04-18">v0.3.15 (2026-04-18)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-13-2026-03-16">v0.3.13 (2026-03-16)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-12-2026-03-15">v0.3.12 (2026-03-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-11-2026-03-15">v0.3.11 (2026-03-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-10-2026-03-15">v0.3.10 (2026-03-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-9-2026-03-14">v0.3.9 (2026-03-14)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-5-2026-03-10">v0.3.5 (2026-03-10)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-0">v0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-2-0">v0.2.0</a></li>
@@ -1254,7 +1359,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">libreStage</a>
+          <a href="index.html">libreStage v0.3.15</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -1296,6 +1401,7 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  | <a href="#X"><strong>X</strong></a>
  | <a href="#Y"><strong>Y</strong></a>
  
@@ -1307,8 +1413,14 @@
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.TokenResponse.access_token">access_token (Attribut von backend.schemas.TokenResponse)</a>
 </li>
+      <li><a href="coderef/routers/admin.html#backend.routers.admin.activate_user">activate_user() (im Modul backend.routers.admin)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.UserStatus.active">active (Attribut von backend.schemas.UserStatus)</a>
+</li>
       <li><a href="coderef/schemas.html#backend.schemas.UserGroup.admin">admin (Attribut von backend.schemas.UserGroup)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/models.html#backend.models.Song.arrangement">arrangement (Attribut von backend.models.Song)</a>, <a href="coderef/models.html#id66">[1]</a>
 
       <ul>
@@ -1317,8 +1429,6 @@
         <li><a href="coderef/schemas.html#backend.schemas.SongOut.arrangement">(Attribut von backend.schemas.SongOut)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/schemas.html#backend.schemas.PublicDate.Art">Art (Attribut von backend.schemas.PublicDate)</a>
 </li>
       <li><a href="coderef/auth.html#backend.auth.authenticate_user">authenticate_user() (im Modul backend.auth)</a>
@@ -1625,6 +1735,8 @@
       </ul></li>
       <li><a href="coderef/auth.html#backend.auth.create_access_token">create_access_token() (im Modul backend.auth)</a>
 </li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.create_gig_schedule_item">create_gig_schedule_item() (im Modul backend.routers.gigs)</a>
+</li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.create_new_gig">create_new_gig() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/routers/rehearsals.html#backend.routers.rehearsals.create_new_rehearsal">create_new_rehearsal() (im Modul backend.routers.rehearsals)</a>
@@ -1671,11 +1783,17 @@
       </ul></li>
       <li><a href="coderef/schemas.html#backend.schemas.PublicDate.Datum">Datum (Attribut von backend.schemas.PublicDate)</a>
 </li>
+      <li><a href="coderef/routers/admin.html#backend.routers.admin.deactivate_user">deactivate_user() (im Modul backend.routers.admin)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.UserStatus.deactivated">deactivated (Attribut von backend.schemas.UserStatus)</a>
+</li>
       <li><a href="coderef/models.html#backend.models.Gig.debug_dump">debug_dump() (Methode von backend.models.Gig)</a>
 </li>
       <li><a href="coderef/services/setlist.html#backend.services.setlist.SetlistService.DEFAULT_BREAK">DEFAULT_BREAK (Attribut von backend.services.setlist.SetlistService)</a>
 </li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.delete_gig">delete_gig() (im Modul backend.routers.gigs)</a>
+</li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.delete_gig_schedule_item">delete_gig_schedule_item() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/routers/rehearsals.html#backend.routers.rehearsals.delete_rehearsal">delete_rehearsal() (im Modul backend.routers.rehearsals)</a>
 </li>
@@ -1777,8 +1895,6 @@
         <li><a href="coderef/schemas.html#backend.schemas.UserOut.email">(Attribut von backend.schemas.UserOut)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/models.html#backend.models.Gig.end">end (Attribut von backend.models.Gig)</a>, <a href="coderef/models.html#id53">[1]</a>
 
       <ul>
@@ -1796,9 +1912,13 @@
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.NewGig.end">(Attribut von backend.schemas.NewGig)</a>
 </li>
+        <li><a href="coderef/schemas.html#backend.schemas.NewRehDict.end">(Attribut von backend.schemas.NewRehDict)</a>
+</li>
         <li><a href="coderef/schemas.html#backend.schemas.RehListElem.end">(Attribut von backend.schemas.RehListElem)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/schemas.html#backend.schemas.PublicDate.Ende">Ende (Attribut von backend.schemas.PublicDate)</a>
 </li>
       <li><a href="coderef/models.html#backend.models.RefreshToken.expires_at">expires_at (Attribut von backend.models.RefreshToken)</a>, <a href="coderef/models.html#id15">[1]</a>
@@ -1951,6 +2071,10 @@
       </ul></li>
       <li><a href="coderef/app_config.html#backend.app_config.get_frontend_config">get_frontend_config() (im Modul backend.app_config)</a>
 </li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_schedule">get_gig_schedule() (im Modul backend.routers.gigs)</a>
+</li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_schedule_pdf">get_gig_schedule_pdf() (im Modul backend.routers.gigs)</a>
+</li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_setlist">get_gig_setlist() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.get_gig_statistics">get_gig_statistics() (im Modul backend.routers.gigs)</a>
@@ -1987,20 +2111,24 @@
 </li>
       <li><a href="coderef/main.html#backend.main.get_todo_list">get_todo_list() (im Modul backend.main)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/auth.html#backend.auth.get_token_from_cookie_or_header">get_token_from_cookie_or_header() (im Modul backend.auth)</a>
 </li>
       <li><a href="coderef/main.html#backend.main.get_user_todo">get_user_todo() (im Modul backend.main)</a>
 </li>
       <li><a href="coderef/main.html#backend.main.get_users_list">get_users_list() (im Modul backend.main)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/main.html#backend.main.get_version_dict">get_version_dict() (im Modul backend.main)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.GetSetlistIn">GetSetlistIn (Klasse in backend.schemas)</a>
 </li>
-      <li><a href="coderef/models.html#backend.models.GigSet.gig">gig (Attribut von backend.models.GigSet)</a>, <a href="coderef/models.html#id101">[1]</a>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.gig">gig (Attribut von backend.models.GigScheduleItem)</a>
+
+      <ul>
+        <li><a href="coderef/models.html#backend.models.GigSet.gig">(Attribut von backend.models.GigSet)</a>, <a href="coderef/models.html#id101">[1]</a>
 </li>
+      </ul></li>
       <li><a href="coderef/models.html#backend.models.Gig">Gig (Klasse in backend.models)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.SeasonStatistics.gig_count">gig_count (Attribut von backend.schemas.SeasonStatistics)</a>
@@ -2017,10 +2145,14 @@
         <li><a href="coderef/schemas.html#backend.schemas.GigStatistics.gig_date">(Attribut von backend.schemas.GigStatistics)</a>
 </li>
       </ul></li>
-      <li><a href="coderef/schemas.html#backend.schemas.GigOverviewEntry.gig_id">gig_id (Attribut von backend.schemas.GigOverviewEntry)</a>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.gig_id">gig_id (Attribut von backend.models.GigScheduleItem)</a>
 
       <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigOverviewEntry.gig_id">(Attribut von backend.schemas.GigOverviewEntry)</a>
+</li>
         <li><a href="coderef/schemas.html#backend.schemas.GigPlayedEntry.gig_id">(Attribut von backend.schemas.GigPlayedEntry)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.gig_id">(Attribut von backend.schemas.GigScheduleItemOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigStatistics.gig_id">(Attribut von backend.schemas.GigStatistics)</a>
 </li>
@@ -2048,6 +2180,18 @@
       <li><a href="coderef/schemas.html#backend.schemas.SeasonStatistics.gigs_overview">gigs_overview (Attribut von backend.schemas.SeasonStatistics)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.SongStatistics.gigs_played">gigs_played (Attribut von backend.schemas.SongStatistics)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn">GigScheduleBulkItemIn (Klasse in backend.schemas)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn">GigScheduleBulkUpdateIn (Klasse in backend.schemas)</a>
+</li>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem">GigScheduleItem (Klasse in backend.models)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn">GigScheduleItemIn (Klasse in backend.schemas)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut">GigScheduleItemOut (Klasse in backend.schemas)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleOut">GigScheduleOut (Klasse in backend.schemas)</a>
 </li>
       <li><a href="coderef/models.html#backend.models.GigSet">GigSet (Klasse in backend.models)</a>
 </li>
@@ -2094,6 +2238,8 @@
       <li><a href="coderef/models.html#backend.models.Gig.id">id (Attribut von backend.models.Gig)</a>, <a href="coderef/models.html#id45">[1]</a>
 
       <ul>
+        <li><a href="coderef/models.html#backend.models.GigScheduleItem.id">(Attribut von backend.models.GigScheduleItem)</a>
+</li>
         <li><a href="coderef/models.html#backend.models.GigSet.id">(Attribut von backend.models.GigSet)</a>, <a href="coderef/models.html#id97">[1]</a>
 </li>
         <li><a href="coderef/models.html#backend.models.RefreshToken.id">(Attribut von backend.models.RefreshToken)</a>, <a href="coderef/models.html#id12">[1]</a>
@@ -2129,6 +2275,10 @@
         <li><a href="coderef/schemas.html#backend.schemas.GigIn.id">(Attribut von backend.schemas.GigIn)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigOut.id">(Attribut von backend.schemas.GigOut)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.id">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.id">(Attribut von backend.schemas.GigScheduleItemOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigSetListLiveMode.id">(Attribut von backend.schemas.GigSetListLiveMode)</a>
 </li>
@@ -2179,10 +2329,10 @@
         <li><a href="coderef/schemas.html#backend.schemas.UserTodo.id">(Attribut von backend.schemas.UserTodo)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/models.html#backend.models.GigSet.id_gig">id_gig (Attribut von backend.models.GigSet)</a>, <a href="coderef/models.html#id98">[1]</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/models.html#backend.models.RehTodo.id_reh">id_reh (Attribut von backend.models.RehTodo)</a>, <a href="coderef/models.html#id25">[1]</a>
 
       <ul>
@@ -2275,6 +2425,8 @@
         <li><a href="coderef/schemas.html#backend.schemas.TopSongEntry.interpret">(Attribut von backend.schemas.TopSongEntry)</a>
 </li>
       </ul></li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.is_fixed">is_fixed (Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.is_livemode_available">is_livemode_available() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.is_setlist_available">is_setlist_available() (im Modul backend.routers.gigs)</a>
@@ -2282,7 +2434,25 @@
       <li><a href="coderef/models.html#backend.models.User.is_singer">is_singer (Attribut von backend.models.User)</a>, <a href="coderef/models.html#id7">[1]</a>
 
       <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.UserCreate.is_singer">(Attribut von backend.schemas.UserCreate)</a>
+</li>
         <li><a href="coderef/schemas.html#backend.schemas.UserOut.is_singer">(Attribut von backend.schemas.UserOut)</a>
+</li>
+      </ul></li>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.item_datetime">item_datetime (Attribut von backend.models.GigScheduleItem)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.item_datetime">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.item_datetime">(Attribut von backend.schemas.GigScheduleItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.item_datetime">(Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
+      </ul></li>
+      <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn.items">items (Attribut von backend.schemas.GigScheduleBulkUpdateIn)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleOut.items">(Attribut von backend.schemas.GigScheduleOut)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -2389,6 +2559,16 @@
         <li><a href="coderef/schemas.html#backend.schemas.GigOverviewEntry.model_config">(Attribut von backend.schemas.GigOverviewEntry)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigPlayedEntry.model_config">(Attribut von backend.schemas.GigPlayedEntry)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.model_config">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkUpdateIn.model_config">(Attribut von backend.schemas.GigScheduleBulkUpdateIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.model_config">(Attribut von backend.schemas.GigScheduleItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.model_config">(Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleOut.model_config">(Attribut von backend.schemas.GigScheduleOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigSetListLiveMode.model_config">(Attribut von backend.schemas.GigSetListLiveMode)</a>
 </li>
@@ -2774,6 +2954,8 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coderef/models.html#backend.models.Gig.schedule_items">schedule_items (Attribut von backend.models.Gig)</a>
+</li>
       <li><a href="coderef/schemas.html#backend.schemas.SeasonStatistics">SeasonStatistics (Klasse in backend.schemas)</a>
 </li>
       <li><a href="coderef/utils/email.html#backend.utils.email.send_email">send_email() (im Modul backend.utils.email)</a>
@@ -2989,6 +3171,8 @@
 </li>
         <li><a href="coderef/models.html#backend.models.Song.status">(Attribut von backend.models.Song)</a>, <a href="coderef/models.html#id69">[1]</a>
 </li>
+        <li><a href="coderef/models.html#backend.models.User.status">(Attribut von backend.models.User)</a>
+</li>
         <li><a href="coderef/schemas.html#backend.schemas.GetSetlistIn.status">(Attribut von backend.schemas.GetSetlistIn)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.GigIn.status">(Attribut von backend.schemas.GigIn)</a>
@@ -3010,6 +3194,10 @@
         <li><a href="coderef/schemas.html#backend.schemas.SongInSetOut.status">(Attribut von backend.schemas.SongInSetOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.SongOut.status">(Attribut von backend.schemas.SongOut)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.UserCreate.status">(Attribut von backend.schemas.UserCreate)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.UserOut.status">(Attribut von backend.schemas.UserOut)</a>
 </li>
       </ul></li>
       <li><a href="coderef/schemas.html#backend.schemas.LoginRequest.strip_username">strip_username() (Klassenmethode von backend.schemas.LoginRequest)</a>
@@ -3182,6 +3370,10 @@
 </li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.update_gig">update_gig() (im Modul backend.routers.gigs)</a>
 </li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.update_gig_schedule_bulk">update_gig_schedule_bulk() (im Modul backend.routers.gigs)</a>
+</li>
+      <li><a href="coderef/routers/gigs.html#backend.routers.gigs.update_gig_schedule_item">update_gig_schedule_item() (im Modul backend.routers.gigs)</a>
+</li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.update_gig_setlist">update_gig_setlist() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/routers/rehearsals.html#backend.routers.rehearsals.update_rehearsal">update_rehearsal() (im Modul backend.routers.rehearsals)</a>
@@ -3272,6 +3464,8 @@
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.UserOut">UserOut (Klasse in backend.schemas)</a>
 </li>
+      <li><a href="coderef/schemas.html#backend.schemas.UserStatus">UserStatus (Klasse in backend.schemas)</a>
+</li>
       <li><a href="coderef/schemas.html#backend.schemas.UserTodo">UserTodo (Klasse in backend.schemas)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.UserTodoList">UserTodoList (Klasse in backend.schemas)</a>
@@ -3283,6 +3477,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/utils/password_validator.html#backend.utils.password_validator.validate_password">validate_password() (im Modul backend.utils.password_validator)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.NewRehDict.validate_time_range">validate_time_range() (Methode von backend.schemas.NewRehDict)</a>
 </li>
       <li><a href="coderef/models.html#backend.models.SurveyFeedback.value">value (Attribut von backend.models.SurveyFeedback)</a>, <a href="coderef/models.html#id120">[1]</a>
 
@@ -3316,6 +3512,44 @@
 </li>
       <li><a href="coderef/routers/password_reset.html#backend.routers.password_reset.verify_reset_token">verify_reset_token() (im Modul backend.routers.password_reset)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.was">was (Attribut von backend.models.GigScheduleItem)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.was">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.was">(Attribut von backend.schemas.GigScheduleItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.was">(Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
+      </ul></li>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.wer">wer (Attribut von backend.models.GigScheduleItem)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.wer">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.wer">(Attribut von backend.schemas.GigScheduleItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.wer">(Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coderef/models.html#backend.models.GigScheduleItem.wo">wo (Attribut von backend.models.GigScheduleItem)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleBulkItemIn.wo">(Attribut von backend.schemas.GigScheduleBulkItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemIn.wo">(Attribut von backend.schemas.GigScheduleItemIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.GigScheduleItemOut.wo">(Attribut von backend.schemas.GigScheduleItemOut)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
