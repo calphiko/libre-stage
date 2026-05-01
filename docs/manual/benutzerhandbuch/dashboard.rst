@@ -6,8 +6,10 @@ Dashboard
 Das Dashboard ist die erste Seite nach dem Login. Es zeigt auf einen Blick alle
 persönlichen Aufgaben, offene Abstimmungen und die Saison-Statistiken der Band.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/dashboard.png`` ablegen.
+.. image:: ../_static/screenshots/overview.png
+   :alt: Dashboard Screenshot
+   :width: 500px
+   :align: center
 
 Todos
 -----
