@@ -18,7 +18,7 @@ release = _vdata.get('release', 'v0.0.0')          # e.g. "v0.3.5"
 version = '.'.join(release.lstrip('v').split('.')[:2])  # e.g. "0.3"
 
 # -- Project information -----------------------------------------------------
-project = 'libreStage'
+project = f'libreStage {release}'
 author = 'libreStage contributors'
 copyright = '2026, libreStage contributors'
 
@@ -64,6 +64,8 @@ gettext_compact = False
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'sphinx_rtd_theme'
+
+html_css_files = ['css/custom.css']
 
 html_theme_options = {
     'logo_only': False,

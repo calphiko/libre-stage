@@ -6,8 +6,11 @@ Live-Modus
 Der Live-Modus begleitet die Band während eines Auftritts. Er zeigt den aktuellen Song
 prominent an, ermöglicht Navigation und erfasst Bewertungen für spätere Auswertungen.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/livemode.png`` ablegen.
+.. image:: ../_static/screenshots/livemode.png
+   :alt: Livemode‚ Screenshot
+   :width: 500px
+   :align: center
+
 
 Verfügbarkeit
 -------------
@@ -62,6 +65,11 @@ Nach dem Spielen eines Songs kann eine Bewertung abgegeben werden:
      - Hat sehr gut funktioniert
 
 Die Bewertungen fließen in die Song-Statistiken ein.
+
+.. note::
+    Was die Band mit dieser Bewertung ausdrücken möchte, ist hier bewusst offen gelassen.
+    Macht euch Gedanken darüber, was die Bewertung für euch bedeutet und kommuniziert das innerhalb der Band, damit alle die gleiche Vorstellung davon haben.
+
 
 Song überspringen
 -----------------

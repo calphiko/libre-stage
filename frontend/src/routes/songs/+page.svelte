@@ -637,6 +637,9 @@
     modalState.trigger({
       component: NewSongForm,
       title: 'Neuen Song erstellen',
+      props: {
+        existingSongs: songs
+      },
       response: (r) => {
         if (r) addSong(r);
       },
