@@ -20,7 +20,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { songFields, songApproachFields, getSongFieldsDetails } from '$lib/songFields.js';
+  import { songFields, getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
   import {
     getSongs,
@@ -1206,11 +1206,9 @@ let filteredSongs = $derived(songs
               <table class="w-full border-collapse text-surface-100">
                 <thead class="bg-surface-400 text-sm font-medium uppercase">
                   <tr>
-                    {#each songApproachFields as f}
-                      <th class="px-3 py-2 text-left text-surface-900 dark:text-surface-200">
-                        {f.label}
-                      </th>
-                    {/each}
+                    <th class="px-3 py-2 text-left text-surface-900 dark:text-surface-200">Titel</th>
+                    <th class="px-3 py-2 text-left text-surface-900 dark:text-surface-200">Interpret</th>
+                    <th class="px-3 py-2 text-left text-surface-900 dark:text-surface-200">Abstimmung</th>
                     {#if canEdit()}
                       <th class="px-3 py-2 text-left text-surface-900 dark:text-surface-200">Aktion</th>
                     {/if}
@@ -1229,56 +1227,58 @@ let filteredSongs = $derived(songs
                         onclick={() => toggleExpand(song.id)}>
                         <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
                         <td onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
-                       {#if user.musician}
-                            <td class="whitespace-nowrap">
-                                <button
-                                    class="btn btn-sm {userFeedbackType === 'a' ? 'variant-filled-success' : 'variant-outline-success'}"
-                                    onclick={() => submitFeedback(song, 'a')}
-                                >
-                                    👍
-                                </button>
-                                <button
-                                    class="btn btn-sm {userFeedbackType === 'na' ? 'variant-filled-error' : 'variant-outline-error'}"
-                                    onclick={() => submitFeedback(song, 'na')}
-                                >
-                                    👎
-                                </button>
-                                <button
-                                    class="btn btn-sm {userFeedbackType === 'o' ? 'variant-filled-warning' : 'variant-outline-warning'}"
-                                    onclick={() => submitFeedback(song, 'o')}
-                                >
-                                    🤷
-                                </button>
-                           </td>
-                       {:else}
-                            <td>--</td>
-                       {/if}
-                       <!-- Abstimmungsergebnis: kompakte Badges auf einen Blick -->
                        <td class="px-2">
-                            <div class="vote-summary">
+                            <div class="vote-summary flex flex-col items-start gap-1 md:flex-row md:items-center md:flex-wrap">
                                 <!-- Gesamtstimmen und Quorum-Fortschritt -->
                                 <span class="vote-total" title="{validVotes} von {totalMusicians} Stimmberechtigten haben abgestimmt{quorumTarget ? ` (Quorum: ${quorumTarget} = 75%)` : ''}">
                                     ∑ {validVotes} / {totalMusicians > 0 ? totalMusicians : '?'}
                                 </span>
                                 <!-- Ja-Stimmen -->
-                                <span class="vote-badge vote-yes" title="Ja-Stimmen">
+                                <button
+                                    type="button"
+                                    class="w-20 justify-center vote-badge vote-btn vote-yes {userFeedbackType === 'a' ? 'is-selected' : ''}"
+                                    title="Ja stimmen"
+                                    onclick={(e) => {
+                                      e.stopPropagation();
+                                      if (user?.musician) submitFeedback(song, 'a');
+                                    }}
+                                    disabled={!user?.musician}
+                                >
                                     👍 {stats.absolute.a}
                                     {#if stats.absolute.a + stats.absolute.na > 0}
                                         <span class="vote-pct">({stats.relative.a}%)</span>
                                     {/if}
-                                </span>
+                                </button>
                                 <!-- Nein-Stimmen -->
-                                <span class="vote-badge vote-no" title="Nein-Stimmen">
+                                <button
+                                    type="button"
+                                    class="w-20 justify-center vote-badge vote-btn vote-no {userFeedbackType === 'na' ? 'is-selected' : ''}"
+                                    title="Nein stimmen"
+                                    onclick={(e) => {
+                                      e.stopPropagation();
+                                      if (user?.musician) submitFeedback(song, 'na');
+                                    }}
+                                    disabled={!user?.musician}
+                                >
                                     👎 {stats.absolute.na}
                                     {#if stats.absolute.a + stats.absolute.na > 0}
                                         <span class="vote-pct">({stats.relative.na}%)</span>
                                     {/if}
-                                </span>
+                                </button>
                                 <!-- Enthaltungen -->
-                                {#if stats.absolute.o > 0}
-                                    <span class="vote-badge vote-abstain" title="Enthaltungen">
+                                {#if stats.absolute.o > 0 || user?.musician}
+                                    <button
+                                        type="button"
+                                        class="w-20 justify-center vote-badge vote-btn vote-abstain {userFeedbackType === 'o' ? 'is-selected' : ''}"
+                                        title="Enthaltung"
+                                        onclick={(e) => {
+                                          e.stopPropagation();
+                                          if (user?.musician) submitFeedback(song, 'o');
+                                        }}
+                                        disabled={!user?.musician}
+                                    >
                                         🤷 {stats.absolute.o}
-                                    </span>
+                                    </button>
                                 {/if}
                             </div>
                        </td>
@@ -1328,6 +1328,26 @@ let filteredSongs = $derived(songs
     font-size: 0.78rem;
     font-weight: 600;
     white-space: nowrap;
+  }
+
+  .vote-btn {
+    cursor: pointer;
+    transition: transform 120ms ease, filter 120ms ease;
+  }
+
+  .vote-btn:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .vote-btn:disabled {
+    cursor: default;
+    opacity: 0.85;
+  }
+
+  .vote-btn.is-selected {
+    box-shadow: inset 0 0 0 1px currentColor;
+    filter: saturate(1.2);
   }
 
   .vote-yes {
