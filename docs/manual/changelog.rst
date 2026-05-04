@@ -3,6 +3,21 @@
 Änderungsprotokoll
 ==================
 
+v0.3.16 (2026-05-04)
+---------------------
+
+* Song-Vorschlaege: Spalten **Mein Feedback** und **Gesamtfeedback** zur
+  gemeinsamen Spalte **Abstimmung** zusammengefuehrt
+* Song-Vorschlaege: Stimmanzeigen (Ja/Nein/Enthaltung) als klickbare Buttons
+  umgesetzt; Musiker koennen direkt ueber die Badge-Buttons abstimmen
+* Song-Vorschlaege: Aktive eigene Stimme wird visuell hervorgehoben
+* Song-Vorschlaege: Mobile Darstellung der Abstimmungs-Elemente verbessert
+  (unterhalb ``md`` untereinander, ab ``md`` wieder nebeneinander)
+* Song-Details: In der normalen Detailansicht kann ein Song per Dropdown einer
+  geplanten zukuenftigen Probe zugewiesen werden
+* Song-Details: Das Dropdown enthaelt eine leere Option (**Keine Zuordnung**),
+  um den Song keiner Probe zuzuweisen
+
 v0.3.15 (2026-04-18)
 ---------------------
 
