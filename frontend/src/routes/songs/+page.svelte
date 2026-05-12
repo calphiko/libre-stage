@@ -1223,11 +1223,11 @@ let filteredSongs = $derived(songs
                     {@const quorumTarget = totalMusicians > 0 ? Math.max(3, Math.floor(totalMusicians * 0.75)) : null}
                     {@const quorumReached = quorumTarget === null || validVotes >= quorumTarget}
                     {@const canAccept = quorumReached && stats.absolute.a >= validYesNo / 2 && validYesNo > 0}
-                    <tr class="dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300"
+                    <tr class="song-row dark:hover:bg-surface-700 cursor-pointer transition-colors text-surface-900 dark:text-surface-100 hover:bg-surface-300 rounded-lg"
                         onclick={() => toggleExpand(song.id)}>
-                        <td onclick={() => openSongDetailsModal(song)}>{song.title}</td>
-                        <td onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
-                       <td class="px-2">
+                        <td class="px-3 py-3" onclick={() => openSongDetailsModal(song)}>{song.title}</td>
+                        <td class="px-3 py-3" onclick={() => openSongDetailsModal(song)}>{song.interpret}</td>
+                       <td class="px-2 py-3">
                             <div class="vote-summary flex flex-col items-start gap-1 md:flex-row md:items-center md:flex-wrap">
                                 <!-- Gesamtstimmen und Quorum-Fortschritt -->
                                 <span class="vote-total" title="{validVotes} von {totalMusicians} Stimmberechtigten haben abgestimmt{quorumTarget ? ` (Quorum: ${quorumTarget} = 75%)` : ''}">
@@ -1283,13 +1283,16 @@ let filteredSongs = $derived(songs
                             </div>
                        </td>
                        {#if canEdit() && canAccept}
-                            <td>
+                            <td class="px-3 py-3">
                                 <button
                                     class="btn variant-filled-success rounded-lg px-3 py-0 text-base font-semibold"
                                     onclick={() => acceptSong(song)}
                                 >
                                     ✓
                                 </button>
+                            </td>
+                        {:else}
+                            <td class="px-3 py-3">
                             </td>
                         {/if}
                     </tr>
@@ -1387,6 +1390,15 @@ let filteredSongs = $derived(songs
     font-weight: 400;
     opacity: 0.8;
     font-size: 0.72rem;
+  }
+
+  /* Dezente gestrichelte Trennlinie zwischen Vorschlags-Zeilen */
+  .song-row td {
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.45);
+  }
+
+  :global(.dark) .song-row td {
+    border-bottom-color: rgba(148, 163, 184, 0.3);
   }
 
 
