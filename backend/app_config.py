@@ -29,7 +29,11 @@ Required top-level keys in ``appConfig.json``:
 import json
 import sys
 import logging
+import tempfile
+from copy import deepcopy
 from pathlib import Path
+from threading import RLock
+from datetime import datetime, timezone
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -44,10 +48,189 @@ _REQUIRED_KEYS = [
     "rehearsalSongStatuses",
 ]
 
-try:
+SOFT_CONFIG_KEYS = tuple(_REQUIRED_KEYS)
+_OBJECT_SOFT_KEYS = {"genres", "gigTypes", "songStatuses", "gigStatuses", "tonekeys"}
+_STRING_SOFT_KEYS = {"rehearsalSongStatuses"}
+
+
+class ConfigValidationError(ValueError):
+    """Raised when admin-provided soft config payload is invalid."""
+
+
+_config_lock = RLock()
+app_config: dict = {}
+
+
+def _validate_required_keys(config: dict) -> None:
+    missing = [k for k in _REQUIRED_KEYS if k not in config]
+    if missing:
+        raise ConfigValidationError(f"appConfig.json ist unvollstaendig! Fehlende Keys: {', '.join(missing)}")
+
+
+def _load_config_from_disk() -> dict:
     with open(_config_path, "r", encoding="utf-8") as f:
-        app_config: dict = json.load(f)
-    logger.info(f"App config loaded from: {_config_path}")
+        config = json.load(f)
+    if not isinstance(config, dict):
+        raise ConfigValidationError("appConfig.json muss ein JSON-Objekt sein")
+    _validate_required_keys(config)
+    return config
+
+
+def load_config() -> dict:
+    """Load appConfig.json into the module-global config dict."""
+    with _config_lock:
+        loaded = _load_config_from_disk()
+        app_config.clear()
+        app_config.update(loaded)
+        logger.info(f"App config loaded from: {_config_path}")
+        return deepcopy(app_config)
+
+
+def get_config() -> dict:
+    """Return a deep copy of the full application configuration."""
+    with _config_lock:
+        return deepcopy(app_config)
+
+
+def get_soft_config() -> dict:
+    """Return only admin-editable soft config keys."""
+    with _config_lock:
+        return {key: deepcopy(app_config[key]) for key in SOFT_CONFIG_KEYS}
+
+
+def get_soft_config_updated_at() -> str:
+    """Return the last modification time of appConfig.json in ISO8601."""
+    try:
+        ts = _config_path.stat().st_mtime
+        return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    except OSError:
+        return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _normalize_object_list_item(key: str, item):
+    if isinstance(item, str):
+        stripped = item.strip()
+        if not stripped:
+            return None
+        return {"key": stripped, "label": stripped}
+
+    if not isinstance(item, dict):
+        raise ConfigValidationError(f"{key}: Eintraege muessen String oder Objekt sein")
+
+    key_val = item.get("key")
+    label_val = item.get("label", key_val)
+
+    if isinstance(key_val, str):
+        key_val = key_val.strip()
+    if isinstance(label_val, str):
+        label_val = label_val.strip()
+
+    if key == "tonekeys" and key_val is None:
+        if label_val is None:
+            label_val = ""
+        if not isinstance(label_val, str):
+            raise ConfigValidationError("tonekeys: label muss String sein")
+        return {"key": None, "label": label_val}
+
+    if not isinstance(key_val, str) or not key_val:
+        raise ConfigValidationError(f"{key}: key muss ein nicht-leerer String sein")
+
+    if not isinstance(label_val, str) or not label_val:
+        label_val = key_val
+
+    return {"key": key_val, "label": label_val}
+
+
+def _normalize_string_list_item(key: str, item):
+    if isinstance(item, str):
+        stripped = item.strip()
+        return stripped or None
+
+    if isinstance(item, dict):
+        value = item.get("key", item.get("label"))
+        if isinstance(value, str):
+            stripped = value.strip()
+            return stripped or None
+
+    raise ConfigValidationError(f"{key}: Eintraege muessen Strings sein")
+
+
+def _normalize_soft_list(key: str, value):
+    if not isinstance(value, list):
+        raise ConfigValidationError(f"{key}: Wert muss eine Liste sein")
+
+    normalized = []
+    seen = set()
+
+    if key in _OBJECT_SOFT_KEYS:
+        for item in value:
+            normalized_item = _normalize_object_list_item(key, item)
+            if normalized_item is None:
+                continue
+            dedupe_token = (normalized_item.get("key"), normalized_item.get("label"))
+            if dedupe_token in seen:
+                continue
+            seen.add(dedupe_token)
+            normalized.append(normalized_item)
+        return normalized
+
+    if key in _STRING_SOFT_KEYS:
+        for item in value:
+            normalized_item = _normalize_string_list_item(key, item)
+            if normalized_item is None or normalized_item in seen:
+                continue
+            seen.add(normalized_item)
+            normalized.append(normalized_item)
+        return normalized
+
+    raise ConfigValidationError(f"Nicht editierbarer Key: {key}")
+
+
+def _write_config_atomic(config: dict) -> None:
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        dir=_config_path.parent,
+        delete=False,
+        suffix=".tmp",
+    ) as tmp:
+        json.dump(config, tmp, ensure_ascii=False, indent=2)
+        tmp.write("\n")
+        temp_path = Path(tmp.name)
+
+    temp_path.replace(_config_path)
+
+
+def update_soft_config(payload: dict) -> dict:
+    """Validate, persist and reload the editable soft config keys."""
+    if not isinstance(payload, dict):
+        raise ConfigValidationError("Payload muss ein JSON-Objekt sein")
+
+    keys = set(payload.keys())
+    allowed = set(SOFT_CONFIG_KEYS)
+
+    unknown_keys = sorted(keys - allowed)
+    if unknown_keys:
+        raise ConfigValidationError(f"Unbekannte Keys: {', '.join(unknown_keys)}")
+
+    missing_keys = sorted(allowed - keys)
+    if missing_keys:
+        raise ConfigValidationError(f"Fehlende Keys: {', '.join(missing_keys)}")
+
+    normalized = {key: _normalize_soft_list(key, payload[key]) for key in SOFT_CONFIG_KEYS}
+
+    with _config_lock:
+        current = _load_config_from_disk()
+        current.update(normalized)
+        _validate_required_keys(current)
+        _write_config_atomic(current)
+        app_config.clear()
+        app_config.update(current)
+
+    return get_soft_config()
+
+try:
+    load_config()
 except FileNotFoundError:
     print(
         f"\n{'=' * 60}\n"
@@ -69,14 +252,11 @@ except json.JSONDecodeError as e:
         file=sys.stderr,
     )
     sys.exit(1)
-
-# Prüfe ob alle erforderlichen Keys vorhanden sind
-_missing = [k for k in _REQUIRED_KEYS if k not in app_config]
-if _missing:
+except ConfigValidationError as e:
     print(
         f"\n{'=' * 60}\n"
-        f"FATAL: appConfig.json ist unvollständig!\n"
-        f"Fehlende Keys: {', '.join(_missing)}\n"
+        f"FATAL: appConfig.json ist unvollstaendig oder ungueltig!\n"
+        f"Fehler: {e}\n"
         f"Pfad: {_config_path}\n"
         f"{'=' * 60}\n",
         file=sys.stderr,
@@ -93,11 +273,4 @@ def get_frontend_config() -> dict:
         ``songStatuses``, ``gigStatuses``, ``tonekeys`` and
         ``rehearsalSongStatuses``.
     """
-    return {
-        "genres": app_config["genres"],
-        "gigTypes": app_config["gigTypes"],
-        "songStatuses": app_config["songStatuses"],
-        "gigStatuses": app_config["gigStatuses"],
-        "tonekeys": app_config["tonekeys"],
-        "rehearsalSongStatuses": app_config["rehearsalSongStatuses"],
-    }
+    return get_soft_config()

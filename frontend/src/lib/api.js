@@ -958,11 +958,20 @@ export async function getSingers(token){
 let _appConfigCache = null;
 let _appConfigPromise = null;
 
+export function invalidateAppConfigCache() {
+  _appConfigCache = null;
+  _appConfigPromise = null;
+}
+
 /**
  * Lädt die App-Konfiguration vom Backend (öffentlicher Endpoint, kein Auth).
  * Das Ergebnis wird im Speicher gecached, sodass nur ein Request pro Seitenladen erfolgt.
  */
-export async function getAppConfig() {
+export async function getAppConfig(forceReload = false) {
+  if (forceReload) {
+    invalidateAppConfigCache();
+  }
+
   if (_appConfigCache) return _appConfigCache;
   if (_appConfigPromise) return _appConfigPromise;
 
@@ -977,6 +986,32 @@ export async function getAppConfig() {
   })();
 
   return _appConfigPromise;
+}
+
+export async function adminGetSoftConfig() {
+  const res = await fetchWithAuth(`${API_URL}/admin/config/soft`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Konfiguration konnte nicht geladen werden');
+  }
+  return res.json();
+}
+
+export async function adminUpdateSoftConfig(payload) {
+  const res = await fetchWithAuth(`${API_URL}/admin/config/soft`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Konfiguration konnte nicht gespeichert werden');
+  }
+  invalidateAppConfigCache();
+  return res.json();
 }
 
 

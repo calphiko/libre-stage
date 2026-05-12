@@ -119,6 +119,9 @@
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
+				{#if user.user_group === 'admin'}
+					<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
+				{/if}
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
 				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
 				<button class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700 w-full text-left" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
