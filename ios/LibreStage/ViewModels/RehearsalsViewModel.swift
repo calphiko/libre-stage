@@ -13,7 +13,7 @@ final class RehearsalsViewModel {
     var error: AppError?
 
     // Entspricht appConfig.json → rehearsalSongStatuses
-    let rehearsalSongStatuses = ["vorschlag", "angenommen", "proben", "spielbar", "retired"]
+    var rehearsalSongStatuses = ["vorschlag", "angenommen", "proben", "spielbar", "retired"]
 
     // MARK: - Abgeleitete Listen
 
@@ -46,6 +46,11 @@ final class RehearsalsViewModel {
             rehearsals = try await rehs
             songs      = try await sngs
             users      = try await usrs
+
+            if let config: FrontendAppConfig = try? await APIClient.shared.get(path: "/public/app_config"),
+               !config.rehearsalSongStatuses.isEmpty {
+                rehearsalSongStatuses = config.rehearsalSongStatuses
+            }
         } catch let e as AppError {
             error = e
         } catch {

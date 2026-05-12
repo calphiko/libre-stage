@@ -79,6 +79,16 @@ struct ProfileView: View {
                     }
                 }
 
+                if authManager.userRole == .admin {
+                    Section("Admin") {
+                        NavigationLink {
+                            AdminConfigView()
+                        } label: {
+                            Label("Konfiguration", systemImage: "slider.horizontal.3")
+                        }
+                    }
+                }
+
                 // MARK: Logout
                 Section {
                     Button(role: .destructive) {

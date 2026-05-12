@@ -166,6 +166,26 @@ struct FrontendAppConfig: Codable {
     let songStatuses: [AppConfigOption]
     let gigStatuses: [AppConfigOption]
     let tonekeys: [AppConfigOption]
+    let rehearsalSongStatuses: [String]
+
+    private enum CodingKeys: String, CodingKey {
+        case genres
+        case gigTypes
+        case songStatuses
+        case gigStatuses
+        case tonekeys
+        case rehearsalSongStatuses
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        genres = try c.decodeIfPresent([AppConfigOption].self, forKey: .genres) ?? []
+        gigTypes = try c.decodeIfPresent([AppConfigOption].self, forKey: .gigTypes) ?? []
+        songStatuses = try c.decodeIfPresent([AppConfigOption].self, forKey: .songStatuses) ?? []
+        gigStatuses = try c.decodeIfPresent([AppConfigOption].self, forKey: .gigStatuses) ?? []
+        tonekeys = try c.decodeIfPresent([AppConfigOption].self, forKey: .tonekeys) ?? []
+        rehearsalSongStatuses = try c.decodeIfPresent([String].self, forKey: .rehearsalSongStatuses) ?? []
+    }
 }
 
 enum SongFieldType {
