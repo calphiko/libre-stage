@@ -17,3 +17,4 @@ Dieser Abschnitt beschreibt alle Funktionen von libreStage aus Benutzersicht.
    proben
    abstimmungen
    benutzer
+   konfiguration
