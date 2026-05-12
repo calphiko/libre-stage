@@ -64,6 +64,9 @@ Anwendungskonfiguration (``appConfig.json``)
 Die Datei ``appConfig.json`` im Projekt-Root enthält alle band-spezifischen Einstellungen,
 die **ohne erneutes Bauen** des Frontends geändert werden können.
 
+Ab ``v0.4.0`` koennen Admins die weichen Parameter auch direkt in der
+Weboberflaeche unter :ref:`admin_konfiguration` pflegen.
+
 .. code-block:: json
 
    {
