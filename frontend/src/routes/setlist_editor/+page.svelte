@@ -19,7 +19,7 @@
 <script>
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import SetList from './SetList.svelte';
   import SongList from './SongList.svelte';
   import { get } from 'svelte/store';
@@ -36,6 +36,7 @@
   let error = $state('');
   let user = $state(null);
   let showHelp = $state(false);
+  let setlistEndAnchor;
 
 
 
@@ -93,6 +94,10 @@
 
         newSetlist.sets[lastSetIndex] = lastSet;
         setlist = newSetlist;
+
+        // Nach dem Einfügen zum Ende der Setliste scrollen.
+        await tick();
+        setlistEndAnchor?.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
         console.log("Setlist nach Import:", setlist);
         // API-Call wie in handleDragOverSet
@@ -156,8 +161,12 @@
                 <span class="opacity-75">Ersten gefilterten Song ans Ende hinzufügen (im Suchfeld)</span>
               </div>
               <div class="flex items-center gap-2">
-                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">N</kbd>
+                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">Enter</kbd>
                 <span class="opacity-75">Neues Set am Ende hinzufügen</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">⌫</kbd>
+                <span class="opacity-75">Letzten Song des Stacks entfernen</span>
               </div>
             </div>
           </div>
@@ -166,7 +175,7 @@
           <div>
             <h4 class="font-semibold text-tertiary-500 mb-2">📁 Sets verwalten</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
-              <li><strong>Neues Set:</strong> Klicke auf "+ Neues Set" oder nutze <kbd class="kbd">Strg/⌘+Shift+N</kbd></li>
+              <li><strong>Neues Set:</strong> Klicke auf "+ Neues Set" oder nutze <kbd class="kbd">Strg/⌘+Shift+Enter</kbd></li>
               <li><strong>Set umbenennen:</strong> Klicke auf den Set-Namen</li>
               <li><strong>Pause setzen:</strong> Klicke auf die Pause-Zeit</li>
               <li><strong>Set löschen:</strong> Klicke auf das "🗑️" Symbol beim Set</li>
@@ -243,6 +252,7 @@
       <div class="card-body pt-3">
         {#if setlist}
           <SetList bind:setlist />
+          <div bind:this={setlistEndAnchor}></div>
         {:else}
           <div class="flex flex-col items-center justify-center py-12 opacity-60">
             <div class="animate-pulse">

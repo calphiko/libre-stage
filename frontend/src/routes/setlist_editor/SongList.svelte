@@ -82,7 +82,8 @@
   }
 
   function handleSearchKeydown(e) {
-    if (e.key === 'Enter' && filtered.length > 0) {
+    const hasModifier = e.ctrlKey || e.metaKey || e.shiftKey || e.altKey;
+    if (e.key === 'Enter' && !hasModifier && filtered.length > 0) {
       e.preventDefault();
       // Füge ersten Song aus gefilterter Liste hinzu
       addSongToSetListEnd(filtered[0].id);
