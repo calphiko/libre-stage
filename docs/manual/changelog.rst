@@ -3,6 +3,25 @@
 Änderungsprotokoll
 ==================
 
+v0.4.0 (2026-05-12)
+--------------------
+
+* Admin: Neue Seite **Konfiguration** unter ``/admin/config`` zum Bearbeiten
+  der weichen ``appConfig.json``-Parameter direkt in der Anwendung
+* Admin: Neue API-Endpunkte ``GET /admin/config/soft`` und
+  ``PUT /admin/config/soft`` mit strikter Rollenpruefung (nur ``admin``)
+* Konfiguration: ``appConfig``-Verarbeitung im Backend erweitert um
+  Validierung, Normalisierung, atomisches Schreiben und Reload ohne Neustart
+* Frontend: Soft-Config-Editor nutzt jetzt das zentrale Toast-System fuer
+  Erfolg/Fehler-Hinweise statt lokaler Inline-Alerts
+* Frontend: Zeitstempel **Stand** in der Admin-Konfiguration wird im
+  deutschen Datums-/Zeitformat angezeigt (``formatGermanDateTime``)
+* Frontend: Plus/Minus-Aktionen im Config-Editor auf die ueblichen
+  Icon-Button-Stile vereinheitlicht
+* Tests: Neue Backend-Tests fuer Admin-Config-Endpunkte inkl. Auth,
+  Validierung und Persistenz
+* Benutzerhandbuch: Neues Kapitel zur Admin-Konfiguration ergaenzt
+
 v0.3.16 (2026-05-04)
 ---------------------
 

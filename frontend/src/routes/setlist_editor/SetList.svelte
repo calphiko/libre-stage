@@ -144,6 +144,18 @@
     }
   }
 
+  async function removeLastSongFromStack() {
+    // Suche das letzte Set, das mindestens einen Song enthält.
+    for (let setIdx = setlist.sets.length - 1; setIdx >= 0; setIdx--) {
+      const songs = setlist.sets[setIdx].songs;
+      if (!songs?.length) continue;
+
+      const lastSong = songs[songs.length - 1];
+      await removeSongFromSet(setIdx, lastSong.setsong_id);
+      return;
+    }
+  }
+
   async function updateSetlist(data) {
     isUpdating = true;
     updateError = null;
@@ -160,11 +172,32 @@
   }
 
   function handleKeyboardShortcuts(e) {
-    // Strg/Cmd + Shift + N -> Neues Set am Ende hinzufügen
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+    const isAddSetShortcut =
+      (e.ctrlKey || e.metaKey) &&
+      e.shiftKey &&
+      (e.key === 'Enter' || e.code === 'Enter');
+    const isRemoveLastSongShortcut =
+      (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Backspace' || e.key === 'Delete');
+
+    if (isRemoveLastSongShortcut) {
+      e.preventDefault();
+      removeLastSongFromStack();
+      return;
+    }
+
+    // Strg/Cmd + Shift + Enter -> Neues Set am Ende hinzufügen
+    if (isAddSetShortcut) {
       e.preventDefault();
       addSetAtEnd();
+      return;
     }
+
+    const target = e.target;
+    const isTypingTarget =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
+    if (isTypingTarget) return;
   }
 
   onMount(() => {

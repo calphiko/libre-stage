@@ -2,7 +2,7 @@
 
 **A comprehensive internal management platform for bands and music ensembles**
 
-![Version](https://img.shields.io/badge/version-v0.3.15-blue)
+![Version](https://img.shields.io/badge/version-v0.4.0-blue)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.135.0-teal)
 ![Svelte](https://img.shields.io/badge/Svelte-5.29.0-orange)
