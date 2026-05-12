@@ -6,13 +6,20 @@ Proben
 Im Bereich **Proben** werden Bandproben geplant, vorbereitet und im Nachgang
 als Protokoll dokumentiert.
 
-.. note::
-   Screenshot folgt - bitte ``docs/manual/_static/screenshots/proben.png`` ablegen.
+.. image:: ../_static/screenshots/proben_overview.png
+   :alt: Proben Übersicht Screenshot
+   :width: 500px
+   :align: center
 
 Probe anlegen
 -------------
 
 Klicke auf das **+** neben der Ueberschrift **Proben**, um das Formular zu oeffnen.
+
+.. image:: ../_static/screenshots/proben_neu.png
+   :alt: Neue Probe Screenshot
+   :width: 200px
+   :align: center
 
 .. list-table::
    :header-rows: 1
@@ -34,33 +41,49 @@ Zeitraum in der Listenansicht
 -----------------------------
 
 Jede Probe wird als Zeitbereich angezeigt (z. B. ``18:00-20:30 Uhr``).
-Wenn Start und Ende auf verschiedenen Tagen liegen, zeigt die Karte beide Daten.
-
-Beim Loeschen einer Probe enthaelt der Bestaetigungsdialog ebenfalls den
-vollstaendigen Zeitraum, damit es keine Verwechslungen gibt.
 
 Songs und Todos in Proben
 -------------------------
 
-In einer aufgeklappten Probe koennen Songs hinzugefuegt und pro Song Todos,
+In einer aufgeklappten Probe können Songs hinzugefügt und pro Song Todos,
 Status und Kommentare gepflegt werden.
 
-* Song zur Probe hinzufuegen (inkl. optionalem Todo)
-* Song-Status direkt in der Probe aendern
-* Persoenliche Todos pro Mitglied vergeben
+* Song zur Probe hinzufügen (inkl. Todo)
+* Song-Status direkt in der Probe ändern
+* Persönliche Todos pro Mitglied vergeben
 * Song und Probenkommentare dokumentieren
+
+Protokoll führen
+----------------
+
+.. image:: ../_static/screenshots/proben_songs.png
+   :alt: Protokoll führen Screenshot
+   :width: 500px
+   :align: center
+
+Während der Probe können Kommentare und Todos jederzeit aktualisiert werden. Nach Ende der Probe wird die gesamte Probe als schreibgeschütztes Protokoll
+angezeigt, um die Dokumentation der Probe zu sichern.
+
+Geht während der Probe nach und nach durch die Songs und aktualisiert den Status (z. B. „gespielt“, „übersprungen“, „nicht gespielt“), fügt Kommentare hinzu und vergebt persönliche Todos (z. B. „Solo üben“). So entsteht automatisch ein vollständiges Protokoll der Probe.
+
+Vergesst nicht, nach der Probe eines Songs auch den Song-Status anzupassen und den Song als "erledigt" zu markieren. So wird er in der Listenübersicht als abehakt markiert und ihr behaltet den Überblick über den Fortschritt der Probe.
 
 Vergangene Proben - Protokoll-Ansicht
 -------------------------------------
 
-Vergangene Proben werden im Tab **Vergangene Proben** als schreibgeschuetztes
+.. image:: ../_static/screenshots/proben_protokoll.png
+   :alt: Protokoll führen Screenshot
+   :width: 500px
+   :align: center
+
+Vergangene Proben werden im Tab **Vergangene Proben** als schreibgeschütztes
 Protokoll angezeigt.
 
 Das Protokoll zeigt:
 
 * den Probenkommentar als Freitext
 * alle Songs inkl. Status, Todo und Kommentaren
-* persoenliche Todos mit Statussymbolen (``✔`` erledigt, ``⏳`` offen)
+* persönliche Todos mit Statussymbolen (``✔`` erledigt, ``⏳`` offen)
 
 Suche in vergangenen Proben
 ---------------------------
@@ -77,6 +100,6 @@ Treffer werden in der aufgeklappten Protokollansicht farblich hervorgehoben.
 iCal-Export
 -----------
 
-Proben erscheinen automatisch im oeffentlichen iCal-Feed unter ``/ical/``.
-Der Kalendereintrag enthaelt den Zeitbereich (Start-Ende) im Titel und in der
+Proben erscheinen automatisch im öffentlichen iCal-Feed unter ``/ical/``.
+Der Kalendereintrag enthält den Zeitbereich (Start-Ende) im Titel und in der
 Beschreibung.

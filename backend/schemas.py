@@ -133,6 +133,49 @@ class PasswordUpdateRequest(BaseModel):
 class PasswordResetRequest(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=128)
 
+
+class SoftConfigOption(BaseModel):
+    key: Optional[str] = None
+    label: str
+
+    model_config = {"extra": "forbid"}
+
+
+class SoftConfigUpdateIn(BaseModel):
+    genres: List[Union[str, SoftConfigOption]]
+    gigTypes: List[Union[str, SoftConfigOption]]
+    songStatuses: List[Union[str, SoftConfigOption]]
+    gigStatuses: List[Union[str, SoftConfigOption]]
+    tonekeys: List[Union[str, SoftConfigOption]]
+    rehearsalSongStatuses: List[Union[str, SoftConfigOption]]
+
+    model_config = {"extra": "forbid"}
+
+
+class SoftConfigOut(BaseModel):
+    genres: List[SoftConfigOption]
+    gigTypes: List[SoftConfigOption]
+    songStatuses: List[SoftConfigOption]
+    gigStatuses: List[SoftConfigOption]
+    tonekeys: List[SoftConfigOption]
+    rehearsalSongStatuses: List[str]
+
+
+class SoftConfigMeta(BaseModel):
+    editableKeys: List[str]
+    updatedAt: str
+
+
+class SoftConfigAdminResponse(BaseModel):
+    data: SoftConfigOut
+    meta: SoftConfigMeta
+
+
+class SoftConfigUpdateResponse(BaseModel):
+    message: str
+    updatedKeys: List[str]
+    data: SoftConfigOut
+
 class SongIn(BaseModel):
     title: str = Field(..., max_length=200)
     interpret: str =  Field(..., max_length=200)

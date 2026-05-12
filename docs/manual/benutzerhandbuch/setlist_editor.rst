@@ -6,13 +6,15 @@ Setlist-Editor
 Der Setlist-Editor ermöglicht es, Setlists für Gigs zu erstellen und zu bearbeiten.
 Er unterstützt mehrere Sets, Drag & Drop sowie automatische Zeitberechnung.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/setlist_editor.png`` ablegen.
+.. image:: ../_static/screenshots/gigs_setlist_editor.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
 
 Sets anlegen
 ------------
 
-Über den Button **+ Set hinzufügen** wird ein neues Set an die Setlist angehängt.
+Über den Button **+ Set** wird ein neues Set an die Setlist angehängt.
 Jedes Set bekommt automatisch einen Namen (z. B. „Set 1“, „Set 2“, …).
 
 Set umbenennen
@@ -24,8 +26,8 @@ Drücke **Enter** oder klicke außerhalb des Feldes, um den Namen zu speichern.
 Set löschen
 ~~~~~~~~~~~
 
-Über das **Papierkorb-Icon** am Set-Header kann das gesamte Set gelöscht werden.
-Eine Bestätigungsabfrage verhindert versehentliches Löschen.
+Über den Button **-** am Set-Header kann das gesamte Set gelöscht werden.
+
 
 Songs hinzufügen
 ----------------
@@ -35,7 +37,7 @@ deren Status ``spielbar`` ist.
 
 * Klicke auf einen Song, um ihn dem aktuell ausgewählten Set hinzuzufügen.
 * Im Suchfeld kann nach Titel oder Interpret gesucht werden.
-* Mit **Enter** wird der erste Suchtreffer direkt hinzugefügt.
+* Mit **Enter** wird der erste Suchtreffer direkt am Ende der Setlist hinzugefügt.
 
 Drag & Drop
 -----------

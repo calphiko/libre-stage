@@ -8,8 +8,10 @@ und Musikensembles. Sie vereint Gig-Planung, Setlist-Editor, Song-Datenbank,
 Proben-Organisation, Abstimmungen und einen Live-Modus für Auftritte in einer einzigen
 Plattform.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/overview.png`` ablegen.
+.. image:: ./_static/screenshots/overview.png
+   :alt: Dashboard Screenshot
+   :width: 500px
+   :align: center
 
 .. rubric:: Hauptfunktionen
 

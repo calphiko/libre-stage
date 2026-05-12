@@ -1,6 +1,6 @@
 [project]
 name = "libre-stage"
-version = "0.3.15"
+version = "0.4.0"
 description = "Band rehearsal and gig management software"
 requires-python = ">=3.11"
 dependencies = [

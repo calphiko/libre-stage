@@ -3,6 +3,40 @@
 Änderungsprotokoll
 ==================
 
+v0.4.0 (2026-05-12)
+--------------------
+
+* Admin: Neue Seite **Konfiguration** unter ``/admin/config`` zum Bearbeiten
+  der weichen ``appConfig.json``-Parameter direkt in der Anwendung
+* Admin: Neue API-Endpunkte ``GET /admin/config/soft`` und
+  ``PUT /admin/config/soft`` mit strikter Rollenpruefung (nur ``admin``)
+* Konfiguration: ``appConfig``-Verarbeitung im Backend erweitert um
+  Validierung, Normalisierung, atomisches Schreiben und Reload ohne Neustart
+* Frontend: Soft-Config-Editor nutzt jetzt das zentrale Toast-System fuer
+  Erfolg/Fehler-Hinweise statt lokaler Inline-Alerts
+* Frontend: Zeitstempel **Stand** in der Admin-Konfiguration wird im
+  deutschen Datums-/Zeitformat angezeigt (``formatGermanDateTime``)
+* Frontend: Plus/Minus-Aktionen im Config-Editor auf die ueblichen
+  Icon-Button-Stile vereinheitlicht
+* Tests: Neue Backend-Tests fuer Admin-Config-Endpunkte inkl. Auth,
+  Validierung und Persistenz
+* Benutzerhandbuch: Neues Kapitel zur Admin-Konfiguration ergaenzt
+
+v0.3.16 (2026-05-04)
+---------------------
+
+* Song-Vorschlaege: Spalten **Mein Feedback** und **Gesamtfeedback** zur
+  gemeinsamen Spalte **Abstimmung** zusammengefuehrt
+* Song-Vorschlaege: Stimmanzeigen (Ja/Nein/Enthaltung) als klickbare Buttons
+  umgesetzt; Musiker koennen direkt ueber die Badge-Buttons abstimmen
+* Song-Vorschlaege: Aktive eigene Stimme wird visuell hervorgehoben
+* Song-Vorschlaege: Mobile Darstellung der Abstimmungs-Elemente verbessert
+  (unterhalb ``md`` untereinander, ab ``md`` wieder nebeneinander)
+* Song-Details: In der normalen Detailansicht kann ein Song per Dropdown einer
+  geplanten zukuenftigen Probe zugewiesen werden
+* Song-Details: Das Dropdown enthaelt eine leere Option (**Keine Zuordnung**),
+  um den Song keiner Probe zuzuweisen
+
 v0.3.15 (2026-04-18)
 ---------------------
 

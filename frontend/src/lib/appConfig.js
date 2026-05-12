@@ -4,7 +4,7 @@
 // geändert werden, ohne neu zu bauen.
 
 import { writable, get } from 'svelte/store';
-import { getAppConfig } from '$lib/api.js';
+import { getAppConfig, invalidateAppConfigCache } from '$lib/api.js';
 
 /**
  * Svelte Store für die App-Konfiguration.
@@ -15,12 +15,23 @@ export const appConfig = writable(null);
 let _loaded = false;
 let _loadPromise = null;
 
+export function resetAppConfigStore() {
+  _loaded = false;
+  _loadPromise = null;
+  appConfig.set(null);
+  invalidateAppConfigCache();
+}
+
 /**
  * Lädt die App-Konfiguration vom Backend und setzt den Store.
  * Wird nur einmal ausgeführt (Singleton). Kann von mehreren Stellen aufgerufen werden.
  * @returns {Promise<object>} Die geladene Konfiguration
  */
-export async function loadAppConfig() {
+export async function loadAppConfig(forceReload = false) {
+  if (forceReload) {
+    resetAppConfigStore();
+  }
+
   if (_loaded) return get(appConfig);
 
   if (_loadPromise) return _loadPromise;

@@ -205,7 +205,7 @@
   <!-- Editor Grid -->
   <div class="editor-grid">
     <!-- Song List Column (Sticky) -->
-    <div class="editor-col sticky-col card variant-filled-surface">
+    <div class="editor-col sticky-col card variant-ghost-surface">
       <div class="card-header pb-3 border-b border-surface-400/30">
         <h3 class="h4 font-bold flex items-center gap-2">
           <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

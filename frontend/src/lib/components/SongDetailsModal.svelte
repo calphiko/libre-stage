@@ -19,9 +19,20 @@
 <script>
   import { onMount } from 'svelte';
   import { modalState } from '$lib/modalState.js';
-import { getSongFieldsDetails } from '$lib/songFields.js';
+  import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
-  import { getSong, getUser, updateSong, deleteSong, getSingers, getSongRehearsalHistory, getUserList, getSongStatistics } from '$lib/api.js';
+  import {
+    getSong,
+    getUser,
+    updateSong,
+    deleteSong,
+    getSingers,
+    getSongRehearsalHistory,
+    getUserList,
+    getSongStatistics,
+    getRehearsalList,
+    updateRehearsals
+  } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import SingersList from '$lib/components/SingersList.svelte';
@@ -49,8 +60,98 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   let statistics = $state(null);
   let statsLoading = $state(false);
   let rehearsalHistoryLoaded = $state(false);
+  let rehearsals = $state([]);
+  let selectedFutureRehearsalId = $state('');
+  let isAssigningRehearsal = $state(false);
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
+  let upcomingRehearsals = $derived(
+    [...rehearsals]
+      .filter((reh) => new Date(reh.begin) >= new Date())
+      .sort((a, b) => new Date(a.begin) - new Date(b.begin))
+  );
+
+  function findFutureRehearsalIdForSong(songIdToFind, rehearsalList) {
+    const nextRehearsal = [...(rehearsalList || [])]
+      .filter((reh) => new Date(reh.begin) >= new Date())
+      .sort((a, b) => new Date(a.begin) - new Date(b.begin))
+      .find((reh) => (reh.songs || []).some((s) => s.id_song === songIdToFind));
+
+    return nextRehearsal ? String(nextRehearsal.id) : '';
+  }
+
+  function formatRehearsalOption(beginLike, endLike) {
+    const begin = new Date(beginLike);
+    const end = endLike ? new Date(endLike) : null;
+    const dateLabel = begin.toLocaleDateString('de-DE', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const beginTime = begin.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+    if (!end) return `${dateLabel}, ${beginTime} Uhr`;
+
+    const endTime = end.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    return `${dateLabel}, ${beginTime}-${endTime} Uhr`;
+  }
+
+  function buildRehearsalSongPayload(rehearsalId, songData) {
+    return {
+      id: null,
+      id_rehearsal: rehearsalId,
+      id_song: song.id,
+      interpret: songData.interpret || song.interpret || '',
+      title: songData.title || song.title || '',
+      status: songData.status || song.status || '',
+      setlist_comment: songData.comment || song.comment || '',
+      comment: '',
+      todo: '',
+      song_todos: [],
+      done: false
+    };
+  }
+
+  async function syncFutureRehearsalAssignment(songData) {
+    const targetRehearsalId = selectedFutureRehearsalId ? Number(selectedFutureRehearsalId) : null;
+    const updates = [];
+    let targetExists = false;
+
+    for (const reh of upcomingRehearsals) {
+      const hasSong = (reh.songs || []).some((s) => s.id_song === song.id);
+      if (targetRehearsalId && reh.id === targetRehearsalId) {
+        targetExists = true;
+        if (!hasSong) {
+          updates.push({
+            ...reh,
+            songs: [...(reh.songs || []), buildRehearsalSongPayload(reh.id, songData)]
+          });
+        }
+        continue;
+      }
+
+      if (hasSong) {
+        updates.push({
+          ...reh,
+          songs: (reh.songs || []).filter((s) => s.id_song !== song.id)
+        });
+      }
+    }
+
+    if (targetRehearsalId && !targetExists) {
+      throw new Error('Die ausgewählte Probe ist nicht mehr verfügbar.');
+    }
+
+    if (updates.length === 0) return;
+
+    for (const rehUpdate of updates) {
+      await updateRehearsals(null, rehUpdate);
+    }
+
+    rehearsals = await getRehearsalList();
+    selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
+  }
 
   function statsEnabled() {
     if (song.status == 'vorschlag') return false;
@@ -60,11 +161,12 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
 
   onMount(async () => {
     try {
-      const [songData, userData, singerData, userList] = await Promise.all([
+      const [songData, userData, singerData, userList, rehearsalList] = await Promise.all([
         getSong(null, songId),
         getUser(),
         getSingers(),
-        getUserList()
+        getUserList(),
+        getRehearsalList()
       ]);
 
       song = songData;
@@ -72,6 +174,8 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
       canEdit = userData && (userData.user_group === 'admin' || userData.user_group === 'editor');
       singers = singerData || [];
       users = userList || [];
+      rehearsals = rehearsalList || [];
+      selectedFutureRehearsalId = findFutureRehearsalIdForSong(songId, rehearsals);
     } catch (e) {
       error = e.message || 'Song konnte nicht geladen werden';
       console.error('SongDetailsModal load error:', e);
@@ -130,6 +234,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   function startEdit() {
     isEditing = true;
     editBuffer = { ...song };
+    selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
     songFieldsDetails.forEach(field => {
       if (field.type === 'singer_list' && typeof editBuffer[field.key] === 'string') {
         editBuffer[field.key] = editBuffer[field.key]
@@ -143,6 +248,7 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
   function cancelEdit() {
     isEditing = false;
     editBuffer = { ...song };
+    selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
   }
 
   async function saveEdit() {
@@ -157,11 +263,13 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
       });
 
       const updatedSong = await updateSong(song.id, dataToSend, null);
+      const songData = { ...song, ...dataToSend, ...(updatedSong || {}) };
+
+      await syncFutureRehearsalAssignment(songData);
+
       showSuccess('Song erfolgreich aktualisiert');
       isEditing = false;
-
-      const songData = updatedSong || dataToSend;
-      song = { ...song, ...songData };
+      song = songData;
       editBuffer = { ...song };
 
       if (true) {
@@ -203,6 +311,29 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
         }
       });
     }, 200);
+  }
+
+  async function handleFutureRehearsalChange(e) {
+    if (!canEdit || isAssigningRehearsal) return;
+
+    selectedFutureRehearsalId = e.currentTarget.value;
+
+    isAssigningRehearsal = true;
+    try {
+      await syncFutureRehearsalAssignment(song);
+      showSuccess('Probenzuordnung aktualisiert');
+    } catch (err) {
+      selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
+      showError(err?.message ?? 'Probenzuordnung konnte nicht aktualisiert werden');
+    } finally {
+      isAssigningRehearsal = false;
+    }
+  }
+
+  function getSelectedFutureRehearsalLabel() {
+    if (!selectedFutureRehearsalId) return 'Keine Zuordnung';
+    const reh = upcomingRehearsals.find(r => String(r.id) === String(selectedFutureRehearsalId));
+    return reh ? formatRehearsalOption(reh.begin, reh.end) : 'Keine Zuordnung';
   }
 </script>
 <div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col  modal-base">
@@ -291,6 +422,25 @@ import { getSongFieldsDetails } from '$lib/songFields.js';
         {:else}
           <!-- Detail View -->
           <div class="overflow-y-auto flex-grow min-h-0">
+            <div class="flex justify-between py-2 border-b border-surface-300 text-sm items-center gap-3">
+              <span class="font-semibold text-on-surface-variant">Geplante Probe</span>
+              {#if canEdit}
+                <select
+                  class="input select max-w-sm text-sm"
+                  bind:value={selectedFutureRehearsalId}
+                  onchange={handleFutureRehearsalChange}
+                  disabled={isAssigningRehearsal}
+                >
+                  <option value="">Keine Zuordnung</option>
+                  {#each upcomingRehearsals as reh}
+                    <option value={String(reh.id)}>{formatRehearsalOption(reh.begin, reh.end)}</option>
+                  {/each}
+                </select>
+              {:else}
+                <span class="text-right ml-4">{getSelectedFutureRehearsalLabel()}</span>
+              {/if}
+            </div>
+
             {#each songFieldsDetails as f}
               <div class="flex justify-between py-2 border-b border-surface-300 text-sm">
                 <span class="font-semibold text-on-surface-variant">{f.label}</span>

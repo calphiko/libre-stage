@@ -33,6 +33,13 @@ from backend.utils.email import send_email
 import os
 from dotenv import load_dotenv
 from backend.utils.check_permissions import check_admin
+from backend.app_config import (
+    SOFT_CONFIG_KEYS,
+    ConfigValidationError,
+    get_soft_config,
+    get_soft_config_updated_at,
+    update_soft_config,
+)
 
 logger = logging.getLogger("uvicorn.error")
 # suppress progress polls to reduce log clutter
@@ -82,6 +89,40 @@ async def user_is_admin(request: Request, db: Session = Depends(auth.get_db)):
 router = APIRouter(
     prefix="/admin", tags=["admin"], dependencies=[Depends(user_is_admin)]
 )
+
+
+@router.get("/config/soft", response_model=schemas.SoftConfigAdminResponse)
+def admin_get_soft_config():
+    return {
+        "data": get_soft_config(),
+        "meta": {
+            "editableKeys": list(SOFT_CONFIG_KEYS),
+            "updatedAt": get_soft_config_updated_at(),
+        },
+    }
+
+
+@router.put("/config/soft", response_model=schemas.SoftConfigUpdateResponse)
+def admin_update_soft_config(
+        data: schemas.SoftConfigUpdateIn,
+        current=Depends(auth.get_current_user),
+):
+    try:
+        updated = update_soft_config(data.model_dump())
+    except ConfigValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    logger.info(
+        "Admin '%s' updated soft config keys: %s",
+        current.get("user_name", "unknown"),
+        ", ".join(SOFT_CONFIG_KEYS),
+    )
+
+    return {
+        "message": "Soft config updated",
+        "updatedKeys": list(SOFT_CONFIG_KEYS),
+        "data": updated,
+    }
 
 
 

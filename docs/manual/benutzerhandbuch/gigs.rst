@@ -6,13 +6,20 @@ Gigs
 Im Bereich **Gigs** werden alle Konzerte und Auftritte der Band verwaltet.
 Admins und Editors können Gigs anlegen, bearbeiten und löschen.
 
-.. note::
-   Screenshot folgt – bitte ``docs/manual/_static/screenshots/gigs.png`` ablegen.
+.. image:: ../_static/screenshots/gigs.png
+   :alt: Gigs Übersicht Screenshot
+   :width: 500px
+   :align: center
 
 Gig anlegen
 -----------
 
 Klicke auf **+ Neuer Gig**, um das Formular zu öffnen.
+
+.. image:: ../_static/screenshots/gigs_new.png
+   :alt: Gigs Form Screenshot
+   :width: 500px
+   :align: center
 
 .. list-table::
    :header-rows: 1
@@ -42,6 +49,11 @@ Klicke auf **+ Neuer Gig**, um das Formular zu öffnen.
 Status-Workflow
 ---------------
 
+.. image:: ../_static/screenshots/gigs_detail.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
+
 .. list-table::
    :header-rows: 1
    :widths: 20 80
@@ -64,13 +76,24 @@ Klicke auf **Setlist** in der Gig-Zeile, um den Editor zu öffnen.
 Setlist-PDF generieren
 -----------------------
 
-Der Button **PDF** erzeugt ein druckfertiges PDF der Setlist mit allen Sets, Songs,
+Der Button **Setliste drucken** erzeugt ein druckfertiges PDF der Setlist mit allen Sets, Songs,
 Tonarten, Dauern, Sängern sowie Gesamtspieldauer und Pausenzeiten.
+
+.. image:: ../_static/screenshots/gigs_setlist.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
 
 Ablaufplan-PDF generieren
 -------------------------
 
-Der Button **Ablaufplan-PDF** erzeugt ein separates PDF für den zeitlichen Ablauf eines Gigs.
+Der Button **Ablaufplan** erzeugt ein zeigt den zeitlichen Ablauf eines Gigs.
+
+.. image:: ../_static/screenshots/gigs_plan.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
+   :class: img-gap-lg
 
 Enthalten sind:
 
@@ -97,4 +120,14 @@ Statistiken
 Der Button **Statistiken** öffnet ein Modal mit der Auswertung des Gigs:
 gespielte / übersprungene Songs, Bewertungsverteilung, Spielzeit vs. Plan.
 
+.. image:: ../_static/screenshots/gigs_stats.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
+
 Der Button **Saison-Statistiken** zeigt aggregierte Daten aller Gigs der laufenden Saison.
+
+.. image:: ../_static/screenshots/season_stats.png
+   :alt: Gigs Detail Screenshot
+   :width: 500px
+   :align: center
