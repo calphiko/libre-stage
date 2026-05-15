@@ -3,6 +3,20 @@
 Änderungsprotokoll
 ==================
 
+v0.4.1 (2026-05-15)
+--------------------
+* Fix: Setlist-Generator - Direkter Import von timedelta am Anfang.
+* Setlist-Editor: Neue Shortcuts fuer schnelleres Arbeiten (u. a.
+  ``Strg/Cmd + Shift + Enter`` fuer neues Set am Ende)
+* Setlist-Editor: ``Enter`` im Suchfeld fuegt nur noch ohne Zusatz-Tasten hinzu
+  und scrollt anschliessend automatisch ans Ende der Setlist
+* Setlist-Editor: Shortcut zum Entfernen des letzten Songs aus dem Stack
+  ergaenzt (``Strg/Cmd + Shift + Backspace/Entf``)
+* Setlist-Editor: Direkte Schnellwahl fuer Suchtreffer 1-4 ueber
+  ``Strg/Cmd + Opt/Alt + Shift + 1-4`` im Suchfeld
+* Benutzerhandbuch: Setlist-Editor-Dokumentation an die neuen Shortcuts und
+  das aktualisierte Suchfeld-Verhalten angepasst
+
 v0.4.0 (2026-05-12)
 --------------------
 
