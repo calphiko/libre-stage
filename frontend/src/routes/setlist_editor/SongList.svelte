@@ -82,6 +82,21 @@
   }
 
   function handleSearchKeydown(e) {
+    const isAddByIndexShortcut =
+      (e.metaKey || e.ctrlKey) &&
+      e.altKey &&
+      e.shiftKey &&
+      /^Digit[1-4]$/.test(e.code);
+
+    if (isAddByIndexShortcut) {
+      e.preventDefault();
+      const index = Number(e.code.replace('Digit', '')) - 1;
+      if (filtered[index]) {
+        addSongToSetListEnd(filtered[index].id);
+      }
+      return;
+    }
+
     const hasModifier = e.ctrlKey || e.metaKey || e.shiftKey || e.altKey;
     if (e.key === 'Enter' && !hasModifier && filtered.length > 0) {
       e.preventDefault();
