@@ -161,6 +161,10 @@
                 <span class="opacity-75">Ersten gefilterten Song ans Ende hinzufügen (im Suchfeld)</span>
               </div>
               <div class="flex items-center gap-2">
+                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Opt/Alt</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">1-4</kbd>
+                <span class="opacity-75">Gefilterten Song 1-4 direkt ans Ende hinzufügen (im Suchfeld)</span>
+              </div>
+              <div class="flex items-center gap-2">
                 <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">Enter</kbd>
                 <span class="opacity-75">Neues Set am Ende hinzufügen</span>
               </div>
