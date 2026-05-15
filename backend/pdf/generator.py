@@ -28,7 +28,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class SetlistPDF:
     """
@@ -196,7 +196,6 @@ class SetlistPDF:
                             last_song = prev_setsongs[-1].song
                             last_song_duration = last_song.duration
                             if last_song_duration:
-                                from datetime import timedelta
                                 duration = timedelta(
                                     hours=last_song_duration.hour if hasattr(last_song_duration, "hour") else 0,
                                     minutes=last_song_duration.minute if hasattr(last_song_duration, "minute") else 0,
