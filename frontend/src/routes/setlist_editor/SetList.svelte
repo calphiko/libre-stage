@@ -38,6 +38,41 @@
   
   let nextNegativeSetsongId = $state(-1);
 
+  function formatPauseForInput(value) {
+    if (!value) return '';
+    const txt = String(value);
+    return txt.length >= 5 ? txt.slice(0, 5) : txt;
+  }
+
+  function normalizePauseForApi(value) {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return null;
+    if (/^\d{2}:\d{2}$/.test(trimmed)) return `${trimmed}:00`;
+    return trimmed;
+  }
+
+  function getSongDuplicateKey(song) {
+    if (song?.id != null) return `id:${song.id}`;
+    return `name:${song?.interpret ?? ''}::${song?.title ?? ''}`;
+  }
+
+  function getDuplicateSongKeys() {
+    const counts = new Map();
+    for (const set of setlist?.sets ?? []) {
+      for (const song of set?.songs ?? []) {
+        const key = getSongDuplicateKey(song);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+    return new Set(
+      [...counts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([key]) => key)
+    );
+  }
+
+  let duplicateSongKeys = $derived(getDuplicateSongKeys());
+
   function cleanDnDItems(items) {
     // Entferne nur Shadow-Elemente
     return items.filter(item => !item._dndShadowItem);
@@ -213,7 +248,6 @@
   });
 </script>
 
-
 {#each setlist.sets as set, setIdx (set.gigset_id)}
   <div class="set-card">
     <div class="set-header ">
@@ -256,14 +290,21 @@
       ondrop={(e) => handleDragOverSet(setIdx, e)}
     >
       {#each set.songs as song (song.setsong_id)}
+        {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
         <div class="song-in-set text-surface-900 dark:text-surface-950" data-song-id={song.setsong_id}
+        class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
           <span>
           {#if song.brass === 1}
             🎺
           {/if}
-          {song.title}   <small>{song.comment}</small>     </span>
+          {song.title}
+          {#if isDuplicateSong}
+            <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
+          {/if}
+          <small>{song.comment}</small>
+          </span>
           <button class="btn btn-sm variant-filled-error py-0"
                   onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -278,11 +319,26 @@
       {/if}
     </div>
 
-    {#if set.pause}
-      <div style="margin:.2em 0 .7em;font-style:italic;color:#888">
-        Pause: {set.pause}
-      </div>
-    {/if}
+    <div class="pause-edit-row">
+      <label class="pause-label" for={`pause-${setIdx}`}>Pause:</label>
+      <input
+        id={`pause-${setIdx}`}
+        type="time"
+        step="60"
+        class="pause-input"
+        value={formatPauseForInput(set.pause)}
+        oninput={(e) => {
+          setlist.sets[setIdx].pause = e.target.value;
+        }}
+        onblur={(e) => {
+          const normalizedPause = normalizePauseForApi(e.target.value);
+          setlist.sets[setIdx].pause = normalizedPause;
+          const snapshot = JSON.parse(JSON.stringify(setlist));
+          snapshot.sets[setIdx].pause = normalizedPause;
+          updateSetlist(snapshot);
+        }}
+      />
+    </div>
   </div>
 
 {/each}
@@ -300,8 +356,48 @@
 .song-in-set{ display:flex; justify-content:space-between; align-items:center;
               background:#e7f1fb; margin-bottom:4px; padding:.33em .6em;
               border-radius:6px; }
+
+.song-duplicate {
+  border: 1.5px solid #dc2626;
+}
+
+.duplicate-badge {
+  display: inline-block;
+  margin: 0 .35em;
+  color: #dc2626;
+  font-weight: 700;
+}
+
 .empty-set-hint{ color:#7895a9; font-style:italic; text-align:center; opacity:.75; }
 .pause{ margin:.2em 0 .7em; font-style:italic; color:#888; }
+
+.pause-edit-row {
+  margin: .35em 0 .7em;
+  display: flex;
+  align-items: center;
+  gap: .45em;
+}
+
+.pause-label {
+  color: #6b7280;
+  font-size: .92em;
+  font-style: italic;
+}
+
+.pause-input {
+  width: 110px;
+  border: 1px solid #b2d4fa;
+  background: #f8fcff;
+  color: #2f587b;
+  border-radius: 5px;
+  padding: .18em .45em;
+  font-size: .92em;
+}
+
+.pause-input:focus {
+  outline: none;
+  border-color: #3c9ad8;
+}
 
 .set-header {
   display: flex;
