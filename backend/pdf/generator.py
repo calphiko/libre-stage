@@ -269,15 +269,19 @@ class SetlistPDF:
 
                     c.setFont(self.FONT, self.FONT_SIZE)
 
-                    # Tonart direkt vor dem Titel anzeigen
-                    tone_prefix = f"{song.tone_key} " if song.tone_key else ""
-
                     # Title mit Markierungen
                     title_prefix = "[NEU] " if is_eingeschoben else ""
-                    title = f"{tone_prefix}{title_prefix}{song.title}{feedback_text}".strip()
+                    title = f"{title_prefix}{song.title}{feedback_text}".strip()
 
                     # Sängerfarbe setzen
-                    title_x = x + 35
+                    title_x = x + 37
+
+                    # Tonart in schmaler, grauer Spalte direkt vor dem Titel
+                    tone_key = (song.tone_key or "").strip()
+                    if tone_key:
+                        c.setFillColor("grey")
+                        c.drawRightString(title_x - 8, y, tone_key)
+
                     c.setFillColor(color)
                     c.drawString(title_x, y, title)
                     title_width = stringWidth(title, self.FONT, self.FONT_SIZE)
@@ -308,11 +312,11 @@ class SetlistPDF:
                     c.setFillColor("grey")
                     # Startzeit anzeigen
                     if song_time:
-                        c.drawRightString(x+20, y, song_time.strftime('%H:%M'))
+                        c.drawRightString(x+15, y, song_time.strftime('%H:%M'))
                     c.drawRightString(duration_right_x, y, dur)
                     if getattr(song, "brass", 0):
                         c.setFillColor("red")
-                        c.drawString(x+30, y, "•")
+                        c.drawString(x+32, y, "•")
                     c.setFillColor("black")
                     y += self.Y_STEP
                 y += int(self.Y_STEP * 1.5)  # nach dem Set
