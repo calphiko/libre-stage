@@ -101,6 +101,24 @@ class SetlistPDF:
         height += int(self.Y_STEP * 1.5)
         return height
 
+    @staticmethod
+    def _truncate_text_to_width(text: str, max_width: float, font_name: str, font_size: int) -> str:
+        """Truncate text to fit in the available width, appending '...' when needed."""
+        if not text or max_width <= 0:
+            return ""
+        if stringWidth(text, font_name, font_size) <= max_width:
+            return text
+
+        ellipsis = "..."
+        ellipsis_width = stringWidth(ellipsis, font_name, font_size)
+        if ellipsis_width > max_width:
+            return ""
+
+        cut = text
+        while cut and stringWidth(cut, font_name, font_size) + ellipsis_width > max_width:
+            cut = cut[:-1]
+        return f"{cut}{ellipsis}" if cut else ""
+
     def build(self) -> BytesIO:
         """
         Render the setlist to an in-memory PDF and return it.
@@ -251,25 +269,47 @@ class SetlistPDF:
 
                     c.setFont(self.FONT, self.FONT_SIZE)
 
+                    # Tonart direkt vor dem Titel anzeigen
+                    tone_prefix = f"{song.tone_key} " if song.tone_key else ""
+
                     # Title mit Markierungen
                     title_prefix = "[NEU] " if is_eingeschoben else ""
-                    title = f"{title_prefix}{song.title}{feedback_text}".strip()
+                    title = f"{tone_prefix}{title_prefix}{song.title}{feedback_text}".strip()
 
                     # Sängerfarbe setzen
+                    title_x = x + 35
                     c.setFillColor(color)
-                    c.drawString(x+35, y, title)
+                    c.drawString(title_x, y, title)
+                    title_width = stringWidth(title, self.FONT, self.FONT_SIZE)
 
                     # Bei übersprungenen Songs: durchstreichen
                     if is_uebersprungen:
-                        title_width = stringWidth(title, self.FONT, self.FONT_SIZE)
-                        c.line(x+35, y-3, x+35+title_width, y-3)
+                        c.line(title_x, y-3, title_x + title_width, y-3)
+
+                    # Song-Kommentar in Rot zwischen Titel und Dauer anzeigen
+                    dur = song.duration.strftime("%M:%S") if song.duration else "04:00"
+                    duration_right_x = x + 260
+                    duration_left_x = duration_right_x - stringWidth(dur, self.FONT, self.FONT_SIZE)
+                    comment_text = (song.comment or "").strip()
+                    if comment_text:
+                        comment_left_limit = title_x + title_width + 6
+                        comment_right_x = duration_left_x - 6
+                        max_comment_width = comment_right_x - comment_left_limit
+                        draw_comment = self._truncate_text_to_width(
+                            comment_text,
+                            max_comment_width,
+                            self.FONT,
+                            self.FONT_SIZE,
+                        )
+                        if draw_comment:
+                            c.setFillColor("red")
+                            c.drawRightString(comment_right_x, y, draw_comment)
 
                     c.setFillColor("grey")
-                    dur = song.duration.strftime("%M:%S") if song.duration else "04:00"
                     # Startzeit anzeigen
                     if song_time:
                         c.drawRightString(x+20, y, song_time.strftime('%H:%M'))
-                    c.drawRightString(x+260, y, dur)
+                    c.drawRightString(duration_right_x, y, dur)
                     if getattr(song, "brass", 0):
                         c.setFillColor("red")
                         c.drawString(x+30, y, "•")
