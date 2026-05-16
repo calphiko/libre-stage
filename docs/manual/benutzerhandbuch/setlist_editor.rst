@@ -76,6 +76,8 @@ Tastaturkürzel
      - Funktion
    * - **Enter**
      - Ersten Suchtreffer am Ende der Setlist hinzufügen (nur ohne ``Shift``/``Ctrl``/``Cmd``/``Alt``)
+   * - **Strg/Cmd + Opt/Alt + Shift + 1-4**
+     - Suchtreffer 1-4 direkt am Ende der Setlist hinzufügen (im Suchfeld)
    * - **Strg/Cmd + Shift + Enter**
      - Neues Set am Ende hinzufügen
    * - **Strg/Cmd + Shift + Backspace/Entf**
