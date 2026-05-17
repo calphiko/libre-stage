@@ -11,45 +11,16 @@ struct GigsView: View {
     @State private var showSeasonStats = false
     @State private var seasonStatsPreset: Int?
     @State private var showCreateGigSheet = false
+    @State private var selectedSeason: Int?
 
     private var canEdit: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
     }
 
-    private var gigsBySeason: [(title: String, gigs: [GigOut])] {
-        let grouped = Dictionary(grouping: vm.gigs) { gig in
-            seasonKey(for: gig)
-        }
-
-        let sortedKeys = grouped.keys.sorted { lhs, rhs in
-            switch (lhs, rhs) {
-            case let (l?, r?): return l > r
-            case (_?, nil): return true
-            case (nil, _?): return false
-            case (nil, nil): return false
-            }
-        }
-
-        var sections: [(title: String, gigs: [GigOut])] = sortedKeys.map { key in
-            let title = key.map { "Saison \($0)" } ?? "Ohne Datum"
-            let gigs = (grouped[key] ?? []).sorted { lhs, rhs in
-                let lDate = gigDate(lhs)
-                let rDate = gigDate(rhs)
-                switch (lDate, rDate) {
-                case let (l?, r?): return l > r
-                case (_?, nil): return true
-                case (nil, _?): return false
-                case (nil, nil): return lhs.id > rhs.id
-                }
-            }
-            return (title: title, gigs: gigs)
-        }
-
-        if sections.isEmpty, !vm.gigs.isEmpty {
-            sections = [(title: "Ohne Datum", gigs: vm.gigs)]
-        }
-
-        return sections
+    private var filteredGigs: [GigOut] {
+        let targetSeason = effectiveSelectedSeason
+        let seasonGigs = vm.gigs.filter { seasonKey(for: $0) == targetSeason }
+        return seasonGigs.sorted(by: isBeforeInGigList)
     }
 
     private var availableSeasons: [Int] {
@@ -65,6 +36,24 @@ struct GigsView: View {
         Calendar.current.component(.year, from: Date())
     }
 
+    private var defaultSeasonSelection: Int? {
+        if availableSeasons.contains(currentSeasonYear) {
+            return currentSeasonYear
+        }
+        return availableSeasons.first
+    }
+
+    private var effectiveSelectedSeason: Int? {
+        selectedSeason ?? defaultSeasonSelection
+    }
+
+    private var selectedSeasonTitle: String {
+        if let year = effectiveSelectedSeason {
+            return "Saison \(year)"
+        }
+        return "Saison"
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -74,12 +63,24 @@ struct GigsView: View {
                     ContentUnavailableView("Keine Gigs", systemImage: "music.mic")
                 } else {
                     List {
+                        if !availableSeasons.isEmpty {
+                            Section("Saison") {
+                                Picker("Saison", selection: seasonSelectionBinding) {
+                                    ForEach(availableSeasons, id: \.self) { year in
+                                        Text(String(year)).tag(year)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                            }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                        }
+
                         Section("Statistiken") {
                             Button {
-                                seasonStatsPreset = availableSeasons.contains(currentSeasonYear) ? currentSeasonYear : nil
+                                seasonStatsPreset = effectiveSelectedSeason
                                 showSeasonStats = true
                             } label: {
-                                Label("Aktuelle Saison", systemImage: "chart.bar.fill")
+                                Label("Gewählte Saison", systemImage: "chart.bar.fill")
                             }
 
                             Button {
@@ -91,9 +92,13 @@ struct GigsView: View {
                         }
                         .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
-                        ForEach(gigsBySeason, id: \.title) { season in
-                            Section(season.title) {
-                                ForEach(season.gigs) { gig in
+                        Section(selectedSeasonTitle) {
+                            if filteredGigs.isEmpty {
+                                Text("Keine Gigs in dieser Saison")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                ForEach(filteredGigs) { gig in
                                     NavigationLink {
                                         GigDetailView(gig: gig) { updatedGig in
                                             vm.upsertGig(updatedGig)
@@ -103,8 +108,8 @@ struct GigsView: View {
                                     }
                                 }
                             }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
                     .listStyle(.insetGrouped)
                     .refreshable { await vm.load() }
@@ -137,17 +142,70 @@ struct GigsView: View {
                 }
             }
             .headerBodyBlend()
+            .onChange(of: availableSeasons) { _, newSeasons in
+                guard let currentSelection = effectiveSelectedSeason else {
+                    selectedSeason = nil
+                    return
+                }
+                if !newSeasons.contains(currentSelection) {
+                    selectedSeason = defaultSeasonSelection
+                } else if selectedSeason == nil {
+                    selectedSeason = currentSelection
+                }
+            }
         }
         .errorBanner($vm.error)
         .task {
             await vm.loadGigFieldConfig()
             await vm.load()
+            if selectedSeason == nil {
+                selectedSeason = defaultSeasonSelection
+            }
         }
         .sheet(isPresented: $showSeasonStats) {
             SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
         }
         .sheet(isPresented: $showCreateGigSheet) {
             CreateGigSheet(vm: vm)
+        }
+    }
+
+    private var seasonSelectionBinding: Binding<Int> {
+        Binding(
+            get: {
+                effectiveSelectedSeason
+                    ?? availableSeasons.first
+                    ?? currentSeasonYear
+            },
+            set: { selectedSeason = $0 }
+        )
+    }
+
+    private func isBeforeInGigList(_ lhs: GigOut, _ rhs: GigOut) -> Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        let lDate = gigDate(lhs)
+        let rDate = gigDate(rhs)
+
+        switch (lDate, rDate) {
+        case let (l?, r?):
+            let lIsUpcoming = l >= today
+            let rIsUpcoming = r >= today
+
+            if lIsUpcoming != rIsUpcoming {
+                return lIsUpcoming && !rIsUpcoming
+            }
+
+            if lIsUpcoming {
+                return l < r
+            }
+
+            return l > r
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            return lhs.id > rhs.id
         }
     }
 
