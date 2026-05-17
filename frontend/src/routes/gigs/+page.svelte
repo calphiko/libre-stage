@@ -166,20 +166,21 @@
   }
 
 
-  async function getSetlist(gig) {
+  async function getSetlist(gig, design = 'dark') {
   const setlistAvailability = await getGigSetlistAvailability(null, gig.id);
   if (!setlistAvailability.setlist_available) {
         showError("Für diesen Gig ist keine Setliste verfügbar.");
         return;
   }
   try {
-    const blob = await getSetlistPDF(null, gig.id);
+    const blob = await getSetlistPDF(null, gig.id, design);
     const url = URL.createObjectURL(blob);
 
     // iOS-kompatibel: Link erstellen und klicken
     const a = document.createElement('a');
     a.href = url;
-    a.download = `setlist_${gig.name}_${formatDateDE(gig.datum)}.pdf`;
+    const suffix = design === 'print' ? '_druckfreundlich' : '';
+    a.download = `setlist_${gig.name}_${formatDateDE(gig.datum)}${suffix}.pdf`;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
@@ -684,6 +685,12 @@
                             </button>
                             <button
                               class="btn variant-outline-primary btn-sm"
+                              onclick={() => getSetlist(gig, 'print')}
+                            >
+                              Setliste drucken (druckfreundlich)
+                            </button>
+                            <button
+                              class="btn variant-outline-primary btn-sm"
                               onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
                             >
                               Statistik
@@ -875,6 +882,12 @@
                       onclick={() => getSetlist(gig)}
                     >
                       Setliste drucken
+                    </button>
+                    <button
+                      class="btn variant-outline-primary btn-sm w-full"
+                      onclick={() => getSetlist(gig, 'print')}
+                    >
+                      Setliste drucken (druckfreundlich)
                     </button>
                     <button
                       class="btn variant-outline-primary btn-sm w-full"
