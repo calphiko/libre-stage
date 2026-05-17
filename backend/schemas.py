@@ -38,7 +38,7 @@ grouped by domain:
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pydantic import BaseModel, Field, field_validator, computed_field, model_validator, EmailStr
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
 from enum import Enum
 from datetime import time, date, datetime
 
@@ -452,6 +452,12 @@ class SetInGigOut(BaseModel):
     setlist_name: Optional[str] = ''
     songs: List[SongInSetOut]
 
+class GigSetlistTimingOut(BaseModel):
+    schedule: Dict[str, List[str]] = Field(default_factory=dict)
+    pause_before: Dict[str, int] = Field(default_factory=dict)
+    set_end: Dict[str, str] = Field(default_factory=dict)
+
+
 class GigSetlistOut(BaseModel):
     id: int
     name: str
@@ -465,6 +471,7 @@ class GigSetlistOut(BaseModel):
     status: Optional[str] = None
     publish: Optional[str] = None
     sets: List[SetInGigOut]
+    timing: Optional[GigSetlistTimingOut] = None
 
     model_config = {"from_attributes": True}
 

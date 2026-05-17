@@ -73,6 +73,65 @@
 
   let duplicateSongKeys = $derived(getDuplicateSongKeys());
 
+  function getSetPositionByIndex(setIdx) {
+    return String(setIdx + 1);
+  }
+
+  function getSetStartTime(setIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    const starts = setlist?.timing?.schedule?.[setPos] ?? [];
+    return starts[0] ?? '';
+  }
+
+  function getSetEndTime(setIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    return setlist?.timing?.set_end?.[setPos] ?? '';
+  }
+
+  function toHHMM(value) {
+    if (!value) return '';
+    const txt = String(value).trim();
+    return txt.length >= 5 ? txt.slice(0, 5) : '';
+  }
+
+  function hhmmToMinutes(value) {
+    if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    return (hours * 60) + minutes;
+  }
+
+  function getPlannedGigEndTime() {
+    const setEnds = Object.entries(setlist?.timing?.set_end ?? {});
+    if (!setEnds.length) return '';
+    setEnds.sort((a, b) => Number(a[0]) - Number(b[0]));
+    return toHHMM(setEnds[setEnds.length - 1][1]);
+  }
+
+  function getTargetGigEndTime() {
+    return toHHMM(setlist?.end);
+  }
+
+  function getGigEndDiffMinutes() {
+    const target = getTargetGigEndTime();
+    const planned = getPlannedGigEndTime();
+    const targetMinutes = hhmmToMinutes(target);
+    const plannedMinutes = hhmmToMinutes(planned);
+    if (targetMinutes == null || plannedMinutes == null) return null;
+    return plannedMinutes - targetMinutes;
+  }
+
+  function getSongStartTime(setIdx, songIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    const starts = setlist?.timing?.schedule?.[setPos] ?? [];
+    return starts[songIdx] ?? '';
+  }
+
+  function getPauseBeforeSet(setIdx) {
+    if (setIdx <= 0) return null;
+    const setPos = getSetPositionByIndex(setIdx);
+    return setlist?.timing?.pause_before?.[setPos] ?? null;
+  }
+
   function cleanDnDItems(items) {
     // Entferne nur Shadow-Elemente
     return items.filter(item => !item._dndShadowItem);
@@ -89,6 +148,17 @@
 
     const updated = await updateSetlist(setlist);
     if (updated) setlist = updated;
+  }
+
+  function applyUpdatedSetlist(updated, fallback = null) {
+    if (updated) {
+      setlist = updated;
+      return true;
+    }
+    if (fallback) {
+      setlist = fallback;
+    }
+    return false;
   }
 
   async function handleDragOverSet(setIdx, e) {
@@ -109,7 +179,8 @@
     setlist = { ...setlist };
 
     console.log("Setlistn ach Import:", setlist);
-    setlist = await updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
     console.log("Setlistn ach API Call:", setlist);
 
   }
@@ -169,7 +240,11 @@
     setlist = { ...setlist };
 
     try {
-      await updateSetlist(setlist);
+      const updated = await updateSetlist(setlist);
+      if (!applyUpdatedSetlist(updated)) {
+        setlist.sets[setIdx].songs = originalSongs;
+        setlist = { ...setlist };
+      }
       //showSuccess('Song erfolgreich entfernt');
     } catch (error) {
       // Rollback on error
@@ -249,7 +324,11 @@
 </script>
 
 {#each setlist.sets as set, setIdx (set.gigset_id)}
+  {@const pauseBeforeSet = getPauseBeforeSet(setIdx)}
   <div class="set-card">
+    {#if pauseBeforeSet}
+      <div class="pause-before-set">Pause: {pauseBeforeSet} min</div>
+    {/if}
     <div class="set-header ">
        <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
           + Set
@@ -269,7 +348,10 @@
             // KEIN setlist = ... hier → kein Neurender → kein Zurückspringen.
             const snapshot = JSON.parse(JSON.stringify(setlist));
             snapshot.sets[setIdx].setlist_name = e.target.value;
-            updateSetlist(snapshot);
+            (async () => {
+              const updated = await updateSetlist(snapshot);
+              if (updated) setlist = updated;
+            })();
           }}
        />
        <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)} disabled={isUpdating}>
@@ -278,6 +360,7 @@
             </svg>
        </button>
     </div>
+    <div class="set-time-row">Start: {getSetStartTime(setIdx) || '--:--'}</div>
     <div
       use:dndzone={{
         items: set.songs,
@@ -289,13 +372,14 @@
       ondragover={(e) => e.preventDefault()}
       ondrop={(e) => handleDragOverSet(setIdx, e)}
     >
-      {#each set.songs as song (song.setsong_id)}
+      {#each set.songs as song, songIdx (song.setsong_id)}
         {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
         <div class="song-in-set text-surface-900 dark:text-surface-950" data-song-id={song.setsong_id}
         class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
           <span>
+          <small class="song-time">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
           {#if song.brass === 1}
             🎺
           {/if}
@@ -319,7 +403,8 @@
       {/if}
     </div>
 
-    <div class="pause-edit-row">
+    <div class="set-end-row">
+      <span>Ende: {getSetEndTime(setIdx) || '--:--'}</span>
       <label class="pause-label" for={`pause-${setIdx}`}>Pause:</label>
       <input
         id={`pause-${setIdx}`}
@@ -330,14 +415,26 @@
         oninput={(e) => {
           setlist.sets[setIdx].pause = e.target.value;
         }}
-        onblur={(e) => {
+        onblur={async (e) => {
           const normalizedPause = normalizePauseForApi(e.target.value);
           setlist.sets[setIdx].pause = normalizedPause;
           const snapshot = JSON.parse(JSON.stringify(setlist));
           snapshot.sets[setIdx].pause = normalizedPause;
-          updateSetlist(snapshot);
+          const updated = await updateSetlist(snapshot);
+          if (updated) setlist = updated;
         }}
       />
+      {#if setIdx === (setlist.sets.length - 1) && getTargetGigEndTime()}
+        {@const gigDiff = getGigEndDiffMinutes()}
+        <span class="gig-target-end">Ziel: {getTargetGigEndTime()}</span>
+        {#if gigDiff != null}
+          {#if gigDiff >= 0}
+            <span class="gig-end-ok">Plan-Ende: {getPlannedGigEndTime() || '--:--'}</span>
+          {:else}
+            <span class="gig-end-over">-{Math.abs(gigDiff)} min</span>
+          {/if}
+        {/if}
+      {/if}
     </div>
   </div>
 
@@ -371,11 +468,53 @@
 .empty-set-hint{ color:#7895a9; font-style:italic; text-align:center; opacity:.75; }
 .pause{ margin:.2em 0 .7em; font-style:italic; color:#888; }
 
-.pause-edit-row {
-  margin: .35em 0 .7em;
+.pause-before-set {
+  margin: .1em 0 .45em;
+  color: #6b7280;
+  font-size: .9em;
+  font-style: italic;
+}
+
+.set-time-row {
+  margin: .35em 0 .55em;
+  color: #1e5d91;
+  font-size: .9em;
+  font-weight: 600;
+}
+
+.set-end-row {
+  margin: .45em 0 .35em;
+  color: #1e5d91;
+  font-size: .9em;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: .45em;
+  flex-wrap: wrap;
+  gap: .5em;
+}
+
+.gig-target-end {
+  margin-left: .5em;
+  color: #475569;
+  font-weight: 500;
+}
+
+.gig-end-ok {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.gig-end-over {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.song-time {
+  display: inline-block;
+  min-width: 44px;
+  margin-right: .42em;
+  color: #475569;
+  font-weight: 600;
 }
 
 .pause-label {

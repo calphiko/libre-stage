@@ -595,6 +595,40 @@ def test_download_setlist_pdf(client, auth_headers, db_session):
     assert response.headers["content-type"] == "application/pdf"
     assert response.content.startswith(b"%PDF-")
 
+
+def test_download_setlist_pdf_print_design(client, auth_headers, db_session):
+    from backend.models import Gig, Set, GigSet, SetSong, Song
+
+    gig = Gig(name="Print Concert", datum=date(2024, 12, 25), publish=0)
+    test_set = Set(name="Opening Set", pause=time(0, 10))
+    test_song = Song(
+        title="Testsong",
+        interpret="Testsinger",
+        singer_lead="Calle",
+        brass=0,
+        duration=time(0, 3, 0),
+    )
+
+    db_session.add_all([gig, test_set, test_song])
+    db_session.commit()
+    db_session.refresh(gig)
+    db_session.refresh(test_set)
+    db_session.refresh(test_song)
+
+    set_song = SetSong(id_set=test_set.id, id_song=test_song.id, position=1)
+    db_session.add(set_song)
+    db_session.commit()
+
+    gig_set = GigSet(id_gig=gig.id, id_set=test_set.id, position=1)
+    db_session.add(gig_set)
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/setlist.pdf?design=print", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert "druckfreundlich" in response.headers.get("content-disposition", "")
+    assert response.content.startswith(b"%PDF-")
+
 def test_download_setlist_pdf_w_nonexistent_gig_id(client, auth_headers, db_session):
     """Test removing a set from a gig."""
     from backend.models import Gig, Set, GigSet, SetSong, Song
