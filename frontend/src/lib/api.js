@@ -519,8 +519,14 @@ export async function getGemaListFile(token, gigId) {
     return res.blob();
 }
 
-export async function getSetlistPDF(token, gigId) {
-    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/setlist.pdf`, {
+export async function getSetlistPDF(token, gigId, design = 'dark') {
+    const params = new URLSearchParams();
+    if (design && design !== 'dark') {
+      params.set('design', design);
+    }
+    const query = params.toString();
+    const url = `${API_URL}/gigs/${gigId}/setlist.pdf${query ? `?${query}` : ''}`;
+    const res = await fetchWithAuth(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
