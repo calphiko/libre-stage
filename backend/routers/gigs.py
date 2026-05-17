@@ -35,11 +35,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from pathlib import Path
 
-from typing import List
+from typing import List, Literal
 
 from backend.pdf.generator import SetlistPDF
 from backend.services.setlist import SetlistService
 from backend.utils.check_permissions import check_admin, check_editor
+from backend.utils.setlist_timing import calculate_setlist_timing, serialize_timing_for_api
 
 from backend import models, schemas, auth
 
@@ -1271,7 +1272,15 @@ def download_gemalist(
 
 
 @router.get("/{gig_id}/setlist.pdf", response_class=Response)
-def download_setlist(gig_id: int, db: Session = Depends(auth.get_db), current=Depends(auth.get_current_user)):
+def download_setlist(
+    gig_id: int,
+    design: Literal["dark", "print"] = Query(
+        "dark",
+        description="Design-Variante fuer die Setlisten-PDF (dark oder print).",
+    ),
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
     logger.info(f"Generating setlist PDF for gig_id={gig_id}")
     service = SetlistService(db)  # <- sync Session
     gig = service.load_gig(gig_id)
@@ -1303,8 +1312,9 @@ def download_setlist(gig_id: int, db: Session = Depends(auth.get_db), current=De
         for i, singer in enumerate(singers)
     }
 
-    pdf_bytes = SetlistPDF(gig, schedule, singer_colors).build().getvalue()
-    headers = {"Content-Disposition": f"inline; filename=Setliste_{gig.name}.pdf"}
+    pdf_bytes = SetlistPDF(gig, schedule, singer_colors, style_mode=design).build().getvalue()
+    mode_suffix = "_druckfreundlich" if design == "print" else ""
+    headers = {"Content-Disposition": f"inline; filename=Setliste_{gig.name}{mode_suffix}.pdf"}
     return Response(
         pdf_bytes,
         media_type="application/pdf",
@@ -1334,7 +1344,9 @@ def get_gig_setlist(
                 db.delete(ss)
             db.commit()
 
-    return gig.to_dict()  # siehe vorige Antwort
+    payload = gig.to_dict()  # siehe vorige Antwort
+    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
+    return payload
 
 # @app.put("/append_song_to_set", response_model=schemas.GigSetlistOut)
 # def append_song_to_set(
@@ -1454,7 +1466,9 @@ def update_gig_setlist(
 
     db.commit()
     db.refresh(db_gig)
-    return db_gig.to_dict()
+    payload = db_gig.to_dict()
+    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(db_gig))
+    return payload
 
 @router.post("/")
 def create_new_gig(
