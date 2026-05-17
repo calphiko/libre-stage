@@ -24,12 +24,10 @@ expected start time for each song based on the gig start time, song
 durations and set-break durations.
 """
 
-from datetime import datetime, timedelta
-from collections import defaultdict
+from datetime import datetime
 from sqlalchemy.orm import Session, joinedload
-from ..database import get_db
 from ..models import Gig, GigSet, Set, SetSong
-import colorsys
+from ..utils.setlist_timing import calculate_setlist_timing
 
 class SetlistService:
     """
@@ -84,56 +82,8 @@ class SetlistService:
             dict[int, list[datetime]]: A mapping of
             ``{set_position: [song_start_datetime, ...]}``.
         """
-        from collections import defaultdict
-        from datetime import datetime, timedelta, time
-
-        DEFAULT_BREAK = 30  # Sekunden
-
-        # Startzeit-Basis für den Gig
-        gig_start = datetime.combine(
-            gig.datum,
-            gig.begin or time(19, 0)
-        )  # ggf. Fallback 19:00
-        schedule = defaultdict(list)
-        current_time = gig_start
-
-        # Gehe über die Sets in Auftrittsreihenfolge!
-        for gs in sorted(gig.sets, key=lambda s: s.position):
-            set_obj = gs.set  # Das eigentliche Set
-
-            # Songs innerhalb des Sets in Setlist-Reihenfolge!
-            for setsong in sorted(set_obj.songs, key=lambda ss: ss.position):
-                # Aktuelle Zeit als Start für diesen Song merken
-                schedule[gs.position].append(current_time)
-
-                # Dauer ermitteln
-                raw_dur = setsong.song.duration
-                if raw_dur:
-                    # raw_dur ist normalerweise ein time-Objekt – in timedelta umrechnen:
-                    duration = timedelta(
-                        hours=raw_dur.hour if hasattr(raw_dur, "hour") else 0,
-                        minutes=raw_dur.minute if hasattr(raw_dur, "minute") else 0,
-                        seconds=raw_dur.second if hasattr(raw_dur, "second") else 0
-                    )
-                else:
-                    duration = timedelta(minutes=4)
-
-                # Zeit weiterschieben: Song-Dauer + kurze Pause zum nächsten Song
-                current_time = current_time + duration + timedelta(seconds=DEFAULT_BREAK)
-
-            # Jetzt steht current_time NACH dem letzten Song + DEFAULT_BREAK
-            # Das ist die Zeit, zu der die Set-Pause beginnt
-
-            # Pause nach Set
-            pause = set_obj.pause or timedelta(minutes=10)
-            if isinstance(pause, time):
-                pause = timedelta(
-                    hours=pause.hour, minutes=pause.minute, seconds=pause.second)
-
-            # Addiere die Set-Pause zur aktuellen Zeit
-            current_time = current_time + pause
-
-        return schedule
+        timing = calculate_setlist_timing(gig)
+        return timing["schedule"]
 
     def dump_gig_struct(self, gig, schedule=None):
         """
