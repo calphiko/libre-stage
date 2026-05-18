@@ -279,11 +279,35 @@
     }
   }
 
+  function normalizeTimeWithSeconds(value) {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+
+    const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return value;
+
+    const hh = match[1].padStart(2, '0');
+    const mm = match[2];
+    const ss = match[3] ?? '00';
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  function normalizeGigTimeFields(record) {
+    const normalized = { ...record };
+    for (const field of gigFieldsDetails) {
+      if (field.type === 'time' && normalized[field.key] != null) {
+        normalized[field.key] = normalizeTimeWithSeconds(normalized[field.key]);
+      }
+    }
+    return normalized;
+  }
+
 
   function startEdit(gig) {
     editGigId = gig.id;
-    // Tiefe Kopie der Songdaten (nicht Reference!)
-    editBuffer = { ...gig };
+    // Time-Inputs mit Schrittweite 1 erwarten HH:MM:SS fuer konsistente Anzeige.
+    editBuffer = normalizeGigTimeFields(gig);
   }
 
   function cancelEdit() {
@@ -294,10 +318,11 @@
   async function saveEdit(gig) {
     try {
       // OPTIONAL: Validierung vor Absenden
-      console.log(editBuffer);
-      await updateGig(gig.id, editBuffer, null);
+      const payload = normalizeGigTimeFields(editBuffer);
+      console.log(payload);
+      await updateGig(gig.id, payload, null);
       // Nach dem Patch neues Song-Objekt im lokalen Array ersetzen:
-      gigs = gigs.map(g => g.id === gig.id ? {...editBuffer, id: gig.id} : g);
+      gigs = gigs.map(g => g.id === gig.id ? { ...payload, id: gig.id } : g);
       // Bearbeiten-Modus beenden:
       editGigId = null;
       editBuffer = {};
@@ -565,6 +590,7 @@
                                     <input
                                       type="time"
                                       class="input mt-1 w-full"
+                                      step="1"
                                       bind:value={editBuffer[f.key]}
                                       required={f.required}
                                     />
@@ -773,6 +799,7 @@
                           <input
                             type="time"
                             class="input mt-1 w-full"
+                            step="1"
                             bind:value={editBuffer[f.key]}
                             required={f.required}
                           />
