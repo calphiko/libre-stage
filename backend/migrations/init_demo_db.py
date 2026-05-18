@@ -317,7 +317,7 @@ def run():
         venue="Blue Note Club, Hauptstraße 42",
         doors=time(19, 30),
         begin=time(20, 30),
-        end=time(23, 30),
+        end=time(1, 30),
         status="angenommen",
         publish="0",
     )
