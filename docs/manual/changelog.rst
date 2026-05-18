@@ -3,6 +3,21 @@
 Änderungsprotokoll
 ==================
 
+0.4.3 (2026-05-18)
+--------------------
+
+Added
+~~~~~
+
+* Gig edit forms now use a second-precision time picker (``HH:MM:SS``) in desktop and mobile views.
+
+Changed
+~~~~~~~
+
+* Gig time values are normalized to ``HH:MM:SS`` during edit and save flows.
+* Gig schedule fixed points (doors, begin, end) now support midnight rollover correctly.
+* Project and frontend versions bumped to ``0.4.3``.
+
 0.4.2 (2026-05-17)
 --------------------
 
