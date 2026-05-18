@@ -197,16 +197,37 @@ def _resolve_schedule_palette(logo_path: Path | None) -> dict[str, colors.Color]
     return palette
 
 
+def _build_rollover_datetimes(base_date: date, values: list[tuple[str, time]]) -> list[tuple[str, datetime]]:
+    """Build a monotonic timeline and roll over to next day after midnight."""
+    result: list[tuple[str, datetime]] = []
+    day_offset = 0
+    last_time: time | None = None
+
+    for label, t in values:
+        if last_time is not None and t < last_time:
+            day_offset += 1
+        dt = datetime.combine(base_date + timedelta(days=day_offset), t)
+        result.append((label, dt))
+        last_time = t
+
+    return result
+
+
 def _fixed_schedule_points(gig: models.Gig) -> list[tuple[str, datetime]]:
     """Build fixed schedule timestamps from gig base data (naive UTC)."""
     fixed_points: list[tuple[str, datetime]] = []
     if gig.datum is None:
         return fixed_points
 
-    for label, t in (("Einlass", gig.doors), ("Beginn", gig.begin), ("Ende", gig.end)):
-        if t is not None:
-            fixed_points.append((label, datetime.combine(gig.datum, t)))
-    return fixed_points
+    base_date = gig.datum if isinstance(gig.datum, date) else date.fromisoformat(str(gig.datum))
+
+    ordered_times = [
+        ("Einlass", gig.doors),
+        ("Beginn", gig.begin),
+        ("Ende", gig.end),
+    ]
+    present_times = [(label, t) for label, t in ordered_times if t is not None]
+    return _build_rollover_datetimes(base_date, present_times)
 
 
 def _build_schedule_response(gig: models.Gig) -> schemas.GigScheduleOut:
