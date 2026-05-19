@@ -29,7 +29,6 @@ Prefix: ``/gigs``  |  Tag: ``gigs``
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
 from datetime import date, datetime, time, timedelta
-import colorsys
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -40,6 +39,7 @@ from typing import List, Literal
 from backend.pdf.generator import SetlistPDF
 from backend.services.setlist import SetlistService
 from backend.utils.check_permissions import check_admin, check_editor
+from backend.utils.pdf_palette import find_logo_path, resolve_schedule_palette
 from backend.utils.setlist_timing import calculate_setlist_timing, serialize_timing_for_api
 
 from backend import models, schemas, auth
@@ -52,7 +52,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
-from PIL import Image
 
 import os
 from dotenv import load_dotenv
@@ -92,109 +91,6 @@ DEFAULT_SCHEDULE_PALETTE = {
     "line": colors.HexColor("#334155"),
     "fixed": colors.HexColor("#123129"),
 }
-
-
-def _mix_color(a: colors.Color, b: colors.Color, weight_b: float) -> colors.Color:
-    w = max(0.0, min(1.0, weight_b))
-    return colors.Color(
-        red=a.red * (1 - w) + b.red * w,
-        green=a.green * (1 - w) + b.green * w,
-        blue=a.blue * (1 - w) + b.blue * w,
-    )
-
-
-def _relative_luminance(c: colors.Color) -> float:
-    def channel(v: float) -> float:
-        if v <= 0.03928:
-            return v / 12.92
-        return ((v + 0.055) / 1.055) ** 2.4
-
-    r = channel(c.red)
-    g = channel(c.green)
-    b = channel(c.blue)
-    return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
-
-
-def _contrast_ratio(a: colors.Color, b: colors.Color) -> float:
-    l1 = _relative_luminance(a)
-    l2 = _relative_luminance(b)
-    lighter = max(l1, l2)
-    darker = min(l1, l2)
-    return (lighter + 0.05) / (darker + 0.05)
-
-
-def _ensure_contrast(fg: colors.Color, bg: colors.Color, min_ratio: float) -> colors.Color:
-    if _contrast_ratio(fg, bg) >= min_ratio:
-        return fg
-
-    if _contrast_ratio(colors.black, bg) >= _contrast_ratio(colors.white, bg):
-        return colors.black
-    return colors.white
-
-
-def _extract_logo_accent(logo_path: Path) -> tuple[float, float, float] | None:
-    try:
-        with Image.open(logo_path) as image:
-            image = image.convert("RGBA")
-            image.thumbnail((120, 120))
-
-            best_score = -1.0
-            best_rgb: tuple[float, float, float] | None = None
-            for count, rgba in image.getcolors(maxcolors=120 * 120) or []:
-                r, g, b, a = rgba
-                if a < 96:
-                    continue
-
-                rf, gf, bf = r / 255.0, g / 255.0, b / 255.0
-                _, saturation, value = colorsys.rgb_to_hsv(rf, gf, bf)
-                if value < 0.14 or value > 0.92:
-                    continue
-
-                # Prefer saturated mid-bright colors as accent candidates.
-                score = ((saturation * 0.8) + ((1.0 - abs(value - 0.55)) * 0.2)) * count
-                if score > best_score:
-                    best_score = score
-                    best_rgb = (rf, gf, bf)
-
-            return best_rgb
-    except Exception:  # pragma: no cover - palette fallback is intentional
-        logger.debug("Could not extract palette color from logo", exc_info=True)
-        return None
-
-
-def _resolve_schedule_palette(logo_path: Path | None) -> dict[str, colors.Color]:
-    palette = dict(DEFAULT_SCHEDULE_PALETTE)
-    if logo_path is None:
-        return palette
-
-    accent_rgb = _extract_logo_accent(logo_path)
-    if accent_rgb is None:
-        return palette
-
-    accent = colors.Color(*accent_rgb)
-    if _relative_luminance(accent) < 0.26:
-        accent = _mix_color(accent, colors.white, 0.30)
-    if _relative_luminance(accent) > 0.70:
-        accent = _mix_color(accent, colors.black, 0.24)
-
-    base_bg = colors.HexColor("#0A0F1A")
-    bg = _mix_color(base_bg, accent, 0.10)
-    card = _mix_color(base_bg, accent, 0.18)
-    header_bg = _mix_color(base_bg, accent, 0.26)
-
-    text = _ensure_contrast(colors.HexColor("#E2E8F0"), card, 7.0)
-    muted = _ensure_contrast(_mix_color(text, accent, 0.38), card, 4.5)
-
-    palette["bg"] = bg
-    palette["card"] = card
-    palette["primary"] = accent
-    palette["text"] = text
-    palette["muted"] = muted
-    palette["header_bg"] = header_bg
-    palette["row_alt"] = _mix_color(card, colors.black, 0.16)
-    palette["line"] = _mix_color(_ensure_contrast(colors.HexColor("#64748B"), card, 2.0), accent, 0.20)
-    palette["fixed"] = _mix_color(_mix_color(card, accent, 0.24), colors.HexColor("#14532D"), 0.20)
-    return palette
 
 
 def _build_rollover_datetimes(base_date: date, values: list[tuple[str, time]]) -> list[tuple[str, datetime]]:
@@ -317,24 +213,22 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
     footer_text = f"{footer_prefix}{footer_domain}"
 
     root_dir = Path(__file__).resolve().parents[2]
+    logo_path = find_logo_path({"root_dir": root_dir})
     logo_reader: ImageReader | None = None
     logo_size: tuple[float, float] | None = None
 
-    def _logo_path() -> Path | None:
-        for filename in ("LogoCustom.png", "Logo.png"):
-            candidate = root_dir / filename
-            if candidate.is_file():
-                return candidate
-        return None
-
-    palette = _resolve_schedule_palette(_logo_path())
+    palette = resolve_schedule_palette(
+        {
+            "default_palette": DEFAULT_SCHEDULE_PALETTE,
+            "logo_path": logo_path,
+        }
+    )
 
     def _get_logo_reader() -> ImageReader | None:
         nonlocal logo_reader, logo_size
         if logo_reader is not None:
             return logo_reader
 
-        logo_path = _logo_path()
         if logo_path is None:
             return None
 
