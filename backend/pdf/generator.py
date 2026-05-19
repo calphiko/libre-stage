@@ -32,6 +32,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from datetime import datetime
+from backend.utils.pdf_palette import find_logo_path, resolve_setlist_palette
 from backend.utils.setlist_timing import get_pause_before_set
 
 class SetlistPDF:
@@ -97,7 +98,16 @@ class SetlistPDF:
         self.schedule = schedule
         self.singer_colors = singer_colors
         self.style_mode = style_mode if style_mode in self.PALETTES else "dark"
-        self.palette = self.PALETTES[self.style_mode]
+        self.root_dir = Path(__file__).resolve().parents[2]
+        self.logo_path = find_logo_path({"root_dir": self.root_dir})
+        self.palette = resolve_setlist_palette(
+            {
+                "druckfreundlich": self.style_mode == "print",
+                "style_mode": self.style_mode,
+                "default_palettes": self.PALETTES,
+                "logo_path": self.logo_path,
+            }
+        )
 
     def _calc_set_height(self, gigset, set_idx, gig_sets_sorted):
         """
@@ -166,28 +176,19 @@ class SetlistPDF:
         except Exception: # pragma: no cover
             title_font = "Helvetica-Bold" # pragma: no cover
 
-        root_dir = Path(__file__).resolve().parents[2]
         logo_reader = None
         logo_size = None
-
-        def _logo_path():
-            for filename in ("LogoCustom.png", "Logo.png"):
-                candidate = root_dir / filename
-                if candidate.is_file():
-                    return candidate
-            return None
 
         def _get_logo_reader():
             nonlocal logo_reader, logo_size
             if logo_reader is not None:
                 return logo_reader
 
-            logo_path = _logo_path()
-            if logo_path is None:
+            if self.logo_path is None:
                 return None
 
             try:
-                logo_reader = ImageReader(str(logo_path))
+                logo_reader = ImageReader(str(self.logo_path))
                 logo_size = logo_reader.getSize()
                 return logo_reader
             except Exception:  # pragma: no cover - watermark must not break export

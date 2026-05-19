@@ -3,6 +3,22 @@
 Änderungsprotokoll
 ==================
 
+0.4.4 (2026-05-19)
+-------------------
+
+Added
+~~~~~
+
+* Shared utility ``backend/utils/pdf_palette.py`` now centralizes logo-based palette extraction for schedule and setlist PDFs.
+* Setlist palette resolver now supports ``druckfreundlich`` as explicit mode switch (print-friendly light palette).
+
+Changed
+~~~~~~~
+
+* Setlist PDF and schedule PDF now use the same shared palette extraction pipeline.
+* Palette resolvers now return robust default schemes when no logo is available.
+* Project, frontend and lockfile versions bumped to ``0.4.4``.
+
 0.4.3 (2026-05-18)
 --------------------
 
