@@ -124,6 +124,19 @@ struct GigDetailView: View {
 
                         Button {
                             Task { @MainActor in
+                                if let fileURL = await vm.downloadForScoreSetlist(gig: currentGig) {
+                                    shareItem = ShareSheetItem(url: fileURL)
+                                } else {
+                                    presentDownloadError(documentName: "forScore-Setliste")
+                                }
+                            }
+                        } label: {
+                            Label("forScore-Setliste (.4ss)", systemImage: "music.note.list")
+                        }
+                        .disabled(!hasSongsInSetlist)
+
+                        Button {
+                            Task { @MainActor in
                                 if let fileURL = await vm.downloadGemaList(gig: currentGig) {
                                     shareItem = ShareSheetItem(url: fileURL)
                                 } else {

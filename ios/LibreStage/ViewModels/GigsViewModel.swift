@@ -235,6 +235,14 @@ final class GigDetailViewModel {
     }
 
     @MainActor
+    func downloadForScoreSetlist(gig: GigOut) async -> URL? {
+        await downloadGigFile(
+            path: "/gigs/\(gig.id)/forscore-setlist",
+            fallbackFilename: sanitizedFilename(base: gig.name ?? "setlist", suffix: "setlist", ext: "4ss")
+        )
+    }
+
+    @MainActor
     func downloadSchedulePDF(gig: GigOut) async -> URL? {
         await downloadGigFile(
             path: "/gigs/\(gig.id)/schedule.pdf",
