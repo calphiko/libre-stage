@@ -3,6 +3,21 @@
 Änderungsprotokoll
 ==================
 
+0.4.5 (2026-05-22)
+-------------------
+
+Added
+~~~~~
+
+* New backend export endpoint ``GET /gigs/{gig_id}/forscore-setlist`` generates forScore-compatible ``.4ss`` setlists (PLIST XML).
+* Gig detail view in the iOS app now includes a dedicated action to download/share ``forScore-Setliste (.4ss)`` directly from ``GigDetailView``.
+* Backend tests now cover forScore setlist export success and ``404`` handling for unknown gigs.
+
+Changed
+~~~~~~~
+
+* Project version metadata bumped to ``0.4.5`` across backend/frontend release files and README badge.
+
 0.4.4 (2026-05-19)
 -------------------
 
