@@ -38,6 +38,100 @@
   
   let nextNegativeSetsongId = $state(-1);
 
+  function formatPauseForInput(value) {
+    if (!value) return '';
+    const txt = String(value);
+    return txt.length >= 5 ? txt.slice(0, 5) : txt;
+  }
+
+  function normalizePauseForApi(value) {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return null;
+    if (/^\d{2}:\d{2}$/.test(trimmed)) return `${trimmed}:00`;
+    return trimmed;
+  }
+
+  function getSongDuplicateKey(song) {
+    if (song?.id != null) return `id:${song.id}`;
+    return `name:${song?.interpret ?? ''}::${song?.title ?? ''}`;
+  }
+
+  function getDuplicateSongKeys() {
+    const counts = new Map();
+    for (const set of setlist?.sets ?? []) {
+      for (const song of set?.songs ?? []) {
+        const key = getSongDuplicateKey(song);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+    return new Set(
+      [...counts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([key]) => key)
+    );
+  }
+
+  let duplicateSongKeys = $derived(getDuplicateSongKeys());
+
+  function getSetPositionByIndex(setIdx) {
+    return String(setIdx + 1);
+  }
+
+  function getSetStartTime(setIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    const starts = setlist?.timing?.schedule?.[setPos] ?? [];
+    return starts[0] ?? '';
+  }
+
+  function getSetEndTime(setIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    return setlist?.timing?.set_end?.[setPos] ?? '';
+  }
+
+  function toHHMM(value) {
+    if (!value) return '';
+    const txt = String(value).trim();
+    return txt.length >= 5 ? txt.slice(0, 5) : '';
+  }
+
+  function hhmmToMinutes(value) {
+    if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    return (hours * 60) + minutes;
+  }
+
+  function getPlannedGigEndTime() {
+    const setEnds = Object.entries(setlist?.timing?.set_end ?? {});
+    if (!setEnds.length) return '';
+    setEnds.sort((a, b) => Number(a[0]) - Number(b[0]));
+    return toHHMM(setEnds[setEnds.length - 1][1]);
+  }
+
+  function getTargetGigEndTime() {
+    return toHHMM(setlist?.end);
+  }
+
+  function getGigEndDiffMinutes() {
+    const target = getTargetGigEndTime();
+    const planned = getPlannedGigEndTime();
+    const targetMinutes = hhmmToMinutes(target);
+    const plannedMinutes = hhmmToMinutes(planned);
+    if (targetMinutes == null || plannedMinutes == null) return null;
+    return plannedMinutes - targetMinutes;
+  }
+
+  function getSongStartTime(setIdx, songIdx) {
+    const setPos = getSetPositionByIndex(setIdx);
+    const starts = setlist?.timing?.schedule?.[setPos] ?? [];
+    return starts[songIdx] ?? '';
+  }
+
+  function getPauseBeforeSet(setIdx) {
+    if (setIdx <= 0) return null;
+    const setPos = getSetPositionByIndex(setIdx);
+    return setlist?.timing?.pause_before?.[setPos] ?? null;
+  }
+
   function cleanDnDItems(items) {
     // Entferne nur Shadow-Elemente
     return items.filter(item => !item._dndShadowItem);
@@ -54,6 +148,17 @@
 
     const updated = await updateSetlist(setlist);
     if (updated) setlist = updated;
+  }
+
+  function applyUpdatedSetlist(updated, fallback = null) {
+    if (updated) {
+      setlist = updated;
+      return true;
+    }
+    if (fallback) {
+      setlist = fallback;
+    }
+    return false;
   }
 
   async function handleDragOverSet(setIdx, e) {
@@ -74,7 +179,8 @@
     setlist = { ...setlist };
 
     console.log("Setlistn ach Import:", setlist);
-    setlist = await updateSetlist(setlist);
+    const updated = await updateSetlist(setlist);
+    if (updated) setlist = updated;
     console.log("Setlistn ach API Call:", setlist);
 
   }
@@ -134,13 +240,29 @@
     setlist = { ...setlist };
 
     try {
-      await updateSetlist(setlist);
+      const updated = await updateSetlist(setlist);
+      if (!applyUpdatedSetlist(updated)) {
+        setlist.sets[setIdx].songs = originalSongs;
+        setlist = { ...setlist };
+      }
       //showSuccess('Song erfolgreich entfernt');
     } catch (error) {
       // Rollback on error
       setlist.sets[setIdx].songs = originalSongs;
       setlist = { ...setlist };
       //showError(`Fehler beim Entfernen des Songs: ${error.message}`);
+    }
+  }
+
+  async function removeLastSongFromStack() {
+    // Suche das letzte Set, das mindestens einen Song enthält.
+    for (let setIdx = setlist.sets.length - 1; setIdx >= 0; setIdx--) {
+      const songs = setlist.sets[setIdx].songs;
+      if (!songs?.length) continue;
+
+      const lastSong = songs[songs.length - 1];
+      await removeSongFromSet(setIdx, lastSong.setsong_id);
+      return;
     }
   }
 
@@ -160,11 +282,32 @@
   }
 
   function handleKeyboardShortcuts(e) {
-    // Strg/Cmd + Shift + N -> Neues Set am Ende hinzufügen
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+    const isAddSetShortcut =
+      (e.ctrlKey || e.metaKey) &&
+      e.shiftKey &&
+      (e.key === 'Enter' || e.code === 'Enter');
+    const isRemoveLastSongShortcut =
+      (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Backspace' || e.key === 'Delete');
+
+    if (isRemoveLastSongShortcut) {
+      e.preventDefault();
+      removeLastSongFromStack();
+      return;
+    }
+
+    // Strg/Cmd + Shift + Enter -> Neues Set am Ende hinzufügen
+    if (isAddSetShortcut) {
       e.preventDefault();
       addSetAtEnd();
+      return;
     }
+
+    const target = e.target;
+    const isTypingTarget =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
+    if (isTypingTarget) return;
   }
 
   onMount(() => {
@@ -180,9 +323,12 @@
   });
 </script>
 
-
 {#each setlist.sets as set, setIdx (set.gigset_id)}
+  {@const pauseBeforeSet = getPauseBeforeSet(setIdx)}
   <div class="set-card">
+    {#if pauseBeforeSet}
+      <div class="pause-before-set">Pause: {pauseBeforeSet} min</div>
+    {/if}
     <div class="set-header ">
        <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
           + Set
@@ -202,7 +348,10 @@
             // KEIN setlist = ... hier → kein Neurender → kein Zurückspringen.
             const snapshot = JSON.parse(JSON.stringify(setlist));
             snapshot.sets[setIdx].setlist_name = e.target.value;
-            updateSetlist(snapshot);
+            (async () => {
+              const updated = await updateSetlist(snapshot);
+              if (updated) setlist = updated;
+            })();
           }}
        />
        <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)} disabled={isUpdating}>
@@ -211,6 +360,7 @@
             </svg>
        </button>
     </div>
+    <div class="set-time-row">Start: {getSetStartTime(setIdx) || '--:--'}</div>
     <div
       use:dndzone={{
         items: set.songs,
@@ -222,15 +372,23 @@
       ondragover={(e) => e.preventDefault()}
       ondrop={(e) => handleDragOverSet(setIdx, e)}
     >
-      {#each set.songs as song (song.setsong_id)}
+      {#each set.songs as song, songIdx (song.setsong_id)}
+        {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
         <div class="song-in-set text-surface-900 dark:text-surface-950" data-song-id={song.setsong_id}
+        class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
           <span>
+          <small class="song-time">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
           {#if song.brass === 1}
             🎺
           {/if}
-          {song.title}   <small>{song.comment}</small>     </span>
+          {song.title}
+          {#if isDuplicateSong}
+            <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
+          {/if}
+          <small>{song.comment}</small>
+          </span>
           <button class="btn btn-sm variant-filled-error py-0"
                   onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -245,11 +403,39 @@
       {/if}
     </div>
 
-    {#if set.pause}
-      <div style="margin:.2em 0 .7em;font-style:italic;color:#888">
-        Pause: {set.pause}
-      </div>
-    {/if}
+    <div class="set-end-row">
+      <span>Ende: {getSetEndTime(setIdx) || '--:--'}</span>
+      <label class="pause-label" for={`pause-${setIdx}`}>Pause:</label>
+      <input
+        id={`pause-${setIdx}`}
+        type="time"
+        step="60"
+        class="pause-input"
+        value={formatPauseForInput(set.pause)}
+        oninput={(e) => {
+          setlist.sets[setIdx].pause = e.target.value;
+        }}
+        onblur={async (e) => {
+          const normalizedPause = normalizePauseForApi(e.target.value);
+          setlist.sets[setIdx].pause = normalizedPause;
+          const snapshot = JSON.parse(JSON.stringify(setlist));
+          snapshot.sets[setIdx].pause = normalizedPause;
+          const updated = await updateSetlist(snapshot);
+          if (updated) setlist = updated;
+        }}
+      />
+      {#if setIdx === (setlist.sets.length - 1) && getTargetGigEndTime()}
+        {@const gigDiff = getGigEndDiffMinutes()}
+        <span class="gig-target-end">Ziel: {getTargetGigEndTime()}</span>
+        {#if gigDiff != null}
+          {#if gigDiff >= 0}
+            <span class="gig-end-ok">Plan-Ende: {getPlannedGigEndTime() || '--:--'}</span>
+          {:else}
+            <span class="gig-end-over">-{Math.abs(gigDiff)} min</span>
+          {/if}
+        {/if}
+      {/if}
+    </div>
   </div>
 
 {/each}
@@ -267,8 +453,90 @@
 .song-in-set{ display:flex; justify-content:space-between; align-items:center;
               background:#e7f1fb; margin-bottom:4px; padding:.33em .6em;
               border-radius:6px; }
+
+.song-duplicate {
+  border: 1.5px solid #dc2626;
+}
+
+.duplicate-badge {
+  display: inline-block;
+  margin: 0 .35em;
+  color: #dc2626;
+  font-weight: 700;
+}
+
 .empty-set-hint{ color:#7895a9; font-style:italic; text-align:center; opacity:.75; }
 .pause{ margin:.2em 0 .7em; font-style:italic; color:#888; }
+
+.pause-before-set {
+  margin: .1em 0 .45em;
+  color: #6b7280;
+  font-size: .9em;
+  font-style: italic;
+}
+
+.set-time-row {
+  margin: .35em 0 .55em;
+  color: #1e5d91;
+  font-size: .9em;
+  font-weight: 600;
+}
+
+.set-end-row {
+  margin: .45em 0 .35em;
+  color: #1e5d91;
+  font-size: .9em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5em;
+}
+
+.gig-target-end {
+  margin-left: .5em;
+  color: #475569;
+  font-weight: 500;
+}
+
+.gig-end-ok {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.gig-end-over {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.song-time {
+  display: inline-block;
+  min-width: 44px;
+  margin-right: .42em;
+  color: #475569;
+  font-weight: 600;
+}
+
+.pause-label {
+  color: #6b7280;
+  font-size: .92em;
+  font-style: italic;
+}
+
+.pause-input {
+  width: 110px;
+  border: 1px solid #b2d4fa;
+  background: #f8fcff;
+  color: #2f587b;
+  border-radius: 5px;
+  padding: .18em .45em;
+  font-size: .92em;
+}
+
+.pause-input:focus {
+  outline: none;
+  border-color: #3c9ad8;
+}
 
 .set-header {
   display: flex;

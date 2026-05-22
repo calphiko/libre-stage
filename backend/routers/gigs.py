@@ -29,17 +29,18 @@ Prefix: ``/gigs``  |  Tag: ``gigs``
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
 from datetime import date, datetime, time, timedelta
-import colorsys
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from pathlib import Path
 
-from typing import List
+from typing import List, Literal
 
 from backend.pdf.generator import SetlistPDF
 from backend.services.setlist import SetlistService
 from backend.utils.check_permissions import check_admin, check_editor
+from backend.utils.pdf_palette import find_logo_path, resolve_schedule_palette
+from backend.utils.setlist_timing import calculate_setlist_timing, serialize_timing_for_api
 
 from backend import models, schemas, auth
 
@@ -51,7 +52,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
-from PIL import Image
 
 import os
 from dotenv import load_dotenv
@@ -93,107 +93,20 @@ DEFAULT_SCHEDULE_PALETTE = {
 }
 
 
-def _mix_color(a: colors.Color, b: colors.Color, weight_b: float) -> colors.Color:
-    w = max(0.0, min(1.0, weight_b))
-    return colors.Color(
-        red=a.red * (1 - w) + b.red * w,
-        green=a.green * (1 - w) + b.green * w,
-        blue=a.blue * (1 - w) + b.blue * w,
-    )
+def _build_rollover_datetimes(base_date: date, values: list[tuple[str, time]]) -> list[tuple[str, datetime]]:
+    """Build a monotonic timeline and roll over to next day after midnight."""
+    result: list[tuple[str, datetime]] = []
+    day_offset = 0
+    last_time: time | None = None
 
+    for label, t in values:
+        if last_time is not None and t < last_time:
+            day_offset += 1
+        dt = datetime.combine(base_date + timedelta(days=day_offset), t)
+        result.append((label, dt))
+        last_time = t
 
-def _relative_luminance(c: colors.Color) -> float:
-    def channel(v: float) -> float:
-        if v <= 0.03928:
-            return v / 12.92
-        return ((v + 0.055) / 1.055) ** 2.4
-
-    r = channel(c.red)
-    g = channel(c.green)
-    b = channel(c.blue)
-    return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
-
-
-def _contrast_ratio(a: colors.Color, b: colors.Color) -> float:
-    l1 = _relative_luminance(a)
-    l2 = _relative_luminance(b)
-    lighter = max(l1, l2)
-    darker = min(l1, l2)
-    return (lighter + 0.05) / (darker + 0.05)
-
-
-def _ensure_contrast(fg: colors.Color, bg: colors.Color, min_ratio: float) -> colors.Color:
-    if _contrast_ratio(fg, bg) >= min_ratio:
-        return fg
-
-    if _contrast_ratio(colors.black, bg) >= _contrast_ratio(colors.white, bg):
-        return colors.black
-    return colors.white
-
-
-def _extract_logo_accent(logo_path: Path) -> tuple[float, float, float] | None:
-    try:
-        with Image.open(logo_path) as image:
-            image = image.convert("RGBA")
-            image.thumbnail((120, 120))
-
-            best_score = -1.0
-            best_rgb: tuple[float, float, float] | None = None
-            for count, rgba in image.getcolors(maxcolors=120 * 120) or []:
-                r, g, b, a = rgba
-                if a < 96:
-                    continue
-
-                rf, gf, bf = r / 255.0, g / 255.0, b / 255.0
-                _, saturation, value = colorsys.rgb_to_hsv(rf, gf, bf)
-                if value < 0.14 or value > 0.92:
-                    continue
-
-                # Prefer saturated mid-bright colors as accent candidates.
-                score = ((saturation * 0.8) + ((1.0 - abs(value - 0.55)) * 0.2)) * count
-                if score > best_score:
-                    best_score = score
-                    best_rgb = (rf, gf, bf)
-
-            return best_rgb
-    except Exception:  # pragma: no cover - palette fallback is intentional
-        logger.debug("Could not extract palette color from logo", exc_info=True)
-        return None
-
-
-def _resolve_schedule_palette(logo_path: Path | None) -> dict[str, colors.Color]:
-    palette = dict(DEFAULT_SCHEDULE_PALETTE)
-    if logo_path is None:
-        return palette
-
-    accent_rgb = _extract_logo_accent(logo_path)
-    if accent_rgb is None:
-        return palette
-
-    accent = colors.Color(*accent_rgb)
-    if _relative_luminance(accent) < 0.26:
-        accent = _mix_color(accent, colors.white, 0.30)
-    if _relative_luminance(accent) > 0.70:
-        accent = _mix_color(accent, colors.black, 0.24)
-
-    base_bg = colors.HexColor("#0A0F1A")
-    bg = _mix_color(base_bg, accent, 0.10)
-    card = _mix_color(base_bg, accent, 0.18)
-    header_bg = _mix_color(base_bg, accent, 0.26)
-
-    text = _ensure_contrast(colors.HexColor("#E2E8F0"), card, 7.0)
-    muted = _ensure_contrast(_mix_color(text, accent, 0.38), card, 4.5)
-
-    palette["bg"] = bg
-    palette["card"] = card
-    palette["primary"] = accent
-    palette["text"] = text
-    palette["muted"] = muted
-    palette["header_bg"] = header_bg
-    palette["row_alt"] = _mix_color(card, colors.black, 0.16)
-    palette["line"] = _mix_color(_ensure_contrast(colors.HexColor("#64748B"), card, 2.0), accent, 0.20)
-    palette["fixed"] = _mix_color(_mix_color(card, accent, 0.24), colors.HexColor("#14532D"), 0.20)
-    return palette
+    return result
 
 
 def _fixed_schedule_points(gig: models.Gig) -> list[tuple[str, datetime]]:
@@ -202,10 +115,15 @@ def _fixed_schedule_points(gig: models.Gig) -> list[tuple[str, datetime]]:
     if gig.datum is None:
         return fixed_points
 
-    for label, t in (("Einlass", gig.doors), ("Beginn", gig.begin), ("Ende", gig.end)):
-        if t is not None:
-            fixed_points.append((label, datetime.combine(gig.datum, t)))
-    return fixed_points
+    base_date = gig.datum if isinstance(gig.datum, date) else date.fromisoformat(str(gig.datum))
+
+    ordered_times = [
+        ("Einlass", gig.doors),
+        ("Beginn", gig.begin),
+        ("Ende", gig.end),
+    ]
+    present_times = [(label, t) for label, t in ordered_times if t is not None]
+    return _build_rollover_datetimes(base_date, present_times)
 
 
 def _build_schedule_response(gig: models.Gig) -> schemas.GigScheduleOut:
@@ -295,24 +213,22 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
     footer_text = f"{footer_prefix}{footer_domain}"
 
     root_dir = Path(__file__).resolve().parents[2]
+    logo_path = find_logo_path({"root_dir": root_dir})
     logo_reader: ImageReader | None = None
     logo_size: tuple[float, float] | None = None
 
-    def _logo_path() -> Path | None:
-        for filename in ("LogoCustom.png", "Logo.png"):
-            candidate = root_dir / filename
-            if candidate.is_file():
-                return candidate
-        return None
-
-    palette = _resolve_schedule_palette(_logo_path())
+    palette = resolve_schedule_palette(
+        {
+            "default_palette": DEFAULT_SCHEDULE_PALETTE,
+            "logo_path": logo_path,
+        }
+    )
 
     def _get_logo_reader() -> ImageReader | None:
         nonlocal logo_reader, logo_size
         if logo_reader is not None:
             return logo_reader
 
-        logo_path = _logo_path()
         if logo_path is None:
             return None
 
@@ -1271,7 +1187,15 @@ def download_gemalist(
 
 
 @router.get("/{gig_id}/setlist.pdf", response_class=Response)
-def download_setlist(gig_id: int, db: Session = Depends(auth.get_db), current=Depends(auth.get_current_user)):
+def download_setlist(
+    gig_id: int,
+    design: Literal["dark", "print"] = Query(
+        "dark",
+        description="Design-Variante fuer die Setlisten-PDF (dark oder print).",
+    ),
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
     logger.info(f"Generating setlist PDF for gig_id={gig_id}")
     service = SetlistService(db)  # <- sync Session
     gig = service.load_gig(gig_id)
@@ -1303,8 +1227,9 @@ def download_setlist(gig_id: int, db: Session = Depends(auth.get_db), current=De
         for i, singer in enumerate(singers)
     }
 
-    pdf_bytes = SetlistPDF(gig, schedule, singer_colors).build().getvalue()
-    headers = {"Content-Disposition": f"inline; filename=Setliste_{gig.name}.pdf"}
+    pdf_bytes = SetlistPDF(gig, schedule, singer_colors, style_mode=design).build().getvalue()
+    mode_suffix = "_druckfreundlich" if design == "print" else ""
+    headers = {"Content-Disposition": f"inline; filename=Setliste_{gig.name}{mode_suffix}.pdf"}
     return Response(
         pdf_bytes,
         media_type="application/pdf",
@@ -1334,7 +1259,52 @@ def get_gig_setlist(
                 db.delete(ss)
             db.commit()
 
-    return gig.to_dict()  # siehe vorige Antwort
+    payload = gig.to_dict()  # siehe vorige Antwort
+    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
+    return payload
+
+
+@router.get("/{gig_id}/forscore-setlist", response_class=Response)
+def export_forscore_setlist(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user)
+):
+    import plistlib
+    logger.info(f"Generating forScore setlist for gig_id={gig_id}")
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        logger.error(f"Gig with id={gig_id} not found")
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    setlist_items = []
+    for gigset in sorted(gig.sets, key=lambda x: x.position):
+        set_obj = gigset.set
+        setsonglist = sorted(set_obj.songs, key=lambda ss: ss.position)
+        for setsong in setsonglist:
+            if setsong.song:
+                setlist_items.append({
+                    "title": setsong.song.title
+                })
+
+    try:
+        xml_data = plistlib.dumps(setlist_items, fmt=plistlib.FMT_XML)
+    except Exception as e:
+        logger.error(f"Failed to generate PLIST for forScore: {e}")
+        raise HTTPException(status_code=500, detail="Fehler bei der PLIST-Generierung")
+
+    formatted_date = gig.datum.strftime('%Y-%m-%d') if gig.datum else "gig"
+    safe_name = "".join(c for c in gig.name if c.isalnum() or c in ("-", "_", " ")).strip().replace(" ", "_")
+    filename = f"Setlist-{formatted_date}-{safe_name}.4ss"
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"'
+    }
+    return Response(
+        content=xml_data,
+        media_type="application/x-forscore-setlist",
+        headers=headers
+    )
 
 # @app.put("/append_song_to_set", response_model=schemas.GigSetlistOut)
 # def append_song_to_set(
@@ -1454,7 +1424,9 @@ def update_gig_setlist(
 
     db.commit()
     db.refresh(db_gig)
-    return db_gig.to_dict()
+    payload = db_gig.to_dict()
+    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(db_gig))
+    return payload
 
 @router.post("/")
 def create_new_gig(

@@ -166,20 +166,21 @@
   }
 
 
-  async function getSetlist(gig) {
+  async function getSetlist(gig, design = 'dark') {
   const setlistAvailability = await getGigSetlistAvailability(null, gig.id);
   if (!setlistAvailability.setlist_available) {
         showError("Für diesen Gig ist keine Setliste verfügbar.");
         return;
   }
   try {
-    const blob = await getSetlistPDF(null, gig.id);
+    const blob = await getSetlistPDF(null, gig.id, design);
     const url = URL.createObjectURL(blob);
 
     // iOS-kompatibel: Link erstellen und klicken
     const a = document.createElement('a');
     a.href = url;
-    a.download = `setlist_${gig.name}_${formatDateDE(gig.datum)}.pdf`;
+    const suffix = design === 'print' ? '_druckfreundlich' : '';
+    a.download = `setlist_${gig.name}_${formatDateDE(gig.datum)}${suffix}.pdf`;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
@@ -278,11 +279,35 @@
     }
   }
 
+  function normalizeTimeWithSeconds(value) {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+
+    const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return value;
+
+    const hh = match[1].padStart(2, '0');
+    const mm = match[2];
+    const ss = match[3] ?? '00';
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  function normalizeGigTimeFields(record) {
+    const normalized = { ...record };
+    for (const field of gigFieldsDetails) {
+      if (field.type === 'time' && normalized[field.key] != null) {
+        normalized[field.key] = normalizeTimeWithSeconds(normalized[field.key]);
+      }
+    }
+    return normalized;
+  }
+
 
   function startEdit(gig) {
     editGigId = gig.id;
-    // Tiefe Kopie der Songdaten (nicht Reference!)
-    editBuffer = { ...gig };
+    // Time-Inputs mit Schrittweite 1 erwarten HH:MM:SS fuer konsistente Anzeige.
+    editBuffer = normalizeGigTimeFields(gig);
   }
 
   function cancelEdit() {
@@ -293,10 +318,11 @@
   async function saveEdit(gig) {
     try {
       // OPTIONAL: Validierung vor Absenden
-      console.log(editBuffer);
-      await updateGig(gig.id, editBuffer, null);
+      const payload = normalizeGigTimeFields(editBuffer);
+      console.log(payload);
+      await updateGig(gig.id, payload, null);
       // Nach dem Patch neues Song-Objekt im lokalen Array ersetzen:
-      gigs = gigs.map(g => g.id === gig.id ? {...editBuffer, id: gig.id} : g);
+      gigs = gigs.map(g => g.id === gig.id ? { ...payload, id: gig.id } : g);
       // Bearbeiten-Modus beenden:
       editGigId = null;
       editBuffer = {};
@@ -564,6 +590,7 @@
                                     <input
                                       type="time"
                                       class="input mt-1 w-full"
+                                      step="1"
                                       bind:value={editBuffer[f.key]}
                                       required={f.required}
                                     />
@@ -684,6 +711,12 @@
                             </button>
                             <button
                               class="btn variant-outline-primary btn-sm"
+                              onclick={() => getSetlist(gig, 'print')}
+                            >
+                              Setliste drucken (druckfreundlich)
+                            </button>
+                            <button
+                              class="btn variant-outline-primary btn-sm"
                               onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
                             >
                               Statistik
@@ -766,6 +799,7 @@
                           <input
                             type="time"
                             class="input mt-1 w-full"
+                            step="1"
                             bind:value={editBuffer[f.key]}
                             required={f.required}
                           />
@@ -875,6 +909,12 @@
                       onclick={() => getSetlist(gig)}
                     >
                       Setliste drucken
+                    </button>
+                    <button
+                      class="btn variant-outline-primary btn-sm w-full"
+                      onclick={() => getSetlist(gig, 'print')}
+                    >
+                      Setliste drucken (druckfreundlich)
                     </button>
                     <button
                       class="btn variant-outline-primary btn-sm w-full"

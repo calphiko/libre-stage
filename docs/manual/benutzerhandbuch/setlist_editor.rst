@@ -35,9 +35,10 @@ Songs hinzufügen
 Im unteren Bereich des Editors befindet sich eine Songliste mit allen Songs,
 deren Status ``spielbar`` ist.
 
-* Klicke auf einen Song, um ihn dem aktuell ausgewählten Set hinzuzufügen.
+* Klicke auf einen Song, um ihn am Ende der Setlist hinzuzufügen.
 * Im Suchfeld kann nach Titel oder Interpret gesucht werden.
-* Mit **Enter** wird der erste Suchtreffer direkt am Ende der Setlist hinzugefügt.
+* Mit **Enter** (ohne Zusatz-Tasten wie ``Shift``/``Ctrl``/``Cmd``) wird der erste Suchtreffer direkt am Ende der Setlist hinzugefügt.
+* Nach dem Hinzufügen per **Enter** scrollt die Ansicht automatisch ans Ende der Setlist.
 
 Drag & Drop
 -----------
@@ -74,6 +75,10 @@ Tastaturkürzel
    * - Taste
      - Funktion
    * - **Enter**
-     - Ersten Suchtreffer zum aktuellen Set hinzufügen
-   * - **Esc**
-     - Suchfeld leeren / Fokus aufheben
+     - Ersten Suchtreffer am Ende der Setlist hinzufügen (nur ohne ``Shift``/``Ctrl``/``Cmd``/``Alt``)
+   * - **Strg/Cmd + Opt/Alt + Shift + 1-4**
+     - Suchtreffer 1-4 direkt am Ende der Setlist hinzufügen (im Suchfeld)
+   * - **Strg/Cmd + Shift + Enter**
+     - Neues Set am Ende hinzufügen
+   * - **Strg/Cmd + Shift + Backspace/Entf**
+     - Letzten Song des Stacks entfernen (funktioniert auch bei Fokus in Eingabefeldern)

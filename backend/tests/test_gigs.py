@@ -595,6 +595,40 @@ def test_download_setlist_pdf(client, auth_headers, db_session):
     assert response.headers["content-type"] == "application/pdf"
     assert response.content.startswith(b"%PDF-")
 
+
+def test_download_setlist_pdf_print_design(client, auth_headers, db_session):
+    from backend.models import Gig, Set, GigSet, SetSong, Song
+
+    gig = Gig(name="Print Concert", datum=date(2024, 12, 25), publish=0)
+    test_set = Set(name="Opening Set", pause=time(0, 10))
+    test_song = Song(
+        title="Testsong",
+        interpret="Testsinger",
+        singer_lead="Calle",
+        brass=0,
+        duration=time(0, 3, 0),
+    )
+
+    db_session.add_all([gig, test_set, test_song])
+    db_session.commit()
+    db_session.refresh(gig)
+    db_session.refresh(test_set)
+    db_session.refresh(test_song)
+
+    set_song = SetSong(id_set=test_set.id, id_song=test_song.id, position=1)
+    db_session.add(set_song)
+    db_session.commit()
+
+    gig_set = GigSet(id_gig=gig.id, id_set=test_set.id, position=1)
+    db_session.add(gig_set)
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/setlist.pdf?design=print", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert "druckfreundlich" in response.headers.get("content-disposition", "")
+    assert response.content.startswith(b"%PDF-")
+
 def test_download_setlist_pdf_w_nonexistent_gig_id(client, auth_headers, db_session):
     """Test removing a set from a gig."""
     from backend.models import Gig, Set, GigSet, SetSong, Song
@@ -622,6 +656,50 @@ def test_download_setlist_pdf_w_nonexistent_gig_id(client, auth_headers, db_sess
     db_session.refresh(gig)
 
     response = client.get(f"/gigs/{gig.id+1}/setlist.pdf", headers=auth_headers)
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Gig not found"
+
+def test_download_forscore_setlist(client, auth_headers, db_session):
+    """Test downloading the forScore .4ss setlist (PLIST XML)."""
+    from backend.models import Gig, Set, GigSet, SetSong, Song
+    import plistlib
+
+    gig = Gig(name="Test Concert ForScore", datum=date(2027, 5, 22), publish=0)
+    test_set = Set(name="Set 1", pause=time(0, 15))
+    test_song1 = Song(title="Bohemian Rhapsody", interpret="Queen")
+    test_song2 = Song(title="Hotel California", interpret="Eagles")
+
+    db_session.add_all([gig, test_set, test_song1, test_song2])
+    db_session.commit()
+    db_session.refresh(test_song1)
+    db_session.refresh(test_song2)
+    db_session.refresh(test_set)
+
+    set_song1 = SetSong(id_set=test_set.id, id_song=test_song1.id, position=1)
+    set_song2 = SetSong(id_set=test_set.id, id_song=test_song2.id, position=2)
+    db_session.add_all([set_song1, set_song2])
+    db_session.commit()
+
+    gig_set = GigSet(id_gig=gig.id, id_set=test_set.id, position=1)
+    db_session.add(gig_set)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    response = client.get(f"/gigs/{gig.id}/forscore-setlist", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/x-forscore-setlist"
+    assert "attachment; filename=\"Setlist-2027-05-22-Test_Concert_ForScore.4ss\"" in response.headers["content-disposition"]
+
+    # Decode and parse the Plist xml
+    parsed = plistlib.loads(response.content)
+    assert isinstance(parsed, list)
+    assert len(parsed) == 2
+    assert parsed[0]["title"] == "Bohemian Rhapsody"
+    assert parsed[1]["title"] == "Hotel California"
+
+def test_download_forscore_setlist_nonexistent(client, auth_headers, db_session):
+    """Test downloading the forScore setlist for a nonexistent gig."""
+    response = client.get("/gigs/99999/forscore-setlist", headers=auth_headers)
     assert response.status_code == 404
     assert response.json()["detail"] == "Gig not found"
 
