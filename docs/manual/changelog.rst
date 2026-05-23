@@ -3,6 +3,34 @@
 Änderungsprotokoll
 ==================
 
+0.4.6 (2026-05-23)
+-------------------
+
+Changed
+~~~~~~~
+
+* Live-Modus Layout wurde für bessere Bedienbarkeit auf Bühne/Tablet überarbeitet (stabileres Höhenlayout, größere Bewertungsschaltflächen, bessere Kontraste im Light/Dark-Mode).
+* Song-Einfügen und Hilfe werden als Overlay dargestellt, damit die Hauptansicht ohne störendes Vertikal-Scrollen nutzbar bleibt.
+* Setlisteneditor: Songliste unterstützt jetzt Drag-and-Drop direkt in Sets; neue Einträge werden dabei robust als neue Set-Songs verarbeitet.
+* Setlisteneditor: Beim Hinzufügen aus der Songliste kann das Ziel-Set direkt gewählt werden (statt immer nur ans Ende der Setliste).
+* Setlisteneditor: Layout und Bedienelemente wurden für Tablet/Touch verbessert (größere Buttons, optimierte Grid-Aufteilung, bessere Sichtbarkeit von Set-/Song-Infos).
+
+
+0.4.5 (2026-05-22)
+-------------------
+
+Added
+~~~~~
+
+* New backend export endpoint ``GET /gigs/{gig_id}/forscore-setlist`` generates forScore-compatible ``.4ss`` setlists (PLIST XML).
+* Gig detail view in the iOS app now includes a dedicated action to download/share ``forScore-Setliste (.4ss)`` directly from ``GigDetailView``.
+* Backend tests now cover forScore setlist export success and ``404`` handling for unknown gigs.
+
+Changed
+~~~~~~~
+
+* Project version metadata bumped to ``0.4.5`` across backend/frontend release files and README badge.
+
 0.4.4 (2026-05-19)
 -------------------
 

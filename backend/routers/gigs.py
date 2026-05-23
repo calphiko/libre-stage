@@ -1263,6 +1263,51 @@ def get_gig_setlist(
     payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
     return payload
 
+
+@router.get("/{gig_id}/forscore-setlist", response_class=Response)
+def export_forscore_setlist(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user)
+):
+    import plistlib
+    logger.info(f"Generating forScore setlist for gig_id={gig_id}")
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        logger.error(f"Gig with id={gig_id} not found")
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    setlist_name = (gig.name or "libreStage Setlist").strip() or "libreStage Setlist"
+    setlist_items = []
+    for gigset in sorted(gig.sets, key=lambda x: x.position):
+        set_obj = gigset.set
+        setsonglist = sorted(set_obj.songs, key=lambda ss: ss.position)
+        for setsong in setsonglist:
+            if setsong.song:
+                setlist_items.append({
+                    "title": setsong.song.title,
+                    "setlist": setlist_name,
+                })
+
+    try:
+        xml_data = plistlib.dumps(setlist_items, fmt=plistlib.FMT_XML)
+    except Exception as e:
+        logger.error(f"Failed to generate PLIST for forScore: {e}")
+        raise HTTPException(status_code=500, detail="Fehler bei der PLIST-Generierung")
+
+    formatted_date = gig.datum.strftime('%Y-%m-%d') if gig.datum else "gig"
+    safe_name = "".join(c for c in gig.name if c.isalnum() or c in ("-", "_", " ")).strip().replace(" ", "_")
+    filename = f"Setlist-{formatted_date}-{safe_name}.4ss"
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"'
+    }
+    return Response(
+        content=xml_data,
+        media_type="application/x-forscore-setlist",
+        headers=headers
+    )
+
 # @app.put("/append_song_to_set", response_model=schemas.GigSetlistOut)
 # def append_song_to_set(
 #     data: schemas.SongToSetIn,

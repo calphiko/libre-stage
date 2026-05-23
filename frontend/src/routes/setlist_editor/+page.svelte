@@ -25,7 +25,9 @@
   import { get } from 'svelte/store';
   import { gigIdForEditor } from '$lib/stores.js';
   import { getSetlist, updateGigSetlist, getSongs, getUser, getSong, logout as apiLogout} from '$lib/api.js';
+  import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
+  overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
 
 
   let { data } = $props();
@@ -38,12 +40,8 @@
   let showHelp = $state(false);
   let setlistEndAnchor;
 
-
-
-    const gigId = get(gigIdForEditor);
+  const gigId = get(gigIdForEditor);
   console.log("gigId:", gigId);
-
-
 
   onMount(async () => {
     try {
@@ -69,12 +67,21 @@
   });
 
   export async function addSongToSetListEnd(song) {
-      console.log("Füge Song hinzu:", song);
+      await addSongToSet(song, null);
+  }
+
+  export async function addSongToSet(song, setIdx = null) {
+      console.log("Füge Song hinzu:", song, "zu SetIndex:", setIdx);
       console.log("Aktuelle Setliste:", setlist);
 
       if (!setlist || !setlist.sets || setlist.sets.length === 0) {
         error = 'Setliste nicht geladen oder keine Sets vorhanden';
         return;
+      }
+
+      let targetSetIndex = setIdx;
+      if (targetSetIndex === null || targetSetIndex === undefined || targetSetIndex < 0 || targetSetIndex >= setlist.sets.length) {
+        targetSetIndex = setlist.sets.length - 1;
       }
 
       try {
@@ -88,11 +95,10 @@
         const newSetlist = { ...setlist };
         newSetlist.sets = [...newSetlist.sets];
 
-        const lastSetIndex = newSetlist.sets.length - 1;
-        const lastSet = { ...newSetlist.sets[lastSetIndex] };
-        lastSet.songs = [...lastSet.songs, songInfo];
+        const targetSet = { ...newSetlist.sets[targetSetIndex] };
+        targetSet.songs = [...targetSet.songs, songInfo];
 
-        newSetlist.sets[lastSetIndex] = lastSet;
+        newSetlist.sets[targetSetIndex] = targetSet;
         setlist = newSetlist;
 
         // Nach dem Einfügen zum Ende der Setliste scrollen.
@@ -108,9 +114,6 @@
         console.error(e);
       }
   }
-
-
-
 </script>
 
 <div class="container max-w-full lg:max-w-7xl lg:px-4">
@@ -229,7 +232,7 @@
       </div>
       <div class="card-body pt-3">
         {#if songs.length}
-          <SongList {songs} {addSongToSetListEnd} />
+          <SongList {songs} {addSongToSetListEnd} {addSongToSet} setlist={setlist} />
         {:else}
           <div class="flex flex-col items-center justify-center py-12 opacity-60">
             <div class="animate-pulse">
@@ -275,8 +278,8 @@
 <style>
   .editor-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1rem;
     margin: 0 auto;
   }
 
@@ -311,8 +314,8 @@
     background: rgb(var(--color-surface-500) / 0.5);
   }
 
-  /* Responsive Layout */
-  @media (max-width: 1024px) {
+  /* Responsive Layout optimized for Tablets */
+  @media (max-width: 768px) {
     .editor-grid {
       grid-template-columns: 1fr;
       gap: 1.5rem;

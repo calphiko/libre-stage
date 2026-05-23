@@ -21,7 +21,7 @@
   import { getFirstSinger, getColorBySinger } from '$lib/common.js';
 
 
-  let { songs = [], addSongToSetListEnd } = $props();
+  let { songs = [], addSongToSetListEnd, addSongToSet = null, setlist = null } = $props();
 
 
   let genreFilter = $state('');
@@ -30,6 +30,7 @@
   let searchFilter = $state('');
   let showFilters = $state(false);
   let open = $state(new Set());
+  let activeSetSelectorSongId = $state(null);
 
   let genres = $derived(Array.from(new Set(songs.map(s => s.genre))).sort());
   let statuses = $derived(Array.from(new Set(songs.map(s => s.status))).sort());
@@ -45,10 +46,38 @@
     )
   ));
 
+  let dndItems = $state([]);
+  $effect(() => {
+    dndItems = filtered.map(song => ({
+      ...song,
+      setsong_id: `new-${song.id}-${Math.floor(Math.random() * 1000000)}`
+    }));
+  });
+
+  function handleDndConsider(e) {
+    dndItems = e.detail.items;
+  }
+
+  function handleDndFinalize(e) {
+    // Regeneriere die Liste der Dnd-Elemente mit neuen IDs, damit sie erneut gezogen werden können
+    dndItems = filtered.map(song => ({
+      ...song,
+      setsong_id: `new-${song.id}-${Math.floor(Math.random() * 1000000)}`
+    }));
+  }
+
   function toggleOpen(id) {
     if (open.has(id)) open.delete(id);
     else open.add(id);
     open = new Set(open);
+  }
+
+  function handleAddButtonClick(songId) {
+    if (addSongToSet && setlist && setlist.sets && setlist.sets.length > 1) {
+      activeSetSelectorSongId = activeSetSelectorSongId === songId ? null : songId;
+    } else {
+      addSongToSetListEnd(songId);
+    }
   }
 
   // Dynamische Farbzuweisung für Sänger via Skeleton-Varianten
@@ -120,7 +149,7 @@
       onkeydown={handleSearchKeydown}
     />
     <button
-      class="btn variant-filled-surface"
+      class="btn variant-filled-surface min-h-[42px] touch-manipulation"
       type="button"
       onclick={() => showFilters = !showFilters}
     >
@@ -140,7 +169,7 @@
         <!-- Singer Filter -->
         <label class="label">
           <span class="font-semibold mb-2">Lead-Sänger</span>
-          <select class="select" bind:value={singerFilter}>
+          <select class="select min-h-[40px]" bind:value={singerFilter}>
             <option value=''>Alle</option>
             {#each singers as singer}
               <option value={singer}>{singer}</option>
@@ -151,7 +180,7 @@
         <!-- Genre Filter -->
         <label class="label">
           <span class="font-semibold mb-2">Genre</span>
-          <select class="select" bind:value={genreFilter}>
+          <select class="select min-h-[40px]" bind:value={genreFilter}>
             <option value=''>Alle Genres</option>
             {#each genres as genre}
               <option value={genre}>{genre}</option>
@@ -182,49 +211,104 @@
 
   <!-- Song List Container -->
   <div class="song-list-container card variant-ghost-surface bg-primary">
-    <div class="space-y-2 ">
-      {#each filtered as song (song.id)}
-        <button
-          type="button"
-          draggable="true"
-          ondragstart={(event) => event.dataTransfer.setData('text/plain', song.id)}
-          class="card rounded-sm song-item w-full text-surface-900 dark:text-surface-950  transition-all duration-200 hover:scale-[1.01] cursor-grab active:cursor-grabbing {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
+    <div
+      class="space-y-2"
+      use:dndzone={{
+        items: dndItems,
+        type: 'song-in-set',
+        dragDisabled: false,
+        dropTargetDisabled: true,
+        flipDurationMs: 150
+      }}
+      onconsider={handleDndConsider}
+      onfinalize={handleDndFinalize}
+    >
+      {#each dndItems as song (song.setsong_id)}
+        <div
+          class="card rounded-sm song-item w-full text-surface-900 dark:text-surface-950 transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
           style="background-color:{getColorBySinger(song.singer_lead_short)}"
-
         >
           <div class="p-3 py-2">
             <!-- Header -->
             <div>
-            <div class="flex justify-between items-start gap-3 ">
-              <div class="flex-grow min-w-0 text-left">
-                <p class=" text-base leading-tight">{song.title} - <span class="text-sm opacity-70">{song.interpret}</span></p>
-
-              </div>
-              <div class=" btn btn-sm variant-filled-primary flex-shrink-0 py-0" onclick={() => addSongToSetListEnd(song.id)}>
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <div class="flex justify-between items-center gap-3">
+                <div
+                  class="flex-grow min-w-0 text-left cursor-grab active:cursor-grabbing p-1 touch-manipulation"
+                >
+                  <p class="text-base leading-tight font-semibold">{song.title}</p>
+                  <p class="text-xs opacity-75">{song.interpret}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <!-- Touch-freundlicher Add-Button -->
+                  <button
+                    class="btn btn-sm variant-filled-primary flex-shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center p-0 touch-manipulation"
+                    aria-label="Song hinzufügen"
+                    onclick={() => handleAddButtonClick(song.id)}
+                  >
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                     </svg>
+                  </button>
+
+                  <!-- Info/Expand Button -->
+                  <button
+                    class="btn btn-sm variant-filled-secondary flex-shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
+                    aria-label="Info anzeigen"
+                    onclick={() => toggleOpen(song.id)}
+                  >
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <div class=" btn btn-sm py-0 variant-filled-secondary flex-shrink-0 transition-transform duration-200 {open.has(song.id) ? 'rotate-180' : ''}" onclick={() => toggleOpen(song.id)}>
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-              </div>
+
+              <!-- Tablet-freundlicher Set-Wähler, wenn auf das "+" in einer Setlist mit mehreren Sets geklickt wurde -->
+              {#if activeSetSelectorSongId === song.id && setlist && setlist.sets && setlist.sets.length > 1}
+                <div class="mt-2 p-2.5 bg-white/40 dark:bg-black/35 rounded-md border border-black/10 dark:border-white/10 flex flex-col gap-1.5 animate-fadeIn">
+                  <span class="text-xs font-bold text-surface-700 dark:text-surface-200">Ziel-Set auswählen:</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    {#each setlist.sets as set, setIdx}
+                      <button
+                        type="button"
+                        class="btn btn-xs variant-filled-success hover:variant-filled-primary transition-colors text-white py-1.5 px-3 font-semibold text-xs touch-manipulation rounded"
+                        onclick={() => {
+                          if (addSongToSet) {
+                            addSongToSet(song.id, setIdx);
+                          } else {
+                            addSongToSetListEnd(song.id);
+                          }
+                          activeSetSelectorSongId = null;
+                        }}
+                      >
+                        {set.setlist_name || `Set ${setIdx + 1}`}
+                      </button>
+                    {/each}
+                    <button
+                      type="button"
+                      class="btn btn-xs variant-soft-surface py-1.5 px-3 text-xs touch-manipulation font-semibold rounded"
+                      onclick={() => activeSetSelectorSongId = null}
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              {/if}
             </div>
 
             <!-- Expanded Details -->
             {#if open.has(song.id)}
-              <hr class="!border-t !border-surface-400 dark:!border-surface-600 my-3" />
-              <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div><span class="opacity-60">Genre:</span> <span class="font-medium">{song.genre}</span></div>
-                <div><span class="opacity-60">Status:</span> <span class="font-medium">{song.status}</span></div>
-                <div><span class="opacity-60">Lead:</span> <span class="font-medium">{song.singer_lead_short}</span></div>
-                <div><span class="opacity-60">Dauer:</span> <span class="font-medium">{song.duration}</span></div>
-                <div><span class="opacity-60">Kommentar:</span> <span class="font-medium">{song.comment}</span></div>
+              <hr class="!border-t !border-surface-400 dark:!border-surface-600 my-2" />
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm p-1">
+                <div><span class="opacity-60 font-semibold">Genre:</span> <span class="font-medium">{song.genre || '-'}</span></div>
+                <div><span class="opacity-60 font-semibold">Status:</span> <span class="font-medium">{song.status || '-'}</span></div>
+                <div><span class="opacity-60 font-semibold">Lead:</span> <span class="font-medium">{song.singer_lead_short || '-'}</span></div>
+                <div><span class="opacity-60 font-semibold">Dauer:</span> <span class="font-medium">{song.duration || '-'}</span></div>
+                <div class="col-span-2"><span class="opacity-60 font-semibold">Kommentar:</span> <span class="font-medium">{song.comment || '-'}</span></div>
               </div>
             {/if}
           </div>
-        </button>
+        </div>
       {/each}
 
       {#if filtered.length === 0}
@@ -241,8 +325,17 @@
 </div>
 
 <style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.15s ease-out forwards;
+  }
+
   .song-list-container {
-    max-height: calc(100vh - 320px);
+    max-height: calc(100vh - 280px);
     min-height: 300px;
     overflow-y: auto;
   }
@@ -252,12 +345,12 @@
   }
 
   .song-item:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
+  /* Touch-optimierter Active-Zustand */
   .song-item:active {
-    transform: scale(0.98);
+    transform: scale(0.995);
   }
 
   /* Custom scrollbar für bessere Skeleton-Integration */
