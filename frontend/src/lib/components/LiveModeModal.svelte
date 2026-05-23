@@ -145,7 +145,7 @@ import { onMount, onDestroy } from 'svelte';
     } else if (e.key === '2') {
       setFeedback(2);
     } else if (e.key === '3') {
-      setFeedback(3);1
+      setFeedback(3);
     } else if (e.key === 'Escape') {
       if (showSetlistOverview) {
         showSetlistOverview = false;
@@ -370,43 +370,49 @@ import { onMount, onDestroy } from 'svelte';
 </script>
 
 <div
-  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800 relative overflow-hidden"
+  class="card p-0 w-[95vw] h-[95vh] flex flex-col bg-surface-100 dark:bg-surface-800 relative overflow-hidden shadow-2xl"
   ontouchstart={handleTouchStart}
   ontouchmove={handleTouchMove}
   ontouchend={handleTouchEnd}
 >
   <!-- Header -->
-  <header class="flex justify-between items-center p-3 md:p-4 border-b border-surface-300 no-swipe">
-    <div class="flex">
-      <h2 class="h4 md:h3">🎵 Live Mode</h2>
-      {#if gig}
-        <p class="text-xs md:text-sm text-surface-600 dark:text-surface-400">
-          {gig.name}
-        </p>
-      {/if}
+  <header class="flex justify-between items-center p-3 md:p-4 border-b border-surface-300 dark:border-surface-700 bg-surface-200/50 dark:bg-surface-900/30 no-swipe">
+    <div class="flex items-center gap-2">
+      <span class="text-xl md:text-2xl">⚡</span>
+      <div>
+        <h2 class="h4 md:h3 font-bold text-primary-500">Live Mode</h2>
+        {#if gig}
+          <p class="text-[10px] md:text-xs text-surface-600 dark:text-surface-400 font-medium">
+            {gig.name}
+          </p>
+        {/if}
+      </div>
     </div>
     <div class="flex items-center gap-2">
       <button
-        class="btn-icon btn-icon-sm variant-ghost"
+        class="btn btn-sm variant-ghost flex items-center gap-1"
         onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
+        title="Hilfe (?)"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 md:w-5 md:h-5 text-surface-600 dark:text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
+        <span class="hidden md:inline text-xs">Hilfe</span>
       </button>
       <button
-        class="btn-icon btn-icon-sm variant-ghost {showSetlistOverview ? 'variant-filled-secondary' : ''}"
+        class="btn btn-sm variant-ghost {showSetlistOverview ? 'variant-filled-secondary text-white' : ''} flex items-center gap-1"
         onclick={() => showSetlistOverview = !showSetlistOverview}
         aria-label="Setlisten-Übersicht anzeigen"
         title="Setlisten-Übersicht (L)"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
         </svg>
+        <span class="hidden md:inline text-xs">Ablauf</span>
       </button>
       <button
-        class="btn-icon btn-icon-sm variant-ghost"
+        class="btn-icon btn-icon-sm variant-ghost-error hover:variant-filled-error transition-all"
         onclick={() => parent?.close()}
         aria-label="Schließen"
       >
@@ -415,135 +421,147 @@ import { onMount, onDestroy } from 'svelte';
     </div>
   </header>
 
-
-
   {#if allSongs.length > 0 && !isFinished}
-    <div class="px-3 md:px-6 pt-2 md:pt-4 pb-2 space-y-2">
-      <!-- Set-Fortschritt -->
-       {#if currentSong}
-            {@const currentSet = gig.sets.find(s => s.position === currentSong.setPosition)}
-            {@const setProgress = currentSet ? ((currentSong.songIndex + 1) / currentSet.songs.length) * 100 : 0}
-            <div>
-              <div class="flex justify-between items-center mb-0.5">
-                <span class="text-xs font-medium text-surface-600 dark:text-surface-400">
-                  {currentSong.setName}
-                </span>
-                <span class="text-xs text-surface-500 dark:text-surface-500">
-                  Song {currentSong.songIndex + 1} / {currentSet?.songs.length || 0}
-                </span>
-              </div>
-              <div class="w-full bg-surface-200 dark:bg-surface-800 rounded-full h-1.5">
-                <div
-                  class="bg-secondary-500 h-1.5 rounded-full transition-all duration-300"
-                  style="width: {setProgress}%"
-                ></div>
-              </div></div>
-       {/if}
+    <div class="px-3 md:px-6 pt-2 md:pt-4 pb-2">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+        <!-- Set-Fortschritt -->
+        {#if currentSong}
+          {@const currentSet = gig.sets.find(s => s.position === currentSong.setPosition)}
+          {@const setProgress = currentSet ? ((currentSong.songIndex + 1) / currentSet.songs.length) * 100 : 0}
+          <div class="card p-2 bg-surface-50 dark:bg-surface-900/50 border border-surface-200/60 dark:border-surface-700/40">
+            <div class="flex justify-between items-center mb-0.5">
+              <span class="text-[10px] md:text-xs font-semibold text-surface-600 dark:text-surface-400">
+                📁 {currentSong.setName}
+              </span>
+              <span class="text-[10px] md:text-xs font-mono text-surface-500">
+                Song {currentSong.songIndex + 1} / {currentSet?.songs.length || 0}
+              </span>
+            </div>
+            <div class="w-full bg-surface-200 dark:bg-surface-800 rounded-full h-1.5 overflow-hidden">
+              <div
+                class="bg-secondary-500 h-1.5 rounded-full transition-all duration-300"
+                style="width: {setProgress}%"
+              ></div>
+            </div>
+          </div>
+        {/if}
 
-      <!-- Gesamtfortschritt -->
-      <div>
-        <div class="flex justify-between items-center mb-0.5">
-          <span class="text-xs font-medium text-surface-600 dark:text-surface-400">
-            Gesamtfortschritt
-          </span>
-          <span class="text-xs text-surface-500 dark:text-surface-500">
-            Song {currentIndex + 1} / {allSongs.length}
-          </span>
-        </div>
-        <div class="w-full bg-surface-300 dark:bg-surface-700 rounded-full h-1">
-          <div
-            class="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
-            style="width: {progress}%"
-          ></div>
+        <!-- Gesamtfortschritt -->
+        <div class="card p-2 bg-surface-50 dark:bg-surface-900/50 border border-surface-200/60 dark:border-surface-700/40">
+          <div class="flex justify-between items-center mb-0.5">
+            <span class="text-[10px] md:text-xs font-semibold text-surface-600 dark:text-surface-400">
+              📊 Gesamtfortschritt
+            </span>
+            <span class="text-[10px] md:text-xs font-mono text-surface-500">
+              Song {currentIndex + 1} / {allSongs.length}
+            </span>
+          </div>
+          <div class="w-full bg-surface-300 dark:bg-surface-700 rounded-full h-1.5 overflow-hidden">
+            <div
+              class="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
+              style="width: {progress}%"
+            ></div>
+          </div>
         </div>
       </div>
     </div>
   {:else if isFinished}
-    <div class="px-3 md:px-6 pt-2 md:pt-4 pb-2">
-      <div class="flex justify-between items-center mb-1">
-        <span class="text-xs text-success-600 dark:text-success-400 font-semibold">
-          ✅ Alle Songs abgeschlossen
+    <div class="px-3 md:px-6 pt-3 pb-2">
+      <div class="card p-3 variant-soft-success flex items-center justify-between border border-success-500/20 shadow-sm animate-pulse">
+        <span class="text-xs md:text-sm text-success-700 dark:text-success-300 font-bold flex items-center gap-1.5">
+          🎉 Alle Songs erfolgreich abgeschlossen!
         </span>
-      </div>
-      <div class="w-full bg-surface-300 dark:bg-surface-700 rounded-full h-1 md:h-2">
-        <div class="bg-success-500 h-1.5 md:h-2 rounded-full" style="width: 100%"></div>
+        <div class="w-32 bg-success-200 dark:bg-success-900/60 rounded-full h-2 overflow-hidden">
+          <div class="bg-success-500 h-2 rounded-full" style="width: 100%"></div>
+        </div>
       </div>
     </div>
   {/if}
 
-<!-- Help Section -->
-{#if showHelp}
-  <div class="px-3 md:px-6 pt-2">
-    <div class="card variant-ghost-surface p-3 md:p-4 text-sm">
-      <h4 class="font-bold mb-3 flex items-center gap-2">
-        <span class="text-lg">🎸</span>
-        Live-Mode Anleitung
-      </h4>
+  <!-- Help Section (Schwebt als Overlay, um das Layout nicht zu verzerren) -->
+  {#if showHelp}
+    <div class="absolute inset-0 bg-surface-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="card variant-filled-surface max-w-lg w-full p-4 md:p-6 shadow-2xl border border-surface-500 relative max-h-[85vh] overflow-y-auto">
+        <button
+          class="absolute top-3 right-3 btn-icon btn-icon-sm variant-ghost-surface hover:variant-filled"
+          onclick={() => showHelp = false}
+          aria-label="Hilfe schließen"
+        >
+          ✕
+        </button>
+        <h4 class="h3 font-bold mb-4 flex items-center gap-2 text-primary-500">
+          <span>🎸</span>
+          Live-Mode Anleitung
+        </h4>
 
-      <div class="space-y-2">
-        <div>
-          <h5 class="font-semibold text-primary-500 mb-1">🎯 Hauptfunktionen</h5>
-          <ul class="list-disc list-inside space-y-1 text-xs">
-            <li><strong>Navigation:</strong> Pfeiltasten ←→ oder Buttons nutzen (Mobile: Wischen)</li>
-            <li><strong>Bewertung:</strong> 😊 = Super, 😐 = OK, 😞 = Schwach</li>
-            <li><strong>Überspringen:</strong> Song wurde nicht gespielt</li>
-            <li><strong>Song einfügen:</strong> Füge spontan Songs in die Setliste ein</li>
-          </ul>
-        </div>
-
-        <div>
-          <h5 class="font-semibold text-secondary-500 mb-1">⌨️ Shortcuts</h5>
-          <div class="grid grid-cols-1 gap-1 text-xs">
-            <div><kbd class="kbd kbd-sm">←</kbd> Vorheriger Song</div>
-            <div><kbd class="kbd kbd-sm">→</kbd> Nächster Song</div>
-            <div><kbd class="kbd kbd-sm">1</kbd> Bewertung: 😊</div>
-            <div><kbd class="kbd kbd-sm">2</kbd> Bewertung: 😐</div>
-            <div><kbd class="kbd kbd-sm">3</kbd> Bewertung: 😞</div>
-            <div><kbd class="kbd kbd-sm">Leertaste</kbd> Überspringen</div>
-            <div><kbd class="kbd kbd-sm">?</kbd> Hilfe ein/aus</div>
-            <div><kbd class="kbd kbd-sm">L</kbd> Setlisten-Übersicht ein/aus</div>
+        <div class="space-y-4">
+          <div class="card p-3 variant-soft-surface">
+            <h5 class="font-semibold text-primary-500 mb-1.5 text-sm">🎯 Hauptfunktionen</h5>
+            <ul class="list-disc list-inside space-y-1 text-xs">
+              <li><strong>Navigation:</strong> Pfeiltasten ←→ oder Buttons nutzen (Mobile: Wischen)</li>
+              <li><strong>Bewertung:</strong> 😊 = Super, 😐 = OK, 😞 = Schwach</li>
+              <li><strong>Überspringen:</strong> Song wurde nicht gespielt</li>
+              <li><strong>Song einfügen:</strong> Füge spontan Songs in die Setliste ein</li>
+            </ul>
           </div>
-        </div>
 
-        <div class="alert variant-soft-primary py-2">
+          <div class="card p-3 variant-soft-secondary">
+            <h5 class="font-semibold text-secondary-500 mb-1.5 text-sm">⌨️ Shortcuts</h5>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">←</kbd> Vorheriger Song</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">→</kbd> Nächster Song</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">1</kbd> Bewertung: 😊</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">2</kbd> Bewertung: 😐</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">3</kbd> Bewertung: 😞</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">Escape</kbd> Schließen</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">?</kbd> Hilfe ein/aus</div>
+              <div class="flex items-center gap-1.5"><kbd class="kbd kbd-sm">L</kbd> Setlisten-Liste</div>
+            </div>
+          </div>
+
+          <div class="alert variant-soft-success py-2.5">
             <p class="text-xs">💡 <strong>Tipp:</strong> Alle Änderungen werden sofort gespeichert und sind in der Setliste sichtbar!</p>
           </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button class="btn variant-filled-primary btn-sm font-semibold" onclick={() => showHelp = false}>Verstanden</button>
         </div>
       </div>
     </div>
   {/if}
 
   <!-- Content -->
-  <div class="flex-1 overflow-y-auto p-2 md:p-4 h-full">
+  <div class="flex-1 overflow-y-auto p-2 md:p-4 h-full flex flex-col justify-between">
     {#if loading}
-      <div class="flex justify-center items-center h-full">
+      <div class="flex justify-center items-center h-full my-auto">
         <div class="text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p class="text-surface-600 dark:text-surface-400">Lade Live-Daten...</p>
+          <p class="text-surface-600 dark:text-surface-400 font-medium">Lade Live-Daten...</p>
         </div>
       </div>
     {:else if allSongs.length === 0}
-      <div class="text-center py-12">
-        <p class="text-surface-600 dark:text-surface-400">Keine Songs in der Setliste gefunden</p>
+      <div class="text-center py-12 my-auto">
+        <div class="text-4xl mb-2">📁</div>
+        <p class="text-surface-600 dark:text-surface-400 font-semibold">Keine Songs in der Setliste gefunden</p>
       </div>
     {:else if isFinished}
       <!-- Fertig-Ansicht -->
-      <div class="flex justify-center items-center h-full">
-        <div class="text-center">
+      <div class="flex justify-center items-center h-full my-auto">
+        <div class="text-center max-w-md p-6 card variant-soft-surface shadow-lg border border-surface-200 dark:border-surface-700">
           <div class="text-6xl md:text-8xl mb-6">🎉</div>
-          <h3 class="h2 md:h1 mb-4 text-primary-500">Fertig!</h3>
-          <p class="text-lg md:text-xl text-surface-600 dark:text-surface-400 mb-6">
-            Alle Songs wurden markiert.
+          <h3 class="h2 md:h1 mb-4 text-primary-500 font-bold">Fertig!</h3>
+          <p class="text-base md:text-lg text-surface-600 dark:text-surface-300 mb-6">
+            Alle Songs wurden markiert. Gute Arbeit, Band!
           </p>
-          <div class="flex flex-wrap justify-center gap-3 no-swipe">
+          <div class="flex flex-col sm:flex-row justify-center gap-3 no-swipe">
             <button
-              class="btn variant-filled-primary"
+              class="btn variant-filled-primary font-semibold flex items-center justify-center gap-1"
               onclick={() => currentIndex = 0}
             >
               🔄 Zurück zum Anfang
             </button>
             <button
-              class="btn variant-filled-surface"
+              class="btn variant-filled-surface font-semibold"
               onclick={parent.onClose}
             >
               Schließen
@@ -553,50 +571,52 @@ import { onMount, onDestroy } from 'svelte';
       </div>
     {:else if currentSong}
       <!-- Song Card mit Navigation -->
-      <div class="flex items-center gap-1 md:gap-4 h-full">
+      <div class="flex items-stretch gap-1 md:gap-4 h-full flex-1">
         <!-- Previous Button -->
         <button
-          class="btn variant-filled-primary flex md:flex flex-shrink-0 w-8 md:w-auto h-32 md:h-auto px-1 md:px-4 no-swipe"
+          class="btn variant-ghost-primary hover:variant-filled-primary flex flex-shrink-0 w-8 md:w-16 items-center justify-center transition-all no-swipe"
           onclick={goPrevious}
           disabled={isFirstSong}
           aria-label="Vorheriger Song"
+          title="Vorheriger Song (Links/Oben)"
         >
-          <svg class="w-4 h-4 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
           </svg>
         </button>
 
         <!-- Song Content -->
-        <div class="flex-1 min-w-0 relative">
+        <div class="flex-1 min-w-0 relative flex flex-col justify-center py-2">
           <!-- Timeline-Linie (nur Desktop) -->
-          <div class="hidden md:block absolute left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-surface-300 via-primary-500 to-surface-300 dark:from-surface-600 dark:via-primary-400 dark:to-surface-600"></div>
+          <div class="hidden md:block absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-surface-300/35 via-primary-500/80 to-surface-300/35 dark:from-surface-700/35 dark:via-primary-400/80 dark:to-surface-700/35"></div>
 
-          <!-- Vorheriger Song (Vorschau) -->
+          <!-- Vorheriger Song (Vorschau - Jetzt Anklickbar!) -->
           {#if previousSong}
             <button
-              class="w-full text-left mb-2 group"
-              disabled="1"
+              class="w-full text-left mb-3 group transition-transform hover:-translate-y-0.5 no-swipe"
+              onclick={goPrevious}
+              title="Zum vorherigen Song wechseln"
             >
-              <div class="card variant-ghost-surface p-2 hover:variant-soft-surface transition-all relative">
+              <div class="card variant-ghost-surface p-2.5 border border-surface-250/20 hover:border-surface-400 dark:hover:border-surface-600 transition-all relative">
                 <!-- Timeline-Punkt -->
-                <div class="hidden md:block absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-surface-400 dark:bg-surface-500 border-2 border-surface-50 dark:border-surface-900"></div>
+                <div class="hidden md:block absolute left-3.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-surface-400 dark:bg-surface-500 border border-surface-50 dark:border-surface-900 group-hover:bg-primary-500 transition-colors"></div>
 
                 <div class="flex items-center gap-2 md:gap-3 md:ml-6">
-                  <div class="text-surface-400 dark:text-surface-500 text-xs font-semibold flex-shrink-0 hidden md:block">
-                    VORHER
+                  <div class="text-surface-400 dark:text-surface-500 text-[10px] font-bold flex-shrink-0 hidden md:block">
+                    ◀ VORHER
                   </div>
-                  <div class="flex-1 min-w-0 opacity-50 group-hover:opacity-75 transition-opacity">
+                  <div class="flex-1 min-w-0 opacity-60 group-hover:opacity-100 transition-opacity">
                     <div class="font-semibold text-xs md:text-sm truncate">
-                      <span class="md:hidden text-surface-400 mr-2">↑</span>{previousSong.title}
+                      <span class="md:hidden text-surface-400 mr-1">↑</span>{previousSong.title}
                     </div>
-                    <div class="text-xs text-surface-500 dark:text-surface-400 truncate hidden md:block">{previousSong.interpret}</div>
+                    <div class="text-[10px] md:text-xs text-surface-550 dark:text-surface-400 truncate hidden md:block">{previousSong.interpret}</div>
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0">
                     {#if previousSong.uebersprungen}
                       <span class="badge variant-soft-warning text-xs">⏭️</span>
                     {:else if previousSong.feedback}
                       <span class="text-sm md:text-base">
-                        {previousSong.feedback === 1 ? '😐' : previousSong.feedback === 2 ? '🙂' : '😍'}
+                        {previousSong.feedback === 1 ? '😐' : previousSong.feedback === 2 ? '😐' : '😍'}
                       </span>
                     {/if}
                   </div>
@@ -606,45 +626,39 @@ import { onMount, onDestroy } from 'svelte';
           {/if}
 
           <!-- Aktueller Song (Hauptkarte) -->
-          <div class="card variant-ghost p-4 md:p-6 gradient-bg dark:from-primary-950 dark:to-surface-900 ring-2 ring-primary-500 shadow-xl relative ">
+          <div class="card variant-ghost p-3 md:p-5 gradient-bg dark:from-primary-950/40 dark:to-surface-900 ring-2 ring-primary-500 shadow-2xl relative flex flex-col justify-between border border-primary-500/20 rounded-2xl flex-1">
             <!-- Timeline-Punkt (größer) -->
-            <div class="hidden md:block absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-primary-500 border-4 border-surface-50 dark:border-surface-900 shadow-lg animate-pulse"></div>
+            <div class="hidden md:block absolute left-2.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-primary-500 border-4 border-surface-50 dark:border-surface-900 shadow-md animate-pulse"></div>
 
             <!-- Song Info - Titel im Vordergrund -->
-            <div class="text-center mb-6">
-              <h3 class="song-title mb-3 break-words leading-tight">{currentSong.title}</h3>
-              <div class="flex items-center justify-center gap-2 text-sm md:text-base text-surface-500 dark:text-surface-400">
-                <span>{currentSong.interpret}</span>
+            <div class="text-center my-auto py-2">
+              <h3 class="song-title mb-1.5 md:mb-3 break-words leading-tight tracking-tight text-surface-900 dark:text-white drop-shadow-sm">{currentSong.title}</h3>
+              <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 text-xs md:text-sm text-surface-600 dark:text-surface-400">
+                <span class="font-medium bg-surface-200/50 dark:bg-surface-800/60 px-2 md:px-2.5 py-0.5 md:py-1 rounded-full">{currentSong.interpret}</span>
                 {#if currentSong.tone_key}
-                  <span class="text-surface-400">•</span>
-                  <span class="font-mono font-semibold text-primary-600 dark:text-primary-400">{currentSong.tone_key}</span>
+                  <span class="font-mono font-bold text-xs md:text-sm bg-primary-500/10 dark:bg-primary-500/25 text-primary-600 dark:text-primary-300 border border-primary-500/20 px-2 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-sm">{currentSong.tone_key}</span>
                 {/if}
                 {#if currentSong.eingeschoben}
-                  <span class="text-surface-400">•</span>
-                  <span class="badge variant-soft-success text-xs">➕</span>
+                  <span class="badge variant-soft-success text-xs flex items-center gap-0.5 px-2 py-0.5 md:py-1">➕ Eingeschoben</span>
                 {/if}
               </div>
             </div>
 
+            <!-- Kommentar-Sektion (Nur anzeigen, wenn vorhanden!) -->
             {#if currentSong.comment}
-              <div class="warning variant-soft-warning mb-4 p-3  h-12">
-                <div class="error-message gap-2">
-                  <p class="font-bold text-sm"> {currentSong.comment}</p>
-                </div>
-              </div>
-           {:else}
-              <div class="warning  mb-4 p-3 h-12">
-                <div class="error-message gap-2">
-                  <p class="font-bold text-sm"></p>
-                </div>
+              <div class="alert variant-soft-warning mb-2 md:mb-3 p-2 md:p-2.5 rounded-xl flex items-start gap-2 border border-warning-500/20 shadow-sm">
+                <span class="text-xs md:text-sm font-bold flex-shrink-0">⚠️ Notiz:</span>
+                <p class="font-semibold text-[11px] md:text-xs text-warning-800 dark:text-warning-300 text-left leading-snug">
+                  {currentSong.comment}
+                </p>
               </div>
             {/if}
 
             <!-- Interaktions-Buttons in einer Zeile -->
-            <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-4 no-swipe">
+            <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 my-1.5 md:my-3 no-swipe bg-surface-200/20 dark:bg-surface-900/40 p-1.5 md:p-2.5 rounded-xl border border-surface-200/50 dark:border-surface-700/30 w-full">
               <!-- Überspringen Button -->
               <button
-                class="btn btn-sm md:btn-md {currentSong.uebersprungen ? 'variant-filled-warning' : 'variant-soft-surface'}"
+                class="btn btn-md md:btn-lg py-2.5 md:py-4 px-3.5 md:px-6 text-sm md:text-lg font-bold transition-all rounded-xl {currentSong.uebersprungen ? 'variant-filled-warning scale-102 shadow-md' : 'variant-soft-surface hover:variant-soft-warning'}"
                 onclick={toggleUebersprungen}
               >
                 {currentSong.uebersprungen ? '⏭️ Übersprungen' : '⏭️ Überspringen'}
@@ -652,78 +666,37 @@ import { onMount, onDestroy } from 'svelte';
 
               <!-- Feedback Buttons - nur wenn nicht übersprungen -->
               {#if !currentSong.uebersprungen}
-                <div class="flex items-center gap-1 md:gap-2 border-l border-surface-300 dark:border-surface-600 pl-2 md:pl-3">
-                  <span class="text-xs md:text-sm text-surface-600 dark:text-surface-400 mr-1">Bewertung:</span>
+                <div class="flex items-center gap-1.5 border-l border-surface-300 dark:border-surface-700 pl-2 md:pl-3">
+                  <span class="text-xs font-semibold text-surface-600 dark:text-surface-400 hidden sm:inline">Bewertung:</span>
                   {#each [
-                    { rating: 1, filled: '😐', empty: '😐' },
-                    { rating: 2, filled: '🙂', empty: '🙂' },
-                    { rating: 3, filled: '😍', empty: '😍' }
-                  ] as { rating, filled, empty }}
+                    { rating: 1, text: '😐 OK', activeClass: 'variant-filled-warning ring-2 ring-warning-500/40 text-black', defaultClass: 'variant-soft-warning hover:bg-warning-500/10' },
+                    { rating: 2, text: '🙂 Gut', activeClass: 'variant-filled-success text-white ring-2 ring-success-500/40', defaultClass: 'variant-soft-success hover:bg-success-500/10' },
+                    { rating: 3, text: '😍 Super', activeClass: 'variant-filled-error text-white ring-2 ring-error-500/40', defaultClass: 'variant-soft-error hover:bg-error-500/10' }
+                  ] as { rating, text, activeClass, defaultClass }}
                     <button
-                      class="btn-icon btn-icon-sm md:btn-icon {currentSong.feedback === rating ? 'variant-filled-primary' : 'variant-soft-surface'} text-xl md:text-2xl"
+                      class="btn btn-md md:btn-lg py-2.5 md:py-4 px-3.5 md:px-6 text-sm md:text-lg font-bold transition-all rounded-xl {currentSong.feedback === rating ? activeClass : defaultClass}"
                       onclick={() => setFeedback(rating)}
-                      aria-label="{rating} Sterne"
+                      aria-label="Bewertung {text}"
                     >
-                      {currentSong.feedback === rating ? filled : empty}
+                      {text}
                     </button>
                   {/each}
                 </div>
               {/if}
             </div>
 
-            <!-- Song einfügen -->
-            <div class="border-t border-surface-300 dark:border-surface-700 pt-3 mt-3 no-swipe">
+            <!-- Song einfügen Trigger-Button -->
+            <div class="border-t border-surface-300 dark:border-surface-700/60 pt-2 mt-2 no-swipe">
               <button
-                class="btn btn-sm variant-soft-secondary w-full mb-2"
-                onclick={() => showInsertSection = !showInsertSection}
+                class="btn btn-xs md:btn-sm variant-soft-secondary w-full flex items-center justify-center gap-1.5 font-semibold py-1 md:py-1.5"
+                onclick={() => showInsertSection = true}
               >
-                {showInsertSection ? '✖️ Abbrechen' : '➕ Song einfügen'}
+                <span>➕ Song einfügen</span>
               </button>
-
-              {#if showInsertSection}
-                <div class="space-y-2">
-                  <label class="label">
-                    <span class="text-xs md:text-sm">Song aus Repertoire suchen</span>
-                    <input
-                      type="text"
-                      class="input input-sm"
-                      placeholder="Titel oder Interpret..."
-                      bind:value={searchTerm}
-                    />
-                  </label>
-
-                  {#if searchTerm.length > 0}
-                    <div class="max-h-32 md:max-h-48 overflow-y-auto space-y-1">
-                      {#each filteredSongs as song}
-                        <button
-                          class="w-full text-left p-2 rounded-lg transition-colors {selectedSongToInsert?.id === song.id ? 'bg-primary-500 text-white' : 'bg-surface-200 dark:bg-surface-700 hover:bg-surface-300 dark:hover:bg-surface-600'}"
-                          onclick={() => selectedSongToInsert = song}
-                        >
-                          <div class="font-semibold text-sm">{song.title}</div>
-                          <div class="text-xs opacity-75">{song.interpret}</div>
-                        </button>
-                      {:else}
-                        <p class="text-xs md:text-sm text-surface-600 dark:text-surface-400 p-2">
-                          Keine Songs gefunden
-                        </p>
-                      {/each}
-                    </div>
-                  {/if}
-
-                  {#if selectedSongToInsert}
-                    <button
-                      class="btn btn-sm variant-filled-primary w-full"
-                      onclick={insertSong}
-                    >
-                      ➕ "{selectedSongToInsert.title}" einfügen
-                    </button>
-                  {/if}
-                </div>
-              {/if}
             </div>
 
             <!-- Mobile Navigation Hint -->
-            <div class="md:hidden text-center mt-3 text-xs text-surface-500">
+            <div class="md:hidden text-center mt-2 text-[10px] font-medium text-surface-500">
               👈 Wische für Navigation 👉
             </div>
           </div>
@@ -731,29 +704,31 @@ import { onMount, onDestroy } from 'svelte';
           <!-- Nächster Song (Vorschau) -->
           {#if nextSong}
             <button
-              class="w-full text-left mt-2 group"
+              class="w-full text-left mt-3 group transition-transform hover:translate-y-0.5 no-swipe"
               onclick={goNext}
+              title="Zum nächsten Song wechseln"
             >
-              <div class="card variant-ghost-surface p-2 hover:variant-soft-surface transition-all relative">
+              <div class="card variant-ghost-surface p-2.5 border border-surface-250/20 hover:border-surface-400 dark:hover:border-surface-600 transition-all relative">
                 <!-- Timeline-Punkt -->
-                <div class="hidden md:block absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-surface-400 dark:bg-surface-500 border-2 border-surface-50 dark:border-surface-900"></div>
+                <div class="hidden md:block absolute left-3.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-surface-400 dark:bg-surface-500 border border-surface-50 dark:border-surface-900 group-hover:bg-primary-500 transition-colors"></div>
 
-                <div class="md:ml-6">
-                  <div class="flex items-center gap-2 md:gap-3">
-                    <div class="text-surface-400 dark:text-surface-500 text-xs font-semibold flex-shrink-0 hidden md:block">
-                      ALS NÄCHSTES
+                <div class="md:ml-6 flex items-center justify-between">
+                  <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0 font-normal">
+                    <div class="text-surface-400 dark:text-surface-500 text-[10px] font-bold flex-shrink-0 hidden md:block">
+                      ▶ NÄSTES
                     </div>
-                    <div class="flex-1 min-w-0 opacity-50 group-hover:opacity-75 transition-opacity">
+                    <div class="flex-1 min-w-0 opacity-60 group-hover:opacity-100 transition-opacity">
                       <div class="font-semibold text-xs md:text-sm truncate">
-                        <span class="md:hidden text-surface-400 mr-2">↓</span>{nextSong.title}
+                        <span class="md:hidden text-surface-400 mr-1">↓</span>{nextSong.title}
                       </div>
-                      <div class="text-xs text-surface-500 dark:text-surface-400 truncate hidden md:block">{nextSong.interpret}</div>
+                      <div class="text-[10px] md:text-xs text-surface-550 dark:text-surface-400 truncate hidden md:block">{nextSong.interpret}</div>
                     </div>
-                  {#if nextSong.comment}
-                    <div class="mt-1 ml-0 md:ml-20 text-xs text-warning-600 dark:text-warning-400 italic truncate opacity-70 group-hover:opacity-90 transition-opacity">
-                      💡 {nextSong.comment}
-                    </div>
-                  {/if}
+                    {#if nextSong.comment}
+                      <div class="hidden lg:block text-[11px] text-warning-600 dark:text-warning-400 italic truncate opacity-70 group-hover:opacity-100 transition-opacity">
+                        💡 {nextSong.comment}
+                      </div>
+                    {/if}
+                  </div>
                 </div>
               </div>
             </button>
@@ -762,12 +737,13 @@ import { onMount, onDestroy } from 'svelte';
 
         <!-- Next Button -->
         <button
-          class="btn variant-filled-primary flex md:flex flex-shrink-0 w-8 md:w-auto h-32 md:h-auto px-1 md:px-4 no-swipe"
+          class="btn variant-ghost-primary hover:variant-filled-primary flex flex-shrink-0 w-8 md:w-16 items-center justify-center transition-all no-swipe"
           onclick={goNext}
           disabled={isLastSong}
           aria-label="Nächster Song"
+          title="Nächster Song (Rechts/Unten)"
         >
-          <svg class="w-4 h-4 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
           </svg>
         </button>
@@ -776,14 +752,75 @@ import { onMount, onDestroy } from 'svelte';
   </div>
 
   <!-- Footer mit Keyboard Shortcuts -->
-  <footer class="hidden md:block border-t border-surface-300 p-3 bg-surface-50 dark:bg-surface-900">
-    <div class="flex justify-center gap-6 text-xs text-surface-600 dark:text-surface-400">
-      <span>← → Navigation</span>
+  <footer class="hidden md:block border-t border-surface-300 dark:border-surface-700 p-2.5 bg-surface-50 dark:bg-surface-900/60 no-swipe">
+    <div class="flex justify-center gap-6 text-[11px] text-surface-600 dark:text-surface-400 font-medium">
+      <span>← / → Navigation</span>
       <span><kbd class="kbd kbd-sm">?</kbd> Hilfe</span>
       <span><kbd class="kbd kbd-sm">L</kbd> Liste</span>
-      <span>ESC Schließen</span>
+      <span><kbd class="kbd kbd-sm">ESC</kbd> Schließen</span>
     </div>
   </footer>
+
+  <!-- Song einfügen Overlay (Schwebt als Modal über der Hauptansicht) -->
+  {#if showInsertSection}
+    <div class="absolute inset-0 bg-surface-900/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+      <div class="card variant-filled-surface max-w-md w-full p-4 md:p-5 shadow-2xl border border-surface-500 relative max-h-[85vh] flex flex-col no-swipe">
+        <button
+          class="absolute top-3 right-3 btn-icon btn-icon-sm variant-ghost-surface hover:variant-filled"
+          onclick={() => { showInsertSection = false; searchTerm = ''; selectedSongToInsert = null; }}
+          aria-label="Schließen"
+        >
+          ✕
+        </button>
+        <h4 class="h3 font-bold mb-3 flex items-center gap-1.5 text-secondary-500">
+          <span>➕</span>
+          Song einfügen
+        </h4>
+
+        <div class="space-y-3 flex-1 flex flex-col min-h-0">
+          <div class="space-y-1">
+            <span class="text-xs font-semibold text-surface-400">Song aus Repertoire suchen</span>
+            <div class="input-group input-group-sm flex items-center bg-surface-250 dark:bg-surface-800 rounded-lg p-1.5 border border-surface-300 dark:border-surface-700">
+              <span class="px-1 text-surface-500 text-xs">🔍</span>
+              <input
+                type="text"
+                class="bg-transparent border-0 ring-0 focus:ring-0 w-full text-xs outline-none px-1 text-white"
+                placeholder="Titel oder Interpret eingeben..."
+                bind:value={searchTerm}
+              />
+            </div>
+          </div>
+
+          {#if searchTerm.length > 0}
+            <div class="overflow-y-auto space-y-1 pr-1 scrollbar-thin flex-1 min-h-0">
+              {#each filteredSongs as song}
+                <button
+                  class="w-full text-left p-2 rounded-lg transition-all border {selectedSongToInsert?.id === song.id ? 'bg-primary-500 border-primary-600 text-white shadow-md' : 'bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 border-transparent text-white'}"
+                  onclick={() => { selectedSongToInsert = song }}
+                >
+                  <div class="font-bold text-xs md:text-sm">{song.title}</div>
+                  <div class="text-[10px] md:text-xs opacity-80">{song.interpret}</div>
+                </button>
+              {:else}
+                <p class="text-xs text-surface-400 p-2 text-center italic">
+                  Keine Songs gefunden
+                </p>
+              {/each}
+            </div>
+          {/if}
+
+          {#if selectedSongToInsert}
+            <button
+              class="btn btn-sm variant-filled-primary w-full shadow-md font-semibold mt-2 transition-all flex items-center justify-center gap-1.5 py-2 text-white"
+              onclick={insertSong}
+            >
+              <span>➕ "{selectedSongToInsert.title}" einfügen</span>
+            </button>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {/if}
 
   <!-- Setlisten-Übersicht Slide-In-Panel -->
   <SetlistOverviewPanel
