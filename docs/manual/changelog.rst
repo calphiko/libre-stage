@@ -3,6 +3,19 @@
 Änderungsprotokoll
 ==================
 
+0.4.6a (2026-05-23)
+--------------------
+
+Fixed
+~~~~~
+
+* Setlisteneditor: Beim Drag-and-Drop aus der Songliste in ein Set wurde der neue Song in bestimmten Fällen nicht persistiert. Der Speichern-Flow setzt nun die ``song_id`` robust, sodass der Eintrag zuverlässig gespeichert wird.
+
+Changed
+~~~~~~~
+
+* Projektversion auf ``0.4.6a`` erhöht (Backend/Frontend/Release-Metadaten).
+
 0.4.6 (2026-05-23)
 -------------------
 
