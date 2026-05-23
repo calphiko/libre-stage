@@ -150,8 +150,17 @@
         return {
           ...song,
           id: originalSongId,
+          // Backend erwartet in Songs immer song_id.
+          song_id: originalSongId,
           // Neue temporäre negative setsong_id vergeben
           setsong_id: -Math.floor(Date.now() + Math.random() * 100000)
+        };
+      }
+      // Fallback: Falls ein Song-Objekt ohne song_id reinkommt, aus id ableiten.
+      if (song?.song_id == null && song?.id != null) {
+        return {
+          ...song,
+          song_id: Number(song.id)
         };
       }
       return song;
