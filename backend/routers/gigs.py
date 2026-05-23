@@ -1277,6 +1277,7 @@ def export_forscore_setlist(
         logger.error(f"Gig with id={gig_id} not found")
         raise HTTPException(status_code=404, detail="Gig not found")
 
+    setlist_name = (gig.name or "libreStage Setlist").strip() or "libreStage Setlist"
     setlist_items = []
     for gigset in sorted(gig.sets, key=lambda x: x.position):
         set_obj = gigset.set
@@ -1284,7 +1285,8 @@ def export_forscore_setlist(
         for setsong in setsonglist:
             if setsong.song:
                 setlist_items.append({
-                    "title": setsong.song.title
+                    "title": setsong.song.title,
+                    "setlist": setlist_name,
                 })
 
     try:

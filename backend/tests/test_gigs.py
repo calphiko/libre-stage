@@ -696,6 +696,8 @@ def test_download_forscore_setlist(client, auth_headers, db_session):
     assert len(parsed) == 2
     assert parsed[0]["title"] == "Bohemian Rhapsody"
     assert parsed[1]["title"] == "Hotel California"
+    assert parsed[0]["setlist"] == "Test Concert ForScore"
+    assert parsed[1]["setlist"] == "Test Concert ForScore"
 
 def test_download_forscore_setlist_nonexistent(client, auth_headers, db_session):
     """Test downloading the forScore setlist for a nonexistent gig."""
