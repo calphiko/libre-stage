@@ -631,6 +631,15 @@ export async function getGigStatistics(gigId) {
     return res.json();
 }
 
+export async function getGenrePalette() {
+    const res = await fetchWithAuth(`${API_URL}/gigs/genre_palette`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Genre-Palette konnte nicht geladen werden');
+    return res.json();
+}
+
 export async function getRehearsalList(token) {
     const res = await fetchWithAuth(`${API_URL}/reh/`, {
         method: 'GET',
