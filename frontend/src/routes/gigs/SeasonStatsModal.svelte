@@ -18,7 +18,7 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { getSeasonStatistics } from '$lib/api.js';
+  import { getSeasonStatistics, getGenrePalette } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { modalState } from '$lib/modalState.js';
   import GenreDistributionPlot from '$lib/plots/genreDistributionPlot.svelte';
@@ -30,6 +30,7 @@
   const { jahr } = meta;
 
   let statistics = $state(null);
+  let genrePalette = $state({});
   let loading = $state(true);
   let error = $state('');
 
@@ -42,7 +43,12 @@
 
   onMount(async () => {
     try {
-      statistics = await getSeasonStatistics(jahr);
+      const [stats, paletteOut] = await Promise.all([
+        getSeasonStatistics(jahr),
+        getGenrePalette(),
+      ]);
+      statistics = stats;
+      genrePalette = paletteOut?.palette ?? {};
     } catch (e) {
       error = e.message;
       showError(e.message);
@@ -147,6 +153,7 @@
             <GenreDistributionPlot
               genreDistribution={statistics.genre_distribution}
               genreTimeline={statistics.genre_timeline ?? []}
+              genrePalette={genrePalette}
               titlePrefix="Genre"
               showTimeline={false}
             />
@@ -155,6 +162,7 @@
             <GenreDistributionPlot
               genreDistribution={statistics.genre_distribution}
               genreTimeline={statistics.genre_timeline ?? []}
+              genrePalette={genrePalette}
               titlePrefix="Genre"
               showDistribution={false}
             />

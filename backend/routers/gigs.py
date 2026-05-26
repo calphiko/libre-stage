@@ -42,7 +42,7 @@ from backend.utils.check_permissions import check_admin, check_editor
 from backend.utils.pdf_palette import find_logo_path, resolve_schedule_palette
 from backend.utils.setlist_timing import calculate_setlist_timing, serialize_timing_for_api
 
-from backend import models, schemas, auth
+from backend import models, schemas, auth, app_config
 
 import openpyxl
 from openpyxl.styles import Font, Alignment
@@ -91,6 +91,14 @@ DEFAULT_SCHEDULE_PALETTE = {
     "line": colors.HexColor("#334155"),
     "fixed": colors.HexColor("#123129"),
 }
+
+GENRE_PALETTE = [
+    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+    '#06b6d4', '#14b8a6', '#f97316', '#ec4899', '#84cc16',
+    '#6366f1', '#22c55e', '#f43f5e', '#eab308', '#0ea5e9',
+    '#a855f7', '#ef6c00', '#00acc1', '#7cb342', '#d81b60',
+    '#3949ab', '#00897b', '#c0ca33', '#5e35b1', '#039be5'
+]
 
 
 def _build_rollover_datetimes(base_date: date, values: list[tuple[str, time]]) -> list[tuple[str, datetime]]:
@@ -600,6 +608,44 @@ def get_season_statistics(
         top_songs=top_songs,
         gigs_overview=gigs_overview,
     )
+
+
+@router.get("/genre_palette", response_model=schemas.GenrePaletteOut)
+def get_genre_palette(
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    """Return a deterministic global genre->color map for all available genres."""
+    genres_by_key: dict[str, str] = {}
+
+    def _register_genre(value: str | None) -> None:
+        if not isinstance(value, str):
+            return
+        text = value.strip()
+        if not text:
+            return
+        key = text.casefold()
+        genres_by_key.setdefault(key, text)
+
+    # Prefer global configured genres when available.
+    soft_config = app_config.get_soft_config()
+    for entry in soft_config.get("genres", []):
+        if isinstance(entry, str):
+            _register_genre(entry)
+        elif isinstance(entry, dict):
+            _register_genre(entry.get("label") or entry.get("key"))
+
+    # Add any legacy/ad-hoc genres present in DB songs.
+    db_genres = db.query(models.Song.genre).filter(models.Song.genre.isnot(None)).distinct().all()
+    for (genre,) in db_genres:
+        _register_genre(genre)
+
+    sorted_keys = sorted(genres_by_key.keys(), key=lambda k: k.casefold())
+    palette = {
+        genres_by_key[key]: GENRE_PALETTE[idx % len(GENRE_PALETTE)]
+        for idx, key in enumerate(sorted_keys)
+    }
+    return schemas.GenrePaletteOut(palette=palette)
 
 
 @router.post("/livemode_available_batch")

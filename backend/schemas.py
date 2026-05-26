@@ -648,6 +648,10 @@ class GenreTimelinePoint(BaseModel):
     genre_counts: dict = Field(default_factory=dict)  # {genre: count}
     total: int = 0
 
+
+class GenrePaletteOut(BaseModel):
+    palette: dict = Field(default_factory=dict)  # {genre: "#RRGGBB"}
+
 class SeasonStatistics(BaseModel):
     jahr: Optional[int] = None
     gig_count: int = 0

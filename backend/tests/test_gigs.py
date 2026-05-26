@@ -76,6 +76,33 @@ def test_get_gigs_with_year(client, auth_headers, db_session):
     assert response.status_code  == 200
     assert response.json() == []
 
+
+def test_get_genre_palette_returns_deterministic_mapping(client, auth_headers, db_session):
+    from backend.models import Song
+
+    db_session.add_all([
+        Song(title="Palette Rock", interpret="Band A", genre="Rock"),
+        Song(title="Palette Synth", interpret="Band B", genre="Synthwave"),
+    ])
+    db_session.commit()
+
+    response1 = client.get("/gigs/genre_palette", headers=auth_headers)
+    response2 = client.get("/gigs/genre_palette", headers=auth_headers)
+
+    assert response1.status_code == 200
+    assert response2.status_code == 200
+
+    payload1 = response1.json()
+    payload2 = response2.json()
+    assert "palette" in payload1
+    assert payload1 == payload2
+
+    palette = payload1["palette"]
+    assert "Rock" in palette
+    assert "Synthwave" in palette
+    assert isinstance(palette["Rock"], str) and palette["Rock"].startswith("#")
+    assert isinstance(palette["Synthwave"], str) and palette["Synthwave"].startswith("#")
+
 def test_create_gig(client, auth_headers, db_session):
     """Test creating a new gig."""
     gig_data = {

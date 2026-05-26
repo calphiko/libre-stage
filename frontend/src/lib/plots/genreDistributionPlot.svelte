@@ -9,6 +9,7 @@
     let {
         genreDistribution = {},
         genreTimeline = [],
+        genrePalette = {},
         titlePrefix = 'Genre',
         showDistribution = true,
         showTimeline = true
@@ -55,8 +56,49 @@
     let isCompactTimeline = $derived(filteredTimelineCount > 0 && filteredTimelineCount <= 8);
     let compactTimelineWidthPx = $derived(Math.max(460, Math.min(940, 220 + filteredTimelineCount * 92)));
 
-    function colorForGenre(index: number) {
-        return SERIES_COLORS[index % SERIES_COLORS.length];
+    function normalizeGenreKey(genre: any) {
+        return String(genre ?? '').trim().toLowerCase();
+    }
+
+    // Alphabetical, data-driven mapping so unknown genres still get stable colors.
+    let allGenreKeysSorted = $derived.by(() => {
+        const keys = new Set<string>();
+
+        Object.keys(genreDistribution || {}).forEach((genre: string) => {
+            const key = normalizeGenreKey(genre);
+            if (key) keys.add(key);
+        });
+
+        (genreTimeline || []).forEach((point: any) => {
+            Object.keys(point?.genre_counts || {}).forEach((genre: string) => {
+                const key = normalizeGenreKey(genre);
+                if (key) keys.add(key);
+            });
+        });
+
+        return Array.from(keys).sort((a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+    });
+
+    let genreColorMap = $derived.by(() =>
+        (Array.isArray(allGenreKeysSorted) ? allGenreKeysSorted : []).reduce((acc: Record<string, string>, key: string, index: number) => {
+            acc[key] = SERIES_COLORS[index % SERIES_COLORS.length];
+            return acc;
+        }, {})
+    );
+
+    let backendGenreColorMap = $derived.by(() =>
+        Object.entries(genrePalette || {}).reduce((acc: Record<string, string>, [genre, color]) => {
+            const key = normalizeGenreKey(genre);
+            if (key && typeof color === 'string' && color.trim()) {
+                acc[key] = color;
+            }
+            return acc;
+        }, {})
+    );
+
+    function colorForGenre(genre: any) {
+        const key = normalizeGenreKey(genre);
+        return backendGenreColorMap[key] ?? genreColorMap[key] ?? SERIES_COLORS[0];
     }
 
     function shortenLabel(text: any, maxLength = 18) {
@@ -80,10 +122,10 @@
     function buildDistributionOptions() {
         const data = Object.entries(genreDistribution || {})
             .sort((a: any, b: any) => b[1] - a[1])
-            .map(([genre, count], index) => ({
+            .map(([genre, count]) => ({
                 name: genre,
                 value: count,
-                itemStyle: { color: colorForGenre(index) }
+                itemStyle: { color: colorForGenre(genre) }
             }));
 
         return {
@@ -185,13 +227,13 @@
                     lineStyle: { color: chartTheme.axisLineColor }
                 }
             },
-            series: genres.map((genre, index) => ({
+            series: genres.map((genre) => ({
                 name: genre,
                 type: 'bar',
                 stack: 'share',
                 barMaxWidth: 26,
                 barMinHeight: 1,
-                itemStyle: { color: colorForGenre(index) },
+                itemStyle: { color: colorForGenre(genre) },
                 data: timeline.map((point: any) => {
                     const genreCounts = point?.genre_counts || {};
                     const count = Number(genreCounts[genre] || 0);
@@ -305,6 +347,9 @@
         </div>
     </div>
 {/if}
+
+
+
 
 
 
