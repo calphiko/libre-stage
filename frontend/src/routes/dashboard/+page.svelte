@@ -192,7 +192,7 @@
                <div class="card variant-ghost-warning p-4 text-center rounded-lg">
                  {#if seasonStats.feedback_avg != null}
                    <div class="text-3xl font-bold">
-                     {seasonStats.feedback_avg >= 2.5 ? '😊' : seasonStats.feedback_avg >= 1.5 ? '😐' : '😞'}
+                     {seasonStats.feedback_avg >= 2.5 ? '😍' : seasonStats.feedback_avg >= 1.5 ? '😊' : '😐'}
                    </div>
                    <div class="text-sm text-on-surface-variant">Ø Feedback {seasonStats.feedback_avg.toFixed(1)}</div>
                  {:else}
