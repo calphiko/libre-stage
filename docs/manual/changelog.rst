@@ -3,6 +3,21 @@
 Änderungsprotokoll
 ==================
 
+0.5.1 (2026-05-26)
+-------------------
+
+Added
+~~~~~
+
+* Neuer Gig-Endpoint ``GET /gigs/genre_palette`` liefert eine globale, deterministische Genre-Farbpalette fuer konsistente Farben ueber alle Statistiken hinweg.
+
+Changed
+~~~~~~~
+
+* Genre-Farben in den Gig-/Saison-Statistikplots werden nun backend-seitig vereinheitlicht und nicht mehr pro einzelnem Datensatz lokal abgeleitet.
+* Genre-Palette auf bis zu 25 eindeutige Farben erweitert, bevor Farben zyklisch wiederverwendet werden.
+* Chore: Projektversion auf ``0.5.1`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.0 (2026-05-26)
 -------------------
 
