@@ -21,6 +21,8 @@
   import { getSeasonStatistics } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { modalState } from '$lib/modalState.js';
+  import GenreDistributionPlot from '$lib/plots/genreDistributionPlot.svelte';
+  import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
 
   const { showError } = createMessageHelpers();
 
@@ -31,7 +33,7 @@
   let loading = $state(true);
   let error = $state('');
 
-  const feedbackEmoji = { 3: '😊', 2: '😐', 1: '😞' };
+  const feedbackEmoji = { 3: '😍', 2: '😊', 1: '😐' };
 
   function formatDate(isoString) {
     if (!isoString) return '–';
@@ -50,7 +52,7 @@
   });
 </script>
 
-<div class="card p-6 space-y-4 w-[80vw] max-w-3xl max-h-[90vh] flex flex-col modal-base">
+<div class="card p-6 space-y-4 w-[80vw] max-w-9xl max-h-[90vh] flex flex-col modal-base">
   <!-- Header -->
   <header class="flex justify-between items-center flex-shrink-0">
     <h2 class="h3">📊 Saisonstatistik {jahr ? jahr : 'Alle Jahre'}</h2>
@@ -97,7 +99,7 @@
         <div class="card variant-ghost-surface p-3 text-center rounded-lg">
           {#if statistics.feedback_avg != null}
             <div class="text-2xl font-bold">
-              {statistics.feedback_avg >= 2.5 ? '😊' : statistics.feedback_avg >= 1.5 ? '😐' : '😞'}
+              {statistics.feedback_avg >= 2.5 ? '😍' : statistics.feedback_avg >= 1.5 ? '😊' : '😐'}
             </div>
             <div class="text-xs text-on-surface-variant">Ø {statistics.feedback_avg}</div>
           {:else}
@@ -131,25 +133,31 @@
       {/if}
 
       <!-- Genre-Verteilung -->
-      {#if Object.keys(statistics.genre_distribution).length > 0}
-        {@const genreTotal = Object.values(statistics.genre_distribution).reduce((a, b) => a + b, 0)}
-        {@const genresSorted = Object.entries(statistics.genre_distribution).sort((a, b) => b[1] - a[1])}
+      {#if Object.keys(statistics.genre_distribution).length > 0 || (statistics.genre_timeline?.length ?? 0) > 0}
         <div class="card variant-ghost-surface p-4 rounded-lg">
-          <h4 class="text-xs font-semibold text-on-surface-variant mb-3">🎸 Genres</h4>
-          <div class="space-y-2">
-            {#each genresSorted as [genre, count]}
-              {@const pct = Math.round((count / genreTotal) * 100)}
-              <div class="flex items-center gap-2 text-sm">
-                <span class="w-24 truncate text-xs text-on-surface-variant flex-shrink-0">{genre}</span>
-                <div class="flex-grow bg-surface-300 dark:bg-surface-700 rounded-full h-3">
-                  <div
-                    class="h-3 rounded-full bg-tertiary-500 transition-all"
-                    style="width: {pct}%"
-                  ></div>
-                </div>
-                <span class="w-20 text-right text-xs text-on-surface-variant flex-shrink-0">{count}× ({pct}%)</span>
-              </div>
-            {/each}
+          <h4 class="text-xs font-semibold text-on-surface-variant mb-3">📊 Verteilungen</h4>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {#if statistics.feedback_count > 0}
+              <FeedbackDistributionPlot
+                feedbackDistribution={statistics.feedback_distribution}
+                feedbackCount={statistics.feedback_count}
+                titlePrefix="Saison-Bewertungen"
+              />
+            {/if}
+            <GenreDistributionPlot
+              genreDistribution={statistics.genre_distribution}
+              genreTimeline={statistics.genre_timeline ?? []}
+              titlePrefix="Genre"
+              showTimeline={false}
+            />
+          </div>
+          <div class="mt-4 border-t border-surface-300 dark:border-surface-700 pt-3">
+            <GenreDistributionPlot
+              genreDistribution={statistics.genre_distribution}
+              genreTimeline={statistics.genre_timeline ?? []}
+              titlePrefix="Genre"
+              showDistribution={false}
+            />
           </div>
         </div>
       {/if}
@@ -215,7 +223,7 @@
                     </td>
                     <td class="py-1.5 px-2 text-center">
                       {#if gig.feedback_avg != null}
-                        <span>{gig.feedback_avg >= 2.5 ? '😊' : gig.feedback_avg >= 1.5 ? '😐' : '😞'} {gig.feedback_avg}</span>
+                        <span>{gig.feedback_avg >= 2.5 ? '😍' : gig.feedback_avg >= 1.5 ? '😊' : '😐'} {gig.feedback_avg}</span>
                       {:else}
                         <span class="text-surface-400">–</span>
                       {/if}
