@@ -511,12 +511,14 @@ def get_season_statistics(
     song_play_counts = {}  # song_id -> count
     gigs_overview = []
     genre_counts = {}  # genre -> count
+    genre_timeline = []
 
     for gig in gigs:
         gig_songs = 0
         gig_skipped = 0
         gig_inserted = 0
         gig_feedbacks = []
+        gig_genre_counts = {}
 
         for gigset in gig.sets:
             set_obj = gigset.set
@@ -542,6 +544,16 @@ def get_season_statistics(
                     genre = setsong.song.genre.strip()
                     if genre:
                         genre_counts[genre] = genre_counts.get(genre, 0) + 1
+                        gig_genre_counts[genre] = gig_genre_counts.get(genre, 0) + 1
+
+        if gig_genre_counts:
+            genre_timeline.append(schemas.GenreTimelinePoint(
+                label=gig.name,
+                date=gig.datum.strftime('%Y-%m-%d') if gig.datum else None,
+                kind_of_gig=gig.kind_of_gig,
+                genre_counts=gig_genre_counts,
+                total=sum(gig_genre_counts.values()),
+            ))
 
         gig_feedback_avg = round(sum(gig_feedbacks) / len(gig_feedbacks), 2) if gig_feedbacks else None
         gigs_overview.append(schemas.GigOverviewEntry(
@@ -584,6 +596,7 @@ def get_season_statistics(
         feedback_avg=feedback_avg,
         feedback_distribution=feedback_distribution,
         genre_distribution=genre_counts,
+        genre_timeline=genre_timeline,
         top_songs=top_songs,
         gigs_overview=gigs_overview,
     )
@@ -706,6 +719,7 @@ def get_gig_statistics(
     feedback_values = []
     set_entries = []
     genre_counts = {}  # genre -> count
+    genre_timeline = []
 
     for gigset in gig.sets:
         set_obj = gigset.set
@@ -714,6 +728,7 @@ def get_gig_statistics(
 
         set_songs = []
         set_feedbacks = []
+        set_genre_counts = {}
 
         for setsong in sorted(set_obj.songs, key=lambda s: s.position):
             song = setsong.song
@@ -734,6 +749,7 @@ def get_gig_statistics(
                 genre = song.genre.strip()
                 if genre:
                     genre_counts[genre] = genre_counts.get(genre, 0) + 1
+                    set_genre_counts[genre] = set_genre_counts.get(genre, 0) + 1
 
             set_songs.append(schemas.GigStatsSongEntry(
                 song_id=song_id,
@@ -746,6 +762,14 @@ def get_gig_statistics(
             ))
 
         set_feedback_avg = round(sum(set_feedbacks) / len(set_feedbacks), 2) if set_feedbacks else None
+        if set_genre_counts:
+            genre_timeline.append(schemas.GenreTimelinePoint(
+                label=set_obj.setlist_name or set_obj.name or f"Set {len(set_entries) + 1}",
+                date=gig.datum.strftime('%Y-%m-%d') if gig.datum else None,
+                kind_of_gig=gig.kind_of_gig,
+                genre_counts=set_genre_counts,
+                total=sum(set_genre_counts.values()),
+            ))
         set_entries.append(schemas.GigStatsSetEntry(
             set_name=set_obj.setlist_name or set_obj.name or f"Set {len(set_entries) + 1}",
             feedback_avg=set_feedback_avg,
@@ -768,6 +792,7 @@ def get_gig_statistics(
         feedback_avg=feedback_avg,
         feedback_distribution=feedback_distribution,
         genre_distribution=genre_counts,
+        genre_timeline=genre_timeline,
         sets=set_entries,
     )
 

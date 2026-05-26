@@ -3,6 +3,23 @@
 Änderungsprotokoll
 ==================
 
+0.5.0 (2026-05-26)
+-------------------
+
+Added
+~~~~~
+
+* Gig- und Saison-Statistik: Neuer Feedback-Verteilungsplot (Donut) für Live-Bewertungen.
+* Gig- und Saison-Statistik: Genre-Visualisierung mit relativer Verteilung und normalisiertem Stacked-Bar-Verlauf.
+* Genre-Plot: Filter nach Veranstaltungsart in der Saisonstatistik.
+
+Changed
+~~~~~~~
+
+* Stats-Plots visuell überarbeitet: kompaktere Diagrammbereiche, bessere Achsenbeschriftung, weniger Label-Überlappungen.
+* Chore: Projektversion auf ``0.5.0`` erhöht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog um die neuen Feedback- und Genre-Auswertungen ergänzt.
+
 0.4.6a (2026-05-23)
 --------------------
 

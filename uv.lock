@@ -590,7 +590,7 @@ wheels = [
 
 [[package]]
 name = "libre-stage"
-version = "0.4.6a"
+version = "0.5.0"
 source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
