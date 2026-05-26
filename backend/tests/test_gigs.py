@@ -713,11 +713,54 @@ def test_season_statistics_generation (season_client):
     stats = response.json()
     assert stats["gig_count"] == 3
     assert stats["genre_distribution"] == {'Disco': 8, 'Oldies': 2, 'Pop': 2, 'Rock': 11}
+    assert len(stats["genre_timeline"]) >= 1
+    assert all("kind_of_gig" in point for point in stats["genre_timeline"])
+    assert sum(point["total"] for point in stats["genre_timeline"]) == sum(stats["genre_distribution"].values())
 
     response = client.get(f"/gigs/statistics?jahr={date.today().year+1}", headers=headers)
     assert response.status_code == 200
     stats = response.json()
     assert stats["gig_count"] == 0
+    assert stats["genre_timeline"] == []
+
+
+def test_gig_statistics_genre_timeline(client, auth_headers, db_session):
+    from backend.models import Gig, Set, Song, SetSong, GigSet
+
+    gig = Gig(name="Timeline Gig", datum=date(2033, 8, 10), publish=0)
+    set_one = Set(name="Set 1", pause=time(0, 10))
+    set_two = Set(name="Set 2", pause=time(0, 10))
+
+    song_rock = Song(title="Song Rock", interpret="Band", genre="Rock")
+    song_pop = Song(title="Song Pop", interpret="Band", genre="Pop")
+    song_disco = Song(title="Song Disco", interpret="Band", genre="Disco")
+
+    db_session.add_all([gig, set_one, set_two, song_rock, song_pop, song_disco])
+    db_session.commit()
+
+    db_session.add_all([
+        SetSong(id_set=set_one.id, id_song=song_rock.id, position=1),
+        SetSong(id_set=set_one.id, id_song=song_pop.id, position=2),
+        SetSong(id_set=set_two.id, id_song=song_rock.id, position=1),
+        SetSong(id_set=set_two.id, id_song=song_disco.id, position=2),
+    ])
+    db_session.commit()
+
+    db_session.add_all([
+        GigSet(id_gig=gig.id, id_set=set_one.id, position=1),
+        GigSet(id_gig=gig.id, id_set=set_two.id, position=2),
+    ])
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/statistics", headers=auth_headers)
+    assert response.status_code == 200
+
+    stats = response.json()
+    assert stats["genre_distribution"] == {"Disco": 1, "Pop": 1, "Rock": 2}
+    assert len(stats["genre_timeline"]) == 2
+    assert all(point["kind_of_gig"] in (None, "") for point in stats["genre_timeline"])
+    assert stats["genre_timeline"][0]["genre_counts"] == {"Pop": 1, "Rock": 1}
+    assert stats["genre_timeline"][1]["genre_counts"] == {"Disco": 1, "Rock": 1}
 
 
 def test_get_livemode_available_batch(season_client):

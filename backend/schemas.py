@@ -640,6 +640,14 @@ class TopSongEntry(BaseModel):
     interpret: str
     count: int  # Wie oft in Setlisten dieser Saison
 
+
+class GenreTimelinePoint(BaseModel):
+    label: str
+    date: Optional[str] = None
+    kind_of_gig: Optional[str] = None
+    genre_counts: dict = Field(default_factory=dict)  # {genre: count}
+    total: int = 0
+
 class SeasonStatistics(BaseModel):
     jahr: Optional[int] = None
     gig_count: int = 0
@@ -652,6 +660,7 @@ class SeasonStatistics(BaseModel):
     feedback_avg: Optional[float] = None
     feedback_distribution: dict = Field(default_factory=dict)  # {1: x, 2: y, 3: z}
     genre_distribution: dict = Field(default_factory=dict)  # {genre: count}
+    genre_timeline: List[GenreTimelinePoint] = Field(default_factory=list)
     top_songs: List[TopSongEntry] = Field(default_factory=list)
     gigs_overview: List[GigOverviewEntry] = Field(default_factory=list)
 
@@ -681,6 +690,7 @@ class GigStatistics(BaseModel):
     feedback_avg: Optional[float] = None
     feedback_distribution: dict = Field(default_factory=dict)  # {1: x, 2: y, 3: z}
     genre_distribution: dict = Field(default_factory=dict)  # {genre: count}
+    genre_timeline: List[GenreTimelinePoint] = Field(default_factory=list)
     sets: List[GigStatsSetEntry] = Field(default_factory=list)
 
 

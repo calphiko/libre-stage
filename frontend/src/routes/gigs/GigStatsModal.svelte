@@ -21,6 +21,8 @@
   import { getGigStatistics } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { modalState } from '$lib/modalState.js';
+  import GenreDistributionPlot from '$lib/plots/genreDistributionPlot.svelte';
+  import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
 
   const { showError } = createMessageHelpers();
 
@@ -31,13 +33,13 @@
   let loading = $state(true);
   let error = $state('');
 
-  const feedbackEmoji = { 3: '😊', 2: '😐', 1: '😞' };
+  const feedbackEmoji = { 3: '😍', 2:'😊' , 1:  '😐'};
 
   function feedbackLabel(avg) {
     if (avg == null) return '–';
-    if (avg >= 2.5) return '😊';
-    if (avg >= 1.5) return '😐';
-    return '😞';
+    if (avg >= 2.5) return '😍';
+    if (avg >= 1.5) return '😊';
+    return '😐';
   }
 
   onMount(async () => {
@@ -52,7 +54,7 @@
   });
 </script>
 
-<div class="card p-6 space-y-4 w-[80vw] max-w-3xl max-h-[90vh] flex flex-col modal-base">
+<div class="card p-6 space-y-4 w-[90vw] max-w-9xl max-h-[90vh] flex flex-col modal-base">
   <!-- Header -->
   <header class="flex justify-between items-center flex-shrink-0">
     <h2 class="h3">📈 {gigName ?? 'Gig-Statistik'}</h2>
@@ -123,25 +125,31 @@
       {/if}
 
       <!-- Genre-Verteilung -->
-      {#if Object.keys(statistics.genre_distribution).length > 0}
-        {@const genreTotal = Object.values(statistics.genre_distribution).reduce((a, b) => a + b, 0)}
-        {@const genresSorted = Object.entries(statistics.genre_distribution).sort((a, b) => b[1] - a[1])}
+      {#if Object.keys(statistics.genre_distribution).length > 0 || (statistics.genre_timeline?.length ?? 0) > 0}
         <div class="card variant-ghost-surface p-4 rounded-lg">
-          <h4 class="text-xs font-semibold text-on-surface-variant mb-3">🎸 Genres</h4>
-          <div class="space-y-2">
-            {#each genresSorted as [genre, count]}
-              {@const pct = Math.round((count / genreTotal) * 100)}
-              <div class="flex items-center gap-2 text-sm">
-                <span class="w-24 truncate text-xs text-on-surface-variant flex-shrink-0">{genre}</span>
-                <div class="flex-grow bg-surface-300 dark:bg-surface-700 rounded-full h-3">
-                  <div
-                    class="h-3 rounded-full bg-tertiary-500 transition-all"
-                    style="width: {pct}%"
-                  ></div>
-                </div>
-                <span class="w-20 text-right text-xs text-on-surface-variant flex-shrink-0">{count}× ({pct}%)</span>
-              </div>
-            {/each}
+          <h4 class="text-xs font-semibold text-on-surface-variant mb-3">📊 Verteilungen</h4>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {#if statistics.feedback_count > 0}
+              <FeedbackDistributionPlot
+                feedbackDistribution={statistics.feedback_distribution}
+                feedbackCount={statistics.feedback_count}
+                titlePrefix="Gig-Bewertungen"
+              />
+            {/if}
+            <GenreDistributionPlot
+              genreDistribution={statistics.genre_distribution}
+              genreTimeline={statistics.genre_timeline ?? []}
+              titlePrefix="Genre"
+              showTimeline={false}
+            />
+          </div>
+          <div class="mt-4 border-t border-surface-300 dark:border-surface-700 pt-3">
+            <GenreDistributionPlot
+              genreDistribution={statistics.genre_distribution}
+              genreTimeline={statistics.genre_timeline ?? []}
+              titlePrefix="Genre"
+              showDistribution={false}
+            />
           </div>
         </div>
       {/if}
