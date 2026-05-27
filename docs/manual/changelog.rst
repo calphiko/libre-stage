@@ -14,6 +14,7 @@ Added
 Changed
 ~~~~~~~
 
+* Bugfix: Im Setlist Editor wurde die Zeitberechnung für Datumsüberlauf sensibilisiert.
 * Dashboard: Saisonstatistik-Block auf eCharts umgestellt (Gigs-Fortschritt, Song-Mix, Feedback-Gauge, Genre-Top-Liste).
 * Chore: Projektversion auf ``0.5.2`` erhoeht (Backend/Frontend/Lockfiles/Release-Metadaten/README-Badge).
 
