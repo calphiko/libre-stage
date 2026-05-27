@@ -3,6 +3,21 @@
 Änderungsprotokoll
 ==================
 
+0.5.2 (2026-05-27)
+-------------------
+
+Added
+~~~~~
+
+* Dashboard: Neue Karten fuer ``naechste Probe`` und ``naechsten Auftritt`` mit Datum/Details und Direktlinks zu ``/proben`` bzw. ``/gigs``.
+
+Changed
+~~~~~~~
+
+* Bugfix: Im Setlist Editor wurde die Zeitberechnung für Datumsüberlauf sensibilisiert.
+* Dashboard: Saisonstatistik-Block auf eCharts umgestellt (Gigs-Fortschritt, Song-Mix, Feedback-Gauge, Genre-Top-Liste).
+* Chore: Projektversion auf ``0.5.2`` erhoeht (Backend/Frontend/Lockfiles/Release-Metadaten/README-Badge).
+
 0.5.1 (2026-05-26)
 -------------------
 

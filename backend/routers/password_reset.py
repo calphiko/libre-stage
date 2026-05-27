@@ -33,7 +33,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 import logging
 from sqlalchemy.orm import Session
 from backend import models, schemas, auth
-from backend.utils.email import send_email
+from backend.utils.mailer import send_email
 import hashlib
 
 from datetime import datetime, timezone

@@ -25,6 +25,9 @@
   import UserAdminTable from '$lib/components/UserAdminTable.svelte';
   import PasswordChange from '$lib/components/PasswordChange.svelte';
 
+    //components
+  import RoleTable from '$lib/components/RoleTable.svelte';
+
   let { data } = $props();
 
   let user = $state({});
@@ -239,12 +242,17 @@
 
   <!-- Kasten für Rollen-Management (nur Admin) -->
   {#if isAdmin}
-    <div class="bg-surface-2 rounded-xl shadow p-5 mt-7 border border-outline-variant">
+    <hr class="my-7 border-outline-variant">
+    <div class="bg-surface-2 rounded-xl shadow p-5 mt-7 ">
       <h3 class="text-xl font-semibold mb-3 text-on-surface">Benutzer & Rollenverwaltung</h3>
       <!-- Hier kann z. B. eine Rollenliste, Auswahl oder entsprechende Controls ergänzt werden -->
       <UserAdminTable />
     </div>
   {/if}
+
+  <hr class="my-7 border-outline-variant">
+      <h2 class ="text-xl font-semibold text-on-surface mb-2">Rollenberechtigungen</h2>
+      <RoleTable/>
 </div>
 
 <style>
