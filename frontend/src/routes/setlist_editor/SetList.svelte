@@ -116,7 +116,20 @@
     const targetMinutes = hhmmToMinutes(target);
     const plannedMinutes = hhmmToMinutes(planned);
     if (targetMinutes == null || plannedMinutes == null) return null;
-    return plannedMinutes - targetMinutes;
+
+    // Berücksichtigung von Datumsübergang (Mitternacht)
+    // Wenn die Zielendzeit sehr früh am Morgen ist (< 6:00)
+    // und die geplante Zeit später am "selben Tag" ist (aber > 6:00, also eher am Vorabend)
+    // dann geht der Gig über Mitternacht hinaus
+    let adjustedTargetMinutes = targetMinutes;
+    if (targetMinutes < 6 * 60 && plannedMinutes > 6 * 60) {
+      // Zielzeit ist früh am Morgen (nächster Tag)
+      // und geplante Zeit ist später am Vorabend (> 6:00)
+      // → Datumsüberlauf: addiere 24 Stunden zur Zielzeit für den Vergleich
+      adjustedTargetMinutes += 24 * 60;
+    }
+
+    return plannedMinutes - adjustedTargetMinutes;
   }
 
   function getSongStartTime(setIdx, songIdx) {
