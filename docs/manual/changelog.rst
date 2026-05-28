@@ -3,6 +3,24 @@
 Änderungsprotokoll
 ==================
 
+0.5.3 (2026-05-28)
+-------------------
+
+Added
+~~~~~
+
+* Songs API: Neuer Endpoint ``GET /songs/crawler/metadata`` liefert Song-Metadaten (Dauer, Komponist/Texter, YouTube-Link) fuer ``interpret`` + ``title``.
+* Song anlegen: Formular laedt Metadaten nun automatisch nach dem Ausfuellen von Interpret und Titel (inkl. Debounce/Cooldown und Ladeindikator).
+* Backend-Tests: Neue Testfaelle fuer den Metadata-Endpoint (200/404) und erweiterte ``audioscrawler``-Tests inklusive YouTube-Link-Aufloesung ueber Release-Kette.
+
+Changed
+~~~~~~~
+
+* ``backend/utils/audioscrawler.py`` wurde deutlich robustifiziert: besseres Matching/Scoring fuer Recordings/Works, Normalisierung von Personennamen, Fallbacks auf TheAudioDB bei MusicBrainz-Fehlern sowie YouTube-Link-Suche in Recording-, Release- und Release-Group-Relationen.
+* Setlist-Editor: Loeschen von Songs nutzt eine ruhige zweistufige Exit-Animation (erst visuell ausblenden/nach rechts schieben, dann entfernen), um hektische Layout-Spruenge zu reduzieren.
+* Songs-Schema erweitert um ``SongScrawlOut`` fuer die strukturierte Rueckgabe der Crawler-Metadaten.
+* Chore: Projektversion auf ``0.5.3`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.2 (2026-05-27)
 -------------------
 

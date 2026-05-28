@@ -492,6 +492,18 @@ export async function getSongsCandidates(token) {
     return res.json();
   }
 
+export async function getSongCrawlerMetadata(interpret, title) {
+  const params = new URLSearchParams({ interpret, title });
+  const res = await fetchWithAuth(`${API_URL}/songs/crawler/metadata?${params.toString()}`, {
+    method: 'GET'
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? 'Song-Metadaten konnten nicht geladen werden');
+  }
+  return res.json();
+}
+
   export async function updateSongCandidateFeedback(token, songId, feedback) {
     const response = await fetchWithAuth(`${API_URL}/songs/candidates/feedback/${songId}`, {
       method: 'PUT',

@@ -268,6 +268,17 @@ class SongOut(BaseModel):
 
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
 
+
+class SongScrawlOut(BaseModel):
+    recording_id: Optional[str] = None
+    work_id: Optional[str] = None
+    duration: Optional[str] = None
+    ytlink: Optional[str] = None
+    composers: List[str] = Field(default_factory=list)
+    lyricists: List[str] = Field(default_factory=list)
+    composer: Optional[str] = None
+    texter: Optional[str] = None
+
 class GigIn(BaseModel):
     name: str
     datum: date
