@@ -131,7 +131,7 @@
 	<div class={sidebarOpen && user.user_name ? 'flex-1 flex flex-col h-full overflow-hidden' : 'w-full flex flex-col h-full overflow-hidden'}>
 		<!-- Header -->
 		{#if user.user_name}
-			<header class="bg-surface-100 dark:bg-surface-800 shadow-sm px-4 py-2 flex items-center gap-4">
+			<header class="bg-surface-100 dark:bg-surface-800 shadow-sm px-3 py-1.5 flex items-center gap-3">
 				{#if !(sidebarOpen && user.user_name)}
 					<button class="px-3 py-2 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" onclick={() => sidebarOpen = true}>
 						☰ Menü
@@ -139,13 +139,13 @@
 				{/if}
 				<!-- Desktop -->
 				<a href="/dashboard" class="hidden md:flex items-center gap-2">
-					<AppLogo size="3rem" />
-					<strong class="text-xl uppercase">{version_title}</strong>
+					<AppLogo size="2.4rem" />
+					<strong class="text-lg uppercase leading-none">{version_title}</strong>
 				</a>
 				<!-- Mobile -->
 				<a href="/dashboard" class="md:hidden flex items-center gap-2">
-					<AppLogo size="2.5rem" />
-					<strong class="text-xl uppercase">{version_title}</strong>
+					<AppLogo size="2rem" />
+					<strong class="text-base uppercase leading-none">{version_title}</strong>
 				</a>
 			</header>
 		{/if}
@@ -157,9 +157,14 @@
 
 		<!-- Footer -->
 		{#if user.user_name}
-			<footer class="footer bg-surface-100 dark:bg-surface-800 p-1 text-center text-sm text-surface-600 dark:text-surface-300">
-				<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span><br>
-				<span>{version_description} • © {new Date().getFullYear()} <a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a> <a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Dokumentation</a></span>
+			<footer class="footer bg-surface-100 dark:bg-surface-800 px-2 py-1 text-center text-xs text-surface-600 dark:text-surface-300">
+				<div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 leading-tight">
+					<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span>
+					<span class="hidden md:inline">• {version_description}</span>
+					<span>© {new Date().getFullYear()}</span>
+					<a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a>
+					<a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Dokumentation</a>
+				</div>
 			</footer>
 		{/if}
 	</div>

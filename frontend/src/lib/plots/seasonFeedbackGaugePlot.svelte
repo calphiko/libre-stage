@@ -156,6 +156,6 @@
 
 <div>
     <h5 class="text-xs font-semibold text-on-surface-variant mb-1">{titlePrefix}</h5>
-    <div bind:this={chartRef} class="w-full h-[190px] sm:h-[210px] md:h-[220px]"></div>
+    <div bind:this={chartRef} class="w-full" style="height: 220px;"></div>
 </div>
 
