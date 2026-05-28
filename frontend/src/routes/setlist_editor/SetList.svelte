@@ -36,6 +36,11 @@
 
   
   let nextNegativeSetsongId = $state(-1);
+  let deletingSongIds = $state(new Set());
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   function formatPauseForInput(value) {
     if (!value) return '';
@@ -266,6 +271,12 @@
   }
 
   async function removeSongFromSet(setIdx, setsong_id) {
+    if (deletingSongIds.has(setsong_id)) return;
+
+    deletingSongIds = new Set(deletingSongIds).add(setsong_id);
+    // Erst visuelle Exit-Animation, dann Datenmutation.
+    await wait(170);
+
     // Save original state for rollback
     const originalSongs = [...setlist.sets[setIdx].songs];
 
@@ -281,11 +292,15 @@
         setlist.sets[setIdx].songs = originalSongs;
         setlist = { ...setlist };
       }
+      deletingSongIds = new Set(deletingSongIds);
+      deletingSongIds.delete(setsong_id);
       //showSuccess('Song erfolgreich entfernt');
     } catch (error) {
       // Rollback on error
       setlist.sets[setIdx].songs = originalSongs;
       setlist = { ...setlist };
+      deletingSongIds = new Set(deletingSongIds);
+      deletingSongIds.delete(setsong_id);
       //showError(`Fehler beim Entfernen des Songs: ${error.message}`);
     }
   }
@@ -422,6 +437,7 @@
       {#each set.songs as song, songIdx (song.setsong_id)}
         {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
         <div class="song-in-set text-surface-900 dark:text-surface-950 shadow-sm hover:shadow transition-shadow duration-150" data-song-id={song.setsong_id}
+        class:song-removing={deletingSongIds.has(song.setsong_id)}
         class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
@@ -530,6 +546,14 @@
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 170ms ease, opacity 170ms ease, margin 170ms ease, padding 170ms ease;
+  transform-origin: left center;
+}
+
+.song-removing {
+  transform: translateX(28px);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .song-duplicate {

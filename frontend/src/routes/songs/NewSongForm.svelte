@@ -21,6 +21,7 @@
   import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
   import { findBestSongDuplicate } from '$lib/songDuplicateCheck.js';
+  import { getSongCrawlerMetadata } from '$lib/api.js';
   import { fade, fly } from 'svelte/transition';
 
   // Diese Props werden vom Modal übergeben
@@ -32,6 +33,15 @@
 
   let song = $state({});
   let duplicateMatch = $state(null);
+  let isMetadataLoading = $state(false);
+  let lastMetadataKey = $state('');
+  let metadataDebounceTimer;
+  let lastRequestedMetadataKey = '';
+  let lastMetadataRequestAt = 0;
+  let titleBlurred = $state(false);
+  let interpretBlurred = $state(false);
+  const METADATA_DEBOUNCE_MS = 350;
+  const METADATA_COOLDOWN_MS = 10000;
 
   function getStatusLabel(statusKey) {
     const found = ($appConfig?.songStatuses ?? []).find((s) => s?.key === statusKey);
@@ -41,6 +51,76 @@
   function checkDuplicate() {
     const result = findBestSongDuplicate(song, existingSongs);
     duplicateMatch = result?.song ?? null;
+  }
+
+  async function maybeFetchSongMetadata() {
+    const title = song.title?.trim();
+    const interpret = song.interpret?.trim();
+    if (!title || !interpret) return;
+
+    const metadataKey = `${interpret}::${title}`.toLowerCase();
+    if (metadataKey === lastMetadataKey || isMetadataLoading) return;
+
+    // Verhindert wiederholte API-Calls fuer denselben Suchbegriff in kurzer Zeit.
+    if (
+      metadataKey === lastRequestedMetadataKey &&
+      Date.now() - lastMetadataRequestAt < METADATA_COOLDOWN_MS
+    ) {
+      return;
+    }
+
+    lastRequestedMetadataKey = metadataKey;
+    lastMetadataRequestAt = Date.now();
+
+    // Alte Metadaten sofort entfernen, sobald eine neue Suche gestartet wird.
+    song.duration = '';
+    song.composer = '';
+    song.texter = '';
+    song.ytlink = '';
+
+    isMetadataLoading = true;
+    try {
+      const data = await getSongCrawlerMetadata(interpret, title);
+      lastMetadataKey = metadataKey;
+
+      if (data?.duration) {
+        song.duration = data.duration;
+      }
+      if (data?.composer) {
+        song.composer = data.composer;
+      }
+      if (data?.texter) {
+        song.texter = data.texter;
+      }
+      if (data?.ytlink) {
+        song.ytlink = data.ytlink;
+      }
+    } catch {
+      // Keine Metadaten gefunden oder API nicht erreichbar -> Formular bleibt editierbar.
+    } finally {
+      isMetadataLoading = false;
+    }
+  }
+
+  function scheduleMetadataFetch() {
+    if (metadataDebounceTimer) {
+      clearTimeout(metadataDebounceTimer);
+    }
+    metadataDebounceTimer = setTimeout(() => {
+      maybeFetchSongMetadata();
+    }, METADATA_DEBOUNCE_MS);
+  }
+
+  function markBlurAndMaybeFetch(fieldKey) {
+    if (fieldKey === 'title') {
+      titleBlurred = true;
+    }
+    if (fieldKey === 'interpret') {
+      interpretBlurred = true;
+    }
+    if (titleBlurred && interpretBlurred) {
+      scheduleMetadataFetch();
+    }
   }
 
   function submit() {
@@ -103,14 +183,35 @@
                       bind:value={song[songField.key]}
                       oninput={() => {
                         if (songField.key === 'title' || songField.key === 'interpret') {
+                          lastMetadataKey = '';
+                          lastRequestedMetadataKey = '';
+                          if (songField.key === 'title') {
+                            titleBlurred = false;
+                          }
+                          if (songField.key === 'interpret') {
+                            interpretBlurred = false;
+                          }
                           checkDuplicate();
                         }
                       }}
                           onchange={() => {
                             if (songField.key === 'title' || songField.key === 'interpret') {
+                              lastMetadataKey = '';
+                              lastRequestedMetadataKey = '';
+                              if (songField.key === 'title') {
+                                titleBlurred = false;
+                              }
+                              if (songField.key === 'interpret') {
+                                interpretBlurred = false;
+                              }
                               checkDuplicate();
                             }
                           }}
+                      onblur={() => {
+                        if (songField.key === 'title' || songField.key === 'interpret') {
+                          markBlurAndMaybeFetch(songField.key);
+                        }
+                      }}
                       placeholder={songField.label}
                       required={songField.required}
                       minlength="1"
@@ -141,6 +242,13 @@
                       </span>
                     </div>
                   </div>
+                  </div>
+                {/if}
+
+                {#if songField.key === 'interpret' && isMetadataLoading}
+                  <div class="mt-1 mb-3 text-sm text-surface-600 dark:text-surface-300 flex items-center gap-2" role="status" aria-live="polite">
+                    <span class="inline-block w-4 h-4 border-2 border-surface-400 border-t-primary-500 rounded-full animate-spin" aria-hidden="true"></span>
+                    <span>Lade Metadaten...</span>
                   </div>
                 {/if}
             {/if}

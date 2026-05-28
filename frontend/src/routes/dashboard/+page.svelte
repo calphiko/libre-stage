@@ -43,7 +43,7 @@
   let nextGig = null;
 
   let tabsBasic = 0;
-  let showSeasonStats = false;
+  let showSeasonStats = true;
 
   function parseDateSafe(value) {
     if (!value) return null;
