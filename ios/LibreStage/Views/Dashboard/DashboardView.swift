@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
+import Charts
 
 struct DashboardView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(DashboardViewModel.self) private var vm
     @Environment(\.colorScheme) private var colorScheme
     @State private var showCandidatesSheet = false
+    @State private var selectedTodoTab: DashboardTodoTab = .open
 
     private var currentSeasonTitle: String {
         let year = Calendar.current.component(.year, from: Date())
@@ -27,87 +29,63 @@ struct DashboardView: View {
                     } else if let list = vm.todoList {
                         List {
                             Section {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Willkommen, \(authManager.currentUser?.user_name ?? "Bandmitglied")")
+                                        .font(.headline)
+
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 8) {
+                                            DashboardBadgeChip(title: "Gruppe", value: authManager.currentUser?.user_group.rawValue ?? "-")
+                                            DashboardBadgeChip(title: "Offen", value: "\(list.todo.filter { !$0.done }.count)")
+                                            DashboardBadgeChip(title: "Feedback", value: "\(list.songs_to_feedback.count + list.surveys_to_feedback.count)")
+                                            DashboardBadgeChip(title: "Erledigt", value: "\(list.todo.filter { $0.done }.count)")
+                                        }
+                                    }
+                                }
+                            }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                            Section("Deine Todos") {
+                                Picker("Bereich", selection: $selectedTodoTab) {
+                                    ForEach(DashboardTodoTab.allCases) { tab in
+                                        Text(tab.title(counts: list)).tag(tab)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+
+                                todoSectionContent(for: selectedTodoTab, list: list)
+                            }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                            Section("Nächste Termine") {
+                                DashboardEventCard(
+                                    title: "Nächste Probe",
+                                    icon: "music.quarternote.3",
+                                    tint: .blue,
+                                    primary: vm.nextRehearsal.map {
+                                        formatDateTime($0.begin, dateStyle: .medium, timeStyle: .short)
+                                    } ?? "Keine Probe geplant",
+                                    secondary: vm.nextRehearsal?.comment
+                                )
+
+                                DashboardEventCard(
+                                    title: "Nächster Auftritt",
+                                    icon: "music.mic",
+                                    tint: .purple,
+                                    primary: vm.nextGig.map {
+                                        formatDateTime($0.datum, dateStyle: .medium, timeStyle: .none)
+                                    } ?? "Kein Auftritt geplant",
+                                    secondary: vm.nextGig?.name
+                                )
+                            }
+                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                            Section(currentSeasonTitle) {
                                 if let stats = vm.currentSeasonStatistics {
-                                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                                        SeasonStatTile(
-                                            title: "Gigs",
-                                            value: String(stats.gig_count),
-                                            icon: "music.mic",
-                                            tint: .blue
-                                        )
-                                        SeasonStatTile(
-                                            title: "Songs",
-                                            value: String(stats.total_songs),
-                                            icon: "music.note.list",
-                                            tint: .purple
-                                        )
-                                        SeasonStatTile(
-                                            title: "Uebersprungen",
-                                            value: String(stats.skipped_count),
-                                            icon: "forward.fill",
-                                            tint: .orange
-                                        )
-                                        SeasonStatTile(
-                                            title: "Eingeschoben",
-                                            value: String(stats.inserted_count),
-                                            icon: "pin.fill",
-                                            tint: .green
-                                        )
-
-                                        if let avg = stats.feedback_avg {
-                                            SeasonStatTile(
-                                                title: "Live-Bewertung",
-                                                value: "\(feedbackEmoji(for: avg)) \(String(format: "%.2f", avg))",
-                                                icon: "star.fill",
-                                                tint: .yellow
-                                            )
-                                        }
-                                    }
-                                    .padding(.vertical, 2)
+                                    DashboardSeasonPlots(stats: stats)
                                 } else {
-                                    Text("Saisonstatistik wird geladen oder ist nicht verfuegbar.")
+                                    Text("Saisonstatistik wird geladen oder ist nicht verfügbar.")
                                         .foregroundStyle(.secondary)
-                                }
-                            } header: {
-                                Text(currentSeasonTitle)
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
-                            Section("Proben-To-dos") {
-                                let open = list.todo.filter { !$0.done }
-                                if open.isEmpty {
-                                    Label("Alle erledigt 🎉", systemImage: "checkmark.circle.fill")
-                                        .foregroundStyle(.green)
-                                } else {
-                                    ForEach(open) { todo in
-                                        TodoRow(todo: todo) {
-                                            Task { await vm.markDone(todo) }
-                                        }
-                                    }
-                                }
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
-                            Section("Ausstehende Song-Votes (\(list.songs_to_feedback.count))") {
-                                if list.songs_to_feedback.isEmpty {
-                                    Text("Keine offenen Votes").foregroundStyle(.secondary)
-                                } else {
-                                    Button("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
-                                        showCandidatesSheet = true
-                                    }
-                                }
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
-                            Section("Offene Umfragen (\(list.surveys_to_feedback.count))") {
-                                if list.surveys_to_feedback.isEmpty {
-                                    Text("Keine offenen Umfragen").foregroundStyle(.secondary)
-                                } else {
-                                    ForEach(list.surveys_to_feedback) { s in
-                                        NavigationLink(s.rf_survey) {
-                                            SurveyDetailView(surveyId: s.id, surveyType: s.kind_of_survey)
-                                        }
-                                    }
                                 }
                             }
                             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
@@ -115,7 +93,10 @@ struct DashboardView: View {
                         .scrollContentBackground(.hidden)
                         .background(.clear)
                         .listStyle(.insetGrouped)
-                        .refreshable { await vm.load() }
+                        .refreshable {
+                            await vm.load()
+                            ensureValidTodoTab()
+                        }
                     } else {
                         ContentUnavailableView("Nichts gefunden", systemImage: "tray")
                     }
@@ -145,7 +126,425 @@ struct DashboardView: View {
             }
         }
         .errorBanner($vm.error)
-        .task { await vm.load() }
+        .task {
+            await vm.load()
+            ensureValidTodoTab()
+        }
+        .onChange(of: vm.totalBadgeCount) { _, _ in
+            ensureValidTodoTab()
+        }
+    }
+
+    @ViewBuilder
+    private func todoSectionContent(for tab: DashboardTodoTab, list: UserTodoList) -> some View {
+        switch tab {
+        case .open:
+            let openTodos = list.todo.filter { !$0.done }
+            if openTodos.isEmpty {
+                Label("Alle offenen To-dos erledigt", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                ForEach(openTodos) { todo in
+                    TodoRow(todo: todo) {
+                        Task {
+                            await vm.markDone(todo)
+                            ensureValidTodoTab()
+                        }
+                    }
+                }
+            }
+
+        case .songs:
+            if list.songs_to_feedback.isEmpty {
+                Text("Keine offenen Song-Votes")
+                    .foregroundStyle(.secondary)
+            } else {
+                Button("Kandidaten bewerten (\(list.songs_to_feedback.count))") {
+                    showCandidatesSheet = true
+                }
+                .buttonStyle(.borderedProminent)
+
+                ForEach(list.songs_to_feedback.prefix(4)) { song in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(song.title).font(.body)
+                            Text(song.interpret).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+        case .surveys:
+            if list.surveys_to_feedback.isEmpty {
+                Text("Keine offenen Umfragen")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(list.surveys_to_feedback) { survey in
+                    NavigationLink(survey.rf_survey) {
+                        SurveyDetailView(surveyId: survey.id, surveyType: survey.kind_of_survey)
+                    }
+                }
+            }
+
+        case .done:
+            let doneTodos = list.todo.filter { $0.done }
+            if doneTodos.isEmpty {
+                Text("Noch keine erledigten To-dos")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(doneTodos) { todo in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(todo.todo).font(.body)
+                        Text("\(todo.song_title) – \(todo.song_interpret)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private func ensureValidTodoTab() {
+        guard let list = vm.todoList else { return }
+        if selectedTodoTab.count(in: list) > 0 { return }
+
+        selectedTodoTab = DashboardTodoTab.allCases.first(where: { $0.count(in: list) > 0 }) ?? .open
+    }
+
+    private func formatDateTime(
+        _ raw: String?,
+        dateStyle: DateFormatter.Style,
+        timeStyle: DateFormatter.Style
+    ) -> String {
+        guard let parsed = parseDateSafe(raw) else { return "Unbekanntes Datum" }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "de_DE")
+        formatter.dateStyle = dateStyle
+        formatter.timeStyle = timeStyle
+        return formatter.string(from: parsed)
+    }
+
+    private func parseDateSafe(_ value: String?) -> Date? {
+        guard let value else { return nil }
+
+        let isoWithFraction = ISO8601DateFormatter()
+        isoWithFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoWithFraction.date(from: value) {
+            return date
+        }
+
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = iso.date(from: value) {
+            return date
+        }
+
+        let fullDate = ISO8601DateFormatter()
+        fullDate.formatOptions = [.withFullDate]
+        if let date = fullDate.date(from: value) {
+            return date
+        }
+
+        let fallback = DateFormatter()
+        fallback.locale = Locale(identifier: "en_US_POSIX")
+        fallback.dateFormat = "yyyy-MM-dd"
+        return fallback.date(from: value)
+    }
+}
+
+private enum DashboardTodoTab: String, CaseIterable, Identifiable {
+    case open
+    case songs
+    case surveys
+    case done
+
+    var id: String { rawValue }
+
+    func count(in list: UserTodoList) -> Int {
+        switch self {
+        case .open:
+            list.todo.filter { !$0.done }.count
+        case .songs:
+            list.songs_to_feedback.count
+        case .surveys:
+            list.surveys_to_feedback.count
+        case .done:
+            list.todo.filter { $0.done }.count
+        }
+    }
+
+    func title(counts list: UserTodoList) -> String {
+        switch self {
+        case .open: return "Offen \(count(in: list))"
+        case .songs: return "Songs \(count(in: list))"
+        case .surveys: return "Umfragen \(count(in: list))"
+        case .done: return "Erledigt \(count(in: list))"
+        }
+    }
+}
+
+private struct DashboardBadgeChip: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.caption.bold())
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.accentColor.opacity(0.12))
+        .clipShape(Capsule())
+    }
+}
+
+private struct DashboardEventCard: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    let icon: String
+    let tint: Color
+    let primary: String
+    let secondary: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(title, systemImage: icon)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text(primary)
+                .font(.subheadline.bold())
+                .foregroundStyle(tint)
+
+            if let secondary, !secondary.isEmpty {
+                Text(secondary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(AppTheme.tileBackground(for: colorScheme))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+private struct DashboardSeasonPlots: View {
+    let stats: SeasonStatistics
+
+    private var topGenres: [(genre: String, count: Int)] {
+        stats.genre_distribution
+            .map { (genre: $0.key, count: $0.value) }
+            .filter { $0.count > 0 }
+            .sorted { $0.count > $1.count }
+            .prefix(5)
+            .map { $0 }
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            DashboardPlotCard(title: "Gigs gespielt") {
+                DashboardGigProgressPlot(playedGigCount: stats.played_gig_count, gigCount: stats.gig_count)
+            }
+
+            DashboardPlotCard(title: "Songs gesamt vs. Unique") {
+                DashboardSongMixPlot(totalSongs: stats.total_songs, uniqueSongs: stats.unique_songs)
+            }
+
+            DashboardPlotCard(title: "Feedback-Durchschnitt") {
+                DashboardFeedbackPlot(avg: stats.feedback_avg, count: stats.feedback_count)
+            }
+
+            DashboardPlotCard(title: "Genres in dieser Saison") {
+                DashboardGenrePlot(entries: topGenres)
+            }
+        }
+    }
+}
+
+private struct DashboardPlotCard<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            content
+        }
+        .padding(10)
+        .background(AppTheme.tileBackground(for: colorScheme))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+private struct DashboardGigProgressPlot: View {
+    let playedGigCount: Int
+    let gigCount: Int
+
+    private var total: Int { max(gigCount, playedGigCount) }
+
+    private var data: [(label: String, value: Int)] {
+        [
+            ("Gespielt", max(0, playedGigCount)),
+            ("Offen", max(0, total - playedGigCount))
+        ]
+    }
+
+    var body: some View {
+        if total == 0 {
+            Text("Keine Gigs vorhanden")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: 160)
+        } else {
+            Chart(data, id: \.label) { item in
+                SectorMark(
+                    angle: .value("Anzahl", item.value),
+                    innerRadius: .ratio(0.58),
+                    angularInset: 2
+                )
+                .foregroundStyle(by: .value("Status", item.label))
+            }
+            .chartForegroundStyleScale([
+                "Gespielt": Color.blue,
+                "Offen": Color.gray.opacity(0.3)
+            ])
+            .frame(height: 170)
+            .overlay {
+                VStack(spacing: 2) {
+                    Text("\(playedGigCount)/\(total)")
+                        .font(.headline)
+                    Text("\(Int((Double(playedGigCount) / Double(total)) * 100))%")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
+private struct DashboardSongMixPlot: View {
+    let totalSongs: Int
+    let uniqueSongs: Int
+
+    private var unique: Int { max(0, uniqueSongs) }
+    private var repeated: Int { max(0, totalSongs - unique) }
+    private var maxValue: Int { max(1, totalSongs, uniqueSongs) }
+
+    var body: some View {
+        if totalSongs == 0 && uniqueSongs == 0 {
+            Text("Keine Songs vorhanden")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: 120)
+        } else {
+            Chart {
+                BarMark(
+                    xStart: .value("Von", 0),
+                    xEnd: .value("Bis", unique),
+                    y: .value("Kategorie", "Songs gesamt")
+                )
+                .foregroundStyle(.teal)
+
+                BarMark(
+                    xStart: .value("Von", unique),
+                    xEnd: .value("Bis", unique + repeated),
+                    y: .value("Kategorie", "Songs gesamt")
+                )
+                .foregroundStyle(.purple)
+            }
+            .frame(height: 130)
+            .chartXScale(domain: 0...maxValue)
+
+            HStack(spacing: 12) {
+                Label("Unique: \(unique)", systemImage: "circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.teal)
+                Label("Wiederholt: \(repeated)", systemImage: "circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.purple)
+            }
+        }
+    }
+}
+
+private struct DashboardFeedbackPlot: View {
+    let avg: Double?
+    let count: Int
+
+    var body: some View {
+        if let avg, count > 0 {
+            Chart {
+                RectangleMark(
+                    xStart: .value("Start", 1.0),
+                    xEnd: .value("Ende", 2.0),
+                    y: .value("Skala", "Feedback")
+                )
+                .foregroundStyle(.red.opacity(0.25))
+
+                RectangleMark(
+                    xStart: .value("Start", 2.0),
+                    xEnd: .value("Ende", 2.5),
+                    y: .value("Skala", "Feedback")
+                )
+                .foregroundStyle(.orange.opacity(0.25))
+
+                RectangleMark(
+                    xStart: .value("Start", 2.5),
+                    xEnd: .value("Ende", 3.0),
+                    y: .value("Skala", "Feedback")
+                )
+                .foregroundStyle(.green.opacity(0.25))
+
+                RuleMark(x: .value("Durchschnitt", avg))
+                    .foregroundStyle(.blue)
+                    .lineStyle(StrokeStyle(lineWidth: 2, dash: [4, 3]))
+
+                PointMark(
+                    x: .value("Durchschnitt", avg),
+                    y: .value("Skala", "Feedback")
+                )
+                .foregroundStyle(.blue)
+                .symbolSize(80)
+            }
+            .chartXScale(domain: 1...3)
+            .chartXAxis {
+                AxisMarks(values: [1, 2, 3])
+            }
+            .frame(height: 120)
+
+            Text("\(feedbackEmoji(for: avg)) Ø \(String(format: "%.2f", avg)) bei \(count) Bewertungen")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            Text("Noch kein Feedback vorhanden")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: 120)
+        }
     }
 
     private func feedbackEmoji(for avg: Double) -> String {
@@ -155,32 +554,29 @@ struct DashboardView: View {
     }
 }
 
-private struct SeasonStatTile: View {
-    @Environment(\.colorScheme) private var colorScheme
-    let title: String
-    let value: String
-    let icon: String
-    let tint: Color
+private struct DashboardGenrePlot: View {
+    let entries: [(genre: String, count: Int)]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: icon)
-                .font(.caption)
+        if entries.isEmpty {
+            Text("Keine Genre-Daten vorhanden")
                 .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.bold())
-                .foregroundStyle(tint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity, minHeight: 130)
+        } else {
+            Chart(entries, id: \.genre) { entry in
+                BarMark(
+                    x: .value("Anzahl", entry.count),
+                    y: .value("Genre", entry.genre)
+                )
+                .foregroundStyle(.purple.gradient)
+                .annotation(position: .trailing) {
+                    Text("\(entry.count)x")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(height: max(140, CGFloat(entries.count) * 30))
         }
-        .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
-        .padding(10)
-        .background(AppTheme.tileBackground(for: colorScheme))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
