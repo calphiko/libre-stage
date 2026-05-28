@@ -3,6 +3,98 @@
 Änderungsprotokoll
 ==================
 
+0.5.3 (2026-05-28)
+-------------------
+
+Added
+~~~~~
+
+* Song Tabelle im Webfrontend flexibler und Platzökonomischer gemacht
+* Songs API: Neuer Endpoint ``GET /songs/crawler/metadata`` liefert Song-Metadaten (Dauer, Komponist/Texter, YouTube-Link) fuer ``interpret`` + ``title``.
+* Song anlegen: Formular laedt Metadaten nun automatisch nach dem Ausfuellen von Interpret und Titel (inkl. Debounce/Cooldown und Ladeindikator).
+* Backend-Tests: Neue Testfaelle fuer den Metadata-Endpoint (200/404) und erweiterte ``audioscrawler``-Tests inklusive YouTube-Link-Aufloesung ueber Release-Kette.
+
+Changed
+~~~~~~~
+
+* ``backend/utils/audioscrawler.py`` wurde deutlich robustifiziert: besseres Matching/Scoring fuer Recordings/Works, Normalisierung von Personennamen, Fallbacks auf TheAudioDB bei MusicBrainz-Fehlern sowie YouTube-Link-Suche in Recording-, Release- und Release-Group-Relationen.
+* Setlist-Editor: Loeschen von Songs nutzt eine ruhige zweistufige Exit-Animation (erst visuell ausblenden/nach rechts schieben, dann entfernen), um hektische Layout-Spruenge zu reduzieren.
+* Songs-Schema erweitert um ``SongScrawlOut`` fuer die strukturierte Rueckgabe der Crawler-Metadaten.
+* Chore: Projektversion auf ``0.5.3`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
+0.5.2 (2026-05-27)
+-------------------
+
+Added
+~~~~~
+
+* Dashboard: Neue Karten fuer ``naechste Probe`` und ``naechsten Auftritt`` mit Datum/Details und Direktlinks zu ``/proben`` bzw. ``/gigs``.
+
+Changed
+~~~~~~~
+
+* Bugfix: Im Setlist Editor wurde die Zeitberechnung für Datumsüberlauf sensibilisiert.
+* Dashboard: Saisonstatistik-Block auf eCharts umgestellt (Gigs-Fortschritt, Song-Mix, Feedback-Gauge, Genre-Top-Liste).
+* Chore: Projektversion auf ``0.5.2`` erhoeht (Backend/Frontend/Lockfiles/Release-Metadaten/README-Badge).
+
+0.5.1 (2026-05-26)
+-------------------
+
+Added
+~~~~~
+
+* Neuer Gig-Endpoint ``GET /gigs/genre_palette`` liefert eine globale, deterministische Genre-Farbpalette fuer konsistente Farben ueber alle Statistiken hinweg.
+
+Changed
+~~~~~~~
+
+* Genre-Farben in den Gig-/Saison-Statistikplots werden nun backend-seitig vereinheitlicht und nicht mehr pro einzelnem Datensatz lokal abgeleitet.
+* Genre-Palette auf bis zu 25 eindeutige Farben erweitert, bevor Farben zyklisch wiederverwendet werden.
+* Chore: Projektversion auf ``0.5.1`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
+0.5.0 (2026-05-26)
+-------------------
+
+Added
+~~~~~
+
+* Gig- und Saison-Statistik: Neuer Feedback-Verteilungsplot (Donut) für Live-Bewertungen.
+* Gig- und Saison-Statistik: Genre-Visualisierung mit relativer Verteilung und normalisiertem Stacked-Bar-Verlauf.
+* Genre-Plot: Filter nach Veranstaltungsart in der Saisonstatistik.
+
+Changed
+~~~~~~~
+
+* Stats-Plots visuell überarbeitet: kompaktere Diagrammbereiche, bessere Achsenbeschriftung, weniger Label-Überlappungen.
+* Chore: Projektversion auf ``0.5.0`` erhöht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog um die neuen Feedback- und Genre-Auswertungen ergänzt.
+
+0.4.6a (2026-05-23)
+--------------------
+
+Fixed
+~~~~~
+
+* Setlisteneditor: Beim Drag-and-Drop aus der Songliste in ein Set wurde der neue Song in bestimmten Fällen nicht persistiert. Der Speichern-Flow setzt nun die ``song_id`` robust, sodass der Eintrag zuverlässig gespeichert wird.
+
+Changed
+~~~~~~~
+
+* Projektversion auf ``0.4.6a`` erhöht (Backend/Frontend/Release-Metadaten).
+
+0.4.6 (2026-05-23)
+-------------------
+
+Changed
+~~~~~~~
+
+* Live-Modus Layout wurde für bessere Bedienbarkeit auf Bühne/Tablet überarbeitet (stabileres Höhenlayout, größere Bewertungsschaltflächen, bessere Kontraste im Light/Dark-Mode).
+* Song-Einfügen und Hilfe werden als Overlay dargestellt, damit die Hauptansicht ohne störendes Vertikal-Scrollen nutzbar bleibt.
+* Setlisteneditor: Songliste unterstützt jetzt Drag-and-Drop direkt in Sets; neue Einträge werden dabei robust als neue Set-Songs verarbeitet.
+* Setlisteneditor: Beim Hinzufügen aus der Songliste kann das Ziel-Set direkt gewählt werden (statt immer nur ans Ende der Setliste).
+* Setlisteneditor: Layout und Bedienelemente wurden für Tablet/Touch verbessert (größere Buttons, optimierte Grid-Aufteilung, bessere Sichtbarkeit von Set-/Song-Infos).
+
+
 0.4.5 (2026-05-22)
 -------------------
 

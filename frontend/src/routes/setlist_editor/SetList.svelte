@@ -19,11 +19,10 @@
 <script>
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
-  import { dndzone, overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
+  import { dndzone } from 'svelte-dnd-action';
   import {getFirstSinger, getColorBySinger } from '$lib/common.js';
   import { updateGigSetlist, getSong, logout as apiLogout} from '$lib/api.js';
 
-  overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
 
   let { setlist = $bindable() } = $props();
   let setIndex = $state(1);
@@ -37,6 +36,11 @@
 
   
   let nextNegativeSetsongId = $state(-1);
+  let deletingSongIds = $state(new Set());
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   function formatPauseForInput(value) {
     if (!value) return '';
@@ -117,7 +121,20 @@
     const targetMinutes = hhmmToMinutes(target);
     const plannedMinutes = hhmmToMinutes(planned);
     if (targetMinutes == null || plannedMinutes == null) return null;
-    return plannedMinutes - targetMinutes;
+
+    // Berücksichtigung von Datumsübergang (Mitternacht)
+    // Wenn die Zielendzeit sehr früh am Morgen ist (< 6:00)
+    // und die geplante Zeit später am "selben Tag" ist (aber > 6:00, also eher am Vorabend)
+    // dann geht der Gig über Mitternacht hinaus
+    let adjustedTargetMinutes = targetMinutes;
+    if (targetMinutes < 6 * 60 && plannedMinutes > 6 * 60) {
+      // Zielzeit ist früh am Morgen (nächster Tag)
+      // und geplante Zeit ist später am Vorabend (> 6:00)
+      // → Datumsüberlauf: addiere 24 Stunden zur Zielzeit für den Vergleich
+      adjustedTargetMinutes += 24 * 60;
+    }
+
+    return plannedMinutes - adjustedTargetMinutes;
   }
 
   function getSongStartTime(setIdx, songIdx) {
@@ -143,7 +160,31 @@
   }
 
   async function handleSongsFinalize(setIdx, { detail }) {
-    setlist.sets[setIdx].songs = cleanDnDItems(detail.items);
+    const processedSongs = cleanDnDItems(detail.items).map(song => {
+      // Wenn der Song aus der SongList via svelte-dnd-action gezogen wurde, hat er eine ID beginnend mit "new-"
+      if (typeof song.setsong_id === 'string' && song.setsong_id.startsWith('new-')) {
+        const parts = song.setsong_id.split('-');
+        const originalSongId = Number(parts[1]);
+        return {
+          ...song,
+          id: originalSongId,
+          // Backend erwartet in Songs immer song_id.
+          song_id: originalSongId,
+          // Neue temporäre negative setsong_id vergeben
+          setsong_id: -Math.floor(Date.now() + Math.random() * 100000)
+        };
+      }
+      // Fallback: Falls ein Song-Objekt ohne song_id reinkommt, aus id ableiten.
+      if (song?.song_id == null && song?.id != null) {
+        return {
+          ...song,
+          song_id: Number(song.id)
+        };
+      }
+      return song;
+    });
+
+    setlist.sets[setIdx].songs = processedSongs;
     setlist = { ...setlist };
 
     const updated = await updateSetlist(setlist);
@@ -230,6 +271,12 @@
   }
 
   async function removeSongFromSet(setIdx, setsong_id) {
+    if (deletingSongIds.has(setsong_id)) return;
+
+    deletingSongIds = new Set(deletingSongIds).add(setsong_id);
+    // Erst visuelle Exit-Animation, dann Datenmutation.
+    await wait(170);
+
     // Save original state for rollback
     const originalSongs = [...setlist.sets[setIdx].songs];
 
@@ -245,11 +292,15 @@
         setlist.sets[setIdx].songs = originalSongs;
         setlist = { ...setlist };
       }
+      deletingSongIds = new Set(deletingSongIds);
+      deletingSongIds.delete(setsong_id);
       //showSuccess('Song erfolgreich entfernt');
     } catch (error) {
       // Rollback on error
       setlist.sets[setIdx].songs = originalSongs;
       setlist = { ...setlist };
+      deletingSongIds = new Set(deletingSongIds);
+      deletingSongIds.delete(setsong_id);
       //showError(`Fehler beim Entfernen des Songs: ${error.message}`);
     }
   }
@@ -325,17 +376,22 @@
 
 {#each setlist.sets as set, setIdx (set.gigset_id)}
   {@const pauseBeforeSet = getPauseBeforeSet(setIdx)}
-  <div class="set-card">
+  <div class="set-card shadow-sm transition-all duration-200 hover:shadow-md">
     {#if pauseBeforeSet}
-      <div class="pause-before-set">Pause: {pauseBeforeSet} min</div>
+      <div class="pause-before-set flex items-center gap-1">
+        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Pause: {pauseBeforeSet} min
+      </div>
     {/if}
-    <div class="set-header ">
-       <button class="btn btn-sm variant-filled-primary py-0" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
-          + Set
+    <div class="set-header">
+       <button class="btn btn-sm variant-filled-primary min-h-[38px] font-bold px-3 py-0 touch-manipulation" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
+          + Set davor
        </button>
        <input
           type="text"
-          class="setlist-name-input"
+          class="setlist-name-input min-h-[38px]"
           value={set.setlist_name ?? ''}
           placeholder={`Set ${setIdx + 1}`}
           oninput={(e) => {
@@ -354,14 +410,20 @@
             })();
           }}
        />
-       <button class="btn btn-sm variant-filled-error py-0" onclick={() => removeSet(setIdx)} disabled={isUpdating}>
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+       <button class="btn btn-sm variant-filled-error min-h-[38px] min-w-[38px] flex items-center justify-center p-0 touch-manipulation" onclick={() => removeSet(setIdx)} disabled={isUpdating} aria-label="Set löschen">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
             </svg>
        </button>
     </div>
-    <div class="set-time-row">Start: {getSetStartTime(setIdx) || '--:--'}</div>
+    <div class="set-time-row flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary-500">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Start: <span class="bg-primary-500/10 px-2 py-0.5 rounded text-primary-700 dark:text-primary-300 font-bold">{getSetStartTime(setIdx) || '--:--'}</span>
+    </div>
     <div
+      class="songs-drag-zone p-2 rounded-b-lg border-2 border-dashed border-transparent transition-colors duration-150 min-h-[60px]"
       use:dndzone={{
         items: set.songs,
         type: 'song-in-set',
@@ -374,66 +436,86 @@
     >
       {#each set.songs as song, songIdx (song.setsong_id)}
         {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
-        <div class="song-in-set text-surface-900 dark:text-surface-950" data-song-id={song.setsong_id}
+        <div class="song-in-set text-surface-900 dark:text-surface-950 shadow-sm hover:shadow transition-shadow duration-150" data-song-id={song.setsong_id}
+        class:song-removing={deletingSongIds.has(song.setsong_id)}
         class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
-          <span>
-          <small class="song-time">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
-          {#if song.brass === 1}
-            🎺
-          {/if}
-          {song.title}
-          {#if isDuplicateSong}
-            <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
-          {/if}
-          <small>{song.comment}</small>
+          <span class="flex items-center gap-1.5 min-w-0 flex-grow py-1">
+            <small class="song-time bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded font-bold text-xs">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
+            {#if song.brass === 1}
+              <span class="text-base flex-shrink-0" title="Bläser">🎺</span>
+            {/if}
+            <span class="font-semibold text-sm truncate mr-1">{song.title}</span>
+            {#if isDuplicateSong}
+              <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
+            {/if}
+            {#if song.comment}
+              <small class="text-xs opacity-75 truncate max-w-[120px] italic">({song.comment})</small>
+            {/if}
           </span>
-          <button class="btn btn-sm variant-filled-error py-0"
+          <button class="btn btn-sm variant-filled-error min-h-[36px] min-w-[36px] flex items-center justify-center p-0 ml-2 touch-manipulation"
+                  aria-label="Song entfernen"
                   onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
       {/each}
 
       {#if !set.songs.length}
-        <div class="empty-set-hint">Ziehe Songs hierher…</div>
+        <div class="empty-set-hint py-4">Ziehe Songs hierher…</div>
       {/if}
     </div>
 
-    <div class="set-end-row">
-      <span>Ende: {getSetEndTime(setIdx) || '--:--'}</span>
-      <label class="pause-label" for={`pause-${setIdx}`}>Pause:</label>
-      <input
-        id={`pause-${setIdx}`}
-        type="time"
-        step="60"
-        class="pause-input"
-        value={formatPauseForInput(set.pause)}
-        oninput={(e) => {
-          setlist.sets[setIdx].pause = e.target.value;
-        }}
-        onblur={async (e) => {
-          const normalizedPause = normalizePauseForApi(e.target.value);
-          setlist.sets[setIdx].pause = normalizedPause;
-          const snapshot = JSON.parse(JSON.stringify(setlist));
-          snapshot.sets[setIdx].pause = normalizedPause;
-          const updated = await updateSetlist(snapshot);
-          if (updated) setlist = updated;
-        }}
-      />
+    <div class="set-end-row px-3 py-2 border-t border-surface-200/50 bg-surface-100/10 rounded-b-lg">
+      <div class="flex items-center gap-1">
+        <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"></path>
+        </svg>
+        <span>Ende: <strong class="bg-surface-200/50 px-2 py-0.5 rounded text-surface-800 dark:text-surface-200">{getSetEndTime(setIdx) || '--:--'}</strong></span>
+      </div>
+
+      <div class="flex items-center gap-1.5 ml-auto">
+        <label class="pause-label flex items-center gap-1" for={`pause-${setIdx}`}>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Pause:
+        </label>
+        <input
+          id={`pause-${setIdx}`}
+          type="time"
+          step="60"
+          class="pause-input min-h-[34px] w-[95px]"
+          value={formatPauseForInput(set.pause)}
+          oninput={(e) => {
+            setlist.sets[setIdx].pause = e.target.value;
+          }}
+          onblur={async (e) => {
+            const normalizedPause = normalizePauseForApi(e.target.value);
+            setlist.sets[setIdx].pause = normalizedPause;
+            const snapshot = JSON.parse(JSON.stringify(setlist));
+            snapshot.sets[setIdx].pause = normalizedPause;
+            const updated = await updateSetlist(snapshot);
+            if (updated) setlist = updated;
+          }}
+        />
+      </div>
+
       {#if setIdx === (setlist.sets.length - 1) && getTargetGigEndTime()}
         {@const gigDiff = getGigEndDiffMinutes()}
-        <span class="gig-target-end">Ziel: {getTargetGigEndTime()}</span>
-        {#if gigDiff != null}
-          {#if gigDiff >= 0}
-            <span class="gig-end-ok">Plan-Ende: {getPlannedGigEndTime() || '--:--'}</span>
-          {:else}
-            <span class="gig-end-over">-{Math.abs(gigDiff)} min</span>
+        <div class="w-full flex flex-wrap gap-2 justify-end mt-2 pt-2 border-t border-surface-200/50">
+          <span class="gig-target-end text-xs">Ziel: <strong>{getTargetGigEndTime()}</strong></span>
+          {#if gigDiff != null}
+            {#if gigDiff >= 0}
+              <span class="gig-end-ok text-xs text-success-500 bg-success-500/10 px-2 py-0.5 rounded">Plan-Ende: {getPlannedGigEndTime() || '--:--'}</span>
+            {:else}
+              <span class="gig-end-over text-xs text-error-500 bg-error-500/10 px-2 py-0.5 rounded">-{Math.abs(gigDiff)} min</span>
+            {/if}
           {/if}
-        {/if}
+        </div>
       {/if}
     </div>
   </div>
@@ -441,18 +523,38 @@
 {/each}
 
 <div class="add-set-end-container">
-  <button class="insert-btn" onclick={addSetAtEnd} disabled={isUpdating}>
-    + Set
+  <button class="btn variant-filled-secondary hover:variant-filled-primary min-h-[42px] px-6 font-bold shadow-md transition-all duration-150 touch-manipulation rounded-lg" onclick={addSetAtEnd} disabled={isUpdating}>
+    + Weiteres Set hinzufügen
   </button>
 </div>
 
 <style>
-.set-card   {  border:1.5px solid #76a7db; border-radius:2px;
-              margin-bottom:0.5em; padding:0.5em 0.5em .25em; }
+.set-card   {
+  background: rgb(var(--color-surface-50));
+  border: 1px solid rgb(var(--color-surface-200));
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
 
-.song-in-set{ display:flex; justify-content:space-between; align-items:center;
-              background:#e7f1fb; margin-bottom:4px; padding:.33em .6em;
-              border-radius:6px; }
+.song-in-set {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  margin-bottom: 6px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 170ms ease, opacity 170ms ease, margin 170ms ease, padding 170ms ease;
+  transform-origin: left center;
+}
+
+.song-removing {
+  transform: translateX(28px);
+  opacity: 0;
+  pointer-events: none;
+}
 
 .song-duplicate {
   border: 1.5px solid #dc2626;
@@ -465,27 +567,24 @@
   font-weight: 700;
 }
 
-.empty-set-hint{ color:#7895a9; font-style:italic; text-align:center; opacity:.75; }
-.pause{ margin:.2em 0 .7em; font-style:italic; color:#888; }
-
-.pause-before-set {
-  margin: .1em 0 .45em;
-  color: #6b7280;
-  font-size: .9em;
+.empty-set-hint {
+  color: rgb(var(--color-surface-500));
   font-style: italic;
+  text-align: center;
+  opacity: 0.75;
 }
 
-.set-time-row {
-  margin: .35em 0 .55em;
-  color: #1e5d91;
-  font-size: .9em;
-  font-weight: 600;
+.pause-before-set {
+  margin: 0.5rem 0.5rem 0.25rem;
+  color: rgb(var(--color-surface-600));
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 500;
 }
 
 .set-end-row {
-  margin: .45em 0 .35em;
   color: #1e5d91;
-  font-size: .9em;
+  font-size: .88rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -494,112 +593,73 @@
 }
 
 .gig-target-end {
-  margin-left: .5em;
-  color: #475569;
-  font-weight: 500;
+  color: rgb(var(--color-surface-600));
 }
 
 .gig-end-ok {
-  color: #15803d;
   font-weight: 700;
 }
 
 .gig-end-over {
-  color: #b91c1c;
   font-weight: 700;
 }
 
 .song-time {
   display: inline-block;
-  min-width: 44px;
-  margin-right: .42em;
-  color: #475569;
-  font-weight: 600;
+  color: rgb(var(--color-surface-700));
 }
 
 .pause-label {
-  color: #6b7280;
-  font-size: .92em;
-  font-style: italic;
+  color: rgb(var(--color-surface-600));
+  font-size: .88rem;
 }
 
 .pause-input {
-  width: 110px;
-  border: 1px solid #b2d4fa;
-  background: #f8fcff;
-  color: #2f587b;
-  border-radius: 5px;
-  padding: .18em .45em;
-  font-size: .92em;
+  border: 1px solid rgb(var(--color-surface-300));
+  background: white;
+  color: rgb(var(--color-surface-800));
+  border-radius: 6px;
+  padding: .2em .5em;
+  font-size: .88rem;
 }
 
 .pause-input:focus {
   outline: none;
-  border-color: #3c9ad8;
+  border-color: rgb(var(--color-primary-500));
 }
 
 .set-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  //gap: 1em;
-  background: linear-gradient(90deg, #e2ecfa 65%, #d8f0fe 100%);
-  border-radius: 10px 10px 0 0;
-  padding: .8em 1.1em .7em;
-  box-shadow: 0 2px 8px rgba(90,150,220,0.08);
-  border-bottom: 1.7px solid #93b6e7;
-}
-
-.set-header b {
-  font-size: 1.11em;
-  color: #2585da;
-  letter-spacing: 0.5px;
-  margin-right: .6em;
+  gap: 0.75rem;
+  background: rgb(var(--color-surface-100));
+  padding: .65rem 0.75rem;
+  border-bottom: 1px solid rgb(var(--color-surface-200));
 }
 
 .setlist-name-input {
-  flex: 1 1 180px;
-  min-width: 120px;
-  max-width: 250px;
-  border: 1.2px solid #b2d4fa;
-  background: #f4fbff;
-  color: #2574b6;
-  border-radius: 5px;
-  font-size: 1em;
-  padding: .28em .7em;
-  margin-left: .1em;
-  transition: border-color 0.18s;
-}
-.setlist-name-input:focus {
-  border-color: #3c9ad8;
-  outline: none;
-}
-
-.insert-btn {
-  background: linear-gradient(88deg, #8ec8f8, #368adf);
-  color: #fff;
-  border: none;
+  flex: 1;
+  min-width: 100px;
+  max-width: 100%;
+  border: 1px solid rgb(var(--color-surface-300));
+  background: white;
+  color: rgb(var(--color-surface-900));
   border-radius: 6px;
-  padding: .37em 1.2em;
-  font-weight: bold;
-  font-size: 1em;
-  box-shadow: 0 1.5px 7px rgba(90, 142, 185, 0.12);
-  transition: background 0.25s, box-shadow 0.25s, transform 0.15s;
-  cursor: pointer;
-  outline: none;
-  margin-right: .5em;
+  font-size: 0.95rem;
+  padding: .35rem .6rem;
+  transition: border-color 0.18s;
+  font-weight: 600;
 }
 
-.insert-btn:hover, .insert-btn:focus {
-  background: linear-gradient(90deg, #60b0ea, #276bb9);
-  box-shadow: 0 4px 16px rgba(30, 80, 160, 0.12);
-  transform: translateY(-2px) scale(1.03);
+.setlist-name-input:focus {
+  border-color: rgb(var(--color-primary-500));
+  outline: none;
 }
 
 .add-set-end-container {
   display: flex;
-  justify-content: flex;
-  padding: 1.2em 0 .5em;
+  justify-content: center;
+  padding: 1.5rem 0;
 }
 </style>
-

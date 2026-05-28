@@ -42,7 +42,7 @@ from backend.utils.check_permissions import check_admin, check_editor
 from backend.utils.pdf_palette import find_logo_path, resolve_schedule_palette
 from backend.utils.setlist_timing import calculate_setlist_timing, serialize_timing_for_api
 
-from backend import models, schemas, auth
+from backend import models, schemas, auth, app_config
 
 import openpyxl
 from openpyxl.styles import Font, Alignment
@@ -91,6 +91,14 @@ DEFAULT_SCHEDULE_PALETTE = {
     "line": colors.HexColor("#334155"),
     "fixed": colors.HexColor("#123129"),
 }
+
+GENRE_PALETTE = [
+    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+    '#06b6d4', '#14b8a6', '#f97316', '#ec4899', '#84cc16',
+    '#6366f1', '#22c55e', '#f43f5e', '#eab308', '#0ea5e9',
+    '#a855f7', '#ef6c00', '#00acc1', '#7cb342', '#d81b60',
+    '#3949ab', '#00897b', '#c0ca33', '#5e35b1', '#039be5'
+]
 
 
 def _build_rollover_datetimes(base_date: date, values: list[tuple[str, time]]) -> list[tuple[str, datetime]]:
@@ -511,12 +519,14 @@ def get_season_statistics(
     song_play_counts = {}  # song_id -> count
     gigs_overview = []
     genre_counts = {}  # genre -> count
+    genre_timeline = []
 
     for gig in gigs:
         gig_songs = 0
         gig_skipped = 0
         gig_inserted = 0
         gig_feedbacks = []
+        gig_genre_counts = {}
 
         for gigset in gig.sets:
             set_obj = gigset.set
@@ -542,6 +552,16 @@ def get_season_statistics(
                     genre = setsong.song.genre.strip()
                     if genre:
                         genre_counts[genre] = genre_counts.get(genre, 0) + 1
+                        gig_genre_counts[genre] = gig_genre_counts.get(genre, 0) + 1
+
+        if gig_genre_counts:
+            genre_timeline.append(schemas.GenreTimelinePoint(
+                label=gig.name,
+                date=gig.datum.strftime('%Y-%m-%d') if gig.datum else None,
+                kind_of_gig=gig.kind_of_gig,
+                genre_counts=gig_genre_counts,
+                total=sum(gig_genre_counts.values()),
+            ))
 
         gig_feedback_avg = round(sum(gig_feedbacks) / len(gig_feedbacks), 2) if gig_feedbacks else None
         gigs_overview.append(schemas.GigOverviewEntry(
@@ -584,9 +604,48 @@ def get_season_statistics(
         feedback_avg=feedback_avg,
         feedback_distribution=feedback_distribution,
         genre_distribution=genre_counts,
+        genre_timeline=genre_timeline,
         top_songs=top_songs,
         gigs_overview=gigs_overview,
     )
+
+
+@router.get("/genre_palette", response_model=schemas.GenrePaletteOut)
+def get_genre_palette(
+    db: Session = Depends(auth.get_db),
+    current_user=Depends(auth.get_current_user),
+):
+    """Return a deterministic global genre->color map for all available genres."""
+    genres_by_key: dict[str, str] = {}
+
+    def _register_genre(value: str | None) -> None:
+        if not isinstance(value, str):
+            return
+        text = value.strip()
+        if not text:
+            return
+        key = text.casefold()
+        genres_by_key.setdefault(key, text)
+
+    # Prefer global configured genres when available.
+    soft_config = app_config.get_soft_config()
+    for entry in soft_config.get("genres", []):
+        if isinstance(entry, str):
+            _register_genre(entry)
+        elif isinstance(entry, dict):
+            _register_genre(entry.get("label") or entry.get("key"))
+
+    # Add any legacy/ad-hoc genres present in DB songs.
+    db_genres = db.query(models.Song.genre).filter(models.Song.genre.isnot(None)).distinct().all()
+    for (genre,) in db_genres:
+        _register_genre(genre)
+
+    sorted_keys = sorted(genres_by_key.keys(), key=lambda k: k.casefold())
+    palette = {
+        genres_by_key[key]: GENRE_PALETTE[idx % len(GENRE_PALETTE)]
+        for idx, key in enumerate(sorted_keys)
+    }
+    return schemas.GenrePaletteOut(palette=palette)
 
 
 @router.post("/livemode_available_batch")
@@ -706,6 +765,7 @@ def get_gig_statistics(
     feedback_values = []
     set_entries = []
     genre_counts = {}  # genre -> count
+    genre_timeline = []
 
     for gigset in gig.sets:
         set_obj = gigset.set
@@ -714,6 +774,7 @@ def get_gig_statistics(
 
         set_songs = []
         set_feedbacks = []
+        set_genre_counts = {}
 
         for setsong in sorted(set_obj.songs, key=lambda s: s.position):
             song = setsong.song
@@ -734,6 +795,7 @@ def get_gig_statistics(
                 genre = song.genre.strip()
                 if genre:
                     genre_counts[genre] = genre_counts.get(genre, 0) + 1
+                    set_genre_counts[genre] = set_genre_counts.get(genre, 0) + 1
 
             set_songs.append(schemas.GigStatsSongEntry(
                 song_id=song_id,
@@ -746,6 +808,14 @@ def get_gig_statistics(
             ))
 
         set_feedback_avg = round(sum(set_feedbacks) / len(set_feedbacks), 2) if set_feedbacks else None
+        if set_genre_counts:
+            genre_timeline.append(schemas.GenreTimelinePoint(
+                label=set_obj.setlist_name or set_obj.name or f"Set {len(set_entries) + 1}",
+                date=gig.datum.strftime('%Y-%m-%d') if gig.datum else None,
+                kind_of_gig=gig.kind_of_gig,
+                genre_counts=set_genre_counts,
+                total=sum(set_genre_counts.values()),
+            ))
         set_entries.append(schemas.GigStatsSetEntry(
             set_name=set_obj.setlist_name or set_obj.name or f"Set {len(set_entries) + 1}",
             feedback_avg=set_feedback_avg,
@@ -768,6 +838,7 @@ def get_gig_statistics(
         feedback_avg=feedback_avg,
         feedback_distribution=feedback_distribution,
         genre_distribution=genre_counts,
+        genre_timeline=genre_timeline,
         sets=set_entries,
     )
 
@@ -1277,6 +1348,7 @@ def export_forscore_setlist(
         logger.error(f"Gig with id={gig_id} not found")
         raise HTTPException(status_code=404, detail="Gig not found")
 
+    setlist_name = (gig.name or "libreStage Setlist").strip() or "libreStage Setlist"
     setlist_items = []
     for gigset in sorted(gig.sets, key=lambda x: x.position):
         set_obj = gigset.set
@@ -1284,7 +1356,8 @@ def export_forscore_setlist(
         for setsong in setsonglist:
             if setsong.song:
                 setlist_items.append({
-                    "title": setsong.song.title
+                    "title": setsong.song.title,
+                    "setlist": setlist_name,
                 })
 
     try:

@@ -29,7 +29,7 @@ import logging
 from sqlalchemy.orm import Session
 from typing import List
 from backend import models, schemas, auth
-from backend.utils.email import send_email
+from backend.utils.mailer import send_email
 import os
 from dotenv import load_dotenv
 from backend.utils.check_permissions import check_admin
