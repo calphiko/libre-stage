@@ -63,12 +63,21 @@
   let showHelp = $state(false);
   let tabSet = $state(1); // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
   let gridApi;
+  let gridContainerEl = $state(null);
+  let desktopGridHeight = $state(600);
 
   let expandedSongId = $state(null);
   let editSongId = $state(null);
   let editBuffer = $state({});
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
+  let allSongColumns = $derived(
+    [...songFields, ...songFieldsDetails].filter((field, index, list) =>
+      list.findIndex(candidate => candidate.key === field.key) === index
+    )
+  );
+  const defaultVisibleColumnKeys = songFields.map(field => field.key);
+  let visibleColumnKeys = $state([...defaultVisibleColumnKeys]);
 
   let { data } = $props();
 
@@ -428,11 +437,12 @@
     }
   }
 
-  let columnDefs = $derived(songFields.map(f => {
+  let columnDefs = $derived(allSongColumns.map(f => {
     if (f.key === 'status') {
       return {
         field: f.key,
         headerName: f.label,
+        hide: !visibleColumnKeys.includes(f.key),
         sortable: true,
         filter: StatusFilter,
         floatingFilter: true,
@@ -445,6 +455,7 @@
     return {
       field: f.key,
       headerName: f.label,
+      hide: !visibleColumnKeys.includes(f.key),
       sortable: true,
       filter: 'agTextColumnFilter',
       floatingFilter: true,
@@ -490,11 +501,77 @@
 
   function onGridReady(params) {
     gridApi = params.api;
+    syncGridColumnVisibility();
+    refreshGridHeight();
+  }
+
+  function scheduleGridLayout() {
+    if (!gridApi) return;
+    requestAnimationFrame(() => {
+      gridApi.doLayout();
+      gridApi.sizeColumnsToFit();
+    });
+  }
+
+  function refreshGridHeight() {
+    if (!browser || !gridContainerEl) {
+      scheduleGridLayout();
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const rect = gridContainerEl.getBoundingClientRect();
+      const availableHeight = Math.floor(window.innerHeight - rect.top - 12);
+      desktopGridHeight = Math.max(420, availableHeight);
+      scheduleGridLayout();
+    });
+  }
+
+  function syncGridColumnVisibility() {
+    if (!gridApi) return;
+
+    const visibleSet = new Set(visibleColumnKeys);
+    const visibleKeys = allSongColumns
+      .map(column => column.key)
+      .filter(key => visibleSet.has(key));
+    const hiddenKeys = allSongColumns
+      .map(column => column.key)
+      .filter(key => !visibleSet.has(key));
+
+    if (visibleKeys.length > 0) {
+      gridApi.setColumnsVisible(visibleKeys, true);
+    }
+    if (hiddenKeys.length > 0) {
+      gridApi.setColumnsVisible(hiddenKeys, false);
+    }
+
+    if (visibleKeys.length > 0) {
+      scheduleGridLayout();
+    }
+  }
+
+  function toggleColumnVisibility(columnKey) {
+    if (visibleColumnKeys.includes(columnKey)) {
+      visibleColumnKeys = visibleColumnKeys.filter(key => key !== columnKey);
+    } else {
+      visibleColumnKeys = [...visibleColumnKeys, columnKey];
+    }
+    syncGridColumnVisibility();
+  }
+
+  function showAllColumns() {
+    visibleColumnKeys = allSongColumns.map(column => column.key);
+    syncGridColumnVisibility();
+  }
+
+  function resetToDefaultColumns() {
+    visibleColumnKeys = [...defaultVisibleColumnKeys];
+    syncGridColumnVisibility();
   }
 
   // Wird aufgerufen sobald die ersten Daten im Grid gerendert sind
   function onFirstDataRendered(params) {
-    params.api.sizeColumnsToFit();
+    refreshGridHeight();
     // Initalen Status-Filter setzen: 'retired' abwählen
     const allStatuses = [];
     params.api.forEachNode(node => {
@@ -510,6 +587,27 @@
       });
     }
   }
+
+  onMount(() => {
+    if (!browser) return;
+    const onResize = () => refreshGridHeight();
+    window.addEventListener('resize', onResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      refreshGridHeight();
+    });
+
+    if (gridContainerEl) {
+      resizeObserver.observe(gridContainerEl);
+    }
+
+    refreshGridHeight();
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      resizeObserver.disconnect();
+    };
+  });
 
   function onRowClicked(event) {
     const node = event.node;
@@ -890,14 +988,14 @@ let filteredSongs = $derived(songs
 
 
 
-<div class="max-w-8xl mx-auto py-8 md:px-4">
+<div class="max-w-8xl mx-auto py-3 md:py-4 md:px-4 h-full min-h-full w-full flex flex-col">
 
 
-  <div class="card bg-surface-2 rounded-3xl shadow-md md:border md:border-outline-variant p-2 md:p-8">
+  <div class="card bg-surface-2 rounded-2xl shadow-md md:border md:border-outline-variant p-2 md:p-4 lg:p-5 flex-1 flex flex-col min-h-0">
 
 
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center md:mb-6">
-        <div class="flex items-center gap-3 mb-4">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-3 md:mb-3">
+        <div class="flex items-center gap-2 mb-2 md:mb-0">
           <h3 class="h2 text-on-surface">Songs</h3>
           {#if canEdit()}
             <button
@@ -908,8 +1006,11 @@ let filteredSongs = $derived(songs
           {/if}
         </div>
         <button
-          class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
-          onclick={() => showHelp = !showHelp}
+          class="btn variant-ghost-surface btn-sm mb-2 md:mb-0"
+          onclick={() => {
+            showHelp = !showHelp;
+            refreshGridHeight();
+          }}
           aria-label="Hilfe anzeigen"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -988,18 +1089,18 @@ let filteredSongs = $derived(songs
 
 
     <!-- Tab-Navigation -->
-    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1">
-      <button onclick={() => tabSet = 1} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {vorschlaegeSongs.length > 0 ? 'font-bold' : ''}">
+    <div class="flex border-b border-surface-300 dark:border-surface-600 mb-2 gap-1">
+      <button onclick={() => { tabSet = 1; refreshGridHeight(); }} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {vorschlaegeSongs.length > 0 ? 'font-bold' : ''}">
         <span>Vorschläge ({vorschlaegeSongs.length})</span>
       </button>
 
-      <button onclick={() => tabSet = 0} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+      <button onclick={() => { tabSet = 0; refreshGridHeight(); }} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
         <span>Songs ({filteredSongs.length})</span>
       </button>
     </div>
-    <div>
+    <div class="flex-1 min-h-0 flex flex-col">
 
-      <div class="mt-4">
+      <div class="mt-2 flex-1 min-h-0 flex flex-col">
         {#if tabSet === 0}
           <!-- Tab 1: Songs -->
 
@@ -1007,8 +1108,42 @@ let filteredSongs = $derived(songs
             <div class="alert alert-danger">{error}</div>
           {/if}
 
-          <div class="hidden md:block"> <!-- Tabelle nur ab md sichtbar -->
-            <div class="ag-theme-alpine" style="height: 600px; width: 100%;">
+          <div class="hidden md:flex md:flex-col md:flex-1 md:min-h-0"> <!-- Tabelle nur ab md sichtbar -->
+            <details class="mb-3 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-100 dark:bg-surface-800" ontoggle={refreshGridHeight}>
+              <summary class="cursor-pointer px-4 py-2 font-semibold">Spaltenauswahl</summary>
+              <div class="px-4 pb-4 pt-2">
+                <div class="mb-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm variant-soft-primary"
+                    onclick={showAllColumns}
+                  >Alle anzeigen</button>
+                  <button
+                    type="button"
+                    class="btn btn-sm variant-soft-secondary"
+                    onclick={resetToDefaultColumns}
+                  >Standardansicht</button>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  {#each allSongColumns as column}
+                    <label class="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={visibleColumnKeys.includes(column.key)}
+                        onchange={() => toggleColumnVisibility(column.key)}
+                      />
+                      <span>{column.label}</span>
+                    </label>
+                  {/each}
+                </div>
+              </div>
+            </details>
+
+            <div
+              class="ag-theme-alpine flex-1 min-h-[420px]"
+              bind:this={gridContainerEl}
+              style="height: {desktopGridHeight}px; width: 100%;"
+            >
               <AgGrid
                   {rowData}
                   {columnDefs}

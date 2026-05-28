@@ -160,7 +160,7 @@
   });
 </script>
 
-<div bind:this={gridDiv} style="height: 600px; width: 100%;"></div>
+<div bind:this={gridDiv} class="h-full w-full" style="height: 100%; width: 100%;"></div>
 
 <style>
   /* Floating Filter Inputs (Textfelder in der Filter-Zeile) */

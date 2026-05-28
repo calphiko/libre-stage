@@ -9,6 +9,7 @@
 Added
 ~~~~~
 
+* Song Tabelle im Webfrontend flexibler und Platzökonomischer gemacht
 * Songs API: Neuer Endpoint ``GET /songs/crawler/metadata`` liefert Song-Metadaten (Dauer, Komponist/Texter, YouTube-Link) fuer ``interpret`` + ``title``.
 * Song anlegen: Formular laedt Metadaten nun automatisch nach dem Ausfuellen von Interpret und Titel (inkl. Debounce/Cooldown und Ladeindikator).
 * Backend-Tests: Neue Testfaelle fuer den Metadata-Endpoint (200/404) und erweiterte ``audioscrawler``-Tests inklusive YouTube-Link-Aufloesung ueber Release-Kette.
