@@ -19,6 +19,7 @@ import pprint
 import pytest
 from datetime import time
 from backend.models import Song
+from backend.routers import songs as songs_router
 
 def test_unauthenticated(client):
     """Test that unauthenticated access is denied."""
@@ -264,3 +265,47 @@ def test_create_song_with_optional_fields(client, auth_headers):
     assert data["title"] == "Complete Song"
     assert data["composer"] == "Composer Name"
     assert data["ytlink"] == "https://youtube.com/watch?v=test"
+
+
+def test_get_song_scrawls(client, auth_headers, monkeypatch):
+    def fake_search_track_musicbrainz(interpret, title):
+        assert interpret == "Bon Jovi"
+        assert title == "Always"
+        return {
+            "recording_id": "rec-1",
+            "work_id": "work-1",
+            "duration": "00:03:08",
+            "ytlink": "https://youtu.be/test123",
+            "composers": ["Jon Bon Jovi", "Richie Sambora"],
+            "lyricists": ["Jon Bon Jovi"],
+        }
+
+    monkeypatch.setattr(songs_router.audioscrawler, "search_track_musicbrainz", fake_search_track_musicbrainz)
+
+    response = client.get(
+        "/songs/crawler/metadata",
+        params={"interpret": "Bon Jovi", "title": "Always"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["duration"] == "00:03:08"
+    assert data["ytlink"] == "https://youtu.be/test123"
+    assert data["composer"] == "Jon Bon Jovi, Richie Sambora"
+    assert data["texter"] == "Jon Bon Jovi"
+
+
+def test_get_song_scrawls_not_found(client, auth_headers, monkeypatch):
+    monkeypatch.setattr(songs_router.audioscrawler, "search_track_musicbrainz", lambda interpret, title: None)
+
+    response = client.get(
+        "/songs/crawler/metadata",
+        params={"interpret": "Unknown", "title": "Unknown"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "No metadata found"
+
+

@@ -37,6 +37,7 @@ from typing import List
 
 from backend import models, schemas, auth
 from backend.utils import mattermost
+from backend.utils import audioscrawler
 
 from dotenv import load_dotenv
 
@@ -431,3 +432,28 @@ def get_singers(
     users = db.query(models.User).filter(models.User.is_singer == 1).all()
     output = [u.clear_name for u in users]
     return output
+
+
+@router.get("/crawler/metadata", response_model=schemas.SongScrawlOut)
+def get_song_scrawls(
+        interpret: str = Query(..., min_length=1),
+        title: str = Query(..., min_length=1),
+        current=Depends(auth.get_current_user),
+):
+    data = audioscrawler.search_track_musicbrainz(interpret=interpret, title=title)
+    if not data:
+        raise HTTPException(status_code=404, detail="No metadata found")
+
+    composers = sorted(set(data.get("composers") or []))
+    lyricists = sorted(set(data.get("lyricists") or []))
+
+    return schemas.SongScrawlOut(
+        recording_id=data.get("recording_id"),
+        work_id=data.get("work_id"),
+        duration=data.get("duration"),
+        ytlink=data.get("ytlink"),
+        composers=composers,
+        lyricists=lyricists,
+        composer=", ".join(composers) if composers else None,
+        texter=", ".join(lyricists) if lyricists else None,
+    )
