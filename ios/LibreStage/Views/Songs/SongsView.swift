@@ -135,6 +135,9 @@ private struct CreateSongSheet: View {
     @State private var recognitionResultHint = ""
     @State private var recognitionDebugHint = ""
     @State private var songRecognitionAvailable = SongRecognitionService.isRecognitionAvailable
+    @State private var isMetadataLoading = false
+    @State private var metadataResultHint = ""
+    @State private var didApplyMetadataSuccessfully = false
     @State private var audioLevel: Double = 0
     @State private var recognitionTimeoutSeconds: Double = 20
     @State private var highlightedAutofillFields: Set<String> = []
@@ -226,6 +229,89 @@ private struct CreateSongSheet: View {
                                     : .spring(response: 0.28, dampingFraction: 0.66),
                                     value: duplicateWarningPulse
                                 )
+                        }
+
+                        if field.key == "interpret", canFetchCrawlerMetadata {
+                            Button {
+                                fetchCrawlerMetadata()
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: isMetadataLoading ? "arrow.triangle.2.circlepath" : (didApplyMetadataSuccessfully ? "checkmark.circle.fill" : "wand.and.stars"))
+                                        .font(.headline)
+                                        .symbolEffect(.pulse, value: isMetadataLoading)
+                                        .symbolEffect(.bounce, value: didApplyMetadataSuccessfully)
+                                        .foregroundStyle(didApplyMetadataSuccessfully ? .green : .accent)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Metadaten automatisch laden")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.primary)
+                                        Text("Komponist, Texter, Dauer und YouTube-Link")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    if isMetadataLoading {
+                                        ProgressView()
+                                    } else {
+                                        Image(systemName: didApplyMetadataSuccessfully ? "sparkles" : "chevron.right")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(didApplyMetadataSuccessfully ? .green : .secondary)
+                                    }
+                                }
+                                .padding(12)
+                                .background(
+                                    LinearGradient(
+                                        colors: [
+                                            didApplyMetadataSuccessfully ? Color.green.opacity(0.20) : Color.accentColor.opacity(0.18),
+                                            didApplyMetadataSuccessfully ? Color.green.opacity(0.10) : Color.accentColor.opacity(0.08)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(didApplyMetadataSuccessfully ? Color.green.opacity(0.45) : Color.accentColor.opacity(0.35), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isMetadataLoading || vm.isCreatingSong)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+                            .transition(.move(edge: .top).combined(with: .opacity).combined(with: .scale(scale: 0.98)))
+                            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: canFetchCrawlerMetadata)
+
+                            if !metadataResultHint.isEmpty {
+                                Text(metadataResultHint)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        if field.key == "interpret", !hasFieldInConfig("composer") {
+                            TextField("Komponist", text: binding(for: "composer"))
+                                .listAlignedFieldSurface()
+                                .listRowBackground(
+                                    highlightedAutofillFields.contains("composer")
+                                    ? Color.green.opacity(0.18)
+                                    : AppTheme.rowBackground(for: colorScheme)
+                                )
+                                .animation(.easeInOut(duration: 0.25), value: highlightedAutofillFields)
+                        }
+
+                        if field.key == "interpret", !hasFieldInConfig("texter") {
+                            TextField("Texter", text: binding(for: "texter"))
+                                .listAlignedFieldSurface()
+                                .listRowBackground(
+                                    highlightedAutofillFields.contains("texter")
+                                    ? Color.green.opacity(0.18)
+                                    : AppTheme.rowBackground(for: colorScheme)
+                                )
+                                .animation(.easeInOut(duration: 0.25), value: highlightedAutofillFields)
                         }
                     }
                 }
@@ -363,6 +449,74 @@ private struct CreateSongSheet: View {
             } catch {
                 vm.error = .networkError(error)
                 recognitionResultHint = "Erkennung fehlgeschlagen: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private var canFetchCrawlerMetadata: Bool {
+        !draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        && !draft.interpret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func fetchCrawlerMetadata() {
+        guard canFetchCrawlerMetadata else { return }
+
+        let title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let interpret = draft.interpret.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        Task {
+            didApplyMetadataSuccessfully = false
+            isMetadataLoading = true
+            defer { isMetadataLoading = false }
+
+            do {
+                let metadata = try await vm.fetchSongCrawlerMetadata(interpret: interpret, title: title)
+                var autofilledKeys: [String] = []
+
+                if let duration = metadata.duration, !duration.isEmpty {
+                    draft.setValue(duration, for: "duration")
+                    autofilledKeys.append("duration")
+                }
+                if let composer = metadata.composer, !composer.isEmpty {
+                    draft.setValue(composer, for: "composer")
+                    autofilledKeys.append("composer")
+                }
+                if let texter = metadata.texter, !texter.isEmpty {
+                    draft.setValue(texter, for: "texter")
+                    autofilledKeys.append("texter")
+                }
+                if let ytlink = metadata.ytlink, !ytlink.isEmpty {
+                    draft.setValue(ytlink, for: "ytlink")
+                    autofilledKeys.append("ytlink")
+                }
+
+                flashAutofillHighlight(for: autofilledKeys)
+                triggerAutofillHaptic(for: autofilledKeys)
+
+                if autofilledKeys.isEmpty {
+                    metadataResultHint = "Metadaten gefunden, aber keine uebernehmbaren Felder enthalten."
+                } else {
+                    metadataResultHint = "Metadaten uebernommen: \(autofilledKeys.joined(separator: ", "))"
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.74)) {
+                        didApplyMetadataSuccessfully = true
+                    }
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(1.4))
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            didApplyMetadataSuccessfully = false
+                        }
+                    }
+                }
+            } catch let appError as AppError {
+                if case .notFound = appError {
+                    metadataResultHint = "Keine Metadaten gefunden."
+                } else {
+                    vm.error = appError
+                    metadataResultHint = "Metadaten konnten nicht geladen werden."
+                }
+            } catch {
+                vm.error = .networkError(error)
+                metadataResultHint = "Metadaten konnten nicht geladen werden."
             }
         }
     }
@@ -507,10 +661,16 @@ private struct CreateSongSheet: View {
             set: {
                 draft.setValue($0, for: key)
                 if key == "title" || key == "interpret" {
+                    didApplyMetadataSuccessfully = false
+                    metadataResultHint = ""
                     checkDuplicate()
                 }
             }
         )
+    }
+
+    private func hasFieldInConfig(_ key: String) -> Bool {
+        vm.songFields.contains { $0.key == key }
     }
 
     private func setDefaultValuesIfNeeded() {

@@ -85,6 +85,16 @@ final class SongsViewModel {
     }
 
     @MainActor
+    func fetchSongCrawlerMetadata(interpret: String, title: String) async throws -> SongCrawlerMetadataOut {
+        let query = [
+            URLQueryItem(name: "interpret", value: interpret),
+            URLQueryItem(name: "title", value: title)
+        ]
+
+        return try await APIClient.shared.get(path: "/songs/crawler/metadata", queryItems: query)
+    }
+
+    @MainActor
     func submitCandidateFeedback(songId: Int, feedbacks: [SongFeedbackIn]) async {
         do {
             let _: [SongFeedbackBase] = try await APIClient.shared.put(

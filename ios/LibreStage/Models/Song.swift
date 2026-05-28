@@ -308,6 +308,17 @@ struct SongCreateRequest: Encodable {
     let duration: String?
 }
 
+struct SongCrawlerMetadataOut: Decodable {
+    let recording_id: String?
+    let work_id: String?
+    let duration: String?
+    let ytlink: String?
+    let composers: [String]
+    let lyricists: [String]
+    let composer: String?
+    let texter: String?
+}
+
 struct SongDetailsDraft {
     var title: String = ""
     var interpret: String = ""
