@@ -228,7 +228,7 @@
   $effect(() => { if (tabSet === 1) loadStatistics();
   });
 
-  const feedbackEmoji = { 1: '😞', 2: '😐', 3: '😊' };
+  const feedbackEmoji = { 1: '😐', 2: '😊', 3: '😍' };
   const feedbackLabel = { 1: 'Schwach', 2: 'OK', 3: 'Super' };
 
   function startEdit() {
@@ -508,7 +508,7 @@
                 <h4 class="text-xs font-semibold text-on-surface-variant mb-3">⭐ Live-Bewertungen</h4>
                 <div class="flex items-center gap-4 mb-3">
                   <div class="text-center">
-                    <div class="text-3xl">{statistics.feedback_avg >= 2.5 ? '😊' : statistics.feedback_avg >= 1.5 ? '😐' : '😞'}</div>
+                    <div class="text-3xl">{statistics.feedback_avg >= 2.5 ? '😍' : statistics.feedback_avg >= 1.5 ? '😊' : '😐'}</div>
                     <div class="text-xs text-on-surface-variant mt-1">Ø {statistics.feedback_avg}</div>
                   </div>
                   <div class="flex-grow space-y-1.5">
