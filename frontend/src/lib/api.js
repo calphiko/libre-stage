@@ -622,6 +622,17 @@ export async function getSongStatistics(songId) {
     return res.json();
 }
 
+export async function getSongFeedbackHistory(songId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/${songId}/feedback`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    if (!res.ok) throw new Error('Abstimmungsverhalten konnte nicht geladen werden');
+    return res.json();
+}
+
 export async function getSeasonStatistics(jahr) {
     const url = jahr
         ? `${API_URL}/gigs/statistics?jahr=${encodeURIComponent(jahr)}`

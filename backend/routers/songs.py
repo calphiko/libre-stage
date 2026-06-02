@@ -138,6 +138,48 @@ def get_song_rehearsal_history(
     return result
 
 
+@router.get("/{song_id}/feedback", response_model=schemas.SongFeedbackSummary)
+def get_song_feedback_history(
+    song_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    """Gibt anonymisierte Abstimmungssummen aus der Tabelle song_feedback zurück."""
+    song = db.query(models.Song).get(song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+
+    feedback_rows = (
+        db.query(models.SongCandidateFeedback.feedback)
+        .filter(models.SongCandidateFeedback.song_id == song_id)
+        .all()
+    )
+
+    yes_votes = 0
+    no_votes = 0
+    abstain_votes = 0
+    unknown_votes = 0
+
+    for (vote,) in feedback_rows:
+        if vote == 'a':
+            yes_votes += 1
+        elif vote == 'na':
+            no_votes += 1
+        elif vote == 'o':
+            abstain_votes += 1
+        else:
+            unknown_votes += 1
+
+    return schemas.SongFeedbackSummary(
+        song_id=song_id,
+        total_votes=len(feedback_rows),
+        yes_votes=yes_votes,
+        no_votes=no_votes,
+        abstain_votes=abstain_votes,
+        unknown_votes=unknown_votes,
+    )
+
+
 @router.get("/{song_id}/statistics", response_model=schemas.SongStatistics)
 def get_song_statistics(
     song_id: int,

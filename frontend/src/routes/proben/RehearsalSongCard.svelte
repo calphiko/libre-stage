@@ -19,8 +19,22 @@
 <script>
   import { modalState } from '$lib/modalState.js';
   import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
+  import LastRehearsalProtocolModal from '$lib/components/LastRehearsalProtocolModal.svelte';
 
-  let { song, users = [], expanded = false, statusOptions = [], ontoggle, onremove, ondone, onstatuschange, onupdate, onaddtodo } = $props();
+  let {
+    song,
+    users = [],
+    rehearsalId = null,
+    rehearsalBegin = null,
+    expanded = false,
+    statusOptions = [],
+    ontoggle,
+    onremove,
+    ondone,
+    onstatuschange,
+    onupdate,
+    onaddtodo
+  } = $props();
 
   let newTodoUserId = $state('');
   let newTodoText = $state('');
@@ -31,12 +45,11 @@
       return 'btn-status-success';
     }
     if (buttonStatus === 'retired') return 'btn-status-outline-retired';
-    return '';
+    return 'btn-status-outline';
   }
 
   function handleToggle() {
     ontoggle?.({ id: song.id });
-    console.log(song)
   }
 
   function handleRemove() {
@@ -69,17 +82,24 @@
 
   function openModal(id) {
     modalState.trigger({
-    component: SongDetailsModal,
-    meta: {
-      songId: id
-    },
-    response: async (result) => {
-      if (result?.action === 'updated') {
-        await refreshSongLists();
-      } else if (result?.action === 'delete') {
-        await refreshSongLists();
+      component: SongDetailsModal,
+      meta: {
+        songId: id
       }
-    }
+    });
+  }
+
+  function openLastProtocolModal() {
+    modalState.trigger({
+      component: LastRehearsalProtocolModal,
+      meta: {
+        songId: song.id_song,
+        songTitle: song.title,
+        songInterpret: song.interpret,
+        currentRehearsalId: rehearsalId,
+        currentRehearsalBegin: rehearsalBegin,
+        users
+      }
     });
   }
 </script>
@@ -107,6 +127,10 @@
         title="Song entfernen"
         onclick={handleRemove}
       >✖</button>
+      <button
+        class="btn variant-filled-secondary btn-sm"
+        onclick={openLastProtocolModal}
+      >Letzte Probe</button>
       <button
         class="btn variant-filled-primary btn-sm"
         onclick={() => openModal(song.id_song)}
@@ -209,9 +233,18 @@
     border: none;
   }
   :global(.btn-status-outline-retired) {
-    background: #fff;
-    color: #ef4444;
-    border: 2px solid #ef4444;
+    background: transparent !important;
+    color: #ef4444 !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    border-color: #ef4444 !important;
+  }
+  :global(.btn-status-outline) {
+    background: transparent !important;
+    color: rgb(var(--color-on-surface)) !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    border-color: rgb(var(--color-outline-variant)) !important;
   }
   .done-icon {
     color: lightgreen;
