@@ -1,6 +1,6 @@
 [project]
 name = "libre-stage"
-version = "0.5.3"
+version = "0.5.4"
 description = "Band rehearsal and gig management software"
 requires-python = ">=3.11"
 dependencies = [
@@ -87,4 +87,3 @@ omit = [
     "backend/alembic/*",
     "*/conftest.py"
 ]
-
