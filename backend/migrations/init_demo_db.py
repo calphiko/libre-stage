@@ -166,7 +166,7 @@ def run():
 
     # ── SONG-FEEDBACKS (Kandidaten-Feedback) ─────────────────────────────────
     for song in song_objs[-2:]:  # Die beiden Vorschläge
-        for user, fb in [(alice, "ja"), (bob, "vielleicht"), (carol, "ja")]:
+        for user, fb in [(alice, "a"), (bob, "na"), (carol, "o")]:
             db.add(SongCandidateFeedback(
                 song_id=song.id,
                 user_id=user.id,

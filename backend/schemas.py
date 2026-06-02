@@ -218,6 +218,15 @@ class SongFeedbackBase(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+class SongFeedbackSummary(BaseModel):
+    song_id: int
+    total_votes: int = 0
+    yes_votes: int = 0
+    no_votes: int = 0
+    abstain_votes: int = 0
+    unknown_votes: int = 0
+
 class SongCandidateOut(BaseModel):
     id: int
     title: str

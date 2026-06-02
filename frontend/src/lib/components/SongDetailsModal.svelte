@@ -30,6 +30,7 @@
     getSongRehearsalHistory,
     getUserList,
     getSongStatistics,
+    getSongFeedbackHistory,
     getRehearsalList,
     updateRehearsals
   } from '$lib/api.js';
@@ -59,6 +60,9 @@
   let historyLoading = $state(false);
   let statistics = $state(null);
   let statsLoading = $state(false);
+  let feedbackSummary = $state(null);
+  let feedbackLoading = $state(false);
+  let feedbackLoaded = $state(false);
   let rehearsalHistoryLoaded = $state(false);
   let rehearsals = $state([]);
   let selectedFutureRehearsalId = $state('');
@@ -208,8 +212,28 @@
     }
   }
 
-  // Lade History wenn Tab 2 geöffnet wird
-  $effect(() => { if (tabSet === 2) loadRehearsalHistory();
+  async function loadFeedbackHistory() {
+    if (feedbackLoaded) return;
+    feedbackLoading = true;
+    try {
+      feedbackSummary = await getSongFeedbackHistory(songId);
+    } catch (e) {
+      console.error('Feedback history load error:', e);
+      feedbackSummary = null;
+    } finally {
+      feedbackLoading = false;
+      feedbackLoaded = true;
+    }
+  }
+
+  // Lade Abstimmungen wenn Tab 2 geöffnet wird
+  $effect(() => {
+    if (tabSet === 2) loadFeedbackHistory();
+  });
+
+  // Lade History wenn Tab 3 geöffnet wird
+  $effect(() => {
+    if (tabSet === 3) loadRehearsalHistory();
   });
 
   async function loadStatistics() {
@@ -228,8 +252,28 @@
   $effect(() => { if (tabSet === 1) loadStatistics();
   });
 
-  const feedbackEmoji = { 1: '😐', 2: '😊', 3: '😍' };
+  const feedbackEmoji = { 1: '??', 2: '😊', 3: '😍' };
   const feedbackLabel = { 1: 'Schwach', 2: 'OK', 3: 'Super' };
+
+  const candidateVoteLabel = {
+    a: 'Ja',
+    na: 'Nein',
+    o: 'Enthaltung'
+  };
+
+  const candidateVoteEmoji = {
+    a: '👍',
+    na: '👎',
+    o: '🤷'
+  };
+
+  function formatCandidateVote(vote) {
+    return candidateVoteLabel[vote] || vote || 'Unbekannt';
+  }
+
+  function getCandidateVoteEmoji(vote) {
+    return candidateVoteEmoji[vote] || '•';
+  }
 
   function startEdit() {
     isEditing = true;
@@ -371,7 +415,11 @@
       >Statistik</button>
       <button
         class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 2 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
-        onclick={() => tabSet = 2} disabled={!statsEnabled()}
+        onclick={() => tabSet = 2}
+      >Abstimmung</button>
+      <button
+        class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 3 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+        onclick={() => tabSet = 3} disabled={!statsEnabled()}
       >Proben</button>
     </div>
 
@@ -586,6 +634,47 @@
         {/if}
       </div>
     {:else if tabSet === 2}
+      <div class="overflow-y-auto flex-grow min-h-0 p-2">
+        {#if feedbackLoading}
+          <div class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          </div>
+        {:else if !feedbackSummary || feedbackSummary.total_votes === 0}
+          <p class="text-on-surface-variant text-center py-8">Fuer diesen Song liegen noch keine Abstimmungen vor.</p>
+        {:else}
+          <div class="space-y-3">
+            <div class="card variant-ghost-surface p-3 rounded-lg">
+              <div class="text-sm text-on-surface-variant">
+                Abgegebene Stimmen: <strong>{feedbackSummary.total_votes}</strong>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="card variant-ghost-success p-3 rounded-lg text-center">
+                <div class="text-2xl">{getCandidateVoteEmoji('a')}</div>
+                <div class="text-xs text-on-surface-variant">{formatCandidateVote('a')}</div>
+                <div class="text-xl font-semibold">{feedbackSummary.yes_votes}</div>
+              </div>
+              <div class="card variant-ghost-error p-3 rounded-lg text-center">
+                <div class="text-2xl">{getCandidateVoteEmoji('na')}</div>
+                <div class="text-xs text-on-surface-variant">{formatCandidateVote('na')}</div>
+                <div class="text-xl font-semibold">{feedbackSummary.no_votes}</div>
+              </div>
+              <div class="card variant-ghost-warning p-3 rounded-lg text-center">
+                <div class="text-2xl">{getCandidateVoteEmoji('o')}</div>
+                <div class="text-xs text-on-surface-variant">{formatCandidateVote('o')}</div>
+                <div class="text-xl font-semibold">{feedbackSummary.abstain_votes}</div>
+              </div>
+              <div class="card variant-ghost-surface p-3 rounded-lg text-center">
+                <div class="text-2xl">•</div>
+                <div class="text-xs text-on-surface-variant">Sonstige</div>
+                <div class="text-xl font-semibold">{feedbackSummary.unknown_votes}</div>
+              </div>
+            </div>
+          </div>
+        {/if}
+      </div>
+    {:else if tabSet === 3}
       <div class="overflow-y-auto flex-grow min-h-0 p-2">
         {#if historyLoading}
           <div class="flex justify-center py-8">
