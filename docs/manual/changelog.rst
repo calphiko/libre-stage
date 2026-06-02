@@ -17,6 +17,7 @@ Changed
 * Protokollansicht vergangener Proben: Lesbarkeit verbessert durch hoeheren Textkontrast, entspanntere Zeilenhoehe und klar getrennte Song-Bloecke.
 * Status-Buttons in der Songkarte: nicht aktive Stati werden als Outline dargestellt; ``retired`` bleibt rot hervorgehoben.
 * Songkarte uebergibt nun ``rehearsalId`` und ``rehearsalBegin`` an Kindkomponenten fuer kontextbezogene Protokollabfragen.
+* Song-Details: Tab ``Abstimmung`` zeigt Abstimmungen jetzt anonymisiert nur noch als Summen (Ja/Nein/Enthaltung) ohne Einzelstimmen.
 * Chore: Projektversion auf ``0.5.4`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
 
 0.5.3 (2026-05-28)
