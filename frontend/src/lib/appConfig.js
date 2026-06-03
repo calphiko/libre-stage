@@ -1,6 +1,6 @@
 // src/lib/appConfig.js
 // Zentrale Konfiguration – wird vom Backend über /public/app_config geladen.
-// Nach npm build kann die Konfiguration über appConfig.json im Projekt-Root
+// Nach npm build kann die Konfiguration über config/appConfig.json
 // geändert werden, ohne neu zu bauen.
 
 import { writable, get } from 'svelte/store';
