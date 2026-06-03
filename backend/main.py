@@ -77,7 +77,20 @@ log_level = getattr(logging, log_level_name, None)
 if not isinstance(log_level, int):
     logger.warning("Invalid LOG_LEVEL '%s'. Falling back to INFO.", log_level_name)
     log_level = logging.INFO
-logger.setLevel(log_level)
+
+# Ensure LOG_LEVEL consistently applies to server and app loggers.
+for logger_name in (
+    "uvicorn",
+    "uvicorn.error",
+    "uvicorn.access",
+    "gunicorn.error",
+    "gunicorn.access",
+    "granian",
+    "granian.access",
+):
+    logging.getLogger(logger_name).setLevel(log_level)
+
+logging.getLogger().setLevel(log_level)
 
 docs_url = os.getenv("DOCS_URL", None)
 openapi_url = os.getenv("OPENAPI_URL", None)
