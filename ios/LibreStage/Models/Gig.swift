@@ -44,11 +44,18 @@ struct SongInSetOut: Codable, Identifiable {
 struct SetInGigOut: Codable, Identifiable {
     let id: Int?
     let gigset_id: Int?
+    let position: Int?
     let set_id: Int?
     let set_name: String?
     let pause: String?
     let setlist_name: String?
     let songs: [SongInSetOut]
+}
+
+struct GigSetlistTimingOut: Codable {
+    let schedule: [String: [String]]
+    let pause_before: [String: Int]
+    let set_end: [String: String]
 }
 
 struct GigSetlistOut: Codable, Identifiable {
@@ -64,6 +71,7 @@ struct GigSetlistOut: Codable, Identifiable {
     let status: String?
     let publish: String?
     let sets: [SetInGigOut]
+    let timing: GigSetlistTimingOut?
 }
 
 enum GigFieldType {

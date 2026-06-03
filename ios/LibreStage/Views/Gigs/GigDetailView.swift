@@ -191,8 +191,14 @@ struct GigDetailView: View {
                     .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                     // MARK: Setlist
-                    ForEach(setlist.sets) { set in
+                    ForEach(Array(setlist.sets.enumerated()), id: \.offset) { setIndex, set in
+                        let setKey = setPositionKey(for: set, index: setIndex)
                         Section(set.setlist_name ?? set.set_name ?? "Set") {
+                            if let setSummary = setTimeSummary(for: setlist, setKey: setKey, setIndex: setIndex) {
+                                LabeledContent("Zeitkalkulation", value: setSummary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             ForEach(Array(set.songs.enumerated()), id: \.element.id) { idx, song in
                                 Button {
                                     selectedSongForDetails = GigSongDetailSheetItem(id: song.song_id, title: song.title)
@@ -201,10 +207,26 @@ struct GigDetailView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
-                            if let pause = set.pause {
-                                Label("Pause: \(pause)", systemImage: "pause.circle")
+                            if let pauseLabel = pauseLabelAfterSet(for: setlist, setIndex: setIndex) {
+                                Label(pauseLabel, systemImage: "pause.circle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                            }
+                        }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                    }
+
+                    if let totalSummary = totalSetlistTimeSummary(for: setlist) {
+                        Section("Gesamt") {
+                            LabeledContent("Zeitkalkulation", value: totalSummary)
+                            if let endDelta = setlistEndDeltaToPlannedGigEnd(for: setlist, gig: currentGig) {
+                                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                    Text("Differenz zu geplantem Ende")
+                                    Spacer(minLength: 8)
+                                    Text(endDelta.value)
+                                        .font(.body.monospacedDigit())
+                                        .foregroundStyle(endDelta.isReached ? .green : .red)
+                                }
                             }
                         }
                         .listRowBackground(AppTheme.rowBackground(for: colorScheme))
@@ -284,6 +306,150 @@ struct GigDetailView: View {
             downloadErrorMessage = "\(documentName) konnte nicht heruntergeladen werden. Bitte später erneut versuchen."
         }
         showDownloadErrorAlert = true
+    }
+
+    private func totalSetlistTimeSummary(for setlist: GigSetlistOut) -> String? {
+        let timing = totalSetlistTiming(for: setlist)
+        let setSeconds = timing.sets
+        let pauseSeconds = timing.pauses
+        let total = timing.total
+        guard total > 0 else { return nil }
+
+        var summary = "Sets: \(formatDuration(seconds: setSeconds))"
+        if pauseSeconds > 0 {
+            summary += " + Pausen: \(formatDuration(seconds: pauseSeconds))"
+        }
+        summary += " = \(formatDuration(seconds: total))"
+        return summary
+    }
+
+    private func totalSetlistTiming(for setlist: GigSetlistOut) -> (sets: Int, pauses: Int, total: Int) {
+        guard let timing = setlist.timing else { return (0, 0, 0) }
+
+        var setSeconds = 0
+        var pauseSeconds = 0
+
+        for (setIndex, set) in setlist.sets.enumerated() {
+            let setKey = setPositionKey(for: set, index: setIndex)
+            if let seconds = setDurationSeconds(from: timing, setKey: setKey) {
+                setSeconds += seconds
+            }
+            if let pause = pauseSecondsAfterSet(from: timing, sets: setlist.sets, setIndex: setIndex) {
+                pauseSeconds += pause
+            }
+        }
+
+        return (setSeconds, pauseSeconds, setSeconds + pauseSeconds)
+    }
+
+    private func setlistEndDeltaToPlannedGigEnd(for setlist: GigSetlistOut, gig: GigOut) -> (value: String, isReached: Bool)? {
+        guard let planned = plannedGigDurationSeconds(gig: gig) else { return nil }
+        let actual = totalSetlistTiming(for: setlist).total
+        let diff = actual - planned
+        let prefix = diff >= 0 ? "+" : "-"
+        let value = "\(prefix)\(formatDuration(seconds: abs(diff)))"
+        return (value, diff >= 0)
+    }
+
+    private func plannedGigDurationSeconds(gig: GigOut) -> Int? {
+        guard let begin = parseClockTimeToSeconds(gig.begin),
+              let end = parseClockTimeToSeconds(gig.end) else {
+            return nil
+        }
+
+        if end < begin {
+            return (24 * 3600 - begin) + end
+        }
+        return end - begin
+    }
+
+    private func setPositionKey(for set: SetInGigOut, index: Int) -> String {
+        if let position = set.position {
+            return String(position)
+        }
+        return String(index + 1)
+    }
+
+    private func setTimeSummary(for setlist: GigSetlistOut, setKey: String, setIndex: Int) -> String? {
+        guard let timing = setlist.timing,
+              let setSeconds = setDurationSeconds(from: timing, setKey: setKey),
+              setSeconds > 0 else {
+            return nil
+        }
+
+        let pauseSeconds = pauseSecondsAfterSet(from: timing, sets: setlist.sets, setIndex: setIndex) ?? 0
+        var summary = "Set: \(formatDuration(seconds: setSeconds))"
+        if pauseSeconds > 0 {
+            summary += " + Pause: \(formatDuration(seconds: pauseSeconds))"
+        }
+        summary += " = \(formatDuration(seconds: setSeconds + pauseSeconds))"
+        return summary
+    }
+
+    private func pauseLabelAfterSet(for setlist: GigSetlistOut, setIndex: Int) -> String? {
+        guard let timing = setlist.timing,
+              let pauseSeconds = pauseSecondsAfterSet(from: timing, sets: setlist.sets, setIndex: setIndex),
+              pauseSeconds > 0 else {
+            return nil
+        }
+        return "Pause: \(formatDuration(seconds: pauseSeconds))"
+    }
+
+    private func setDurationSeconds(from timing: GigSetlistTimingOut, setKey: String) -> Int? {
+        guard let starts = timing.schedule[setKey],
+              let firstStart = starts.first,
+              let setEnd = timing.set_end[setKey],
+              let startSeconds = parseClockTimeToSeconds(firstStart),
+              let endSeconds = parseClockTimeToSeconds(setEnd) else {
+            return nil
+        }
+
+        if endSeconds < startSeconds {
+            return (24 * 3600 - startSeconds) + endSeconds
+        }
+        return endSeconds - startSeconds
+    }
+
+    private func pauseSecondsAfterSet(from timing: GigSetlistTimingOut, sets: [SetInGigOut], setIndex: Int) -> Int? {
+        let nextIndex = setIndex + 1
+        guard nextIndex < sets.count else { return nil }
+
+        let nextSetKey = setPositionKey(for: sets[nextIndex], index: nextIndex)
+        guard let pauseMinutes = timing.pause_before[nextSetKey], pauseMinutes > 0 else {
+            return nil
+        }
+        return pauseMinutes * 60
+    }
+
+    private func parseClockTimeToSeconds(_ value: String?) -> Int? {
+        guard let raw = value?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            return nil
+        }
+
+        let parts = raw.split(separator: ":").map(String.init)
+        guard parts.count == 2 || parts.count == 3 else { return nil }
+        let numbers = parts.compactMap(Int.init)
+        guard numbers.count == parts.count else { return nil }
+
+        let hour = numbers[0]
+        let minute = numbers[1]
+        let second = numbers.count == 3 ? numbers[2] : 0
+        guard (0...23).contains(hour), (0...59).contains(minute), (0...59).contains(second) else {
+            return nil
+        }
+
+        return hour * 3600 + minute * 60 + second
+    }
+
+    private func formatDuration(seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        let secs = seconds % 60
+
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        }
+        return String(format: "%d:%02d", minutes, secs)
     }
 
     @ViewBuilder
@@ -440,6 +606,18 @@ private struct SetlistSongRow: View {
     let index: Int
     let song: SongInSetOut
 
+    private var displayDuration: String? {
+        guard let raw = song.duration?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            return nil
+        }
+
+        let parts = raw.split(separator: ":")
+        if parts.count == 3, parts[0] == "0" {
+            return "\(parts[1]):\(parts[2])"
+        }
+        return raw
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Text("\(index)")
@@ -460,6 +638,11 @@ private struct SetlistSongRow: View {
                     .padding(.vertical, 2)
                     .background(Color.secondary.opacity(0.15))
                     .clipShape(Capsule())
+            }
+            if let duration = displayDuration {
+                Text(duration)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
             }
         }
     }
