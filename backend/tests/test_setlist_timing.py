@@ -61,3 +61,40 @@ def test_calculate_setlist_timing_uses_configured_inter_song_break(monkeypatch):
     assert (starts[1] - starts[0]) == timedelta(seconds=345)
     assert timing["set_end"][1] == starts[1] + timedelta(seconds=300)
 
+
+def test_skipped_song_has_zero_duration_in_timing(monkeypatch):
+    monkeypatch.setattr(
+        setlist_timing,
+        "get_config",
+        lambda: {
+            "setlist_timing": [
+                {"DEFAULT_SONG_DURATION_SECONDS": 240},
+                {"DEFAULT_INTER_SONG_BREAK_SECONDS": 30},
+                {"DEFAULT_SET_PAUSE_SECONDS": 600},
+            ]
+        },
+    )
+
+    set_obj = SimpleNamespace(
+        songs=[
+            SimpleNamespace(position=1, song=SimpleNamespace(duration="00:04:00"), uebersprungen=False),
+            SimpleNamespace(position=2, song=SimpleNamespace(duration="00:05:00"), uebersprungen=True),
+            SimpleNamespace(position=3, song=SimpleNamespace(duration="00:03:00"), uebersprungen=False),
+        ],
+        pause=None,
+    )
+    gig = SimpleNamespace(
+        datum=date(2026, 1, 1),
+        begin=time(19, 0),
+        sets=[SimpleNamespace(position=1, set=set_obj)],
+    )
+
+    timing = setlist_timing.calculate_setlist_timing(gig)
+    starts = timing["schedule"][1]
+
+    assert len(starts) == 3
+    assert (starts[1] - starts[0]) == timedelta(minutes=4, seconds=30)
+    assert (starts[2] - starts[1]) == timedelta(seconds=30)
+    assert timing["set_end"][1] == starts[2] + timedelta(minutes=3)
+
+
