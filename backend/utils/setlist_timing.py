@@ -22,9 +22,65 @@ from collections import defaultdict
 from datetime import datetime, time, timedelta
 from typing import Any
 
-DEFAULT_SONG_DURATION = timedelta(minutes=4)
-DEFAULT_INTER_SONG_BREAK = timedelta(seconds=30)
-DEFAULT_SET_PAUSE = timedelta(minutes=10)
+from backend.app_config import get_config
+
+_DEFAULT_SONG_DURATION_SECONDS = 240
+_DEFAULT_INTER_SONG_BREAK_SECONDS = 30
+_DEFAULT_SET_PAUSE_SECONDS = 600
+
+_SETLIST_DEFAULT_KEYS = {
+    "DEFAULT_SONG_DURATION_SECONDS": _DEFAULT_SONG_DURATION_SECONDS,
+    "DEFAULT_INTER_SONG_BREAK_SECONDS": _DEFAULT_INTER_SONG_BREAK_SECONDS,
+    "DEFAULT_SET_PAUSE_SECONDS": _DEFAULT_SET_PAUSE_SECONDS,
+}
+
+
+def _normalize_seconds(value: Any, fallback: int) -> int:
+    if isinstance(value, bool):
+        return fallback
+    if isinstance(value, int):
+        return value if value >= 0 else fallback
+    if isinstance(value, float):
+        if value.is_integer() and value >= 0:
+            return int(value)
+        return fallback
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return fallback
+        try:
+            parsed = int(stripped)
+        except ValueError:
+            return fallback
+        return parsed if parsed >= 0 else fallback
+    return fallback
+
+
+def _timing_seconds_from_config(config: dict[str, Any]) -> dict[str, int]:
+    resolved = dict(_SETLIST_DEFAULT_KEYS)
+    entries = config.get("setlist_timing")
+    if not isinstance(entries, list):
+        return resolved
+
+    for item in entries:
+        if not isinstance(item, dict):
+            continue
+        for key, fallback in _SETLIST_DEFAULT_KEYS.items():
+            if key in item:
+                resolved[key] = _normalize_seconds(item[key], fallback)
+
+    return resolved
+
+
+def _get_setlist_timing_defaults() -> tuple[timedelta, timedelta, timedelta]:
+    config = get_config()
+    timing_seconds = _timing_seconds_from_config(config)
+
+    return (
+        timedelta(seconds=timing_seconds["DEFAULT_SONG_DURATION_SECONDS"]),
+        timedelta(seconds=timing_seconds["DEFAULT_INTER_SONG_BREAK_SECONDS"]),
+        timedelta(seconds=timing_seconds["DEFAULT_SET_PAUSE_SECONDS"]),
+    )
 
 
 def _time_like_to_timedelta(value: Any, fallback: timedelta) -> timedelta:
@@ -50,15 +106,24 @@ def _time_like_to_timedelta(value: Any, fallback: timedelta) -> timedelta:
     return fallback
 
 
-def song_duration_to_timedelta(duration: Any) -> timedelta:
-    return _time_like_to_timedelta(duration, DEFAULT_SONG_DURATION)
+def song_duration_to_timedelta(duration: Any, fallback: timedelta | None = None) -> timedelta:
+    if fallback is None:
+        fallback, _, _ = _get_setlist_timing_defaults()
+    return _time_like_to_timedelta(duration, fallback)
 
 
-def pause_to_timedelta(pause: Any) -> timedelta:
-    return _time_like_to_timedelta(pause, DEFAULT_SET_PAUSE)
+def pause_to_timedelta(pause: Any, fallback: timedelta | None = None) -> timedelta:
+    if fallback is None:
+        _, _, fallback = _get_setlist_timing_defaults()
+    return _time_like_to_timedelta(pause, fallback)
 
 
-def get_pause_before_set(previous_gigset: Any, current_gigset: Any, schedule: dict[int, list[datetime]]) -> int | None:
+def get_pause_before_set(
+    previous_gigset: Any,
+    current_gigset: Any,
+    schedule: dict[int, list[datetime]],
+    default_song_duration: timedelta | None = None,
+) -> int | None:
     """Return pause minutes between two sets based on the schedule used by the PDF."""
     if not previous_gigset or not current_gigset:
         return None
@@ -70,7 +135,10 @@ def get_pause_before_set(previous_gigset: Any, current_gigset: Any, schedule: di
 
     prev_setsongs = sorted(previous_gigset.set.songs, key=lambda ss: ss.position)
     if prev_setsongs:
-        prev_last_duration = song_duration_to_timedelta(prev_setsongs[-1].song.duration)
+        prev_last_duration = song_duration_to_timedelta(
+            prev_setsongs[-1].song.duration,
+            default_song_duration,
+        )
     else:
         prev_last_duration = timedelta(0)
 
@@ -82,6 +150,7 @@ def get_pause_before_set(previous_gigset: Any, current_gigset: Any, schedule: di
 
 def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
     """Calculate start times per song and per-set pause values."""
+    default_song_duration, default_inter_song_break, default_set_pause = _get_setlist_timing_defaults()
     gig_start = datetime.combine(gig.datum, gig.begin or time(19, 0))
     schedule: dict[int, list[datetime]] = defaultdict(list)
     set_end: dict[int, datetime] = {}
@@ -93,20 +162,28 @@ def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
         set_songs = sorted(set_obj.songs, key=lambda ss: ss.position)
         for setsong in set_songs:
             schedule[gigset.position].append(current_time)
-            duration = song_duration_to_timedelta(setsong.song.duration)
-            current_time = current_time + duration + DEFAULT_INTER_SONG_BREAK
+            duration = song_duration_to_timedelta(setsong.song.duration, default_song_duration)
+            current_time = current_time + duration + default_inter_song_break
 
         if set_songs and schedule[gigset.position]:
             last_song_start = schedule[gigset.position][-1]
-            last_song_duration = song_duration_to_timedelta(set_songs[-1].song.duration)
+            last_song_duration = song_duration_to_timedelta(
+                set_songs[-1].song.duration,
+                default_song_duration,
+            )
             set_end[gigset.position] = last_song_start + last_song_duration
 
         if idx < len(gig_sets_sorted) - 1:
-            current_time = current_time + pause_to_timedelta(set_obj.pause)
+            current_time = current_time + pause_to_timedelta(set_obj.pause, default_set_pause)
 
     pause_before: dict[int, int] = {}
     for idx in range(1, len(gig_sets_sorted)):
-        pause = get_pause_before_set(gig_sets_sorted[idx - 1], gig_sets_sorted[idx], schedule)
+        pause = get_pause_before_set(
+            gig_sets_sorted[idx - 1],
+            gig_sets_sorted[idx],
+            schedule,
+            default_song_duration,
+        )
         if pause is not None:
             pause_before[gig_sets_sorted[idx].position] = pause
 

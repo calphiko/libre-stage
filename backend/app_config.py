@@ -23,7 +23,7 @@ immediately with a descriptive error message.
 
 Required top-level keys in ``appConfig.json``:
     ``genres``, ``gigTypes``, ``songStatuses``, ``gigStatuses``,
-    ``tonekeys``, ``rehearsalSongStatuses``
+    ``tonekeys``, ``rehearsalSongStatuses``, ``setlist_timing``
 """
 
 import json
@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger("uvicorn.error")
 
-_config_path = Path(__file__).parent.parent / "appConfig.json"
+_config_path = Path(__file__).parent.parent / "config/appConfig.json"
 
 _REQUIRED_KEYS = [
     "genres",
@@ -46,11 +46,18 @@ _REQUIRED_KEYS = [
     "gigStatuses",
     "tonekeys",
     "rehearsalSongStatuses",
+    "setlist_timing",
 ]
 
 SOFT_CONFIG_KEYS = tuple(_REQUIRED_KEYS)
 _OBJECT_SOFT_KEYS = {"genres", "gigTypes", "songStatuses", "gigStatuses", "tonekeys"}
 _STRING_SOFT_KEYS = {"rehearsalSongStatuses"}
+_SETLIST_TIMING_SOFT_KEYS = {"setlist_timing"}
+_SETLIST_TIMING_KEYS = (
+    "DEFAULT_SONG_DURATION_SECONDS",
+    "DEFAULT_INTER_SONG_BREAK_SECONDS",
+    "DEFAULT_SET_PAUSE_SECONDS",
+)
 
 
 class ConfigValidationError(ValueError):
@@ -155,6 +162,56 @@ def _normalize_string_list_item(key: str, item):
     raise ConfigValidationError(f"{key}: Eintraege muessen Strings sein")
 
 
+def _normalize_setlist_timing_entry(item):
+    if not isinstance(item, dict) or len(item) != 1:
+        raise ConfigValidationError(
+            "setlist_timing: Jeder Eintrag muss ein Objekt mit genau einem Timing-Key sein"
+        )
+
+    timing_key, raw_value = next(iter(item.items()))
+    if timing_key not in _SETLIST_TIMING_KEYS:
+        raise ConfigValidationError(
+            f"setlist_timing: Unbekannter Timing-Key '{timing_key}'"
+        )
+
+    if isinstance(raw_value, bool):
+        raise ConfigValidationError(
+            f"setlist_timing: '{timing_key}' muss eine Zahl in Sekunden sein"
+        )
+
+    if isinstance(raw_value, str):
+        raw_value = raw_value.strip()
+        if not raw_value:
+            raise ConfigValidationError(
+                f"setlist_timing: '{timing_key}' darf nicht leer sein"
+            )
+        try:
+            value = int(raw_value)
+        except ValueError as exc:
+            raise ConfigValidationError(
+                f"setlist_timing: '{timing_key}' muss eine ganze Zahl sein"
+            ) from exc
+    elif isinstance(raw_value, float):
+        if not raw_value.is_integer():
+            raise ConfigValidationError(
+                f"setlist_timing: '{timing_key}' muss eine ganze Zahl sein"
+            )
+        value = int(raw_value)
+    elif isinstance(raw_value, int):
+        value = raw_value
+    else:
+        raise ConfigValidationError(
+            f"setlist_timing: '{timing_key}' muss eine ganze Zahl sein"
+        )
+
+    if value < 0:
+        raise ConfigValidationError(
+            f"setlist_timing: '{timing_key}' darf nicht negativ sein"
+        )
+
+    return timing_key, value
+
+
 def _normalize_soft_list(key: str, value):
     if not isinstance(value, list):
         raise ConfigValidationError(f"{key}: Wert muss eine Liste sein")
@@ -182,6 +239,20 @@ def _normalize_soft_list(key: str, value):
             seen.add(normalized_item)
             normalized.append(normalized_item)
         return normalized
+
+    if key in _SETLIST_TIMING_SOFT_KEYS:
+        timing_values = {}
+        for item in value:
+            timing_key, timing_seconds = _normalize_setlist_timing_entry(item)
+            timing_values[timing_key] = timing_seconds
+
+        missing = [timing_key for timing_key in _SETLIST_TIMING_KEYS if timing_key not in timing_values]
+        if missing:
+            raise ConfigValidationError(
+                "setlist_timing: Fehlende Timing-Keys: " + ", ".join(missing)
+            )
+
+        return [{timing_key: timing_values[timing_key]} for timing_key in _SETLIST_TIMING_KEYS]
 
     raise ConfigValidationError(f"Nicht editierbarer Key: {key}")
 
@@ -236,7 +307,7 @@ except FileNotFoundError:
         f"\n{'=' * 60}\n"
         f"FATAL: appConfig.json nicht gefunden!\n"
         f"Erwarteter Pfad: {_config_path}\n\n"
-        f"Bitte erstelle die Datei im Projekt-Root.\n"
+        f"Bitte erstelle die Datei unter config/appConfig.json.\n"
         f"Eine Vorlage findest du in der Dokumentation.\n"
         f"{'=' * 60}\n",
         file=sys.stderr,

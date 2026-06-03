@@ -40,7 +40,7 @@
   import { modalState } from '$lib/modalState.js';
 
 
-    let user = $state(null);
+    let user = $state({ user_name: null, user_group: null });
   let gigs = $state([]);
   let jahre = $state([]);
   let jahr = $state('');
@@ -66,6 +66,7 @@
       user = await getUser();
 
     } catch(e) {
+      user = { user_name: null, user_group: null };
       error = 'User/Gigs konnten nicht geladen werden';
       console.error('Gigs load error:', e);
       return; // Bei Auth-Fehlern wird automatisch von api.js umgeleitet
@@ -258,7 +259,8 @@
     expandedGigId = id;
   }
 
-  let canEdit = $derived(user && (user.user_group === 'editor' || user.user_group === 'admin'));
+  let canEdit = $derived(user?.user_group === 'editor' || user?.user_group === 'admin');
+  let isAdmin = $derived(user?.user_group === 'admin');
 
   // Reactive: Wenn sich das Jahr ändert, lade Gigs und Live-Mode-Status neu
   $effect(() => { if (browser && jahr) {
@@ -685,7 +687,7 @@
                                 {/if}
                               {/if}
 
-                              {#if user.user_group === 'admin'}
+                              {#if isAdmin}
                                 <button
                                   class="btn variant-filled-error btn-sm"
                                   onclick={() => deleteGig(gig.id, gig.name)}
@@ -888,7 +890,7 @@
                         {/if}
                       {/if}
 
-                      {#if user.user_group === 'admin'}
+                      {#if isAdmin}
                         <button
                           class="btn variant-filled-error btn-sm w-full"
                           onclick={() => deleteGig(gig.id, gig.name)}

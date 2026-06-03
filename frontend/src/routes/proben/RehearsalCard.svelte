@@ -191,33 +191,33 @@
 
     {#if isPast}
       <!-- ── Protokoll-Ansicht (vergangene Probe) ── -->
-      <div class="prose prose-sm dark:prose-invert max-w-none text-sm text-on-surface">
+      <div class="prose prose-sm dark:prose-invert max-w-none text-sm text-on-surface leading-relaxed">
 
         {#if reh.comment}
-          <p class="whitespace-pre-wrap mb-4 text-surface-600 dark:text-surface-300">{@html highlight(reh.comment, searchQuery)}</p>
-          <hr class="border-surface-200 dark:border-surface-700 mb-4" />
+          <p class="whitespace-pre-wrap mb-4 text-surface-700 dark:text-surface-200">{@html highlight(reh.comment, searchQuery)}</p>
+          <hr class="border-surface-300 dark:border-surface-600 mb-4" />
         {/if}
 
         {#if reh.songs.length === 0}
-          <p class="italic text-surface-400">Keine Songs protokolliert.</p>
+          <p class="italic text-surface-500 dark:text-surface-300">Keine Songs protokolliert.</p>
         {:else}
           {#each reh.songs as song (song.id ?? song.id_song)}
-            <div class="mb-3">
+            <div class="mb-4 rounded-md border border-surface-200 dark:border-surface-700 px-3 py-2">
               <p class="font-semibold">
                 {song.done ? '✔' : '·'}
                 {@html highlight(`${song.interpret} – ${song.title}`, searchQuery)}
                 {#if song.status}
-                  <span class="font-normal text-surface-400 text-xs">({song.status})</span>
+                  <span class="font-normal text-surface-500 dark:text-surface-300 text-xs">({song.status})</span>
                 {/if}
               </p>
               {#if song.todo}
-                <p class="ml-4 text-surface-500">Todo: {@html highlight(song.todo, searchQuery)}</p>
+                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">Todo: {@html highlight(song.todo, searchQuery)}</p>
               {/if}
               {#if song.comment}
-                <p class="ml-4 text-surface-500">{@html highlight(song.comment, searchQuery)}</p>
+                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">{@html highlight(song.comment, searchQuery)}</p>
               {/if}
               {#each song.song_todos ?? [] as std}
-                <p class="ml-4 text-surface-400">
+                <p class="ml-4 mt-1 text-surface-600 dark:text-surface-300">
                   {std.done ? '✔' : '⏳'} {users.find(u => u.id === std.id_user)?.clear_name ?? '?'}: {@html highlight(std.todo, searchQuery)}
                 </p>
               {/each}
@@ -289,6 +289,8 @@
           <RehearsalSongCard
             {song}
             {users}
+            rehearsalId={reh.id}
+            rehearsalBegin={reh.begin}
             {statusOptions}
             expanded={expandedSongId === song.id}
             ontoggle={handleSongToggle}

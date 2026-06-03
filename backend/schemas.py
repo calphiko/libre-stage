@@ -148,6 +148,7 @@ class SoftConfigUpdateIn(BaseModel):
     gigStatuses: List[Union[str, SoftConfigOption]]
     tonekeys: List[Union[str, SoftConfigOption]]
     rehearsalSongStatuses: List[Union[str, SoftConfigOption]]
+    setlist_timing: List[Dict[str, int]]
 
     model_config = {"extra": "forbid"}
 
@@ -159,6 +160,7 @@ class SoftConfigOut(BaseModel):
     gigStatuses: List[SoftConfigOption]
     tonekeys: List[SoftConfigOption]
     rehearsalSongStatuses: List[str]
+    setlist_timing: List[Dict[str, int]]
 
 
 class SoftConfigMeta(BaseModel):
@@ -217,6 +219,15 @@ class SongFeedbackBase(BaseModel):
     feedback: str
 
     model_config = {"from_attributes": True}
+
+
+class SongFeedbackSummary(BaseModel):
+    song_id: int
+    total_votes: int = 0
+    yes_votes: int = 0
+    no_votes: int = 0
+    abstain_votes: int = 0
+    unknown_votes: int = 0
 
 class SongCandidateOut(BaseModel):
     id: int

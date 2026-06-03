@@ -3,6 +3,39 @@
 Änderungsprotokoll
 ==================
 
+0.5.5 (2026-06-03)
+-------------------
+
+Added
+~~~~~
+
+* Admin-Konfiguration: ``setlist_timing`` ist jetzt im Soft-Config-Editor direkt bearbeitbar.
+* Admin-Konfiguration: Timing-Werte werden im Editor ueber besser lesbare Time-Picker (``HH:MM:SS``) erfasst.
+
+Changed
+~~~~~~~
+
+* Soft-Config-Backend validiert und normalisiert ``setlist_timing`` inklusive Pflicht-Keys und nicht-negativer Ganzzahlen.
+* Setlist-Timing nutzt keine hartkodierten Defaults mehr, sondern liest die Standardwerte aus ``appConfig.json`` (mit sicheren Fallbacks).
+* Chore: Projektversion auf ``0.5.5`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
+0.5.4 (2026-06-02)
+-------------------
+
+Added
+~~~~~
+
+* Proben/Songkarte: Neue Aktion ``Letzte Probe`` oeffnet ein Modal mit dem letzten verfuegbaren Protokoll des Songs vor der aktuellen Probe.
+
+Changed
+~~~~~~~
+
+* Protokollansicht vergangener Proben: Lesbarkeit verbessert durch hoeheren Textkontrast, entspanntere Zeilenhoehe und klar getrennte Song-Bloecke.
+* Status-Buttons in der Songkarte: nicht aktive Stati werden als Outline dargestellt; ``retired`` bleibt rot hervorgehoben.
+* Songkarte uebergibt nun ``rehearsalId`` und ``rehearsalBegin`` an Kindkomponenten fuer kontextbezogene Protokollabfragen.
+* Song-Details: Tab ``Abstimmung`` zeigt Abstimmungen jetzt anonymisiert nur noch als Summen (Ja/Nein/Enthaltung) ohne Einzelstimmen.
+* Chore: Projektversion auf ``0.5.4`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.3 (2026-05-28)
 -------------------
 
@@ -199,12 +232,12 @@ v0.4.0 (2026-05-12)
 v0.3.16 (2026-05-04)
 ---------------------
 
-* Song-Vorschlaege: Spalten **Mein Feedback** und **Gesamtfeedback** zur
+* Song-Vorschläge: Spalten **Mein Feedback** und **Gesamtfeedback** zur
   gemeinsamen Spalte **Abstimmung** zusammengefuehrt
-* Song-Vorschlaege: Stimmanzeigen (Ja/Nein/Enthaltung) als klickbare Buttons
+* Song-Vorschläge: Stimmanzeigen (Ja/Nein/Enthaltung) als klickbare Buttons
   umgesetzt; Musiker koennen direkt ueber die Badge-Buttons abstimmen
-* Song-Vorschlaege: Aktive eigene Stimme wird visuell hervorgehoben
-* Song-Vorschlaege: Mobile Darstellung der Abstimmungs-Elemente verbessert
+* Song-Vorschläge: Aktive eigene Stimme wird visuell hervorgehoben
+* Song-Vorschläge: Mobile Darstellung der Abstimmungs-Elemente verbessert
   (unterhalb ``md`` untereinander, ab ``md`` wieder nebeneinander)
 * Song-Details: In der normalen Detailansicht kann ein Song per Dropdown einer
   geplanten zukuenftigen Probe zugewiesen werden
