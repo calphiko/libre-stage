@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger("uvicorn.error")
 
-_config_path = Path(__file__).parent.parent / "appConfig.json"
+_config_path = Path(__file__).parent.parent / "config/appConfig.json"
 
 _REQUIRED_KEYS = [
     "genres",
