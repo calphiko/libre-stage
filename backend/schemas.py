@@ -148,6 +148,7 @@ class SoftConfigUpdateIn(BaseModel):
     gigStatuses: List[Union[str, SoftConfigOption]]
     tonekeys: List[Union[str, SoftConfigOption]]
     rehearsalSongStatuses: List[Union[str, SoftConfigOption]]
+    setlist_timing: List[Dict[str, int]]
 
     model_config = {"extra": "forbid"}
 
@@ -159,6 +160,7 @@ class SoftConfigOut(BaseModel):
     gigStatuses: List[SoftConfigOption]
     tonekeys: List[SoftConfigOption]
     rehearsalSongStatuses: List[str]
+    setlist_timing: List[Dict[str, int]]
 
 
 class SoftConfigMeta(BaseModel):

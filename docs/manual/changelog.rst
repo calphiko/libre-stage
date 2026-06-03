@@ -3,6 +3,22 @@
 Änderungsprotokoll
 ==================
 
+0.5.5 (2026-06-03)
+-------------------
+
+Added
+~~~~~
+
+* Admin-Konfiguration: ``setlist_timing`` ist jetzt im Soft-Config-Editor direkt bearbeitbar.
+* Admin-Konfiguration: Timing-Werte werden im Editor ueber besser lesbare Time-Picker (``HH:MM:SS``) erfasst.
+
+Changed
+~~~~~~~
+
+* Soft-Config-Backend validiert und normalisiert ``setlist_timing`` inklusive Pflicht-Keys und nicht-negativer Ganzzahlen.
+* Setlist-Timing nutzt keine hartkodierten Defaults mehr, sondern liest die Standardwerte aus ``appConfig.json`` (mit sicheren Fallbacks).
+* Chore: Projektversion auf ``0.5.5`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.4 (2026-06-02)
 -------------------
 
