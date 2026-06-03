@@ -16,6 +16,7 @@ def test_app_config_endpoint():
     assert 'gigStatuses' in data
     assert 'tonekeys' in data
     assert 'rehearsalSongStatuses' in data
+    assert 'setlist_timing' in data
     # Ensure no backend-only keys leak
     assert 'ical_domain' not in data
     assert 'timezone' not in data
