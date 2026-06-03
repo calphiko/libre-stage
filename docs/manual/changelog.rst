@@ -3,6 +3,17 @@
 Änderungsprotokoll
 ==================
 
+0.5.6 (2026-06-03)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Timing: Uebersprungene Songs (``uebersprungen = true``) werden in der Zeitkalkulation nun mit ``0`` Sekunden beruecksichtigt.
+* Setlist-Timing: Berechnung von ``schedule``, ``set_end`` und set-uebergreifenden Pausen ist auf die neue Skip-Logik abgestimmt.
+* Tests: Neue Abdeckung fuer den Fall, dass ein uebersprungener Song keine Laufzeit zur Setliste addiert.
+* Chore: Projektversion auf ``0.5.6`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.5 (2026-06-03)
 -------------------
 
