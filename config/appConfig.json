@@ -268,5 +268,16 @@
     "proben",
     "spielbar",
     "retired"
+  ],
+  "setlist_timing": [
+    {
+      "DEFAULT_SONG_DURATION_SECONDS": 240
+    },
+    {
+      "DEFAULT_INTER_SONG_BREAK_SECONDS": 30
+    },
+    {
+      "DEFAULT_SET_PAUSE_SECONDS": 600
+    }
   ]
 }

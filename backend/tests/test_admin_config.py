@@ -47,6 +47,11 @@ def test_admin_can_update_soft_config(client, test_user, auth_headers, temp_app_
         "gigStatuses": [{"key": "angefragt", "label": "Angefragt"}],
         "tonekeys": [{"key": None, "label": ""}, {"key": "C", "label": "C"}],
         "rehearsalSongStatuses": ["neu", "in arbeit", "fertig"],
+        "setlist_timing": [
+            {"DEFAULT_SONG_DURATION_SECONDS": 250},
+            {"DEFAULT_INTER_SONG_BREAK_SECONDS": 35},
+            {"DEFAULT_SET_PAUSE_SECONDS": 620},
+        ],
     }
 
     response = client.put("/admin/config/soft", headers=auth_headers, json=payload)
@@ -59,6 +64,11 @@ def test_admin_can_update_soft_config(client, test_user, auth_headers, temp_app_
     stored = json.loads(temp_app_config_file.read_text(encoding="utf-8"))
     assert stored["gigTypes"] == [{"key": "Club", "label": "Club"}]
     assert stored["rehearsalSongStatuses"] == ["neu", "in arbeit", "fertig"]
+    assert stored["setlist_timing"] == [
+        {"DEFAULT_SONG_DURATION_SECONDS": 250},
+        {"DEFAULT_INTER_SONG_BREAK_SECONDS": 35},
+        {"DEFAULT_SET_PAUSE_SECONDS": 620},
+    ]
 
 
 def test_admin_update_soft_config_validation_error(client, test_user, auth_headers, temp_app_config_file):
@@ -69,6 +79,11 @@ def test_admin_update_soft_config_validation_error(client, test_user, auth_heade
         "gigStatuses": [],
         "tonekeys": [],
         "rehearsalSongStatuses": [],
+        "setlist_timing": [
+            {"DEFAULT_SONG_DURATION_SECONDS": 240},
+            {"DEFAULT_INTER_SONG_BREAK_SECONDS": 30},
+            {"DEFAULT_SET_PAUSE_SECONDS": 600},
+        ],
     }
 
     response = client.put("/admin/config/soft", headers=auth_headers, json=payload)
@@ -85,6 +100,11 @@ def test_public_app_config_reflects_admin_update(client, test_user, auth_headers
         "gigStatuses": [{"key": "fix", "label": "Fix"}],
         "tonekeys": [{"key": None, "label": ""}, {"key": "Dm", "label": "Dm"}],
         "rehearsalSongStatuses": ["neu"],
+        "setlist_timing": [
+            {"DEFAULT_SONG_DURATION_SECONDS": 300},
+            {"DEFAULT_INTER_SONG_BREAK_SECONDS": 25},
+            {"DEFAULT_SET_PAUSE_SECONDS": 700},
+        ],
     }
 
     put_response = client.put("/admin/config/soft", headers=auth_headers, json=payload)
@@ -95,4 +115,9 @@ def test_public_app_config_reflects_admin_update(client, test_user, auth_headers
     data = get_response.json()
     assert data["genres"] == [{"key": "Synthpop", "label": "Synthpop"}]
     assert data["rehearsalSongStatuses"] == ["neu"]
+    assert data["setlist_timing"] == [
+        {"DEFAULT_SONG_DURATION_SECONDS": 300},
+        {"DEFAULT_INTER_SONG_BREAK_SECONDS": 25},
+        {"DEFAULT_SET_PAUSE_SECONDS": 700},
+    ]
 

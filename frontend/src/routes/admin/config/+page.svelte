@@ -18,6 +18,21 @@
 
   const objectKeys = ['genres', 'gigTypes', 'songStatuses', 'gigStatuses', 'tonekeys'];
   const stringKeys = ['rehearsalSongStatuses'];
+  const timingKeys = [
+    'DEFAULT_SONG_DURATION_SECONDS',
+    'DEFAULT_INTER_SONG_BREAK_SECONDS',
+    'DEFAULT_SET_PAUSE_SECONDS'
+  ];
+  const timingLabels = {
+    DEFAULT_SONG_DURATION_SECONDS: 'Standard Songdauer',
+    DEFAULT_INTER_SONG_BREAK_SECONDS: 'Standard Songpause',
+    DEFAULT_SET_PAUSE_SECONDS: 'Standard Setpause'
+  };
+  const timingDefaults = {
+    DEFAULT_SONG_DURATION_SECONDS: 240,
+    DEFAULT_INTER_SONG_BREAK_SECONDS: 30,
+    DEFAULT_SET_PAUSE_SECONDS: 600
+  };
 
   let loading = $state(true);
   let saving = $state(false);
@@ -29,10 +44,12 @@
     songStatuses: [],
     gigStatuses: [],
     tonekeys: [],
-    rehearsalSongStatuses: []
+    rehearsalSongStatuses: [],
+    setlist_timing: []
   });
 
   let original = $state(null);
+  let timingPickerValues = $state({});
 
   function deepClone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -42,6 +59,79 @@
     return key
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (c) => c.toUpperCase());
+  }
+
+  function normalizeTimingValue(value, fallback = 0) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(0, Math.round(parsed));
+  }
+
+  function secondsToTimePicker(totalSeconds) {
+    const safeSeconds = Math.min(86399, normalizeTimingValue(totalSeconds, 0));
+    const hours = String(Math.floor(safeSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((safeSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(safeSeconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  function timePickerToSeconds(value, fallback = 0) {
+    if (typeof value !== 'string' || !value.trim()) return fallback;
+    const parts = value.split(':').map((part) => Number(part));
+    if (parts.some((part) => !Number.isInteger(part) || part < 0)) return fallback;
+
+    if (parts.length === 2) {
+      const [hours, minutes] = parts;
+      if (minutes > 59) return fallback;
+      return hours * 3600 + minutes * 60;
+    }
+
+    if (parts.length === 3) {
+      const [hours, minutes, seconds] = parts;
+      if (minutes > 59 || seconds > 59) return fallback;
+      return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    return fallback;
+  }
+
+  function normalizeSetlistTiming(list) {
+    const merged = {};
+    for (const item of list ?? []) {
+      if (!item || typeof item !== 'object') continue;
+      for (const [key, value] of Object.entries(item)) {
+        if (!timingKeys.includes(key)) continue;
+        merged[key] = normalizeTimingValue(value, timingDefaults[key]);
+      }
+    }
+
+    return timingKeys.map((key) => ({ [key]: merged[key] ?? timingDefaults[key] }));
+  }
+
+  function getTimingValue(key) {
+    const found = (form.setlist_timing ?? []).find((item) => item && typeof item === 'object' && key in item);
+    return normalizeTimingValue(found?.[key], timingDefaults[key]);
+  }
+
+  function updateTimingValue(key, value) {
+    const normalized = normalizeSetlistTiming(form.setlist_timing);
+    form.setlist_timing = normalized.map((entry) =>
+      key in entry ? { [key]: normalizeTimingValue(value, timingDefaults[key]) } : entry
+    );
+  }
+
+  function syncTimingPickers() {
+    const nextValues = {};
+    for (const key of timingKeys) {
+      nextValues[key] = secondsToTimePicker(getTimingValue(key));
+    }
+    timingPickerValues = nextValues;
+  }
+
+  function updateTimingFromPicker(key, value) {
+    timingPickerValues[key] = value;
+    const fallback = getTimingValue(key);
+    updateTimingValue(key, timePickerToSeconds(value, fallback));
   }
 
   function addObjectEntry(key) {
@@ -63,14 +153,22 @@
   function resetForm() {
     if (!original) return;
     form = deepClone(original);
+    form.setlist_timing = normalizeSetlistTiming(form.setlist_timing);
+    syncTimingPickers();
   }
 
   async function saveConfig() {
     saving = true;
 
     try {
-      const response = await adminUpdateSoftConfig(form);
+      const payload = {
+        ...deepClone(form),
+        setlist_timing: normalizeSetlistTiming(form.setlist_timing)
+      };
+      const response = await adminUpdateSoftConfig(payload);
       form = deepClone(response.data);
+      form.setlist_timing = normalizeSetlistTiming(form.setlist_timing);
+      syncTimingPickers();
       original = deepClone(response.data);
       await loadAppConfig(true);
       toastState.add({ type: 'success', message: 'Konfiguration wurde gespeichert.' });
@@ -92,6 +190,8 @@
 
       const response = await adminGetSoftConfig();
       form = deepClone(response.data);
+      form.setlist_timing = normalizeSetlistTiming(form.setlist_timing);
+      syncTimingPickers();
       original = deepClone(response.data);
       updatedAt = response.meta?.updatedAt || '';
     } catch (e) {
@@ -186,6 +286,31 @@
           </div>
         </section>
       {/each}
+
+      <section class="card variant-ghost-surface p-4 rounded-lg">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="h4 text-on-surface">Setlist Timing</h3>
+        </div>
+
+        <div class="space-y-2">
+          {#each timingKeys as key}
+            <div class="grid grid-cols-12 gap-2 items-center">
+              <div class="col-span-8">
+                <label class="text-on-surface" for={`timing-${key}`}>{timingLabels[key]}</label>
+
+              </div>
+              <input
+                id={`timing-${key}`}
+                class="input col-span-4"
+                type="time"
+                step="1"
+                value={timingPickerValues[key] ?? secondsToTimePicker(getTimingValue(key))}
+                oninput={(e) => updateTimingFromPicker(key, e.currentTarget.value)}
+              />
+            </div>
+          {/each}
+        </div>
+      </section>
     </div>
 
     <div class="flex gap-2 mt-6">

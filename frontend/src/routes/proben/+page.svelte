@@ -38,7 +38,7 @@
   let rehearsals = $state([]);
   let songs = $state([]);
   let users = $state([]);
-  let user = $state(null);
+  let user = $state({ user_name: null, user_group: null });
   let songsForSearch = $state([]);
 
   let error = $state('');
@@ -91,6 +91,7 @@
     try {
       user = await getUser();
     } catch(e) {
+      user = { user_name: null, user_group: null };
       error = 'User/Gigs konnten nicht geladen werden';
       console.error('Proben load error:', e);
       return; // Bei Auth-Fehlern wird automatisch von api.js umgeleitet
