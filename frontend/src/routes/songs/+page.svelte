@@ -49,7 +49,7 @@
 
   
 
-    let user = $state(null);
+    let user = $state({ user_name: null, user_group: null, id: null, musician: false });
   let songs = $state([]);
   let filteredSongsMobile = $state([]);
   let filterStringMobile = $state("");
@@ -875,6 +875,7 @@ let filteredSongs = $derived(songs
     try {
       user = await getUser();
     } catch(e) {
+      user = { user_name: null, user_group: null, id: null, musician: false };
       error = 'Fehler: ' + (e.message ?? '');
       console.error('Songs load error:', e);
       return; // Bei Auth-Fehlern wird automatisch von api.js umgeleitet

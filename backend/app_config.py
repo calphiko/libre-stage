@@ -307,7 +307,7 @@ except FileNotFoundError:
         f"\n{'=' * 60}\n"
         f"FATAL: appConfig.json nicht gefunden!\n"
         f"Erwarteter Pfad: {_config_path}\n\n"
-        f"Bitte erstelle die Datei im Projekt-Root.\n"
+        f"Bitte erstelle die Datei unter config/appConfig.json.\n"
         f"Eine Vorlage findest du in der Dokumentation.\n"
         f"{'=' * 60}\n",
         file=sys.stderr,
