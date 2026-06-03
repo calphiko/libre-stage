@@ -118,6 +118,13 @@ def pause_to_timedelta(pause: Any, fallback: timedelta | None = None) -> timedel
     return _time_like_to_timedelta(pause, fallback)
 
 
+def _setsong_duration_to_timedelta(setsong: Any, fallback: timedelta) -> timedelta:
+    # Skipped songs should not consume runtime in schedule calculations.
+    if getattr(setsong, "uebersprungen", False):
+        return timedelta(0)
+    return song_duration_to_timedelta(setsong.song.duration, fallback)
+
+
 def get_pause_before_set(
     previous_gigset: Any,
     current_gigset: Any,
@@ -135,8 +142,8 @@ def get_pause_before_set(
 
     prev_setsongs = sorted(previous_gigset.set.songs, key=lambda ss: ss.position)
     if prev_setsongs:
-        prev_last_duration = song_duration_to_timedelta(
-            prev_setsongs[-1].song.duration,
+        prev_last_duration = _setsong_duration_to_timedelta(
+            prev_setsongs[-1],
             default_song_duration,
         )
     else:
@@ -162,13 +169,13 @@ def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
         set_songs = sorted(set_obj.songs, key=lambda ss: ss.position)
         for setsong in set_songs:
             schedule[gigset.position].append(current_time)
-            duration = song_duration_to_timedelta(setsong.song.duration, default_song_duration)
+            duration = _setsong_duration_to_timedelta(setsong, default_song_duration)
             current_time = current_time + duration + default_inter_song_break
 
         if set_songs and schedule[gigset.position]:
             last_song_start = schedule[gigset.position][-1]
-            last_song_duration = song_duration_to_timedelta(
-                set_songs[-1].song.duration,
+            last_song_duration = _setsong_duration_to_timedelta(
+                set_songs[-1],
                 default_song_duration,
             )
             set_end[gigset.position] = last_song_start + last_song_duration
