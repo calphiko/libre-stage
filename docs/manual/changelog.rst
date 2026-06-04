@@ -3,6 +3,18 @@
 Änderungsprotokoll
 ==================
 
+0.5.7 (2026-06-04)
+-------------------
+
+Changed
+~~~~~~~
+
+* Frontend-UI: Seitenuebergreifend modernisierte und vereinheitlichte Komponentenstile (Cards, Buttons, Inputs, Tabs, Tabellen) inkl. konsistenter Light-/Dark-Mode-Darstellung.
+* Frontend-UI: Globale Hintergrundverlaeufe fuer die App sowie abgestimmte Verlaufsflaechen in zentralen Dashboard-Bereichen ergaenzt.
+* Setlist-Editor: Song-Elemente in der Songliste zeigen die Saengerfarben wieder sichtbar an und sind im Darkmode kontrastreicher dargestellt.
+* Chore: Projektversion auf ``0.5.7`` erhoeht (Backend/Frontend/Release-Metadaten/README-Badge).
+* Manual: Fuer ``0.5.7`` sind noch keine neuen Screenshots im Handbuch enthalten; diese werden zeitnah nachgereicht.
+
 0.5.6 (2026-06-03)
 -------------------
 

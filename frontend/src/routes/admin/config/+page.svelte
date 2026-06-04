@@ -202,7 +202,7 @@
   });
 </script>
 
-<div class="card max-w-7xl mx-auto my-7 px-5 py-6 bg-surface-1 rounded-xl shadow border border-outline-variant">
+<div class="ui-page ui-card px-5 py-6">
   <div class="flex items-center justify-between mb-4">
     <h2 class="h2 text-on-surface">Admin-Konfiguration</h2>
     {#if updatedAt}
@@ -215,12 +215,12 @@
   {:else}
     <div class="space-y-6">
       {#each objectKeys as key}
-        <section class="card variant-ghost-surface p-4 rounded-lg">
+        <section class="ui-card-muted p-4">
           <div class="flex items-center justify-between mb-3">
             <h3 class="h4 text-on-surface">{humanizeKey(key)}</h3>
             <button
               type="button"
-              class="btn-icon variant-filled-primary w-8 h-8 rounded-full text-xl leading-none"
+              class="ui-btn ui-btn-primary w-8 h-8 rounded-full text-xl leading-none"
               onclick={() => addObjectEntry(key)}
               title="Eintrag hinzufuegen"
               aria-label="Eintrag hinzufuegen"
@@ -231,18 +231,18 @@
             {#each form[key] as item, index}
               <div class="grid grid-cols-12 gap-2">
                 <input
-                  class="input col-span-4"
+                  class="ui-input col-span-4"
                   placeholder="Key"
                   bind:value={item.key}
                 />
                 <input
-                  class="input col-span-7"
+                  class="ui-input col-span-7"
                   placeholder="Label"
                   bind:value={item.label}
                 />
                 <button
                   type="button"
-                  class="btn-icon btn-icon-sm variant-filled-error col-span-1"
+                  class="ui-btn variant-filled-error col-span-1"
                   onclick={() => removeObjectEntry(key, index)}
                   title="Eintrag entfernen"
                   aria-label="Eintrag entfernen"
@@ -254,12 +254,12 @@
       {/each}
 
       {#each stringKeys as key}
-        <section class="card variant-ghost-surface p-4 rounded-lg">
+        <section class="ui-card-muted p-4">
           <div class="flex items-center justify-between mb-3">
             <h3 class="h4 text-on-surface">{humanizeKey(key)}</h3>
             <button
               type="button"
-              class="btn-icon variant-filled-primary w-8 h-8 rounded-full text-xl leading-none"
+              class="ui-btn ui-btn-primary w-8 h-8 rounded-full text-xl leading-none"
               onclick={() => addStringEntry(key)}
               title="Eintrag hinzufuegen"
               aria-label="Eintrag hinzufuegen"
@@ -270,13 +270,13 @@
             {#each form[key] as item, index}
               <div class="grid grid-cols-12 gap-2">
                 <input
-                  class="input col-span-11"
+                  class="ui-input col-span-11"
                   placeholder="Status"
                   bind:value={form[key][index]}
                 />
                 <button
                   type="button"
-                  class="btn-icon btn-icon-sm variant-filled-error col-span-1"
+                  class="ui-btn variant-filled-error col-span-1"
                   onclick={() => removeStringEntry(key, index)}
                   title="Eintrag entfernen"
                   aria-label="Eintrag entfernen"
@@ -287,7 +287,7 @@
         </section>
       {/each}
 
-      <section class="card variant-ghost-surface p-4 rounded-lg">
+      <section class="ui-card-muted p-4">
         <div class="flex items-center justify-between mb-3">
           <h3 class="h4 text-on-surface">Setlist Timing</h3>
         </div>
@@ -301,7 +301,7 @@
               </div>
               <input
                 id={`timing-${key}`}
-                class="input col-span-4"
+                class="ui-input col-span-4"
                 type="time"
                 step="1"
                 value={timingPickerValues[key] ?? secondsToTimePicker(getTimingValue(key))}
@@ -314,8 +314,8 @@
     </div>
 
     <div class="flex gap-2 mt-6">
-      <button class="btn btn-outline-secondary" onclick={resetForm} disabled={saving}>Verwerfen</button>
-      <button class="btn btn-primary" onclick={saveConfig} disabled={saving}>
+      <button class="ui-btn ui-btn-ghost" onclick={resetForm} disabled={saving}>Verwerfen</button>
+      <button class="ui-btn ui-btn-primary" onclick={saveConfig} disabled={saving}>
         {#if saving}Speichere...{:else}Speichern{/if}
       </button>
     </div>

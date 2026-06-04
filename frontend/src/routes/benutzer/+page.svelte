@@ -88,11 +88,11 @@
 
 </script>
 
-<div class="card max-w-7xl mx-auto my-7 px-5 py-6 bg-surface-1 rounded-xl shadow border border-outline-variant">
+<div class="ui-page ui-card px-5 py-6">
   <div class="flex items-center justify-between mb-4">
     <h2 class="h2 text-on-surface">Benutzerverwaltung</h2>
     <button
-      class="btn variant-ghost-surface btn-sm"
+      class="ui-btn ui-btn-ghost"
       onclick={() => showHelp = !showHelp}
       aria-label="Hilfe anzeigen"
     >
@@ -104,7 +104,7 @@
   </div>
 
   {#if showHelp}
-    <div class="card variant-ghost-surface mt-4 mb-6 p-4 md:p-6">
+    <div class="ui-card-muted mt-4 mb-6 p-4 md:p-6">
       <h3 class="h4 font-bold mb-4">👤 Anleitung: Benutzerverwaltung</h3>
 
       <div class="space-y-4">
@@ -177,7 +177,7 @@
     <div class="flex flex-col md:flex-row md:items-center gap-2">
       <label class="min-w-[140px] text-on-surface-variant mb-1 md:mb-0">Username</label>
       <input type="text"
-             class="input flex-1 rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
+             class="ui-input flex-1 text-base"
              bind:value={temp.user_name}
              disabled={!edit.user_name}
              onkeydown={(e) => e.key === 'Enter' && updateUserField('user_name')}
@@ -189,12 +189,12 @@
       <label class="min-w-[140px] text-on-surface-variant mb-1 md:mb-0">Klarname</label>
       <div class="flex flex-1 gap-2">
         <input type="text"
-              class="input w-full rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface text-on-surface"
+              class="ui-input w-full text-base"
               bind:value={temp.clear_name}
               disabled={!edit.clear_name}
               onkeydown={(e) => e.key === 'Enter' && updateUserField('clear_name')}
         />
-        <button class="btn btn-outline-primary btn-sm self-center" onclick={() => toggleEdit('clear_name')}>
+        <button class="ui-btn ui-btn-ghost self-center" onclick={() => toggleEdit('clear_name')}>
           {#if edit.clear_name}✔{:else}✎{/if}
         </button>
       </div>
@@ -204,7 +204,7 @@
     <div class="flex flex-col md:flex-row md:items-center gap-2">
       <label class="min-w-[140px] text-on-surface-variant mb-1 md:mb-0">Berechtigung</label>
       <input type="text"
-             class="input flex-1 rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
+             class="ui-input flex-1 text-base"
              bind:value={temp.user_group}
              disabled={!edit.user_group}
              onkeydown={(e) => e.key === 'Enter' && updateUserField('user_group')}
@@ -216,12 +216,12 @@
       <label class="min-w-[140px] text-on-surface-variant mb-1 md:mb-0">Email</label>
       <div class="flex flex-1 gap-2">
         <input type="email"
-              class="input w-full rounded-lg border border-outline-variant px-3 py-2 text-base bg-surface-2 text-on-surface"
+              class="ui-input w-full text-base"
               bind:value={temp.email}
               disabled={!edit.email}
               onkeydown={(e) => e.key === 'Enter' && updateUserField('email')}
         />
-        <button class="btn btn-outline-primary btn-sm self-center" onclick={() => toggleEdit('email')}>
+        <button class="ui-btn ui-btn-ghost self-center" onclick={() => toggleEdit('email')}>
           {#if edit.email}✔{:else}✎{/if}
         </button>
       </div>
@@ -243,7 +243,7 @@
   <!-- Kasten für Rollen-Management (nur Admin) -->
   {#if isAdmin}
     <hr class="my-7 border-outline-variant">
-    <div class="bg-surface-2 rounded-xl shadow p-5 mt-7 ">
+    <div class="ui-card-muted p-5 mt-7">
       <h3 class="text-xl font-semibold mb-3 text-on-surface">Benutzer & Rollenverwaltung</h3>
       <!-- Hier kann z. B. eine Rollenliste, Auswahl oder entsprechende Controls ergänzt werden -->
       <UserAdminTable />
@@ -300,18 +300,11 @@ td:last-child {
     padding: .7em .5em;
     font-size: 0.98em;
   }
-  .card {
+  .ui-card {
     padding: 1.2em !important;
   }
 }
 
-/* Zusätzliche Details für das Card-Design */
-.card {
-  border-radius: 1.2em;
-  border: none;
-  box-shadow: 0 2px 12px 0 #486faf14;
-  //background: #fafbfc;
-}
 
 .pw-input-group {
   position: relative;

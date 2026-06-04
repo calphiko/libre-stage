@@ -48,7 +48,8 @@
     }
   });
 
-  async function doLogin() {
+  async function doLogin(event) {
+    event?.preventDefault?.();
     error = '';
     loading = true;
     try {
@@ -63,7 +64,7 @@
   }
 </script>
 
-<div class="container h-full mx-auto flex justify-center items-center">
+<div class="ui-page h-full flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center w-full">
         <!-- Login Box -->
 
@@ -77,7 +78,7 @@
                 <!-- Login Form -->
                 <form
                     onsubmit={doLogin}
-                    class="max-w-sm w-full bg-surface-2 p-8 rounded-2xl shadow-md space-y-6 border border-outline-variant"
+                    class="ui-card max-w-sm w-full p-8 space-y-6"
                 >
                     <h2 class="text-3xl font-semibold text-center mb-8 text-on-surface">Login</h2>
 
@@ -86,7 +87,7 @@
                         <input
                             id="username"
                             type="text"
-                            class="form-input variant-soft w-full"
+                            class="ui-input"
                             placeholder="Benutzername"
                             bind:value={username}
                             required
@@ -98,7 +99,7 @@
                         <input
                             id="password"
                             type="password"
-                            class="form-input variant-soft w-full"
+                            class="ui-input"
                             placeholder="Passwort"
                             bind:value={password}
                             required
@@ -108,7 +109,7 @@
                     <!-- Modern-style Primary Button -->
                     <button
                         type="submit"
-                        class="btn variant-filled-primary w-full h-12 text-lg tracking-wide rounded-lg"
+                        class="ui-btn ui-btn-primary w-full h-12 text-lg tracking-wide"
                         disabled={loading}
                     >
                         {loading ? '...' : 'Einloggen'}
