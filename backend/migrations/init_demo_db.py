@@ -58,7 +58,9 @@ def hash_pw(plain: str) -> str:
 
 
 def run():
+    reference_date = date.today()
     print(f"→ Erstelle Demo-Datenbank: {db_path}")
+    print(f"→ Verwende Referenzdatum: {reference_date.isoformat()}")
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
@@ -175,7 +177,7 @@ def run():
             ))
 
     # ── PROBEN ───────────────────────────────────────────────────────────────
-    today = datetime.now().replace(hour=19, minute=0, second=0, microsecond=0)
+    today = datetime.combine(reference_date, time(19, 0))
 
     reh1 = Rehearsal(
         begin=today - timedelta(weeks=4),
@@ -284,7 +286,7 @@ def run():
     set1b_songs[3].feedback = 3
     set1b_songs[4].feedback = 3
 
-    gig1_date = date.today() - timedelta(days=30)
+    gig1_date = reference_date - timedelta(days=30)
     gig1 = Gig(
         name="Stadtfest Musterstadt",
         datum=gig1_date,
@@ -308,7 +310,7 @@ def run():
     set2b = make_set("Set 2 – Clubabend", "2. Set", 15, [1, 7, 5, 8, 9])
     set2c = make_set("Set 3 – Clubabend", "3. Set",  0, [11, 12, 13])
 
-    gig2_date = date.today() + timedelta(days=14)
+    gig2_date = reference_date + timedelta(days=14)
     gig2 = Gig(
         name="Clubabend im Blue Note",
         datum=gig2_date,
@@ -329,7 +331,7 @@ def run():
     db.flush()
 
     # Gig 3 – Anfrage (noch offen)
-    gig3_date = date.today() + timedelta(days=60)
+    gig3_date = reference_date + timedelta(days=60)
     gig3 = Gig(
         name="Sommerfest Musterfirma AG",
         datum=gig3_date,
@@ -433,7 +435,7 @@ def run():
         ),
     ])
 
-    # ── UMFRAGE ──────────────────────────────────────────────────────────────
+    # ── UMFRAGEN ─────────────────────────────────────────────────────────────
     survey = Surveys(
         kind_of_survey="Meinungsumfrage",
         rf_survey="Welche neuen Songs sollen wir ins Repertoire aufnehmen?",
@@ -468,6 +470,48 @@ def run():
             comment=comment,
         ))
 
+    # Terminfindungs-Umfrage mit Datumsoptionen
+    date_survey = Surveys(
+        kind_of_survey="Terminfindung",
+        rf_survey="Wann passt euch die Zusatzprobe fuer den Clubabend?",
+        released=True,
+        closed=False,
+        user_created=admin.id,
+        release_date=datetime.now(timezone.utc),
+        datum=datetime.now(timezone.utc),
+    )
+    db.add(date_survey)
+    db.flush()
+
+    date_options = [
+        datetime.combine(reference_date + timedelta(days=5), time(19, 30), tzinfo=timezone.utc),
+        datetime.combine(reference_date + timedelta(days=7), time(19, 30), tzinfo=timezone.utc),
+        datetime.combine(reference_date + timedelta(days=10), time(19, 30), tzinfo=timezone.utc),
+    ]
+    for option in date_options:
+        db.add(SurveyFields(id_survey=date_survey.id, field_text=option.isoformat()))
+    db.flush()
+
+    date_fields = db.query(SurveyFields).filter(SurveyFields.id_survey == date_survey.id).all()
+    date_votes = [
+        (date_fields[0], alice, "a"),
+        (date_fields[0], bob, "m"),
+        (date_fields[0], carol, "a"),
+        (date_fields[1], alice, "m"),
+        (date_fields[1], bob, "a"),
+        (date_fields[1], dave, "o"),
+        (date_fields[2], carol, "o"),
+        (date_fields[2], dave, "a"),
+    ]
+    for field, user, value in date_votes:
+        db.add(SurveyFeedback(
+            id_sv_field=field.id,
+            id_user=user.id,
+            datum=datetime.now(timezone.utc),
+            value=value,
+            comment=None,
+        ))
+
     db.commit()
     db.close()
 
@@ -478,7 +522,7 @@ def run():
     print(f"   bob    / Demo1234!   (Rolle: editor, Sänger)")
     print(f"   carol  / Demo1234!   (Rolle: user, Musikerin)")
     print(f"   dave   / Demo1234!   (Rolle: user, Musiker)")
-    print(f"\n🎵 {len(song_objs)} Songs, 3 Proben, 3 Gigs, 1 Umfrage angelegt.")
+    print(f"\n🎵 {len(song_objs)} Songs, 3 Proben, 3 Gigs, 2 Umfragen angelegt.")
 
 
 if __name__ == "__main__":

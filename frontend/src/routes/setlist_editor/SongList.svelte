@@ -80,34 +80,20 @@
     }
   }
 
-  // Dynamische Farbzuweisung für Sänger via Skeleton-Varianten
-  const singerVariants = [
-    'variant-soft-primary',
-    'variant-soft-secondary',
-    'variant-soft-tertiary',
-    'variant-soft-success',
-    'variant-soft-warning',
-    'variant-soft-error',
-  ];
-  const singerVariantCache = {};
-
-  function getSingerSkeletonVariant(singer) {
-    const name = getFirstSinger(singer);
-    if (!name) return 'variant-soft-surface';
-    if (!singerVariantCache[name]) {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      singerVariantCache[name] = singerVariants[Math.abs(hash) % singerVariants.length];
-    }
-    return singerVariantCache[name];
+  function getSingerColor(singerLead) {
+    return getColorBySinger(getFirstSinger(singerLead));
   }
 
-  function getSingerVariant(singer) {
-    const firstName = getFirstSinger(singer);
-    console.log(firstName);
-    return getColorBySinger(firstName) || 'variant-soft-surface';
+  function getReadableTextClass(backgroundColor) {
+    const hex = (backgroundColor || '').replace('#', '');
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return 'text-surface-900';
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const luminance = (0.299 * r) + (0.587 * g) + (0.114 * b);
+
+    return luminance > 150 ? 'text-surface-900' : 'text-surface-50';
   }
 
   function handleSearchKeydown(e) {
@@ -225,8 +211,8 @@
     >
       {#each dndItems as song (song.setsong_id)}
         <div
-          class="card rounded-sm song-item w-full text-surface-900 dark:text-surface-950 transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
-          style="background-color:{getColorBySinger(song.singer_lead_short)}"
+          class="card rounded-sm song-item w-full {getReadableTextClass(getSingerColor(song.singer_lead_short))} transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
+          style="--song-singer-color:{getSingerColor(song.singer_lead_short)};"
         >
           <div class="p-3 py-2">
             <!-- Header -->
@@ -341,7 +327,18 @@
   }
 
   .song-item {
+    background:
+      linear-gradient(145deg,
+        color-mix(in oklab, var(--song-singer-color) 92%, white) 0%,
+        color-mix(in oklab, var(--song-singer-color) 82%, white) 100%);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(.dark) .song-item {
+    background:
+      linear-gradient(145deg,
+        color-mix(in oklab, var(--song-singer-color) 72%, #0f172a) 0%,
+        color-mix(in oklab, var(--song-singer-color) 62%, #020617) 100%);
   }
 
   .song-item:hover {

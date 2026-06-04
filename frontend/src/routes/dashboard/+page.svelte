@@ -135,53 +135,39 @@
   }
 </script>
 
-<div class="max-w-6xl md:mx-auto py-6 md:px-3">
-  <div class="card bg-surface-2 rounded-2xl shadow-lg p-2 md:p-6 md:border md:border-outline-variant">
+<div class="ui-page ui-page-gradient">
+  <div class="ui-card p-2 md:p-6 dashboard-main-card">
     {#if user}
       <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-6">
         <div>
           <h2 class="h2 text-on-surface">Dashboard</h2>
-          <p class="text-lg text-on-surface mt-1">
-            Willkommen, <span class="font-semibold">{user.user_name}</span>!
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span class="inline-block px-3 py-1 rounded bg-primary-100 text-primary-900 text-sm">
-              {user.user_group}
-            </span>
-            <span class="inline-block px-3 py-1 rounded bg-secondary-100 text-secondary-900 text-sm">
-              Offen: {todos.notDoneTodos.length}
-            </span>
-            <span class="inline-block px-3 py-1 rounded bg-tertiary-100 text-tertiary-900 text-sm">
-              Feedback: {(todos.songsForFeedback?.length ?? 0) + (todos.surveysForFeedback?.length ?? 0)}
-            </span>
-          </div>
         </div>
       </div>
 
       <div class="mt-7">
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Deine Todos</h2>
         {#if (todos.songsForFeedback?.length ?? 0) == 0 && (todos.surveysForFeedback?.length ?? 0) == 0 && todos.notDoneTodos.length == 0}
-          <div class="rounded-xl bg-success-100 text-success-900 p-4 mt-4 shadow text-center">
+          <div class="rounded-xl p-4 mt-4 shadow text-center dashboard-success-panel text-on-surface">
             Du hast keine offenen Todos! 🎉
           </div>
         {:else}
-          <div class="flex border-b border-surface-300 dark:border-surface-600 mb-4 gap-1 overflow-x-auto">
-            <button onclick={() => tabsBasic = 0} class="px-4 py-2 rounded-t-lg transition-colors whitespace-nowrap {tabsBasic === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {todos.notDoneTodos.length > 0 ? 'font-bold' : ''}">
+          <div class="ui-tabs mb-4">
+            <button onclick={() => tabsBasic = 0} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 0 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {todos.notDoneTodos.length > 0 ? 'font-bold' : ''}">
               <span class="hidden md:inline">Offene Todos ({todos.notDoneTodos.length})</span>
               <span class="md:hidden">Offen ({todos.notDoneTodos.length})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 1} class="px-4 py-2 rounded-t-lg transition-colors whitespace-nowrap {tabsBasic === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
+            <button onclick={() => tabsBasic = 1} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 1 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
               <span class="hidden md:inline">Songs ({todos.songsForFeedback?.length ?? 0})</span>
               <span class="md:hidden">🎵 ({todos.songsForFeedback?.length ?? 0})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 2} class="px-4 py-2 rounded-t-lg transition-colors whitespace-nowrap {tabsBasic === 2 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
+            <button onclick={() => tabsBasic = 2} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 2 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
               <span class="hidden md:inline">Abstimmungen ({todos.surveysForFeedback?.length ?? 0})</span>
               <span class="md:hidden">📊 ({todos.surveysForFeedback?.length ?? 0})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 3} class="px-4 py-2 rounded-t-lg transition-colors whitespace-nowrap {tabsBasic === 3 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+            <button onclick={() => tabsBasic = 3} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 3 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
               <span class="hidden md:inline">Erledigt ({todos.doneTodos.length})</span>
               <span class="md:hidden">✓ ({todos.doneTodos.length})</span>
             </button>
@@ -190,8 +176,8 @@
           <div class="mt-4">
             {#if tabsBasic === 0}
               <div class="hidden md:block">
-                <table class="w-full border-collapse rounded-xl shadow mb-6 bg-surface-1 text-on-surface">
-                  <thead class="bg-primary-50 text-primary-900">
+                <table class="ui-table mb-6 bg-surface-1 text-on-surface">
+                  <thead class="text-on-surface">
                     <tr>
                       <th class="font-semibold py-2 px-3 border-b">Interpret</th>
                       <th class="font-semibold py-2 px-3 border-b">Titel</th>
@@ -201,13 +187,13 @@
                   </thead>
                   <tbody>
                     {#each todos.notDoneTodos as td (td.id)}
-                      <tr class="hover:bg-secondary-50/60 transition">
+                      <tr class="transition">
                         <td class="px-3 py-2">{td.song_interpret}</td>
                         <td class="px-3 py-2">{td.song_title}</td>
                         <td class="px-3 py-2">{td.todo}</td>
                         <td class="px-3 py-2">
                           <button
-                            class="btn variant-filled-primary rounded-lg px-3 py-0 text-base font-semibold"
+                            class="ui-btn ui-btn-primary px-3 py-0 text-base"
                             onclick={() => markTodoAsDone(td)}
                           >✓</button>
                         </td>
@@ -219,11 +205,11 @@
 
               <div class="block md:hidden mt-5">
                 {#each todos.notDoneTodos as td (td.id)}
-                  <div class="bg-secondary-200 rounded-xl p-4 mb-4 border border-success-300 text-success-900 shadow">
+                  <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
                     <h5 class="font-bold mb-1 text-primary-900">{td.song_interpret} - {td.song_title}</h5>
                     <p class="mb-2 text-on-surface-variant">{td.todo}</p>
                     <button
-                      class="btn variant-filled-success w-full rounded-lg py-2 font-semibold"
+                      class="ui-btn variant-filled-success w-full py-2"
                       onclick={() => markTodoAsDone(td)}
                     >✓</button>
                   </div>
@@ -231,8 +217,8 @@
               </div>
             {:else if tabsBasic === 1}
               <div class="hidden md:block">
-                <table class="w-full border-collapse rounded-xl shadow mb-1 bg-surface-1 text-on-surface">
-                  <thead class="bg-tertiary-50 text-tertiary-900">
+                <table class="ui-table mb-1 bg-surface-1 text-on-surface">
+                  <thead class="text-on-surface">
                     <tr>
                       <th class="font-semibold py-2 px-3 border-b">Interpret</th>
                       <th class="font-semibold py-2 px-3 border-b">Titel</th>
@@ -253,7 +239,7 @@
 
               <div class="block md:hidden mt-5">
                 {#each todos.songsForFeedback as s (s.id)}
-                  <div class="bg-success-100 rounded-xl p-4 mb-4 border border-success-300 text-success-900 shadow">
+                  <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
                     <h5 class="font-bold mb-1">{s.interpret} - {s.title}</h5>
                     <p class="mb-2">Mein Feedback</p>
                   </div>
@@ -261,8 +247,8 @@
               </div>
             {:else if tabsBasic === 2}
               <div class="hidden md:block">
-                <table class="w-full border-collapse rounded-xl shadow mb-1 bg-surface-1 text-on-surface">
-                  <thead class="bg-tertiary-50 text-tertiary-900">
+                <table class="ui-table mb-1 bg-surface-1 text-on-surface">
+                  <thead class="text-on-surface">
                     <tr>
                       <th class="font-semibold py-2 px-3 border-b">Umfragegrund</th>
                       <th class="font-semibold py-2 px-3 border-b">Feedback</th>
@@ -281,7 +267,7 @@
 
               <div class="block md:hidden mt-5">
                 {#each todos.surveysForFeedback as sf (sf.id)}
-                  <div class="bg-success-100 rounded-xl p-4 mb-4 border border-success-300 text-success-900 shadow">
+                  <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
                     <h5 class="font-bold mb-1">{sf.rf_survey}</h5>
                     <p class="mb-2">Mein Feedback</p>
                   </div>
@@ -289,8 +275,8 @@
               </div>
             {:else if tabsBasic === 3}
               <div class="hidden md:block">
-                <table class="w-full border-collapse rounded-xl shadow mb-1 bg-surface-1 text-on-surface">
-                  <thead class="bg-tertiary-50 text-tertiary-900">
+                <table class="ui-table mb-1 bg-surface-1 text-on-surface">
+                  <thead class="text-on-surface">
                     <tr>
                       <th class="font-semibold py-2 px-3 border-b">Interpret</th>
                       <th class="font-semibold py-2 px-3 border-b">Titel</th>
@@ -311,7 +297,7 @@
 
               <div class="block md:hidden mt-5">
                 {#each todos.doneTodos as td (td.id)}
-                  <div class="bg-success-100 rounded-xl p-4 mb-4 border border-success-300 text-success-900 shadow">
+                  <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
                     <h5 class="font-bold mb-1">{td.song_interpret} - {td.song_title}</h5>
                     <p class="mb-2">{td.todo}</p>
                   </div>
@@ -327,7 +313,7 @@
       <div>
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Nächste Termine</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          <div class="card variant-ghost-primary p-4 rounded-lg">
+          <div class="ui-card-muted p-4">
             <div class="text-sm text-on-surface-variant mb-1">Nächste Probe</div>
             {#if nextRehearsal}
               <div class="text-lg font-semibold text-on-surface">
@@ -340,11 +326,11 @@
               <div class="text-lg font-semibold text-on-surface">Keine Probe geplant</div>
             {/if}
             <div class="mt-3">
-              <a class="btn variant-ghost-primary btn-sm" href="/proben">Zu Proben</a>
+              <a class="ui-btn ui-btn-ghost" href="/proben">Zu Proben</a>
             </div>
           </div>
 
-          <div class="card variant-ghost-secondary p-4 rounded-lg">
+          <div class="ui-card-muted p-4">
             <div class="text-sm text-on-surface-variant mb-1">Nächster Auftritt</div>
             {#if nextGig}
               <div class="text-lg font-semibold text-on-surface">
@@ -355,7 +341,7 @@
               <div class="text-lg font-semibold text-on-surface">Kein Auftritt geplant</div>
             {/if}
             <div class="mt-3">
-              <a class="btn variant-ghost-secondary btn-sm" href="/gigs">Zu Gigs</a>
+              <a class="ui-btn ui-btn-ghost" href="/gigs">Zu Gigs</a>
             </div>
           </div>
         </div>
@@ -366,14 +352,14 @@
       <div>
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-xl font-semibold text-on-surface">Saison {new Date().getFullYear()}</h2>
-          <button class="btn variant-ghost-surface btn-sm md:hidden" onclick={() => showSeasonStats = !showSeasonStats}>
+          <button class="ui-btn ui-btn-ghost md:hidden" onclick={() => showSeasonStats = !showSeasonStats}>
             {showSeasonStats ? 'Weniger anzeigen' : 'Mehr anzeigen'}
           </button>
         </div>
 
         {#if seasonStats}
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mt-4 {showSeasonStats ? '' : 'hidden md:grid'}">
-            <div class="card variant-ghost-primary p-3 md:p-4 rounded-lg min-h-[240px] md:min-h-[260px] overflow-hidden">
+            <div class="ui-card-muted p-3 md:p-4 min-h-[240px] md:min-h-[260px] overflow-hidden">
               <SeasonGigProgressPlot
                 playedGigCount={seasonStats.played_gig_count}
                 gigCount={seasonStats.gig_count}
@@ -381,7 +367,7 @@
               />
             </div>
 
-            <div class="card variant-ghost-secondary p-3 md:p-4 rounded-lg min-h-[240px] md:min-h-[260px] overflow-hidden">
+            <div class="ui-card-muted p-3 md:p-4 min-h-[240px] md:min-h-[260px] overflow-hidden">
               <SeasonSongMixPlot
                 totalSongs={seasonStats.total_songs}
                 uniqueSongs={seasonStats.unique_songs}
@@ -389,7 +375,7 @@
               />
             </div>
 
-            <div class="card variant-ghost-warning p-3 md:p-4 rounded-lg min-h-[240px] md:min-h-[260px] overflow-hidden">
+            <div class="ui-card-muted p-3 md:p-4 min-h-[240px] md:min-h-[260px] overflow-hidden">
               <SeasonFeedbackGaugePlot
                 feedbackAvg={seasonStats.feedback_avg}
                 feedbackCount={seasonStats.feedback_count}
@@ -397,7 +383,7 @@
               />
             </div>
 
-            <div class="card variant-ghost-tertiary p-3 md:p-4 rounded-lg min-h-[280px] md:min-h-[300px] overflow-hidden">
+            <div class="ui-card-muted p-3 md:p-4 min-h-[280px] md:min-h-[300px] overflow-hidden">
               <SeasonGenreTopPlot
                 genreDistribution={seasonStats.genre_distribution}
                 topN={5}
@@ -415,7 +401,7 @@
       <div>
         <h2 class="text-xl font-semibold my-2 text-on-surface">Service & Hilfe</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div class="p-4 rounded-xl border border-primary-200">
+          <div class="ui-card-muted p-4 border border-primary-200">
             <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 mb-2">Kalender-Abo</h3>
             <p class="text-sm text-primary-700 dark:text-primary-50 mb-3">
               Abonniere den Bandkalender, um alle Proben und Gigs in deiner Kalender-App zu sehen.
@@ -425,10 +411,10 @@
                 type="text"
                 readonly
                 value={calendarUrl}
-                class="input flex-1 text-sm"
+                class="ui-input flex-1 text-sm"
               />
               <button
-                class="btn variant-filled-primary"
+                class="ui-btn ui-btn-primary"
                 onclick={() => navigator.clipboard.writeText(calendarUrl)}
               >
                 Kopieren
@@ -439,19 +425,19 @@
             </p>
           </div>
 
-          <div class="p-4 rounded-xl border border-outline-variant">
+          <div class="ui-card-muted p-4 border border-outline-variant">
             <h3 class="text-lg font-semibold text-on-surface mb-2">Dashboard-Hilfe</h3>
             <p class="text-sm text-on-surface-variant mb-3">
               Hier findest du eine kurze Erklärung zu Todos, Feedback und Aktionen.
             </p>
-            <button class="btn variant-ghost-surface btn-sm" onclick={() => showHelp = !showHelp}>
+            <button class="ui-btn ui-btn-ghost" onclick={() => showHelp = !showHelp}>
               {showHelp ? 'Anleitung ausblenden' : 'Anleitung anzeigen'}
             </button>
           </div>
         </div>
 
         {#if showHelp}
-          <div class="card variant-ghost-surface mt-4 p-4 md:p-6">
+          <div class="ui-card-muted mt-4 p-4 md:p-6 dashboard-help-panel">
             <h3 class="h4 font-bold mb-4">Anleitung: Dashboard</h3>
 
             <div class="space-y-4">
@@ -490,3 +476,50 @@
     {/if}
   </div>
 </div>
+
+<style>
+  .dashboard-main-card {
+    background:
+      radial-gradient(920px 220px at 6% -25%, color-mix(in oklab, var(--color-primary-500) 14%, transparent), transparent 68%),
+      linear-gradient(180deg,
+        color-mix(in oklab, var(--color-surface-50) 95%, transparent) 0%,
+        color-mix(in oklab, var(--color-surface-100) 92%, transparent) 100%);
+  }
+
+  :global(.dark) .dashboard-main-card {
+    background:
+      radial-gradient(920px 220px at 6% -25%, color-mix(in oklab, var(--color-primary-500) 24%, transparent), transparent 70%),
+      linear-gradient(180deg,
+        color-mix(in oklab, var(--color-surface-800) 86%, transparent) 0%,
+        color-mix(in oklab, var(--color-surface-900) 92%, transparent) 100%);
+  }
+
+  .dashboard-success-panel {
+    background:
+      linear-gradient(145deg,
+        color-mix(in oklab, var(--color-success-100) 96%, transparent),
+        color-mix(in oklab, var(--color-success-200) 84%, transparent));
+  }
+
+  :global(.dark) .dashboard-success-panel {
+    background:
+      linear-gradient(145deg,
+        color-mix(in oklab, var(--color-success-900) 64%, var(--color-surface-900)),
+        color-mix(in oklab, var(--color-success-700) 44%, var(--color-surface-950)));
+  }
+
+  .dashboard-help-panel {
+    background:
+      linear-gradient(150deg,
+        color-mix(in oklab, var(--color-tertiary-100) 44%, transparent),
+        color-mix(in oklab, var(--color-surface-100) 88%, transparent));
+  }
+
+  :global(.dark) .dashboard-help-panel {
+    background:
+      linear-gradient(150deg,
+        color-mix(in oklab, var(--color-tertiary-700) 32%, var(--color-surface-900)),
+        color-mix(in oklab, var(--color-surface-900) 92%, transparent));
+  }
+</style>
+
