@@ -26,6 +26,7 @@ struct TerminfindungDetailView: View {
     @State private var localUser: UserOut? = nil   // fallback if passedUser is nil
     @State private var isUpdating = false
     @State private var showOthers = false
+    @State private var showVotingControls = false
 
     /// Best available user – parameter takes precedence, then session user, then local fetch.
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
@@ -103,88 +104,177 @@ struct TerminfindungDetailView: View {
             }
             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
-            // ── Termine (mein Votum + Auswertung) ───────────────────
+            // ── Kombinierte Tabelle als Standardansicht ───────────────
+            if !survey.fields.isEmpty {
+                Section("Kombinierte Tabellenansicht") {
+                    let fields = sortedFields(survey)
+                    let topFieldIds = topOptionIds(survey)
+                    let others = otherUsers(survey, me: me)
+
+                    ScrollView(.horizontal, showsIndicators: true) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(spacing: 6) {
+                                tableHeaderCell("Termin", width: 150)
+                                if let me {
+                                    tableHeaderCell(me.clear_name ?? me.user_name, width: 92)
+                                }
+                                ForEach(others, id: \.id) { u in
+                                    tableHeaderCell(u.clear_name, width: 92)
+                                }
+                                tableHeaderCell("Summe", width: 92)
+                            }
+
+                            ForEach(fields, id: \.id) { field in
+                                let yes = field.feedbacks.filter { $0.value == "a" }.count
+                                let maybe = field.feedbacks.filter { $0.value == "m" }.count
+                                let no = field.feedbacks.filter { $0.value == "o" }.count
+
+                                HStack(spacing: 6) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(shortDate(dateFromText(field.field_text)))
+                                            .font(.caption.weight(topFieldIds.contains(field.id) ? .bold : .semibold))
+                                            .foregroundStyle(topFieldIds.contains(field.id) ? .primary : .secondary)
+                                            .lineLimit(2)
+                                            .multilineTextAlignment(.leading)
+                                        if topFieldIds.contains(field.id) {
+                                            Text("Top")
+                                                .font(.caption2.bold())
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color.green.opacity(0.14))
+                                                .foregroundStyle(.green)
+                                                .clipShape(Capsule())
+                                        }
+                                    }
+                                    .frame(width: 150, alignment: .leading)
+
+                                    if let me {
+                                        let current = field.feedbacks.first { $0.id_user == me.id }?.value
+                                        tableVoteCell(
+                                            survey: survey,
+                                            field: field,
+                                            userId: me.id,
+                                            current: current,
+                                            canEdit: canParticipate && !survey.closed,
+                                            highlight: true
+                                        )
+                                    }
+
+                                    ForEach(others, id: \.id) { u in
+                                        let current = field.feedbacks.first { $0.id_user == u.id }?.value
+                                        tableVoteCell(
+                                            survey: survey,
+                                            field: field,
+                                            userId: u.id,
+                                            current: current,
+                                            canEdit: false,
+                                            highlight: false
+                                        )
+                                    }
+
+                                    tableSummaryCell(
+                                        yes: yes,
+                                        maybe: maybe,
+                                        no: no,
+                                        isTop: topFieldIds.contains(field.id)
+                                    )
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+                    }
+                }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+            }
+
+            // ── Stimmabgabe (eingeklappt) ────────────────────────────
             Section {
                 if let me {
-                    let topFieldId = voteStats(survey).first?.id
+                    let topFieldIds = topOptionIds(survey)
+                    DisclosureGroup(isExpanded: $showVotingControls) {
+                        ForEach(sortedFields(survey)) { field in
+                            let myFb = field.feedbacks.first { $0.id_user == me.id }
+                            let yes = field.feedbacks.filter { $0.value == "a" }.count
+                            let maybe = field.feedbacks.filter { $0.value == "m" }.count
+                            let no = field.feedbacks.filter { $0.value == "o" }.count
+                            let total = yes + maybe + no
+                            let score = yes - no
 
-                    ForEach(sortedFields(survey)) { field in
-                        let myFb = field.feedbacks.first { $0.id_user == me.id }
-                        let yes = field.feedbacks.filter { $0.value == "a" }.count
-                        let maybe = field.feedbacks.filter { $0.value == "m" }.count
-                        let no = field.feedbacks.filter { $0.value == "o" }.count
-                        let total = yes + maybe + no
-                        let score = yes - no
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 8) {
-                                Text(formatDate(field.field_text))
-                                    .font(.subheadline)
-                                    .fontWeight(field.id == topFieldId ? .semibold : .regular)
-                                if field.id == topFieldId {
-                                    Text("Top")
-                                        .font(.caption2.bold())
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.green.opacity(0.14))
-                                        .foregroundStyle(.green)
-                                        .clipShape(Capsule())
-                                }
-                                Spacer()
-                                Text(score > 0 ? "+\(score)" : "\(score)")
-                                    .font(.headline)
-                                    .foregroundStyle(score > 0 ? .green : score < 0 ? .red : .secondary)
-                            }
-
-                            Button {
-                                guard canParticipate && !survey.closed && !isUpdating else { return }
-                                Task {
-                                    isUpdating = true
-                                    await castFeedback(survey: survey, field: field,
-                                                       userId: me.id,
-                                                       newValue: nextValue(myFb?.value))
-                                    isUpdating = false
-                                }
-                            } label: {
+                            VStack(alignment: .leading, spacing: 10) {
                                 HStack(spacing: 8) {
-                                    feedbackIcon(myFb?.value)
-                                    Text("Mein Votum: \(labelFor(myFb?.value))")
+                                    Text(formatDate(field.field_text))
+                                        .font(.subheadline)
+                                        .fontWeight(topFieldIds.contains(field.id) ? .semibold : .regular)
+                                    if topFieldIds.contains(field.id) {
+                                        Text("Top")
+                                            .font(.caption2.bold())
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.green.opacity(0.14))
+                                            .foregroundStyle(.green)
+                                            .clipShape(Capsule())
+                                    }
+                                    Spacer()
+                                    Text(score > 0 ? "+\(score)" : "\(score)")
+                                        .font(.headline)
+                                        .foregroundStyle(score > 0 ? .green : score < 0 ? .red : .secondary)
+                                }
+
+                                Button {
+                                    guard canParticipate && !survey.closed && !isUpdating else { return }
+                                    Task {
+                                        isUpdating = true
+                                        await castFeedback(survey: survey, field: field,
+                                                           userId: me.id,
+                                                           newValue: nextValue(myFb?.value))
+                                        isUpdating = false
+                                    }
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        feedbackIcon(myFb?.value)
+                                        Text("Mein Votum: \(labelFor(myFb?.value))")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        if canParticipate && !survey.closed {
+                                            Image(systemName: "chevron.right")
+                                                .font(.caption2)
+                                                .foregroundStyle(.tertiary)
+                                        }
+                                    }
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(survey.closed || isUpdating || !canParticipate)
+
+                                HStack(spacing: 6) {
+                                    scoreChip("checkmark.circle.fill", yes, .green)
+                                    scoreChip("questionmark.circle.fill", maybe, .yellow)
+                                    scoreChip("xmark.circle.fill", no, .red)
+                                    Spacer()
+                                    Text("\(total) Stimmen")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Spacer()
-                                    if canParticipate && !survey.closed {
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption2)
-                                            .foregroundStyle(.tertiary)
-                                    }
                                 }
-                                .contentShape(Rectangle())
+
+                                stackedVoteBar(yes: yes, maybe: maybe, no: no)
                             }
-                            .buttonStyle(.plain)
-                            .disabled(survey.closed || isUpdating || !canParticipate)
+                            .padding(.vertical, 6)
+                            .listRowBackground(colorFor(myFb?.value).opacity(0.1))
+                        }
 
-                            HStack(spacing: 6) {
-                                scoreChip("checkmark.circle.fill", yes, .green)
-                                scoreChip("questionmark.circle.fill", maybe, .yellow)
-                                scoreChip("xmark.circle.fill", no, .red)
-                                Spacer()
-                                Text("\(total) Stimmen")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        if isUpdating {
+                            HStack {
+                                ProgressView().padding(.trailing, 4)
+                                Text("Wird gespeichert…")
+                                    .font(.caption).foregroundStyle(.secondary)
                             }
-
-                            stackedVoteBar(yes: yes, maybe: maybe, no: no)
                         }
-                        .padding(.vertical, 6)
-                        .listRowBackground(colorFor(myFb?.value).opacity(0.1))
-                    }
-
-                    if isUpdating {
-                        HStack {
-                            ProgressView().padding(.trailing, 4)
-                            Text("Wird gespeichert…")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
+                    } label: {
+                        Text("Stimmabgabe")
+                            .font(.body)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
@@ -205,18 +295,18 @@ struct TerminfindungDetailView: View {
                     }
                 }
             } header: {
-                Text("Termine")
+                Text("Abstimmen")
             } footer: {
                 if me != nil && canParticipate && !survey.closed {
-                    Text("Tippen: Ja → Vielleicht → Nein → leer")
+                    Text("Du kannst direkt in der Tabellenansicht abstimmen oder die Stimmabgabe aufklappen.")
                         .font(.caption2)
                 } else if me != nil && !canParticipate {
                     Text("Nur Musiker können an dieser Terminumfrage teilnehmen.")
                         .font(.caption2)
                 }
             }
+            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
-            // ── Andere Teilnehmer ────────────────────────────────────
             let others = otherUsers(survey, me: me)
             if !others.isEmpty {
                 Section {
@@ -272,10 +362,95 @@ struct TerminfindungDetailView: View {
             .clipShape(Capsule())
     }
 
+    @ViewBuilder
+    private func tableHeaderCell(_ title: String, width: CGFloat, isTop: Bool = false) -> some View {
+        Text(title)
+            .font(.caption.weight(isTop ? .bold : .semibold))
+            .foregroundStyle(isTop ? .primary : .secondary)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+            .frame(width: width, alignment: .leading)
+            .padding(.vertical, 6)
+    }
+
+    @ViewBuilder
+    private func tableSummaryCell(yes: Int, maybe: Int, no: Int, isTop: Bool) -> some View {
+        let score = yes - no
+        let scoreText = score > 0 ? "+\(score)" : "\(score)"
+        let scoreColor: Color = score > 0 ? .green : (score < 0 ? .red : .secondary)
+        let backgroundColor: Color = isTop ? Color.green.opacity(0.14) : Color.secondary.opacity(0.08)
+
+        VStack(spacing: 2) {
+            Text(scoreText)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(scoreColor)
+            Text("\(maybe) vielleicht")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: 92)
+        .frame(minHeight: 44)
+        .padding(.vertical, 4)
+        .background(backgroundColor)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.secondary.opacity(0.12), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    @ViewBuilder
+    private func tableVoteCell(
+        survey: SurveyQuestionOut,
+        field: SurveyFieldsOut,
+        userId: Int,
+        current: String?,
+        canEdit: Bool,
+        highlight: Bool
+    ) -> some View {
+        Button {
+            guard canEdit && !isUpdating else { return }
+            Task {
+                isUpdating = true
+                await castFeedback(
+                    survey: survey,
+                    field: field,
+                    userId: userId,
+                    newValue: nextValue(current)
+                )
+                isUpdating = false
+            }
+        } label: {
+            Image(systemName: iconFor(current))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(colorFor(current))
+                .frame(width: 92, height: 34)
+                .background(colorFor(current).opacity(current == nil ? (highlight ? 0.12 : 0.08) : (highlight ? 0.24 : 0.18)))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.secondary.opacity(0.12), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .disabled(!canEdit || isUpdating)
+    }
+
     // MARK: - Helpers
 
     private func sortedFields(_ s: SurveyQuestionOut) -> [SurveyFieldsOut] {
         s.fields.sorted { dateFromText($0.field_text) < dateFromText($1.field_text) }
+    }
+
+    private func topOptionIds(_ survey: SurveyQuestionOut) -> Set<Int> {
+        let stats = voteStats(survey)
+        guard let best = stats.first else { return [] }
+
+        return Set(
+            stats
+                .filter { $0.score == best.score && $0.yes == best.yes && $0.maybe == best.maybe }
+                .map(\.id)
+        )
     }
 
     private func voteStats(_ survey: SurveyQuestionOut) -> [DateVoteStats] {
@@ -351,19 +526,55 @@ struct TerminfindungDetailView: View {
     }
 
     private func dateFromText(_ t: String) -> Date {
-        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd'T'HH:mm"
-        return df.date(from: t) ?? Date.distantFuture
+        // Supports both legacy local format and ISO8601 timestamps from backend.
+        if let parsed = parseSurveyDate(t) {
+            return parsed
+        }
+        return Date.distantFuture
     }
 
     private func formatDate(_ t: String) -> String {
+        guard let d = parseSurveyDate(t) else { return t }
         let df = DateFormatter()
         df.locale = Locale(identifier: "de_DE")
-        df.dateFormat = "yyyy-MM-dd'T'HH:mm"
-        if let d = df.date(from: t) {
-            df.dateFormat = "EEE dd.MM.yy, HH:mm 'Uhr'"
-            return df.string(from: d)
+        df.dateFormat = "EEE dd.MM.yy, HH:mm 'Uhr'"
+        return df.string(from: d)
+    }
+
+    private func shortDate(_ d: Date) -> String {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "de_DE")
+        df.dateFormat = "dd.MM HH:mm"
+        return df.string(from: d)
+    }
+
+    private func parseSurveyDate(_ raw: String) -> Date? {
+        let isoWithFractional = ISO8601DateFormatter()
+        isoWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = isoWithFractional.date(from: raw) {
+            return d
         }
-        return t
+
+        let isoStandard = ISO8601DateFormatter()
+        isoStandard.formatOptions = [.withInternetDateTime]
+        if let d = isoStandard.date(from: raw) {
+            return d
+        }
+
+        let formats = [
+            "yyyy-MM-dd'T'HH:mm",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd HH:mm"
+        ]
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "de_DE")
+        for format in formats {
+            df.dateFormat = format
+            if let d = df.date(from: raw) {
+                return d
+            }
+        }
+        return nil
     }
 
     // MARK: - Feedback payload
