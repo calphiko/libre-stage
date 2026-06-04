@@ -258,6 +258,26 @@ body {
 	overflow: hidden;
 }
 
+/* App-weite Hintergrundatmosphaere mit dezentem Gradient-Layer */
+body {
+  background-color: light-dark(var(--color-surface-50), var(--color-surface-950));
+  background-image:
+    radial-gradient(1100px 520px at 8% -12%, color-mix(in oklab, var(--color-primary-500) 18%, transparent), transparent 62%),
+    radial-gradient(900px 440px at 96% -18%, color-mix(in oklab, var(--color-secondary-500) 14%, transparent), transparent 60%),
+    radial-gradient(760px 360px at 50% 110%, color-mix(in oklab, var(--color-tertiary-500) 10%, transparent), transparent 66%),
+    linear-gradient(180deg,
+      light-dark(
+        color-mix(in oklab, var(--color-surface-50) 96%, var(--color-primary-50-950)),
+        color-mix(in oklab, var(--color-surface-950) 94%, var(--color-primary-950-50))
+      ) 0%,
+      light-dark(
+        color-mix(in oklab, var(--color-surface-100) 92%, transparent),
+        color-mix(in oklab, var(--color-surface-900) 90%, transparent)
+      ) 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
 /* Custom font for modern theme */
 @font-face {
 	font-family: 'Quicksand';
@@ -324,3 +344,266 @@ body {
     border-radius: 0.5rem;
     padding: 1.5rem;
 }
+
+/* ============================================================
+   Unified UI primitives used across pages
+   ============================================================ */
+
+.ui-page {
+  width: min(1120px, 100% - 1.5rem);
+  margin-inline: auto;
+  padding-block: 1.25rem;
+}
+
+.ui-page-gradient {
+  background:
+    radial-gradient(1200px 380px at 10% -20%, color-mix(in oklab, var(--color-primary-500) 18%, transparent), transparent 65%),
+    radial-gradient(980px 340px at 90% -15%, color-mix(in oklab, var(--color-secondary-500) 14%, transparent), transparent 62%),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--color-surface-100) 96%, transparent),
+      color-mix(in oklab, var(--color-surface-200) 82%, transparent));
+  border-radius: 1.25rem;
+  padding-inline: 0.5rem;
+}
+
+.dark .ui-page-gradient {
+  background:
+    radial-gradient(1200px 380px at 10% -20%, color-mix(in oklab, var(--color-primary-500) 26%, transparent), transparent 68%),
+    radial-gradient(980px 340px at 90% -15%, color-mix(in oklab, var(--color-secondary-500) 22%, transparent), transparent 66%),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--color-surface-900) 90%, transparent),
+      color-mix(in oklab, var(--color-surface-950) 92%, transparent));
+}
+
+.ui-card,
+.card {
+  border: 1px solid color-mix(in oklab, var(--color-surface-500) 28%, transparent);
+  border-radius: 1rem;
+  background:
+    linear-gradient(145deg,
+      color-mix(in oklab, var(--color-surface-50) 95%, transparent) 0%,
+      color-mix(in oklab, var(--color-surface-100) 92%, transparent) 55%,
+      color-mix(in oklab, var(--color-primary-500) 8%, var(--color-surface-100)) 100%);
+  box-shadow: 0 12px 28px color-mix(in oklab, var(--color-surface-950) 12%, transparent);
+}
+
+.dark .ui-card,
+.dark .card {
+  border-color: color-mix(in oklab, var(--color-surface-400) 24%, transparent);
+  background:
+    linear-gradient(145deg,
+      color-mix(in oklab, var(--color-surface-800) 88%, transparent) 0%,
+      color-mix(in oklab, var(--color-surface-900) 92%, transparent) 58%,
+      color-mix(in oklab, var(--color-primary-500) 16%, var(--color-surface-950)) 100%);
+  box-shadow: 0 16px 34px color-mix(in oklab, black 45%, transparent);
+}
+
+.ui-card-muted {
+  border: 1px solid color-mix(in oklab, var(--color-surface-500) 20%, transparent);
+  border-radius: 0.875rem;
+  background:
+    linear-gradient(160deg,
+      color-mix(in oklab, var(--color-surface-100) 90%, transparent) 0%,
+      color-mix(in oklab, var(--color-surface-200) 48%, transparent) 100%);
+}
+
+.dark .ui-card-muted {
+  border-color: color-mix(in oklab, var(--color-surface-400) 20%, transparent);
+  background:
+    linear-gradient(160deg,
+      color-mix(in oklab, var(--color-surface-800) 82%, transparent) 0%,
+      color-mix(in oklab, var(--color-surface-900) 90%, transparent) 100%);
+}
+
+.ui-divider {
+  border: 0;
+  border-top: 1px solid color-mix(in oklab, var(--color-surface-500) 24%, transparent);
+}
+
+.ui-subtle {
+  color: color-mix(in oklab, var(--color-surface-950) 65%, var(--color-surface-50));
+}
+
+.ui-badge,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.ui-input,
+.ui-select,
+.ui-textarea,
+.input,
+.select,
+textarea.input {
+  width: 100%;
+  border: 1px solid color-mix(in oklab, var(--color-surface-500) 32%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--color-surface-50) 92%, transparent);
+  color: var(--color-surface-950-50);
+  min-height: 2.55rem;
+  padding: 0.52rem 0.78rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.dark .ui-input,
+.dark .ui-select,
+.dark .ui-textarea,
+.dark .input,
+.dark .select,
+.dark textarea.input {
+  border-color: color-mix(in oklab, var(--color-surface-400) 36%, transparent);
+  background: color-mix(in oklab, var(--color-surface-900) 90%, transparent);
+  color: var(--color-surface-50);
+}
+
+.ui-input::placeholder,
+.ui-select::placeholder,
+.ui-textarea::placeholder,
+.input::placeholder,
+.select::placeholder,
+textarea.input::placeholder {
+  color: color-mix(in oklab, var(--color-surface-600) 72%, transparent);
+}
+
+.dark .ui-input::placeholder,
+.dark .ui-select::placeholder,
+.dark .ui-textarea::placeholder,
+.dark .input::placeholder,
+.dark .select::placeholder,
+.dark textarea.input::placeholder {
+  color: color-mix(in oklab, var(--color-surface-300) 66%, transparent);
+}
+
+.ui-input[readonly],
+.input[readonly] {
+  background: color-mix(in oklab, var(--color-surface-200) 42%, transparent);
+}
+
+.dark .ui-input[readonly],
+.dark .input[readonly] {
+  background: color-mix(in oklab, var(--color-surface-800) 72%, transparent);
+}
+
+.ui-textarea,
+textarea.input {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.ui-input:focus,
+.ui-select:focus,
+.ui-textarea:focus,
+.input:focus,
+.select:focus,
+textarea.input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary-500) 22%, transparent);
+}
+
+.ui-btn,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.7rem;
+  border: 1px solid transparent;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.93rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease, background-color 120ms ease;
+}
+
+.ui-btn:hover,
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+.ui-btn:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ui-btn-primary,
+.btn-primary {
+  background: var(--color-primary-500);
+  color: var(--color-primary-contrast-500);
+}
+
+.ui-btn-secondary,
+.btn-secondary {
+  background: var(--color-secondary-500);
+  color: var(--color-secondary-contrast-500);
+}
+
+.ui-btn-ghost,
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline {
+  background: color-mix(in oklab, var(--color-surface-200) 34%, transparent);
+  color: var(--color-surface-950-50);
+  border-color: color-mix(in oklab, var(--color-surface-500) 36%, transparent);
+}
+
+.ui-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-surface-500) 24%, transparent);
+}
+
+.ui-tab {
+  border-radius: 0.7rem 0.7rem 0 0;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 2px solid transparent;
+  color: var(--color-surface-950-50);
+}
+
+.ui-tab-active {
+  border-bottom-color: var(--color-primary-500);
+  background: color-mix(in oklab, var(--color-surface-300) 30%, transparent);
+  font-weight: 700;
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-surface-500) 26%, transparent);
+  border-radius: 0.85rem;
+}
+
+.ui-table thead {
+  background: color-mix(in oklab, var(--color-primary-500) 15%, transparent);
+}
+
+.dark .ui-table thead {
+  background: color-mix(in oklab, var(--color-primary-500) 20%, var(--color-surface-900));
+}
+
+.ui-table th,
+.ui-table td {
+  padding: 0.62rem 0.8rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-surface-500) 18%, transparent);
+  text-align: left;
+}
+
+.ui-table tbody tr:hover {
+  background: color-mix(in oklab, var(--color-secondary-500) 8%, transparent);
+}
+

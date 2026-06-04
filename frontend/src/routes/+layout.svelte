@@ -106,34 +106,34 @@
 
 <div class="flex h-screen w-screen">
 	{#if sidebarOpen && user.user_name}
-		<aside class="w-56 shrink-0 bg-surface-100 dark:bg-surface-800 p-4 shadow-lg"
+		<aside class="w-56 shrink-0 bg-surface-100 dark:bg-surface-800 p-4 shadow-lg border-r border-surface-300/30"
 			in:slide={{ x: -224, duration: 250 }}
 			out:slide={{ x: -224, duration: 250 }}>
 
-			<button class="px-3 py-2 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 mb-4" onclick={() => sidebarOpen = false}>
+			<button class="ui-btn ui-btn-ghost w-full justify-start mb-4" onclick={() => sidebarOpen = false}>
 				〈 Menü
 			</button>
 			<nav class="space-y-2">
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/dashboard" onclick={closeOnNavigate}>Dashboard</a>
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/gigs" onclick={closeOnNavigate}>Gigs</a>
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/dashboard" onclick={closeOnNavigate}>Dashboard</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/gigs" onclick={closeOnNavigate}>Gigs</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
 				{#if user.user_group === 'admin'}
-					<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
+					<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
 				{/if}
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
-				<a class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
-				<button class="block py-1 px-3 rounded hover:bg-surface-200 dark:hover:bg-surface-700 w-full text-left" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
+				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
+				<button class="ui-btn ui-btn-ghost w-full justify-start" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
 			</nav>
 		</aside>
 	{/if}
 	<div class={sidebarOpen && user.user_name ? 'flex-1 flex flex-col h-full overflow-hidden' : 'w-full flex flex-col h-full overflow-hidden'}>
 		<!-- Header -->
 		{#if user.user_name}
-			<header class="bg-surface-100 dark:bg-surface-800 shadow-sm px-3 py-1.5 flex items-center gap-3">
+			<header class="bg-surface-100 dark:bg-surface-800 shadow-sm px-3 py-2 flex items-center gap-3 border-b border-surface-300/30">
 				{#if !(sidebarOpen && user.user_name)}
-					<button class="px-3 py-2 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" onclick={() => sidebarOpen = true}>
+					<button class="ui-btn ui-btn-ghost" onclick={() => sidebarOpen = true}>
 						☰ Menü
 					</button>
 				{/if}
@@ -157,7 +157,7 @@
 
 		<!-- Footer -->
 		{#if user.user_name}
-			<footer class="footer bg-surface-100 dark:bg-surface-800 px-2 py-1 text-center text-xs text-surface-600 dark:text-surface-300">
+			<footer class="footer bg-surface-100 dark:bg-surface-800 px-2 py-1 text-center text-xs text-surface-600 dark:text-surface-300 border-t border-surface-300/30">
 				<div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 leading-tight">
 					<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span>
 					<span class="hidden md:inline">• {version_description}</span>
