@@ -6,7 +6,6 @@ import SwiftUI
 import Charts
 
 struct DashboardView: View {
-    @Environment(AuthManager.self) private var authManager
     @Environment(DashboardViewModel.self) private var vm
     @Environment(\.colorScheme) private var colorScheme
     @State private var showCandidatesSheet = false
@@ -28,23 +27,6 @@ struct DashboardView: View {
                         SkeletonList()
                     } else if let list = vm.todoList {
                         List {
-                            Section {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("Willkommen, \(authManager.currentUser?.user_name ?? "Bandmitglied")")
-                                        .font(.headline)
-
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 8) {
-                                            DashboardBadgeChip(title: "Gruppe", value: authManager.currentUser?.user_group.rawValue ?? "-")
-                                            DashboardBadgeChip(title: "Offen", value: "\(list.todo.filter { !$0.done }.count)")
-                                            DashboardBadgeChip(title: "Feedback", value: "\(list.songs_to_feedback.count + list.surveys_to_feedback.count)")
-                                            DashboardBadgeChip(title: "Erledigt", value: "\(list.todo.filter { $0.done }.count)")
-                                        }
-                                    }
-                                }
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
                             Section("Deine Todos") {
                                 Picker("Bereich", selection: $selectedTodoTab) {
                                     ForEach(DashboardTodoTab.allCases) { tab in
@@ -287,24 +269,6 @@ private enum DashboardTodoTab: String, CaseIterable, Identifiable {
     }
 }
 
-private struct DashboardBadgeChip: View {
-    let title: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.caption.bold())
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Color.accentColor.opacity(0.12))
-        .clipShape(Capsule())
-    }
-}
 
 private struct DashboardEventCard: View {
     @Environment(\.colorScheme) private var colorScheme
