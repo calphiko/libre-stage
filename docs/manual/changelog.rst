@@ -3,6 +3,18 @@
 Änderungsprotokoll
 ==================
 
+0.5.8 (2026-06-05)
+-------------------
+
+Changed
+~~~~~
+
+* Setlist-Editor: Neue Abstände für bessere Übersicht
+
+* Chore: Projektversion auf ``0.5.8`` erhoeht (Backend/Frontend/Release-Metadaten/README-Badge).
+* Manual: Fuer ``0.5.7`` sind noch keine neuen Screenshots im Handbuch enthalten; diese werden zeitnah nachgereicht.
+
+
 0.5.7 (2026-06-04)
 -------------------
 
