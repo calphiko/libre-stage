@@ -116,9 +116,9 @@
   }
 </script>
 
-<div class="container max-w-full lg:max-w-7xl lg:px-4">
+<div class="container max-w-full lg:max-w-7xl lg:px-4 setlist-editor-compact">
   <!-- Header -->
-  <header class="mb-6">
+  <header class="mb-3">
     <div class="flex items-center justify-between">
       <h1 class="h2 font-bold">
         {#if setlist}
@@ -132,21 +132,21 @@
         onclick={() => showHelp = !showHelp}
         aria-label="Hilfe anzeigen"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        <span class="hidden md:inline ml-2">Hilfe</span>
+        <span class="hidden md:inline ml-1">Hilfe</span>
       </button>
     </div>
 
     {#if showHelp}
-      <div class="card variant-ghost-surface mt-4 p-4 md:p-6">
-        <h3 class="h4 font-bold mb-4">🎹 Anleitung: Setlist-Editor</h3>
+      <div class="card variant-ghost-surface mt-2 p-2 md:p-3">
+        <h3 class="h4 font-bold mb-2">🎹 Anleitung: Setlist-Editor</h3>
 
-        <div class="space-y-4">
+        <div class="space-y-2">
           <!-- Grundfunktionen -->
           <div>
-            <h4 class="font-semibold text-primary-500 mb-2">📋 Grundfunktionen</h4>
+            <h4 class="font-semibold text-primary-500 mb-1">📋 Grundfunktionen</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li><strong>Songs hinzufügen:</strong> Ziehe Songs aus der linken Liste in die Setliste (Drag & Drop)</li>
               <li><strong>Reihenfolge ändern:</strong> Ziehe Songs innerhalb der Setliste an eine neue Position</li>
@@ -157,8 +157,8 @@
 
           <!-- Keyboard Shortcuts -->
           <div>
-            <h4 class="font-semibold text-secondary-500 mb-2">⌨️ Keyboard-Shortcuts</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <h4 class="font-semibold text-secondary-500 mb-1">⌨️ Keyboard-Shortcuts</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-sm">
               <div class="flex items-center gap-2">
                 <kbd class="kbd">Enter</kbd>
                 <span class="opacity-75">Ersten gefilterten Song ans Ende hinzufügen (im Suchfeld)</span>
@@ -180,7 +180,7 @@
 
           <!-- Sets verwalten -->
           <div>
-            <h4 class="font-semibold text-tertiary-500 mb-2">📁 Sets verwalten</h4>
+            <h4 class="font-semibold text-tertiary-500 mb-1">📁 Sets verwalten</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li><strong>Neues Set:</strong> Klicke auf "+ Neues Set" oder nutze <kbd class="kbd">Strg/⌘+Shift+Enter</kbd></li>
               <li><strong>Set umbenennen:</strong> Klicke auf den Set-Namen</li>
@@ -192,7 +192,7 @@
 
           <!-- Filter & Suche -->
           <div>
-            <h4 class="font-semibold text-success-500 mb-2">🔍 Filter & Suche</h4>
+            <h4 class="font-semibold text-success-500 mb-1">🔍 Filter & Suche</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li>Suche nach Titel oder Interpret im Suchfeld</li>
               <li>Filtere nach Status (Neu, Proben, Spielbereit)</li>
@@ -222,7 +222,7 @@
   <div class="editor-grid">
     <!-- Song List Column (Sticky) -->
     <div class="editor-col sticky-col card variant-ghost-surface">
-      <div class="card-header pb-3 border-b border-surface-400/30">
+      <div class="card-header pb-1 border-b border-surface-400/30">
         <h3 class="h4 font-bold flex items-center gap-2">
           <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
@@ -230,13 +230,13 @@
           Alle Songs
         </h3>
       </div>
-      <div class="card-body pt-3">
+      <div class="card-body pt-1">
         {#if songs.length}
           <SongList {songs} {addSongToSetListEnd} {addSongToSet} setlist={setlist} />
         {:else}
-          <div class="flex flex-col items-center justify-center py-12 opacity-60">
+          <div class="flex flex-col items-center justify-center py-6 opacity-60">
             <div class="animate-pulse">
-              <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-10 h-10 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
               </svg>
             </div>
@@ -248,7 +248,7 @@
 
     <!-- Setlist Column -->
     <div class="editor-col card variant-ghost-surface">
-      <div class="card-header pb-3 border-b border-surface-400/30">
+      <div class="card-header pb-1 border-b border-surface-400/30">
         <h3 class="h4 font-bold flex items-center gap-2">
           <svg class="w-5 h-5 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -256,14 +256,14 @@
           Setliste
         </h3>
       </div>
-      <div class="card-body pt-3">
+      <div class="card-body pt-1">
         {#if setlist}
           <SetList bind:setlist />
           <div bind:this={setlistEndAnchor}></div>
         {:else}
-          <div class="flex flex-col items-center justify-center py-12 opacity-60">
+          <div class="flex flex-col items-center justify-center py-6 opacity-60">
             <div class="animate-pulse">
-              <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-10 h-10 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
               </svg>
             </div>
@@ -276,10 +276,29 @@
 </div>
 
 <style>
+  .setlist-editor-compact :global(.btn) {
+    min-height: 1.9rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    line-height: 1.1;
+  }
+
+  .setlist-editor-compact :global(.btn-sm) {
+    min-height: 1.7rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  .setlist-editor-compact :global(.btn-xs) {
+    min-height: 1.5rem;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+  }
+
   .editor-grid {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
-    gap: 1rem;
+    gap: 0.5rem;
     margin: 0 auto;
   }
 
@@ -290,9 +309,9 @@
 
   .sticky-col {
     position: sticky;
-    top: 1rem;
+    top: 0.5rem;
     align-self: flex-start;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - 1rem);
     overflow-y: auto;
   }
 
@@ -318,23 +337,23 @@
   @media (max-width: 768px) {
     .editor-grid {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
+      gap: 0.75rem;
     }
 
     .sticky-col {
       position: relative;
       top: 0;
-      max-height: 500px;
+      max-height: 420px;
     }
   }
 
   @media (max-width: 640px) {
     .editor-grid {
-      gap: 1rem;
+      gap: 0.5rem;
     }
 
     .sticky-col {
-      max-height: 400px;
+      max-height: 320px;
     }
   }
 

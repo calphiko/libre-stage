@@ -386,12 +386,12 @@
       </div>
     {/if}
     <div class="set-header">
-       <button class="btn btn-sm variant-filled-primary min-h-[38px] font-bold px-3 py-0 touch-manipulation" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
+       <button class="btn btn-sm variant-filled-primary min-h-[34px] font-bold px-2.5 py-0 touch-manipulation" onclick={() => insertSetBefore(setIdx)} disabled={isUpdating}>
           + Set davor
        </button>
        <input
           type="text"
-          class="setlist-name-input min-h-[38px]"
+          class="setlist-name-input min-h-[34px]"
           value={set.setlist_name ?? ''}
           placeholder={`Set ${setIdx + 1}`}
           oninput={(e) => {
@@ -410,20 +410,20 @@
             })();
           }}
        />
-       <button class="btn btn-sm variant-filled-error min-h-[38px] min-w-[38px] flex items-center justify-center p-0 touch-manipulation" onclick={() => removeSet(setIdx)} disabled={isUpdating} aria-label="Set löschen">
+       <button class="btn btn-sm variant-filled-error min-h-[34px] min-w-[34px] flex items-center justify-center p-0 touch-manipulation" onclick={() => removeSet(setIdx)} disabled={isUpdating} aria-label="Set löschen">
             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
             </svg>
        </button>
     </div>
-    <div class="set-time-row flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary-500">
+    <div class="set-time-row flex items-center gap-1.5 px-2.5 py-1 text-sm font-semibold text-primary-500">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       Start: <span class="bg-primary-500/10 px-2 py-0.5 rounded text-primary-700 dark:text-primary-300 font-bold">{getSetStartTime(setIdx) || '--:--'}</span>
     </div>
     <div
-      class="songs-drag-zone p-2 rounded-b-lg border-2 border-dashed border-transparent transition-colors duration-150 min-h-[60px]"
+      class="songs-drag-zone p-1.5 rounded-b-lg border-2 border-dashed border-transparent transition-colors duration-150 min-h-[52px]"
       use:dndzone={{
         items: set.songs,
         type: 'song-in-set',
@@ -441,12 +441,12 @@
         class:song-duplicate={isDuplicateSong}
         style="background: {getColorBySinger(getFirstSinger(song.singer_lead))};"
         >
-          <span class="flex items-center gap-1.5 min-w-0 flex-grow py-1">
+          <span class="flex items-center gap-1.5 min-w-0 flex-grow py-0.5">
             <small class="song-time bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded font-bold text-xs">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
             {#if song.brass === 1}
               <span class="text-base flex-shrink-0" title="Bläser">🎺</span>
             {/if}
-            <span class="font-semibold text-sm truncate mr-1">{song.title}</span>
+            <span class="font-semibold text-xs truncate mr-1">{song.title}</span>
             {#if isDuplicateSong}
               <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
             {/if}
@@ -454,7 +454,7 @@
               <small class="text-xs opacity-75 truncate max-w-[120px] italic">({song.comment})</small>
             {/if}
           </span>
-          <button class="btn btn-sm variant-filled-error min-h-[36px] min-w-[36px] flex items-center justify-center p-0 ml-2 touch-manipulation"
+          <button class="btn btn-sm variant-filled-error min-h-[34px] min-w-[34px] flex items-center justify-center p-0 ml-1.5 touch-manipulation"
                   aria-label="Song entfernen"
                   onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -465,11 +465,11 @@
       {/each}
 
       {#if !set.songs.length}
-        <div class="empty-set-hint py-4">Ziehe Songs hierher…</div>
+        <div class="empty-set-hint py-3">Ziehe Songs hierher…</div>
       {/if}
     </div>
 
-    <div class="set-end-row px-3 py-2 border-t border-surface-200/50 bg-surface-100/10 rounded-b-lg">
+    <div class="set-end-row px-2.5 py-1.5 border-t border-surface-200/50 bg-surface-100/10 rounded-b-lg">
       <div class="flex items-center gap-1">
         <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"></path>
@@ -488,7 +488,7 @@
           id={`pause-${setIdx}`}
           type="time"
           step="60"
-          class="pause-input min-h-[34px] w-[95px]"
+          class="pause-input min-h-[32px] w-[88px]"
           value={formatPauseForInput(set.pause)}
           oninput={(e) => {
             setlist.sets[setIdx].pause = e.target.value;
@@ -506,7 +506,7 @@
 
       {#if setIdx === (setlist.sets.length - 1) && getTargetGigEndTime()}
         {@const gigDiff = getGigEndDiffMinutes()}
-        <div class="w-full flex flex-wrap gap-2 justify-end mt-2 pt-2 border-t border-surface-200/50">
+        <div class="w-full flex flex-wrap gap-1.5 justify-end mt-1.5 pt-1.5 border-t border-surface-200/50">
           <span class="gig-target-end text-xs">Ziel: <strong>{getTargetGigEndTime()}</strong></span>
           {#if gigDiff != null}
             {#if gigDiff >= 0}
@@ -523,7 +523,7 @@
 {/each}
 
 <div class="add-set-end-container">
-  <button class="btn variant-filled-secondary hover:variant-filled-primary min-h-[42px] px-6 font-bold shadow-md transition-all duration-150 touch-manipulation rounded-lg" onclick={addSetAtEnd} disabled={isUpdating}>
+  <button class="btn variant-filled-secondary hover:variant-filled-primary min-h-[38px] px-5 font-bold shadow-md transition-all duration-150 touch-manipulation rounded-lg" onclick={addSetAtEnd} disabled={isUpdating}>
     + Weiteres Set hinzufügen
   </button>
 </div>
@@ -532,8 +532,8 @@
 .set-card   {
   background: rgb(var(--color-surface-50));
   border: 1px solid rgb(var(--color-surface-200));
-  border-radius: 12px;
-  margin-bottom: 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 0.9rem;
   overflow: hidden;
 }
 
@@ -542,8 +542,8 @@
   justify-content: space-between;
   align-items: center;
   background: white;
-  margin-bottom: 6px;
-  padding: 0.4rem 0.75rem;
+  margin-bottom: 4px;
+  padding: 0.3rem 0.6rem;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: transform 170ms ease, opacity 170ms ease, margin 170ms ease, padding 170ms ease;
@@ -575,9 +575,9 @@
 }
 
 .pause-before-set {
-  margin: 0.5rem 0.5rem 0.25rem;
+  margin: 0.4rem 0.45rem 0.2rem;
   color: rgb(var(--color-surface-600));
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-style: italic;
   font-weight: 500;
 }
@@ -632,9 +632,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   background: rgb(var(--color-surface-100));
-  padding: .65rem 0.75rem;
+  padding: .5rem 0.65rem;
   border-bottom: 1px solid rgb(var(--color-surface-200));
 }
 
@@ -660,6 +660,6 @@
 .add-set-end-container {
   display: flex;
   justify-content: center;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
 }
 </style>
