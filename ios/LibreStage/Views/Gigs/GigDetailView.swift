@@ -20,6 +20,7 @@ struct GigDetailView: View {
     @State private var showDownloadErrorAlert = false
     @State private var downloadErrorMessage = ""
     @State private var selectedSongForDetails: GigSongDetailSheetItem?
+    @State private var showSetlistEditor = false
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
 
@@ -150,6 +151,12 @@ struct GigDetailView: View {
 
 
                         if canEdit {
+                            Button {
+                                showSetlistEditor = true
+                            } label: {
+                                Label("Setliste bearbeiten", systemImage: "square.and.pencil")
+                            }
+
                             if vm.liveModeAvailability?.available == true {
                                 NavigationLink {
                                     LiveModeView(gig: currentGig)
@@ -256,6 +263,15 @@ struct GigDetailView: View {
             if canEdit {
                 await vm.loadLiveModeAvailability(gigId: gig.id)
             }
+        }
+        .fullScreenCover(isPresented: $showSetlistEditor) {
+            SetlistEditorSheet(
+                gigId: currentGig.id,
+                gigName: currentGig.name ?? "Gig",
+                onSaved: { updated in
+                    vm.setlist = updated
+                }
+            )
         }
         .sheet(item: $shareItem) { item in
 #if canImport(UIKit)
