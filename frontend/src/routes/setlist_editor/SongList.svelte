@@ -123,9 +123,9 @@
   }
 </script>
 
-<div class="p-4 space-y-4">
+<div class="p-3 space-y-1">
   <!-- Search & Filter Toolbar -->
-  <div class="flex flex-wrap gap-3 items-center">
+  <div class="flex flex-wrap gap-1 items-center">
     <input
       type="search"
       class="input"
@@ -135,27 +135,27 @@
       onkeydown={handleSearchKeydown}
     />
     <button
-      class="btn variant-filled-surface min-h-[42px] touch-manipulation"
+      class="btn variant-filled-surface min-h-[38px] touch-manipulation"
       type="button"
       onclick={() => showFilters = !showFilters}
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
       </svg>
-      <span class="ml-2">{showFilters ? 'Filter ausblenden' : 'Filter anzeigen'}</span>
+      <span class="ml-1.5">{showFilters ? 'Filter ausblenden' : 'Filter anzeigen'}</span>
     </button>
   </div>
 
   <!-- Filter Panel -->
   {#if showFilters}
-  <div class="card p-4 variant-filled-surface">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="card p-3 variant-filled-surface">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <!-- Left Column: Singer & Genre -->
-      <div class="space-y-4">
+      <div class="space-y-3">
         <!-- Singer Filter -->
         <label class="label">
-          <span class="font-semibold mb-2">Lead-Sänger</span>
-          <select class="select min-h-[40px]" bind:value={singerFilter}>
+          <span class="font-semibold mb-1">Lead-Sänger</span>
+          <select class="select min-h-[36px]" bind:value={singerFilter}>
             <option value=''>Alle</option>
             {#each singers as singer}
               <option value={singer}>{singer}</option>
@@ -165,8 +165,8 @@
 
         <!-- Genre Filter -->
         <label class="label">
-          <span class="font-semibold mb-2">Genre</span>
-          <select class="select min-h-[40px]" bind:value={genreFilter}>
+          <span class="font-semibold mb-1">Genre</span>
+          <select class="select min-h-[36px]" bind:value={genreFilter}>
             <option value=''>Alle Genres</option>
             {#each genres as genre}
               <option value={genre}>{genre}</option>
@@ -177,7 +177,7 @@
 
       <!-- Right Column: Status -->
       <label class="label">
-        <span class="font-semibold mb-2">Status</span>
+        <span class="font-semibold mb-1">Status</span>
         <select
           class="select"
           bind:value={statusFilter}
@@ -198,7 +198,7 @@
   <!-- Song List Container -->
   <div class="song-list-container card variant-ghost-surface bg-primary">
     <div
-      class="space-y-2"
+      class="space-y-1.5"
       use:dndzone={{
         items: dndItems,
         type: 'song-in-set',
@@ -214,35 +214,35 @@
           class="card rounded-sm song-item w-full {getReadableTextClass(getSingerColor(song.singer_lead_short))} transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
           style="--song-singer-color:{getSingerColor(song.singer_lead_short)};"
         >
-          <div class="p-3 py-2">
+          <div class="p-2.5 py-1.5">
             <!-- Header -->
             <div>
-              <div class="flex justify-between items-center gap-3">
+              <div class="flex justify-between items-center gap-2">
                 <div
                   class="flex-grow min-w-0 text-left cursor-grab active:cursor-grabbing p-1 touch-manipulation"
                 >
-                  <p class="text-base leading-tight font-semibold">{song.title}</p>
+                  <p class="text-sm leading-tight font-semibold">{song.title}</p>
                   <p class="text-xs opacity-75">{song.interpret}</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <!-- Touch-freundlicher Add-Button -->
                   <button
-                    class="btn btn-sm variant-filled-primary flex-shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center p-0 touch-manipulation"
+                    class="btn btn-sm variant-filled-primary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 touch-manipulation"
                     aria-label="Song hinzufügen"
                     onclick={() => handleAddButtonClick(song.id)}
                   >
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                     </svg>
                   </button>
 
                   <!-- Info/Expand Button -->
                   <button
-                    class="btn btn-sm variant-filled-secondary flex-shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
+                    class="btn btn-sm variant-filled-secondary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
                     aria-label="Info anzeigen"
                     onclick={() => toggleOpen(song.id)}
                   >
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                     </svg>
                   </button>
@@ -251,13 +251,13 @@
 
               <!-- Tablet-freundlicher Set-Wähler, wenn auf das "+" in einer Setlist mit mehreren Sets geklickt wurde -->
               {#if activeSetSelectorSongId === song.id && setlist && setlist.sets && setlist.sets.length > 1}
-                <div class="mt-2 p-2.5 bg-white/40 dark:bg-black/35 rounded-md border border-black/10 dark:border-white/10 flex flex-col gap-1.5 animate-fadeIn">
+                <div class="mt-1.5 p-2 bg-white/40 dark:bg-black/35 rounded-md border border-black/10 dark:border-white/10 flex flex-col gap-1 animate-fadeIn">
                   <span class="text-xs font-bold text-surface-700 dark:text-surface-200">Ziel-Set auswählen:</span>
-                  <div class="flex flex-wrap gap-1.5">
+                  <div class="flex flex-wrap gap-1">
                     {#each setlist.sets as set, setIdx}
                       <button
                         type="button"
-                        class="btn btn-xs variant-filled-success hover:variant-filled-primary transition-colors text-white py-1.5 px-3 font-semibold text-xs touch-manipulation rounded"
+                        class="btn btn-xs variant-filled-success hover:variant-filled-primary transition-colors text-white py-1 px-2.5 font-semibold text-xs touch-manipulation rounded"
                         onclick={() => {
                           if (addSongToSet) {
                             addSongToSet(song.id, setIdx);
@@ -272,7 +272,7 @@
                     {/each}
                     <button
                       type="button"
-                      class="btn btn-xs variant-soft-surface py-1.5 px-3 text-xs touch-manipulation font-semibold rounded"
+                      class="btn btn-xs variant-soft-surface py-1 px-2.5 text-xs touch-manipulation font-semibold rounded"
                       onclick={() => activeSetSelectorSongId = null}
                     >
                       Abbrechen
@@ -284,8 +284,8 @@
 
             <!-- Expanded Details -->
             {#if open.has(song.id)}
-              <hr class="!border-t !border-surface-400 dark:!border-surface-600 my-2" />
-              <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm p-1">
+              <hr class="!border-t !border-surface-400 dark:!border-surface-600 my-1.5" />
+              <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm p-0.5">
                 <div><span class="opacity-60 font-semibold">Genre:</span> <span class="font-medium">{song.genre || '-'}</span></div>
                 <div><span class="opacity-60 font-semibold">Status:</span> <span class="font-medium">{song.status || '-'}</span></div>
                 <div><span class="opacity-60 font-semibold">Lead:</span> <span class="font-medium">{song.singer_lead_short || '-'}</span></div>
@@ -298,11 +298,11 @@
       {/each}
 
       {#if filtered.length === 0}
-        <div class="text-center py-12">
-          <svg class="w-20 h-20 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="text-center py-8">
+          <svg class="w-16 h-16 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
           </svg>
-          <p class="text-lg font-medium opacity-70">Keine Songs gefunden</p>
+          <p class="text-base font-medium opacity-70">Keine Songs gefunden</p>
           <p class="text-sm opacity-50 mt-1">Versuche andere Filtereinstellungen</p>
         </div>
       {/if}
@@ -321,8 +321,8 @@
   }
 
   .song-list-container {
-    max-height: calc(100vh - 280px);
-    min-height: 300px;
+    max-height: calc(100vh - 250px);
+    min-height: 260px;
     overflow-y: auto;
   }
 
