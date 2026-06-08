@@ -3,6 +3,14 @@
 Änderungsprotokoll
 ==================
 
+0.5.10 (2026-06-08)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Song details Modal in Songlist.
+
 0.5.9 (2026-06-08)
 -------------------
 
