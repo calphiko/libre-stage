@@ -18,6 +18,9 @@
 
 <script>
   import { dndzone } from 'svelte-dnd-action';
+
+  import { modalState } from '$lib/modalState.js';
+  import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
   import { getFirstSinger, getColorBySinger } from '$lib/common.js';
 
 
@@ -64,6 +67,15 @@
       ...song,
       setsong_id: `new-${song.id}-${Math.floor(Math.random() * 1000000)}`
     }));
+  }
+
+  function openModal(id) {
+    modalState.trigger({
+      component: SongDetailsModal,
+      meta: {
+        songId: id
+      }
+    });
   }
 
   function toggleOpen(id) {
@@ -291,6 +303,13 @@
                 <div><span class="opacity-60 font-semibold">Lead:</span> <span class="font-medium">{song.singer_lead_short || '-'}</span></div>
                 <div><span class="opacity-60 font-semibold">Dauer:</span> <span class="font-medium">{song.duration || '-'}</span></div>
                 <div class="col-span-2"><span class="opacity-60 font-semibold">Kommentar:</span> <span class="font-medium">{song.comment || '-'}</span></div>
+                <div class="col-span-2">
+                    <button
+                        class="btn variant-filled-primary btn-sm"
+                        onclick={() => openModal(song.id)}
+                        >Alle Songdetails
+                    </button>
+                </div>
               </div>
             {/if}
           </div>
