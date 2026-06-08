@@ -3,6 +3,16 @@
 Änderungsprotokoll
 ==================
 
+0.5.9 (2026-06-08)
+-------------------
+
+Changed
+~~~~~~~
+
+* Song-Details: Die Saenger-Vorschlagsliste wurde visuell verstaerkt (deutlicher Kontrast, nahezu deckender Hintergrund), damit Eintraege im Modal besser lesbar sind.
+* Songs-Liste: Laufzeitfehler beim Grid-Layout behoben (``gridApi.doLayout is not a function``); Layout-Aufrufe sind jetzt API-kompatibel abgesichert.
+* Chore: Projektversion auf ``0.5.9`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.8 (2026-06-05)
 -------------------
 

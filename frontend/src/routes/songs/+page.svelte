@@ -508,8 +508,13 @@
   function scheduleGridLayout() {
     if (!gridApi) return;
     requestAnimationFrame(() => {
-      gridApi.doLayout();
-      gridApi.sizeColumnsToFit();
+      // AG Grid v34 API has no doLayout(); guard keeps compatibility with older wrappers.
+      if (typeof gridApi.doLayout === 'function') {
+        gridApi.doLayout();
+      }
+      if (typeof gridApi.sizeColumnsToFit === 'function') {
+        gridApi.sizeColumnsToFit();
+      }
     });
   }
 
