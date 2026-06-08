@@ -18,7 +18,12 @@
 
 <script>
   import { createEventDispatcher, onMount } from 'svelte';
-  let { options = [], selected = [], placeholder = 'Tippe und drücke Enter', name = 'choices' } = $props();
+  let {
+    options = [],
+    selected = $bindable([]),
+    placeholder = 'Tippe und drücke Enter',
+    name = 'choices'
+  } = $props();
   const dispatch = createEventDispatcher();
 
   let input = $state('');
@@ -123,18 +128,21 @@
 
   <!-- Vorschläge -->
   {#if open && available.length > 0}
-    <ul id="suggestions" class="suggestions" role="listbox">
-      {#each available as item, idx}
-        <li
-          role="option"
-          class:active={idx === activeIndex}
-          aria-selected={idx === activeIndex}
-          onmousedown={(e) => { e.preventDefault(); addTag(item); }}
-        >
-          {item}
-        </li>
-      {/each}
-    </ul>
+    <div class="suggestions-wrap" role="presentation">
+      <div class="suggestions-title">Vorschläge</div>
+      <ul id="suggestions" class="suggestions" role="listbox">
+        {#each available as item, idx}
+          <li
+            role="option"
+            class:active={idx === activeIndex}
+            aria-selected={idx === activeIndex}
+            onmousedown={(e) => { e.preventDefault(); addTag(item); }}
+          >
+            {item}
+          </li>
+        {/each}
+      </ul>
+    </div>
   {/if}
 
   <!-- Für klassische Formulare: Hidden Input -->
@@ -213,33 +221,53 @@
     font-size: 0.875rem;
   }
 
-  .suggestions {
+  .suggestions-wrap {
     position: absolute;
-    top: calc(100% + 0.25rem);
+    top: calc(100% + 0.35rem);
     left: 0;
     right: 0;
-    background: rgb(var(--color-surface-100));
-    border: 1px solid rgb(var(--color-surface-400));
+    z-index: 20;
+    border: 2px solid rgb(var(--color-primary-500));
     border-radius: var(--theme-rounded-base);
+    overflow: hidden;
+    box-shadow: 0 14px 36px rgb(0 0 0 / 0.22);
+    background-color: rgba(255, 255, 255, 0.98);
+  }
+
+  .suggestions-title {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgb(var(--color-primary-700));
+    background: rgb(var(--color-primary-100));
+    border-bottom: 1px solid rgb(var(--color-primary-300));
+  }
+
+  .suggestions {
     list-style: none;
-    padding: 0;
-    max-height: 200px;
+    padding: 0.25rem;
+    margin: 0;
+    max-height: 220px;
     overflow-y: auto;
-    z-index: 10;
-    box-shadow: var(--theme-shadow);
+    background-color: rgba(250, 250, 250, 0.98);
   }
 
   .suggestions li {
-    padding: 0.625rem 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.5rem;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: rgb(var(--color-surface-900));
-    transition: background-color 150ms;
+    transition: background-color 120ms, color 120ms, transform 120ms;
   }
 
   .suggestions li.active,
   .suggestions li:hover {
-    background: rgb(var(--color-surface-200));
+    background: rgb(var(--color-primary-500));
+    color: rgb(var(--color-surface-50));
+    transform: translateX(2px);
   }
 
   .tag-separator {
@@ -254,4 +282,20 @@
   .tags li {
   display: contents;
 }
+
+  :global(.dark) .suggestions-wrap {
+    background-color: rgba(31, 31, 31, 0.98);
+  }
+
+  :global(.dark) .suggestions {
+    background-color: rgba(18, 18, 18, 0.98);
+  }
+
+  :global(.dark) .suggestions li {
+    color: rgb(var(--color-surface-50));
+  }
 </style>
+
+
+
+
