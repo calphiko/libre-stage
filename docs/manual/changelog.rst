@@ -3,6 +3,15 @@
 Änderungsprotokoll
 ==================
 
+0.5.11 (2026-06-09)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Nach dem Schliessen des Song-Details-Modals werden geaenderte Songdaten lokal uebernommen; Saengerfarben werden ohne kompletten Seiten-Reload neu gerendert.
+* Chore: Projektversion auf ``0.5.11`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.10 (2026-06-08)
 -------------------
 
