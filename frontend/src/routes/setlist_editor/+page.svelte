@@ -116,9 +116,9 @@
   }
 </script>
 
-<div class="container max-w-full lg:max-w-7xl lg:px-4 setlist-editor-compact">
+<div class="container w-full max-w-none mx-auto px-2 md:px-4 setlist-editor-compact h-full min-h-0 flex flex-col">
   <!-- Header -->
-  <header class="mb-3">
+  <header class="mb-3 flex-shrink-0">
     <div class="flex items-center justify-between">
       <h1 class="h2 font-bold">
         {#if setlist}
@@ -219,7 +219,7 @@
   </header>
 
   <!-- Editor Grid -->
-  <div class="editor-grid">
+  <div class="editor-grid flex-1 min-h-0">
     <!-- Song List Column (Sticky) -->
     <div class="editor-col sticky-col card variant-ghost-surface">
       <div class="card-header pb-1 border-b border-surface-400/30">
@@ -230,7 +230,7 @@
           Alle Songs
         </h3>
       </div>
-      <div class="card-body pt-1">
+      <div class="card-body pt-1 flex-1 min-h-0 flex flex-col">
         {#if songs.length}
           <SongList {songs} {addSongToSetListEnd} {addSongToSet} setlist={setlist} />
         {:else}
@@ -256,7 +256,7 @@
           Setliste
         </h3>
       </div>
-      <div class="card-body pt-1">
+      <div class="card-body pt-1 flex-1 min-h-0 overflow-y-auto">
         {#if setlist}
           <SetList bind:setlist />
           <div bind:this={setlistEndAnchor}></div>
@@ -299,19 +299,30 @@
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 0.5rem;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
+    min-height: 0;
   }
 
   .editor-col {
-    border-radius: var(--theme-rounded-container);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-radius: 14px;
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-300), var(--color-surface-700)) 60%, transparent);
+    background: color-mix(in oklab, light-dark(var(--color-surface-50), var(--color-surface-900)) 97%, transparent);
     overflow: hidden;
+  }
+
+  .editor-col .card-header {
+    background: color-mix(in oklab, light-dark(var(--color-surface-100), var(--color-surface-800)) 88%, transparent);
   }
 
   .sticky-col {
     position: sticky;
     top: 0.5rem;
-    align-self: flex-start;
-    max-height: calc(100vh - 1rem);
+    align-self: stretch;
+    max-height: calc(100% - 0.5rem);
     overflow-y: auto;
   }
 

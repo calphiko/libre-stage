@@ -17,7 +17,7 @@
 -->
 
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { modalState } from '$lib/modalState.js';
   import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
@@ -41,7 +41,7 @@
   
   const { showError, showSuccess } = createMessageHelpers();
 
-  let { parent = {}, meta = {} } = $props();
+  let { parent = {}, meta = {}, onClose = null } = $props();
 
   // Nur songId wird übergeben
   const { songId } = meta;
@@ -186,6 +186,10 @@
     } finally {
       loading = false;
     }
+  });
+
+  onDestroy(() => {
+    onClose?.();
   });
 
   function getUserName(userId) {
