@@ -34,12 +34,17 @@
   let showFilters = $state(false);
   let open = $state(new Set());
   let activeSetSelectorSongId = $state(null);
+  let visibleSongs = $state([]);
 
-  let genres = $derived(Array.from(new Set(songs.map(s => s.genre))).sort());
-  let statuses = $derived(Array.from(new Set(songs.map(s => s.status))).sort());
-  let singers = $derived(Array.from(new Set(songs.map(s => s.singer_lead_short))).sort());
+  $effect(() => {
+    visibleSongs = songs;
+  });
 
-  let filtered = $derived(songs.filter(song =>
+  let genres = $derived(Array.from(new Set(visibleSongs.map(s => s.genre))).sort());
+  let statuses = $derived(Array.from(new Set(visibleSongs.map(s => s.status))).sort());
+  let singers = $derived(Array.from(new Set(visibleSongs.map(s => s.singer_lead_short))).sort());
+
+  let filtered = $derived(visibleSongs.filter(song =>
     (!genreFilter || song.genre === genreFilter) &&
     (!statusFilter.length || statusFilter.includes(song.status)) &&
     (!singerFilter || song.singer_lead_short === singerFilter) &&
@@ -72,6 +77,13 @@
   function openModal(id) {
     modalState.trigger({
       component: SongDetailsModal,
+      response: (result) => {
+        if (result?.action === 'updated' && result?.data?.id != null) {
+          visibleSongs = visibleSongs.map(song =>
+            song.id === result.data.id ? { ...song, ...result.data } : song
+          );
+        }
+      },
       meta: {
         songId: id
       }
@@ -92,20 +104,20 @@
     }
   }
 
-  function getSingerColor(singerLead) {
-    return getColorBySinger(getFirstSinger(singerLead));
+  function getSingerColor(singerLead, singerLeadFallback = '') {
+    return getColorBySinger(getFirstSinger(singerLead || singerLeadFallback));
   }
 
   function getReadableTextClass(backgroundColor) {
     const hex = (backgroundColor || '').replace('#', '');
-    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return 'text-surface-900';
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return 'text-surface-900 dark:text-surface-50';
 
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
     const luminance = (0.299 * r) + (0.587 * g) + (0.114 * b);
 
-    return luminance > 150 ? 'text-surface-900' : 'text-surface-50';
+    return luminance > 150 ? 'text-surface-900 dark:text-surface-900' : 'text-surface-50 dark:text-surface-50';
   }
 
   function handleSearchKeydown(e) {
@@ -135,19 +147,19 @@
   }
 </script>
 
-<div class="p-3 space-y-1">
+<div class="p-3 h-full min-h-0 flex flex-col gap-1">
   <!-- Search & Filter Toolbar -->
   <div class="flex flex-wrap gap-1 items-center">
     <input
       type="search"
-      class="input"
+      class="input songlist-search-input"
       style="flex: 1; min-width: 240px;"
       placeholder="🔍 Suche Titel, Interpret..."
       bind:value={searchFilter}
       onkeydown={handleSearchKeydown}
     />
     <button
-      class="btn variant-filled-surface min-h-[38px] touch-manipulation"
+      class="btn variant-filled-surface songlist-btn-surface min-h-[38px] touch-manipulation"
       type="button"
       onclick={() => showFilters = !showFilters}
     >
@@ -160,14 +172,14 @@
 
   <!-- Filter Panel -->
   {#if showFilters}
-  <div class="card p-3 variant-filled-surface">
+  <div class="card p-3 variant-filled-surface songlist-filter-panel">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <!-- Left Column: Singer & Genre -->
       <div class="space-y-3">
         <!-- Singer Filter -->
-        <label class="label">
+        <label class="label songlist-filter-label">
           <span class="font-semibold mb-1">Lead-Sänger</span>
-          <select class="select min-h-[36px]" bind:value={singerFilter}>
+          <select class="select min-h-[36px] songlist-filter-select" bind:value={singerFilter}>
             <option value=''>Alle</option>
             {#each singers as singer}
               <option value={singer}>{singer}</option>
@@ -176,9 +188,9 @@
         </label>
 
         <!-- Genre Filter -->
-        <label class="label">
+        <label class="label songlist-filter-label">
           <span class="font-semibold mb-1">Genre</span>
-          <select class="select min-h-[36px]" bind:value={genreFilter}>
+          <select class="select min-h-[36px] songlist-filter-select" bind:value={genreFilter}>
             <option value=''>Alle Genres</option>
             {#each genres as genre}
               <option value={genre}>{genre}</option>
@@ -188,10 +200,10 @@
       </div>
 
       <!-- Right Column: Status -->
-      <label class="label">
+      <label class="label songlist-filter-label">
         <span class="font-semibold mb-1">Status</span>
         <select
-          class="select"
+          class="select songlist-filter-select"
           bind:value={statusFilter}
           multiple
           size={Math.min(6, statuses.length)}
@@ -200,7 +212,7 @@
             <option value={status}>{status}</option>
           {/each}
         </select>
-        <span class="text-xs opacity-50 mt-1">Mehrfachauswahl mit STRG/CMD</span>
+        <span class="text-xs mt-1 songlist-filter-hint">Mehrfachauswahl mit STRG/CMD</span>
       </label>
     </div>
   </div>
@@ -208,9 +220,9 @@
 
 
   <!-- Song List Container -->
-  <div class="song-list-container card variant-ghost-surface bg-primary">
+  <div class="song-list-container card variant-ghost-surface flex-1 min-h-0">
     <div
-      class="space-y-1.5"
+      class="space-y-1.5 bg-surface-50 dark:bg-surface-800 rounded-xl p-2"
       use:dndzone={{
         items: dndItems,
         type: 'song-in-set',
@@ -222,9 +234,10 @@
       onfinalize={handleDndFinalize}
     >
       {#each dndItems as song (song.setsong_id)}
+        {@const singerColor = getSingerColor(song.singer_lead_short, song.singer_lead)}
         <div
-          class="card rounded-sm song-item w-full {getReadableTextClass(getSingerColor(song.singer_lead_short))} transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
-          style="--song-singer-color:{getSingerColor(song.singer_lead_short)};"
+          class="card rounded-xl song-item w-full {getReadableTextClass(singerColor)} transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
+          style="--song-singer-color:{singerColor}; border-left: 6px solid {singerColor};"
         >
           <div class="p-2.5 py-1.5">
             <!-- Header -->
@@ -239,7 +252,7 @@
                 <div class="flex items-center gap-2">
                   <!-- Touch-freundlicher Add-Button -->
                   <button
-                    class="btn btn-sm variant-filled-primary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 touch-manipulation"
+                    class="btn btn-sm variant-filled-primary songlist-btn-primary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 touch-manipulation"
                     aria-label="Song hinzufügen"
                     onclick={() => handleAddButtonClick(song.id)}
                   >
@@ -250,7 +263,7 @@
 
                   <!-- Info/Expand Button -->
                   <button
-                    class="btn btn-sm variant-filled-secondary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
+                    class="btn btn-sm variant-filled-secondary songlist-btn-secondary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
                     aria-label="Info anzeigen"
                     onclick={() => toggleOpen(song.id)}
                   >
@@ -263,7 +276,7 @@
 
               <!-- Tablet-freundlicher Set-Wähler, wenn auf das "+" in einer Setlist mit mehreren Sets geklickt wurde -->
               {#if activeSetSelectorSongId === song.id && setlist && setlist.sets && setlist.sets.length > 1}
-                <div class="mt-1.5 p-2 bg-white/40 dark:bg-black/35 rounded-md border border-black/10 dark:border-white/10 flex flex-col gap-1 animate-fadeIn">
+                <div class="mt-1.5 p-2 set-target-picker rounded-md border flex flex-col gap-1 animate-fadeIn">
                   <span class="text-xs font-bold text-surface-700 dark:text-surface-200">Ziel-Set auswählen:</span>
                   <div class="flex flex-wrap gap-1">
                     {#each setlist.sets as set, setIdx}
@@ -305,7 +318,7 @@
                 <div class="col-span-2"><span class="opacity-60 font-semibold">Kommentar:</span> <span class="font-medium">{song.comment || '-'}</span></div>
                 <div class="col-span-2">
                     <button
-                        class="btn variant-filled-primary btn-sm"
+                        class="btn variant-filled-primary songlist-btn-primary btn-sm"
                         onclick={() => openModal(song.id)}
                         >Alle Songdetails
                     </button>
@@ -340,28 +353,102 @@
   }
 
   .song-list-container {
-    max-height: calc(100vh - 250px);
-    min-height: 260px;
+    height: 100%;
     overflow-y: auto;
+    border-radius: 14px;
+    color: light-dark(rgb(var(--color-surface-900)), rgb(var(--color-surface-100)));
   }
 
   .song-item {
     background:
       linear-gradient(145deg,
         color-mix(in oklab, var(--song-singer-color) 92%, white) 0%,
-        color-mix(in oklab, var(--song-singer-color) 82%, white) 100%);
+        color-mix(in oklab, var(--song-singer-color) 82%, white) 100%) !important;
+    border: 1px solid color-mix(in oklab, light-dark(black, white) 12%, transparent);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :global(.dark) .song-item {
     background:
       linear-gradient(145deg,
-        color-mix(in oklab, var(--song-singer-color) 72%, #0f172a) 0%,
-        color-mix(in oklab, var(--song-singer-color) 62%, #020617) 100%);
+        color-mix(in oklab, var(--song-singer-color) 86%, #0f172a) 0%,
+        color-mix(in oklab, var(--song-singer-color) 74%, #020617) 100%) !important;
+    border-color: color-mix(in oklab, white 20%, transparent);
+  }
+
+  .set-target-picker {
+    background: color-mix(in oklab, light-dark(var(--color-surface-50), var(--color-surface-900)) 70%, transparent);
+    border-color: color-mix(in oklab, light-dark(black, white) 12%, transparent);
   }
 
   .song-item:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .songlist-btn-surface {
+    background: color-mix(in oklab, light-dark(var(--color-surface-100), var(--color-surface-800)) 92%, transparent);
+    color: light-dark(rgb(var(--color-surface-900)), rgb(var(--color-surface-100)));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-400), var(--color-surface-600)) 48%, transparent);
+  }
+
+  .songlist-btn-primary {
+    background: light-dark(rgb(var(--color-primary-600)), rgb(var(--color-primary-500)));
+    color: rgb(var(--color-primary-contrast-500));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-primary-700), var(--color-primary-300)) 45%, transparent);
+  }
+
+  .songlist-btn-secondary {
+    background: light-dark(rgb(var(--color-secondary-600)), rgb(var(--color-secondary-500)));
+    color: rgb(var(--color-secondary-contrast-500));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-secondary-700), var(--color-secondary-300)) 45%, transparent);
+  }
+
+  .songlist-btn-surface:hover,
+  .songlist-btn-primary:hover,
+  .songlist-btn-secondary:hover {
+    filter: brightness(1.04);
+  }
+
+  .songlist-search-input {
+    background: light-dark(rgb(var(--color-surface-50)), rgb(var(--color-surface-900)));
+    color: light-dark(rgb(var(--color-surface-900)), rgb(var(--color-surface-100)));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-400), var(--color-surface-600)) 48%, transparent);
+  }
+
+  .songlist-search-input::placeholder {
+    color: light-dark(rgb(var(--color-surface-500)), rgb(var(--color-surface-400)));
+  }
+
+  .songlist-search-input:focus {
+    outline: none;
+    border-color: light-dark(rgb(var(--color-primary-600)), rgb(var(--color-primary-400)));
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary-500) 28%, transparent);
+  }
+
+  .songlist-filter-panel {
+    background: color-mix(in oklab, light-dark(var(--color-surface-50), var(--color-surface-900)) 94%, transparent);
+    color: light-dark(rgb(var(--color-surface-900)), rgb(var(--color-surface-100)));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-300), var(--color-surface-700)) 50%, transparent);
+  }
+
+  .songlist-filter-label {
+    color: light-dark(rgb(var(--color-surface-800)), rgb(var(--color-surface-200)));
+  }
+
+  .songlist-filter-select {
+    background: light-dark(rgb(var(--color-surface-50)), rgb(var(--color-surface-900)));
+    color: light-dark(rgb(var(--color-surface-900)), rgb(var(--color-surface-100)));
+    border: 1px solid color-mix(in oklab, light-dark(var(--color-surface-400), var(--color-surface-600)) 46%, transparent);
+  }
+
+  .songlist-filter-select:focus {
+    border-color: light-dark(rgb(var(--color-primary-600)), rgb(var(--color-primary-400)));
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary-500) 24%, transparent);
+  }
+
+  .songlist-filter-hint {
+    color: light-dark(rgb(var(--color-surface-600)), rgb(var(--color-surface-300)));
+    opacity: 0.95;
   }
 
   /* Touch-optimierter Active-Zustand */
