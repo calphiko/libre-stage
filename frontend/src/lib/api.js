@@ -566,7 +566,6 @@ export async function getSetlist(token, gigId) {
 }
 
 export async function updateGigSetlist(token, gigId, data) {
-    //console.log(gigId)
     const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/update_setlist/`, {
       method: 'PUT',
       headers: {
@@ -574,7 +573,32 @@ export async function updateGigSetlist(token, gigId, data) {
       },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Update fehlgeschlagen');
+
+    if (!res.ok) {
+      let responseBody = null;
+      try {
+        responseBody = await res.json();
+      } catch (_err) {
+        responseBody = null;
+      }
+
+      const detail = responseBody?.detail;
+
+      if (res.status === 409 && detail?.code === 'SETLIST_CONFLICT') {
+        const conflictError = new Error(detail?.message || 'Setlist-Konflikt erkannt');
+        conflictError.code = 'SETLIST_CONFLICT';
+        conflictError.status = 409;
+        conflictError.currentSetlist = detail?.current_setlist ?? null;
+        throw conflictError;
+      }
+
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : detail?.message || responseBody?.message || `HTTP ${res.status}: ${res.statusText}`;
+      throw new Error(message || 'Update fehlgeschlagen');
+    }
+
     return res.json();
 }
 

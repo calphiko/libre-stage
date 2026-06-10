@@ -492,6 +492,7 @@ class GigSetlistOut(BaseModel):
     end: Optional[str] = None
     status: Optional[str] = None
     publish: Optional[str] = None
+    setlist_version: Optional[str] = None
     sets: List[SetInGigOut]
     timing: Optional[GigSetlistTimingOut] = None
 
@@ -552,6 +553,7 @@ class GetSetlistIn(BaseModel):
     end: Optional[str] = None
     status: Optional[str] = None
     publish: Optional[str] = None
+    setlist_version: Optional[str] = None
     sets: List[SetInGigOut]
 
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
