@@ -29,6 +29,8 @@ Prefix: ``/gigs``  |  Tag: ``gigs``
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
 from datetime import date, datetime, time, timedelta
+import hashlib
+import json
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -155,6 +157,24 @@ def _build_schedule_response(gig: models.Gig) -> schemas.GigScheduleOut:
     all_items = fixed_items + dynamic_items
     all_items.sort(key=lambda item: (item.item_datetime, 0 if item.is_fixed else 1))
     return schemas.GigScheduleOut(items=all_items)
+
+
+def _calculate_setlist_version(payload: dict) -> str:
+    version_input = {
+        "id": payload.get("id"),
+        "begin": payload.get("begin"),
+        "end": payload.get("end"),
+        "sets": payload.get("sets", []),
+    }
+    canonical = json.dumps(version_input, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _build_setlist_payload(gig: models.Gig) -> dict:
+    payload = gig.to_dict()
+    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
+    payload["setlist_version"] = _calculate_setlist_version(payload)
+    return payload
 
 
 def _raise_if_schedule_conflict(
@@ -1330,9 +1350,7 @@ def get_gig_setlist(
                 db.delete(ss)
             db.commit()
 
-    payload = gig.to_dict()  # siehe vorige Antwort
-    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
-    return payload
+    return _build_setlist_payload(gig)
 
 
 @router.get("/{gig_id}/forscore-setlist", response_class=Response)
@@ -1406,6 +1424,24 @@ def update_gig_setlist(
     if not check_editor(current):
         logger.error(f"Permission denied: User {current['user_name']} is not editor")
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    current_payload = _build_setlist_payload(db_gig)
+    if gig.setlist_version and gig.setlist_version != current_payload["setlist_version"]:
+        logger.warning(
+            "Setlist conflict for gig_id=%s by user=%s (client=%s db=%s)",
+            gig_id,
+            current.get("user_name"),
+            gig.setlist_version,
+            current_payload["setlist_version"],
+        )
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "SETLIST_CONFLICT",
+                "message": "Setliste wurde zwischenzeitlich geaendert. Bitte erneut versuchen.",
+                "current_setlist": current_payload,
+            },
+        )
 
     # Aktuelle Sets des Gigs
     old_gigsets = db.query(models.GigSet).filter_by(id_gig=gig_id).all()
@@ -1497,9 +1533,7 @@ def update_gig_setlist(
 
     db.commit()
     db.refresh(db_gig)
-    payload = db_gig.to_dict()
-    payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(db_gig))
-    return payload
+    return _build_setlist_payload(db_gig)
 
 @router.post("/")
 def create_new_gig(
@@ -1607,5 +1641,3 @@ def is_setlist_available(
     is_available = set_available and setsong_available
     logger.info(f"Setlist availability for gig_id={gig_id}: {is_available}")
     return {"setlist_available": is_available}
-
-
