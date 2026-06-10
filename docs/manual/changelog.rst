@@ -3,6 +3,30 @@
 Änderungsprotokoll
 ==================
 
+0.5.13 (2026-06-10)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Optimistic Concurrency fuer Setlisten-Updates eingefuehrt. Vor dem Speichern wird jetzt die ``setlist_version`` geprueft.
+* Setlist-Editor: Bei Konflikten (``409 SETLIST_CONFLICT``) wird der veraltete Update-Versuch abgelehnt, eine Toast-Meldung gezeigt und die Ansicht auf den aktuellen DB-Stand aktualisiert.
+* Setlist-Editor: Undo/Redo mit Versionspruefung kompatibel gemacht, indem bei Undo/Redo immer die aktuelle Basis-Version verwendet wird.
+* Setlist-Editor: Regelmaessiger Hintergrund-Check auf neuere ``setlist_version`` in der Datenbank ergaenzt; bei externer Aenderung wird die Browser-Ansicht automatisch aktualisiert und per Toast darauf hingewiesen.
+* Chore: Projektversion auf ``0.5.13`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.13`` ergaenzt.
+
+0.5.12 (2026-06-10)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Undo/Redo im Editor ergaenzt (Buttons sowie Shortcuts ``Strg/Cmd+Z`` und ``Strg/Cmd+Y``).
+* Setlist-Editor: Fehler-Feedback ueber Toast-Meldungen bei fehlgeschlagenem Speichern sowie Undo/Redo ergaenzt.
+* Setlist-Editor: Stabilitaet beim Loeschen und bei Drag-and-Drop verbessert, damit Songs nach dem Entfernen wieder sauber zusammenrutschen und Verschiebe-Aktionen als Undo-Schritt erfasst werden.
+* Chore: Projektversion auf ``0.5.12`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.11 (2026-06-09)
 -------------------
 

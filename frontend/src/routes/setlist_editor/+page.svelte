@@ -5,8 +5,7 @@
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
+    (at your option) any later version.
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -17,17 +16,17 @@
 -->
 
 <script>
-  import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
-  import { onMount, tick } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import SetList from './SetList.svelte';
   import SongList from './SongList.svelte';
   import { get } from 'svelte/store';
   import { gigIdForEditor } from '$lib/stores.js';
-  import { getSetlist, updateGigSetlist, getSongs, getUser, getSong, logout as apiLogout} from '$lib/api.js';
+  import { getSetlist, updateGigSetlist, getSongs, getUser, getSong } from '$lib/api.js';
+  import { createMessageHelpers } from '$lib/Messages.svelte';
   import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
   overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
+  const { showError, showWarning } = createMessageHelpers();
 
 
   let { data } = $props();
@@ -39,9 +38,49 @@
   let user = $state(null);
   let showHelp = $state(false);
   let setlistEndAnchor;
+  let setListRef = $state(null);
+  let canUndo = $state(false);
+  let canRedo = $state(false);
+  let setlistPollingIntervalId = null;
+  let isSetlistPollingInFlight = false;
+  const SETLIST_POLL_INTERVAL_MS = 10000;
+
+  function cloneSetlistState(value) {
+    if (value == null) return value;
+    try {
+      if (typeof structuredClone === 'function') return structuredClone(value);
+    } catch (_err) {
+      // Fallback for non-cloneable proxy/state values.
+    }
+    return JSON.parse(JSON.stringify(value));
+  }
 
   const gigId = get(gigIdForEditor);
   console.log("gigId:", gigId);
+
+  async function pollForNewerSetlistVersion() {
+    if (!setlist?.id || isSetlistPollingInFlight) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+
+    isSetlistPollingInFlight = true;
+    try {
+      const latest = await getSetlist(null, gigId);
+      if (!latest) return;
+
+      const localVersion = setlist?.setlist_version ?? null;
+      const remoteVersion = latest?.setlist_version ?? null;
+
+      if (localVersion && remoteVersion && localVersion !== remoteVersion) {
+        setlist = latest;
+        setListRef?.resetHistoryFromExternalUpdate?.();
+        showWarning('Setliste wurde extern aktualisiert. Die Ansicht wurde neu geladen.');
+      }
+    } catch (e) {
+      console.warn('Setlist polling failed:', e);
+    } finally {
+      isSetlistPollingInFlight = false;
+    }
+  }
 
   onMount(async () => {
     try {
@@ -61,8 +100,16 @@
     try {
       setlist = await getSetlist(null, gigId);
       console.log(setlist);
+      setlistPollingIntervalId = setInterval(pollForNewerSetlistVersion, SETLIST_POLL_INTERVAL_MS);
     } catch (e) {
       error = e.message;
+    }
+  });
+
+  onDestroy(() => {
+    if (setlistPollingIntervalId) {
+      clearInterval(setlistPollingIntervalId);
+      setlistPollingIntervalId = null;
     }
   });
 
@@ -85,6 +132,8 @@
       }
 
       try {
+        const previousSetlist = cloneSetlistState(setlist);
+
         // Song-Info vom Server holen (wie in handleDragOverSet)
         const songInfo = await getSong(null, song);
 
@@ -108,8 +157,16 @@
         console.log("Setlist nach Import:", setlist);
         // API-Call wie in handleDragOverSet
         setlist = await updateGigSetlist(null, setlist.id, newSetlist);
+        setListRef?.registerExternalHistorySnapshot(previousSetlist);
         console.log("Setlist nach API Call:", setlist);
       } catch (e) {
+        if (e?.code === 'SETLIST_CONFLICT' && e?.currentSetlist) {
+          setlist = e.currentSetlist;
+          setListRef?.resetHistoryFromExternalUpdate?.();
+          showError('Setliste wurde in der Zwischenzeit geaendert. Bitte Aktion erneut ausfuehren.');
+          error = '';
+          return;
+        }
         error = `Fehler beim Hinzufügen: ${e.message}`;
         console.error(e);
       }
@@ -127,16 +184,36 @@
           <span class="opacity-50">Lade Setliste...</span>
         {/if}
       </h1>
-      <button
-        class="btn variant-ghost-surface btn-sm"
-        onclick={() => showHelp = !showHelp}
-        aria-label="Hilfe anzeigen"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span class="hidden md:inline ml-1">Hilfe</span>
-      </button>
+      <div class="flex items-center gap-1 ml-2">
+        <button
+          class="btn variant-filled-primary btn-sm"
+          onclick={() => showHelp = !showHelp}
+          aria-label="Hilfe anzeigen"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="hidden md:inline ml-1">Hilfe</span>
+        </button>
+        <button
+          class="btn variant-filled-primary btn-sm"
+          onclick={() => setListRef?.undoLastChange()}
+          disabled={!canUndo}
+          aria-label="Rueckgaengig"
+          title="Rueckgaengig (Strg/Cmd+Z)"
+        >
+          <span aria-hidden="true">&#8630;</span>
+        </button>
+        <button
+          class="btn variant-filled-primary btn-sm"
+          onclick={() => setListRef?.redoLastChange()}
+          disabled={!canRedo}
+          aria-label="Wiederholen"
+          title="Wiederholen (Strg/Cmd+Y)"
+        >
+          <span aria-hidden="true">&#8631;</span>
+        </button>
+      </div>
     </div>
 
     {#if showHelp}
@@ -174,6 +251,14 @@
               <div class="flex items-center gap-2">
                 <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">⌫</kbd>
                 <span class="opacity-75">Letzten Song des Stacks entfernen</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Z</kbd>
+                <span class="opacity-75">Letzte Aenderung rueckgaengig machen</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <kbd class="kbd">Strg/⌘</kbd> + <kbd class="kbd">Y</kbd>
+                <span class="opacity-75">Rueckgaengig gemachte Aenderung wiederholen</span>
               </div>
             </div>
           </div>
@@ -258,7 +343,7 @@
       </div>
       <div class="card-body pt-1 flex-1 min-h-0 overflow-y-auto">
         {#if setlist}
-          <SetList bind:setlist />
+          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} />
           <div bind:this={setlistEndAnchor}></div>
         {:else}
           <div class="flex flex-col items-center justify-center py-6 opacity-60">

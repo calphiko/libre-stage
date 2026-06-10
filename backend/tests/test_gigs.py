@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import copy
 from datetime import date, time, datetime
 import pprint
 
@@ -428,6 +429,76 @@ def test_get_gig_setlist(client,  auth_headers, db_session):
     assert "sets" in data
     assert len(data["sets"]) == 1
     assert data["sets"][0]["set_name"] == "Opening Set"
+
+
+def test_get_gig_setlist_contains_setlist_version(client, auth_headers, db_session):
+    from backend.models import Gig, Set, GigSet
+
+    gig = Gig(name="Test Concert", datum=date(2024, 12, 25), publish=0)
+    test_set = Set(name="Opening Set", pause=time(0, 10))
+    db_session.add_all([gig, test_set])
+    db_session.commit()
+    db_session.refresh(gig)
+
+    gig_set = GigSet(id_gig=gig.id, id_set=test_set.id, position=1)
+    db_session.add(gig_set)
+    db_session.commit()
+
+    response = client.get(f"/gigs/{gig.id}/setlist", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data.get("setlist_version"), str)
+    assert len(data["setlist_version"]) == 16
+
+
+def test_update_setlist_rejects_stale_setlist_version(client, auth_headers, db_session):
+    from backend.models import Gig, Set, GigSet
+
+    gig = Gig(name="Test Concert", datum=date(2024, 12, 25), publish=0)
+    initial_set = Set(name="Opening Set", pause=time(0, 10))
+    db_session.add_all([gig, initial_set])
+    db_session.commit()
+    db_session.refresh(gig)
+
+    gig_set = GigSet(id_gig=gig.id, id_set=initial_set.id, position=1)
+    db_session.add(gig_set)
+    db_session.commit()
+
+    initial_response = client.get(f"/gigs/{gig.id}/setlist", headers=auth_headers)
+    assert initial_response.status_code == 200
+    stale_payload = initial_response.json()
+
+    newer_payload = copy.deepcopy(stale_payload)
+    newer_payload["sets"].append(
+        {
+            "set_name": "Neues Set",
+            "setlist_name": "Neues Set",
+            "songs": [],
+            "pause": "00:10:00",
+        }
+    )
+
+    update_newer_response = client.put(
+        f"/gigs/{gig.id}/update_setlist",
+        json=newer_payload,
+        headers=auth_headers,
+    )
+    assert update_newer_response.status_code == 200
+    newest_version = update_newer_response.json().get("setlist_version")
+    assert isinstance(newest_version, str)
+
+    stale_payload["name"] = "Veralteter Versuch"
+    stale_update_response = client.put(
+        f"/gigs/{gig.id}/update_setlist",
+        json=stale_payload,
+        headers=auth_headers,
+    )
+
+    assert stale_update_response.status_code == 409
+    detail = stale_update_response.json().get("detail", {})
+    assert detail.get("code") == "SETLIST_CONFLICT"
+    assert "current_setlist" in detail
+    assert detail["current_setlist"].get("setlist_version") == newest_version
 
 def test_add_song_to_existing_set_in_gig(client, auth_headers, db_session):
     """Test adding a song to an existing set in a gig."""
