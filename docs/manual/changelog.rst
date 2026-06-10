@@ -3,6 +3,17 @@
 Änderungsprotokoll
 ==================
 
+0.5.12 (2026-06-10)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Undo/Redo im Editor ergaenzt (Buttons sowie Shortcuts ``Strg/Cmd+Z`` und ``Strg/Cmd+Y``).
+* Setlist-Editor: Fehler-Feedback ueber Toast-Meldungen bei fehlgeschlagenem Speichern sowie Undo/Redo ergaenzt.
+* Setlist-Editor: Stabilitaet beim Loeschen und bei Drag-and-Drop verbessert, damit Songs nach dem Entfernen wieder sauber zusammenrutschen und Verschiebe-Aktionen als Undo-Schritt erfasst werden.
+* Chore: Projektversion auf ``0.5.12`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.11 (2026-06-09)
 -------------------
 
