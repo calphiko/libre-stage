@@ -263,7 +263,7 @@
 
                   <!-- Info/Expand Button -->
                   <button
-                    class="btn btn-sm variant-filled-secondary songlist-btn-secondary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
+                    class="btn btn-sm variant-filled-primary songlist-btn-secondary flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center p-0 transition-transform duration-200 touch-manipulation {open.has(song.id) ? 'rotate-180' : ''}"
                     aria-label="Info anzeigen"
                     onclick={() => toggleOpen(song.id)}
                   >
@@ -318,7 +318,7 @@
                 <div class="col-span-2"><span class="opacity-60 font-semibold">Kommentar:</span> <span class="font-medium">{song.comment || '-'}</span></div>
                 <div class="col-span-2">
                     <button
-                        class="btn variant-filled-primary songlist-btn-primary btn-sm"
+                        class="btn variant-filled-primary  songlist-btn-primary btn-sm"
                         onclick={() => openModal(song.id)}
                         >Alle Songdetails
                     </button>
@@ -392,13 +392,13 @@
   }
 
   .songlist-btn-primary {
-    background: light-dark(rgb(var(--color-primary-600)), rgb(var(--color-primary-500)));
+
     color: rgb(var(--color-primary-contrast-500));
     border: 1px solid color-mix(in oklab, light-dark(var(--color-primary-700), var(--color-primary-300)) 45%, transparent);
   }
 
   .songlist-btn-secondary {
-    background: light-dark(rgb(var(--color-secondary-600)), rgb(var(--color-secondary-500)));
+
     color: rgb(var(--color-secondary-contrast-500));
     border: 1px solid color-mix(in oklab, light-dark(var(--color-secondary-700), var(--color-secondary-300)) 45%, transparent);
   }
