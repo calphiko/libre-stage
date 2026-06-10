@@ -22,11 +22,16 @@
   import { flip } from 'svelte/animate';
   import { dndzone } from 'svelte-dnd-action';
   import {getFirstSinger, getColorBySinger } from '$lib/common.js';
-  import { updateGigSetlist, getSong, logout as apiLogout} from '$lib/api.js';
+  import { createMessageHelpers } from '$lib/Messages.svelte';
+  import { updateGigSetlist, getSong } from '$lib/api.js';
 
 
-  let { setlist = $bindable() } = $props();
-  let setIndex = $state(1);
+  let {
+    setlist = $bindable(),
+    canUndo = $bindable(false),
+    canRedo = $bindable(false)
+  } = $props();
+  const { showError } = createMessageHelpers();
 
   let isUpdating = $state(false);
   let updateError = $state(null);
@@ -41,6 +46,142 @@
   let draggingSetIdx = $state(null);
   let dropSetIdx = $state(null);
   let setDragPreviewEl = null;
+  const MAX_HISTORY_ENTRIES = 50;
+  let historyPast = $state([]);
+  let historyFuture = $state([]);
+  let historySetlistId = $state(null);
+  let pendingSongsDragSnapshot = $state(null);
+
+  function cloneSetlistState(value) {
+    if (value == null) return value;
+    try {
+      if (typeof structuredClone === 'function') return structuredClone(value);
+    } catch (_err) {
+      // Fallback for non-cloneable proxy/state values.
+    }
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function areSetlistsEqual(a, b) {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  function notifyHistoryState() {
+    canUndo = historyPast.length > 0;
+    canRedo = historyFuture.length > 0;
+  }
+
+  function clearHistory() {
+    historyPast = [];
+    historyFuture = [];
+    notifyHistoryState();
+  }
+
+  function pushHistorySnapshot(snapshot) {
+    const clonedSnapshot = cloneSetlistState(snapshot);
+    if (!clonedSnapshot) return;
+    historyPast = [...historyPast, clonedSnapshot].slice(-MAX_HISTORY_ENTRIES);
+    historyFuture = [];
+    notifyHistoryState();
+  }
+
+  export function registerExternalHistorySnapshot(snapshot) {
+    pushHistorySnapshot(snapshot);
+  }
+
+  async function applySetlistChange(mutator) {
+    if (!setlist) return false;
+
+    try {
+      const draft = cloneSetlistState(setlist);
+      mutator(draft);
+      return await persistDraftWithHistory(draft);
+    } catch (error) {
+      console.error('Failed to apply setlist change:', error);
+      showError('Aenderung konnte nicht angewendet werden.');
+      return false;
+    }
+  }
+
+  async function persistDraftWithHistory(draft, beforeSnapshot = null) {
+    const before = beforeSnapshot ? cloneSetlistState(beforeSnapshot) : cloneSetlistState(setlist);
+
+    if (areSetlistsEqual(before, draft)) {
+      return true;
+    }
+
+    pushHistorySnapshot(before);
+    setlist = draft;
+    const updated = await updateSetlist(draft);
+    if (updated) {
+      setlist = updated;
+      return true;
+    }
+
+    historyPast = historyPast.slice(0, -1);
+    notifyHistoryState();
+    setlist = before;
+    return false;
+  }
+
+  export async function undoLastChange() {
+    if (!setlist || !historyPast.length || isUpdating) return;
+
+    const current = cloneSetlistState(setlist);
+    const previous = historyPast[historyPast.length - 1];
+    historyPast = historyPast.slice(0, -1);
+    historyFuture = [...historyFuture, current].slice(-MAX_HISTORY_ENTRIES);
+    notifyHistoryState();
+
+    setlist = cloneSetlistState(previous);
+    const updated = await updateSetlist(setlist, { showToast: false });
+    if (updated) {
+      setlist = updated;
+      return;
+    }
+
+    historyPast = [...historyPast, previous].slice(-MAX_HISTORY_ENTRIES);
+    historyFuture = historyFuture.slice(0, -1);
+    setlist = current;
+    notifyHistoryState();
+    showError('Rueckgaengig konnte nicht gespeichert werden.');
+  }
+
+  export async function redoLastChange() {
+    if (!setlist || !historyFuture.length || isUpdating) return;
+
+    const current = cloneSetlistState(setlist);
+    const next = historyFuture[historyFuture.length - 1];
+    historyFuture = historyFuture.slice(0, -1);
+    historyPast = [...historyPast, current].slice(-MAX_HISTORY_ENTRIES);
+    notifyHistoryState();
+
+    setlist = cloneSetlistState(next);
+    const updated = await updateSetlist(setlist, { showToast: false });
+    if (updated) {
+      setlist = updated;
+      return;
+    }
+
+    historyFuture = [...historyFuture, next].slice(-MAX_HISTORY_ENTRIES);
+    historyPast = historyPast.slice(0, -1);
+    setlist = current;
+    notifyHistoryState();
+    showError('Wiederholen konnte nicht gespeichert werden.');
+  }
+
+  $effect(() => {
+    const currentId = setlist?.id ?? null;
+    if (historySetlistId === null && currentId !== null) {
+      historySetlistId = currentId;
+      clearHistory();
+      return;
+    }
+    if (currentId !== null && historySetlistId !== currentId) {
+      historySetlistId = currentId;
+      clearHistory();
+    }
+  });
 
   function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -187,17 +328,9 @@
 
     if (insertIdx === fromIdx) return;
 
-    const originalSets = [...setlist.sets];
-    const reorderedSets = moveSetInArray(setlist.sets, fromIdx, insertIdx);
-
-    setlist = { ...setlist, sets: reorderedSets };
-    const updated = await updateSetlist(setlist);
-    if (updated) {
-      setlist = updated;
-      return;
-    }
-
-    setlist = { ...setlist, sets: originalSets };
+    await applySetlistChange((draft) => {
+      draft.sets = moveSetInArray(draft.sets, fromIdx, insertIdx);
+    });
   }
 
   function resetSetDragState() {
@@ -275,51 +408,45 @@
   }
 
   function handleSongsConsider(setIdx, { detail }) {
+    if (!pendingSongsDragSnapshot) {
+      pendingSongsDragSnapshot = cloneSetlistState(setlist);
+    }
     setlist.sets[setIdx].songs = cleanDnDItems(detail.items);
     setlist = { ...setlist }; // Triggert Reaktivität
   }
 
   async function handleSongsFinalize(setIdx, { detail }) {
-    const processedSongs = cleanDnDItems(detail.items).map(song => {
-      // Wenn der Song aus der SongList via svelte-dnd-action gezogen wurde, hat er eine ID beginnend mit "new-"
-      if (typeof song.setsong_id === 'string' && song.setsong_id.startsWith('new-')) {
-        const parts = song.setsong_id.split('-');
-        const originalSongId = Number(parts[1]);
-        return {
-          ...song,
-          id: originalSongId,
-          // Backend erwartet in Songs immer song_id.
-          song_id: originalSongId,
-          // Neue temporäre negative setsong_id vergeben
-          setsong_id: -Math.floor(Date.now() + Math.random() * 100000)
-        };
-      }
-      // Fallback: Falls ein Song-Objekt ohne song_id reinkommt, aus id ableiten.
-      if (song?.song_id == null && song?.id != null) {
-        return {
-          ...song,
-          song_id: Number(song.id)
-        };
-      }
-      return song;
-    });
+    try {
+      const processedSongs = cleanDnDItems(detail.items).map(song => {
+        // Wenn der Song aus der SongList via svelte-dnd-action gezogen wurde, hat er eine ID beginnend mit "new-"
+        if (typeof song.setsong_id === 'string' && song.setsong_id.startsWith('new-')) {
+          const parts = song.setsong_id.split('-');
+          const originalSongId = Number(parts[1]);
+          return {
+            ...song,
+            id: originalSongId,
+            // Backend erwartet in Songs immer song_id.
+            song_id: originalSongId,
+            // Neue temporäre negative setsong_id vergeben
+            setsong_id: -Math.floor(Date.now() + Math.random() * 100000)
+          };
+        }
+        // Fallback: Falls ein Song-Objekt ohne song_id reinkommt, aus id ableiten.
+        if (song?.song_id == null && song?.id != null) {
+          return {
+            ...song,
+            song_id: Number(song.id)
+          };
+        }
+        return song;
+      });
 
-    setlist.sets[setIdx].songs = processedSongs;
-    setlist = { ...setlist };
-
-    const updated = await updateSetlist(setlist);
-    if (updated) setlist = updated;
-  }
-
-  function applyUpdatedSetlist(updated, fallback = null) {
-    if (updated) {
-      setlist = updated;
-      return true;
+      const draft = cloneSetlistState(setlist);
+      draft.sets[setIdx].songs = processedSongs;
+      await persistDraftWithHistory(draft, pendingSongsDragSnapshot);
+    } finally {
+      pendingSongsDragSnapshot = null;
     }
-    if (fallback) {
-      setlist = fallback;
-    }
-    return false;
   }
 
   async function handleDragOverSet(setIdx, e) {
@@ -332,17 +459,13 @@
     songInfo.setsong_id = nextNegativeSetsongId;
     nextNegativeSetsongId -= 1;
 
-    setlist.sets[setIdx].songs = [
-      ...setlist.sets[setIdx].songs.slice(0, dragInsertPos),
-      songInfo,
-      ...setlist.sets[setIdx].songs.slice(dragInsertPos)
-    ];
-    setlist = { ...setlist };
-
-    console.log("Setlistn ach Import:", setlist);
-    const updated = await updateSetlist(setlist);
-    if (updated) setlist = updated;
-    console.log("Setlistn ach API Call:", setlist);
+    await applySetlistChange((draft) => {
+      draft.sets[setIdx].songs = [
+        ...draft.sets[setIdx].songs.slice(0, dragInsertPos),
+        songInfo,
+        ...draft.sets[setIdx].songs.slice(dragInsertPos)
+      ];
+    });
 
   }
 
@@ -364,10 +487,9 @@
       songs: [],
       pause: '00:10:00',
     };
-    setlist.sets.splice(idx, 0, newSet);
-    setlist = { ...setlist };
-    const updated = await updateSetlist(setlist);
-    if (updated) setlist = updated;
+    await applySetlistChange((draft) => {
+      draft.sets.splice(idx, 0, newSet);
+    });
   }
 
   async function addSetAtEnd() {
@@ -377,51 +499,33 @@
       setlist_name: '',
       set_name: ''
     };
-    setlist.sets.push(newSet);
-    setlist = { ...setlist };
-    const updated = await updateSetlist(setlist);
-    if (updated) setlist = updated;
+    await applySetlistChange((draft) => {
+      draft.sets.push(newSet);
+    });
   }
 
   async function removeSet(setIdx) {
-    setlist.sets.splice(setIdx, 1);
-    setlist = { ...setlist };
-    const updated = await updateSetlist(setlist);
-    if (updated) setlist = updated;
+    await applySetlistChange((draft) => {
+      draft.sets.splice(setIdx, 1);
+    });
   }
 
   async function removeSongFromSet(setIdx, setsong_id) {
     if (deletingSongIds.has(setsong_id)) return;
 
     deletingSongIds = new Set(deletingSongIds).add(setsong_id);
-    // Erst visuelle Exit-Animation, dann Datenmutation.
-    await wait(170);
-
-    // Save original state for rollback
-    const originalSongs = [...setlist.sets[setIdx].songs];
-
-    // Optimistic update
-    setlist.sets[setIdx].songs = setlist.sets[setIdx].songs.filter(
-      s => s.setsong_id !== setsong_id
-    );
-    setlist = { ...setlist };
-
     try {
-      const updated = await updateSetlist(setlist);
-      if (!applyUpdatedSetlist(updated)) {
-        setlist.sets[setIdx].songs = originalSongs;
-        setlist = { ...setlist };
-      }
+      // Erst visuelle Exit-Animation, dann Datenmutation.
+      await wait(170);
+
+      await applySetlistChange((draft) => {
+        draft.sets[setIdx].songs = draft.sets[setIdx].songs.filter(
+          s => s.setsong_id !== setsong_id
+        );
+      });
+    } finally {
       deletingSongIds = new Set(deletingSongIds);
       deletingSongIds.delete(setsong_id);
-      //showSuccess('Song erfolgreich entfernt');
-    } catch (error) {
-      // Rollback on error
-      setlist.sets[setIdx].songs = originalSongs;
-      setlist = { ...setlist };
-      deletingSongIds = new Set(deletingSongIds);
-      deletingSongIds.delete(setsong_id);
-      //showError(`Fehler beim Entfernen des Songs: ${error.message}`);
     }
   }
 
@@ -437,7 +541,8 @@
     }
   }
 
-  async function updateSetlist(data) {
+  async function updateSetlist(data, options = {}) {
+    const { showToast = true } = options;
     isUpdating = true;
     updateError = null;
     try {
@@ -446,13 +551,39 @@
     } catch (error) {
       updateError = error.message;
       console.error('Failed to update setlist:', error);
-      //showError(`Fehler beim Speichern: ${error.message}`);
+      if (showToast) {
+        showError(`Fehler beim Speichern: ${error.message}`);
+      }
     } finally {
       isUpdating = false;
     }
   }
 
   function handleKeyboardShortcuts(e) {
+    const target = e.target;
+    const isTypingTarget =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
+    if (!isTypingTarget) {
+      const isUndoShortcut = (e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'z' && !e.shiftKey;
+      const isRedoShortcut =
+        (e.ctrlKey || e.metaKey) && !e.altKey &&
+        (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey));
+
+      if (isUndoShortcut) {
+        e.preventDefault();
+        undoLastChange();
+        return;
+      }
+
+      if (isRedoShortcut) {
+        e.preventDefault();
+        redoLastChange();
+        return;
+      }
+    }
+
     const isAddSetShortcut =
       (e.ctrlKey || e.metaKey) &&
       e.shiftKey &&
@@ -472,11 +603,6 @@
       addSetAtEnd();
       return;
     }
-
-    const target = e.target;
-    const isTypingTarget =
-      target instanceof HTMLElement &&
-      (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 
     if (isTypingTarget) return;
   }
@@ -544,25 +670,15 @@
          {#if draggingSetIdx === setIdx}
            <span class="drag-folder-meta">Ordner: {set.songs?.length ?? 0} Stuecke</span>
          {/if}
-         <input
+          <input
             type="text"
             class="setlist-name-input min-h-[34px]"
             value={set.setlist_name ?? ''}
             placeholder={`Set ${setIdx + 1}`}
-            oninput={(e) => {
-              // Nur lokale DOM-Mutation – kein Svelte-Neurender, kein Cursor-Sprung
-              setlist.sets[setIdx].setlist_name = e.target.value;
-            }}
-            onblur={(e) => {
-              // Tiefe Kopie via JSON um den Svelte-5-Proxy zu de-proxyfizieren,
-              // dann den aktuellen DOM-Wert reinschreiben und ans Backend senden.
-              // KEIN setlist = ... hier → kein Neurender → kein Zurückspringen.
-              const snapshot = JSON.parse(JSON.stringify(setlist));
-              snapshot.sets[setIdx].setlist_name = e.target.value;
-              (async () => {
-                const updated = await updateSetlist(snapshot);
-                if (updated) setlist = updated;
-              })();
+            onblur={async (e) => {
+              await applySetlistChange((draft) => {
+                draft.sets[setIdx].setlist_name = e.target.value;
+              });
             }}
          />
          <button class="btn btn-sm variant-filled-error min-h-[34px] min-w-[34px] flex items-center justify-center p-0 touch-manipulation" onclick={() => removeSet(setIdx)} disabled={isUpdating} aria-label="Set löschen">
@@ -647,16 +763,11 @@
             step="60"
             class="pause-input min-h-[32px] w-[88px]"
             value={formatPauseForInput(set.pause)}
-            oninput={(e) => {
-              setlist.sets[setIdx].pause = e.target.value;
-            }}
             onblur={async (e) => {
               const normalizedPause = normalizePauseForApi(e.target.value);
-              setlist.sets[setIdx].pause = normalizedPause;
-              const snapshot = JSON.parse(JSON.stringify(setlist));
-              snapshot.sets[setIdx].pause = normalizedPause;
-              const updated = await updateSetlist(snapshot);
-              if (updated) setlist = updated;
+              await applySetlistChange((draft) => {
+                draft.sets[setIdx].pause = normalizedPause;
+              });
             }}
           />
         </div>
