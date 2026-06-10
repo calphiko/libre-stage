@@ -89,6 +89,10 @@
     pushHistorySnapshot(snapshot);
   }
 
+  export function resetHistoryFromExternalUpdate() {
+    clearHistory();
+  }
+
   async function applySetlistChange(mutator) {
     if (!setlist) return false;
 
@@ -128,12 +132,18 @@
     if (!setlist || !historyPast.length || isUpdating) return;
 
     const current = cloneSetlistState(setlist);
+    const baseVersion = current?.setlist_version ?? null;
     const previous = historyPast[historyPast.length - 1];
     historyPast = historyPast.slice(0, -1);
     historyFuture = [...historyFuture, current].slice(-MAX_HISTORY_ENTRIES);
     notifyHistoryState();
 
-    setlist = cloneSetlistState(previous);
+    const undoDraft = cloneSetlistState(previous);
+    // Undo basiert auf dem aktuellen DB-Stand, nicht auf der alten Snapshot-Version.
+    if (baseVersion) {
+      undoDraft.setlist_version = baseVersion;
+    }
+    setlist = undoDraft;
     const updated = await updateSetlist(setlist, { showToast: false });
     if (updated) {
       setlist = updated;
@@ -151,12 +161,18 @@
     if (!setlist || !historyFuture.length || isUpdating) return;
 
     const current = cloneSetlistState(setlist);
+    const baseVersion = current?.setlist_version ?? null;
     const next = historyFuture[historyFuture.length - 1];
     historyFuture = historyFuture.slice(0, -1);
     historyPast = [...historyPast, current].slice(-MAX_HISTORY_ENTRIES);
     notifyHistoryState();
 
-    setlist = cloneSetlistState(next);
+    const redoDraft = cloneSetlistState(next);
+    // Redo basiert ebenfalls auf dem zuletzt bestaetigten Stand.
+    if (baseVersion) {
+      redoDraft.setlist_version = baseVersion;
+    }
+    setlist = redoDraft;
     const updated = await updateSetlist(setlist, { showToast: false });
     if (updated) {
       setlist = updated;
@@ -549,6 +565,14 @@
       const result = await updateGigSetlist(null, data.id, data);
       return result;
     } catch (error) {
+      if (error?.code === 'SETLIST_CONFLICT' && error?.currentSetlist) {
+        updateError = 'Setlist-Konflikt';
+        setlist = error.currentSetlist;
+        clearHistory();
+        showError('Setliste wurde in der Zwischenzeit geändert. Deine Änderung wurde nicht gespeichert und diese Ansicht nun aktualisiert. Bitte versuche es nochmal.');
+        return error.currentSetlist;
+      }
+
       updateError = error.message;
       console.error('Failed to update setlist:', error);
       if (showToast) {

@@ -16,15 +16,17 @@
 -->
 
 <script>
-  import { onMount, tick } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import SetList from './SetList.svelte';
   import SongList from './SongList.svelte';
   import { get } from 'svelte/store';
   import { gigIdForEditor } from '$lib/stores.js';
   import { getSetlist, updateGigSetlist, getSongs, getUser, getSong } from '$lib/api.js';
+  import { createMessageHelpers } from '$lib/Messages.svelte';
   import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
   overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
+  const { showError, showWarning } = createMessageHelpers();
 
 
   let { data } = $props();
@@ -39,6 +41,9 @@
   let setListRef = $state(null);
   let canUndo = $state(false);
   let canRedo = $state(false);
+  let setlistPollingIntervalId = null;
+  let isSetlistPollingInFlight = false;
+  const SETLIST_POLL_INTERVAL_MS = 10000;
 
   function cloneSetlistState(value) {
     if (value == null) return value;
@@ -52,6 +57,30 @@
 
   const gigId = get(gigIdForEditor);
   console.log("gigId:", gigId);
+
+  async function pollForNewerSetlistVersion() {
+    if (!setlist?.id || isSetlistPollingInFlight) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+
+    isSetlistPollingInFlight = true;
+    try {
+      const latest = await getSetlist(null, gigId);
+      if (!latest) return;
+
+      const localVersion = setlist?.setlist_version ?? null;
+      const remoteVersion = latest?.setlist_version ?? null;
+
+      if (localVersion && remoteVersion && localVersion !== remoteVersion) {
+        setlist = latest;
+        setListRef?.resetHistoryFromExternalUpdate?.();
+        showWarning('Setliste wurde extern aktualisiert. Die Ansicht wurde neu geladen.');
+      }
+    } catch (e) {
+      console.warn('Setlist polling failed:', e);
+    } finally {
+      isSetlistPollingInFlight = false;
+    }
+  }
 
   onMount(async () => {
     try {
@@ -71,8 +100,16 @@
     try {
       setlist = await getSetlist(null, gigId);
       console.log(setlist);
+      setlistPollingIntervalId = setInterval(pollForNewerSetlistVersion, SETLIST_POLL_INTERVAL_MS);
     } catch (e) {
       error = e.message;
+    }
+  });
+
+  onDestroy(() => {
+    if (setlistPollingIntervalId) {
+      clearInterval(setlistPollingIntervalId);
+      setlistPollingIntervalId = null;
     }
   });
 
@@ -123,6 +160,13 @@
         setListRef?.registerExternalHistorySnapshot(previousSetlist);
         console.log("Setlist nach API Call:", setlist);
       } catch (e) {
+        if (e?.code === 'SETLIST_CONFLICT' && e?.currentSetlist) {
+          setlist = e.currentSetlist;
+          setListRef?.resetHistoryFromExternalUpdate?.();
+          showError('Setliste wurde in der Zwischenzeit geaendert. Bitte Aktion erneut ausfuehren.');
+          error = '';
+          return;
+        }
         error = `Fehler beim Hinzufügen: ${e.message}`;
         console.error(e);
       }
