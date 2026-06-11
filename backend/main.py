@@ -405,6 +405,7 @@ def login(
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "csrf_token": csrf_token,
         "token_type": "bearer",
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "message": "Login successful"
@@ -447,6 +448,7 @@ def refresh_token(
     return {
         "access_token": new_access_token,
         "refresh_token": new_refresh_token,
+        "csrf_token": csrf_token,
         "token_type": "bearer",
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "message": "Token refreshed"
