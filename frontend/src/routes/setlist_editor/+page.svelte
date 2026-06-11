@@ -25,6 +25,8 @@
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
+  import { Circle2 } from 'svelte-loading-spinners';
+
   overrideItemIdKeyNameBeforeInitialisingDndZones('setsong_id');
   const { showError, showWarning } = createMessageHelpers();
 
@@ -44,6 +46,8 @@
   let setlistPollingIntervalId = null;
   let isSetlistPollingInFlight = false;
   const SETLIST_POLL_INTERVAL_MS = 10000;
+
+  let isUpdatingSpinner = $state(false);
 
   function cloneSetlistState(value) {
     if (value == null) return value;
@@ -185,6 +189,11 @@
         {/if}
       </h1>
       <div class="flex items-center gap-1 ml-2">
+       {#if isUpdatingSpinner}
+            <Circle2 size="20" />
+        {/if}
+
+
         <button
           class="btn variant-filled-primary btn-sm"
           onclick={() => showHelp = !showHelp}
@@ -195,6 +204,7 @@
           </svg>
           <span class="hidden md:inline ml-1">Hilfe</span>
         </button>
+
         <button
           class="btn variant-filled-primary btn-sm"
           onclick={() => setListRef?.undoLastChange()}
@@ -343,7 +353,7 @@
       </div>
       <div class="card-body pt-1 flex-1 min-h-0 overflow-y-auto">
         {#if setlist}
-          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} />
+          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} bind:isUpdatingSpinner/>
           <div bind:this={setlistEndAnchor}></div>
         {:else}
           <div class="flex flex-col items-center justify-center py-6 opacity-60">

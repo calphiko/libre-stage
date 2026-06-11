@@ -27,7 +27,7 @@
 
 	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { getUser, getVersionJson, logout as apiLogout } from '$lib/api.js';
+	import { getUser, getVersionJson, logout as apiLogout, getAppLogo } from '$lib/api.js';
 	import { loadAppConfig } from '$lib/appConfig.js';
 
 	let { children } = $props();
@@ -37,6 +37,7 @@
 	let version_date = $state('1970-01-01T00:00:00Z');
 	let version_branch = $state('');
 	let version_description = $state('');
+	let logoUrl = null;
 
 	let user = $state({
 		user_name: null,
@@ -75,6 +76,8 @@
 			version_date = data.date;
 			version_branch = data.release_branch;
 			version_description = data.description;
+			const blob = await getAppLogo();
+            logoUrl = URL.createObjectURL(blob);
 		} catch (e) {
 			console.error('Could not load version', e);
 		}
@@ -139,12 +142,16 @@
 				{/if}
 				<!-- Desktop -->
 				<a href="/dashboard" class="hidden md:flex items-center gap-2">
-					<AppLogo size="2.4rem" />
+                    <div class="logo-container flex-shrink-0 ">
+                        <img src="{logoUrl}" alt="Logo" style="height:40px"/>
+                    </div>
 					<strong class="text-lg uppercase leading-none">{version_title}</strong>
 				</a>
 				<!-- Mobile -->
 				<a href="/dashboard" class="md:hidden flex items-center gap-2">
-					<AppLogo size="2rem" />
+                    <div class="logo-container flex-shrink-0 ">
+                        <img src="{logoUrl}" alt="Logo" style="height:50px"/>
+                    </div>
 					<strong class="text-base uppercase leading-none">{version_title}</strong>
 				</a>
 			</header>
