@@ -539,6 +539,7 @@ def get_season_statistics(
     inserted_count = 0
     feedback_values = []
     song_play_counts = {}  # song_id -> count
+    skipped_song_counts = {}  # song_id -> skipped count
     gigs_overview = []
     genre_counts = {}  # genre -> count
     genre_timeline = []
@@ -563,6 +564,8 @@ def get_season_statistics(
                 if setsong.uebersprungen:
                     skipped_count += 1
                     gig_skipped += 1
+                    if setsong.id_song:
+                        skipped_song_counts[setsong.id_song] = skipped_song_counts.get(setsong.id_song, 0) + 1
                 if setsong.eingeschoben:
                     inserted_count += 1
                     gig_inserted += 1
@@ -601,8 +604,8 @@ def get_season_statistics(
         feedback_distribution[fv] = feedback_distribution.get(fv, 0) + 1
     feedback_avg = round(sum(feedback_values) / len(feedback_values), 2) if feedback_values else None
 
-    # Top 10 Songs
-    top_song_entries = sorted(song_play_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    # Top 20 Songs
+    top_song_entries = sorted(song_play_counts.items(), key=lambda x: x[1], reverse=True)[:20]
     top_songs = []
     for song_id, count in top_song_entries:
         song = db.query(models.Song).get(song_id)
@@ -612,6 +615,19 @@ def get_season_statistics(
                 title=song.title,
                 interpret=song.interpret or '',
                 count=count,
+            ))
+
+    # Top 20 uebersprungene Songs
+    top_skipped_entries = sorted(skipped_song_counts.items(), key=lambda x: x[1], reverse=True)[:20]
+    top_skipped_songs = []
+    for song_id, skipped_count_value in top_skipped_entries:
+        song = db.query(models.Song).get(song_id)
+        if song:
+            top_skipped_songs.append(schemas.TopSkippedSongEntry(
+                song_id=song.id,
+                title=song.title,
+                interpret=song.interpret or '',
+                skipped_count=skipped_count_value,
             ))
 
     return schemas.SeasonStatistics(
@@ -628,6 +644,7 @@ def get_season_statistics(
         genre_distribution=genre_counts,
         genre_timeline=genre_timeline,
         top_songs=top_songs,
+        top_skipped_songs=top_skipped_songs,
         gigs_overview=gigs_overview,
     )
 

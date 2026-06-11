@@ -193,6 +193,37 @@
         </div>
       {/if}
 
+      <!-- Top übersprungene Songs -->
+      {#if statistics.top_skipped_songs?.length > 0}
+        <div class="card variant-ghost-surface p-4 rounded-lg">
+          <h4 class="text-xs font-semibold text-on-surface-variant mb-3">⏭ Meistübersprungene Songs</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-300 dark:border-surface-700">
+                  <th class="text-left py-1.5 px-2 text-xs text-on-surface-variant font-semibold w-12">#</th>
+                  <th class="text-left py-1.5 px-2 text-xs text-on-surface-variant font-semibold">Song</th>
+                  <th class="text-left py-1.5 px-2 text-xs text-on-surface-variant font-semibold">Interpret</th>
+                  <th class="text-center py-1.5 px-2 text-xs text-on-surface-variant font-semibold w-24">⏭</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each statistics.top_skipped_songs as song, i}
+                  <tr class="border-b border-surface-200 dark:border-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors">
+                    <td class="py-1.5 px-2 text-on-surface-variant">{i + 1}.</td>
+                    <td class="py-1.5 px-2 font-medium max-w-[280px] truncate">{song.title}</td>
+                    <td class="py-1.5 px-2 text-on-surface-variant max-w-[220px] truncate">{song.interpret}</td>
+                    <td class="py-1.5 px-2 text-center">
+                      <span class="badge variant-soft-error text-xs">{song.skipped_count}×</span>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {/if}
+
       <!-- Gig-Übersicht -->
       {#if statistics.gigs_overview.length > 0}
         <div class="card variant-ghost-surface p-4 rounded-lg">
