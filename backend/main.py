@@ -438,7 +438,13 @@ def set_user_todo_done(
     db: Session = Depends(auth.get_db)
 
 ):
+
+    user = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
     db_todo = db.get(models.RehTodo, todo.id)
+    if not db_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    if not db_todo.id_user == user.id:
+        raise HTTPException(status_code=403, detail="This is not your todo!")
     db_todo.done = True
 
     db.commit()
