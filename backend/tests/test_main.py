@@ -14,14 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
 from fastapi import status
 from datetime import datetime, time
 from pprint import pprint
-from backend import auth
-
-from pydantic.v1.typing import is_union
-
+import hashlib
+from backend import auth, models
 
 def test_login_success(client, test_user):
     """Test successful login."""
@@ -222,3 +219,197 @@ def test_get_user_todo_list(client, test_user, auth_headers, db_session):
     assert data["todo"][0]["todo"] == "practise"
     assert data["todo"][0]["done"] == True
 
+def test_login_sets_auth_cookies(client, test_user):
+    response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.cookies.get("access_token")
+    assert response.cookies.get("refresh_token")
+
+
+def test_refresh_works_with_cookie_only(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    response = client.post("/refresh")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert "access_token" in data
+
+
+def test_logout_clears_auth_cookies(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    csrf_token = client.cookies.get("csrf_token")
+    response = client.post("/logout", headers={"X-CSRF-Token": csrf_token})
+    assert response.status_code == status.HTTP_200_OK
+
+    # TestClient removes deleted cookies from its cookie jar
+    assert client.cookies.get("access_token") is None
+    assert client.cookies.get("refresh_token") is None
+
+def test_cookie_auth_put_requires_csrf_header(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    response = client.put("/update_user", json={
+        "id": test_user.id,
+        "user_name": "testuser",
+        "email": "csrf-missing@example.com",
+        "clear_name": "Updated",
+        "user_group": "admin",
+        "musician": True,
+        "is_singer": False,
+    })
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()["detail"] == "CSRF validation failed"
+
+
+def test_cookie_auth_put_with_csrf_header(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    csrf_token = client.cookies.get("csrf_token")
+    assert csrf_token
+
+    response = client.put(
+        "/update_user",
+        headers={"X-CSRF-Token": csrf_token},
+        json={
+            "id": test_user.id,
+            "user_name": "testuser",
+            "email": "csrf-ok@example.com",
+            "clear_name": "Updated",
+            "user_group": "admin",
+            "musician": True,
+            "is_singer": False,
+        }
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["email"] == "csrf-ok@example.com"
+
+def test_refresh_rotates_token_and_revokes_previous(client, test_user, db_session):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    old_refresh = client.cookies.get("refresh_token")
+    assert old_refresh
+
+    response = client.post("/refresh")
+    assert response.status_code == status.HTTP_200_OK
+
+    new_refresh = client.cookies.get("refresh_token")
+    assert new_refresh
+    assert new_refresh != old_refresh
+
+    old_hash = hashlib.sha256(old_refresh.encode()).hexdigest()
+    old_db_token = db_session.query(models.RefreshToken).filter(
+        models.RefreshToken.token_hash == old_hash
+    ).first()
+    assert old_db_token is not None
+    assert old_db_token.revoked is True
+
+
+def test_refresh_reuse_detection_revokes_all_user_tokens(client, test_user, db_session):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    original_refresh = client.cookies.get("refresh_token")
+    assert original_refresh
+
+    first_refresh = client.post("/refresh")
+    assert first_refresh.status_code == status.HTTP_200_OK
+
+    # Replay old token by overriding current refresh cookie.
+    client.cookies.set("refresh_token", original_refresh)
+    replay_response = client.post("/refresh")
+
+    assert replay_response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert replay_response.json()["detail"] == "Refresh token reuse detected"
+
+    active_tokens = db_session.query(models.RefreshToken).filter(
+        models.RefreshToken.user_id == test_user.id,
+        models.RefreshToken.revoked == False
+    ).count()
+    assert active_tokens == 0
+
+def test_cookie_auth_put_blocks_untrusted_origin(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    csrf_token = client.cookies.get("csrf_token")
+    response = client.put(
+        "/update_user",
+        headers={
+            "X-CSRF-Token": csrf_token,
+            "Origin": "https://evil.example"
+        },
+        json={
+            "id": test_user.id,
+            "user_name": "testuser",
+            "email": "origin-block@example.com",
+            "clear_name": "Updated",
+            "user_group": "admin",
+            "musician": True,
+            "is_singer": False,
+        }
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()["detail"] == "Origin validation failed"
+
+
+def test_cookie_auth_put_with_trusted_origin(client, test_user):
+    login_response = client.post("/login", json={
+        "username": "testuser",
+        "password": "testpassword123"
+    })
+    assert login_response.status_code == status.HTTP_200_OK
+
+    csrf_token = client.cookies.get("csrf_token")
+    response = client.put(
+        "/update_user",
+        headers={
+            "X-CSRF-Token": csrf_token,
+            "Origin": "http://testserver"
+        },
+        json={
+            "id": test_user.id,
+            "user_name": "testuser",
+            "email": "origin-ok@example.com",
+            "clear_name": "Updated",
+            "user_group": "admin",
+            "musician": True,
+            "is_singer": False,
+        }
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["email"] == "origin-ok@example.com"

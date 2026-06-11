@@ -90,7 +90,11 @@ def client(db_session):
         finally:
             pass
 
-    # Each test gets a unique "IP" so rate limit counters never bleed between tests
+    # Disable limiter in tests to avoid cross-test flakiness from shared in-memory counters.
+    original_enabled = limiter.enabled
+    limiter.enabled = False
+
+    # Keep a unique key per test for compatibility with any tests that re-enable limiter.
     test_id = str(uuid.uuid4())
     original_key_func = limiter._key_func
     limiter._key_func = lambda request: test_id
@@ -105,6 +109,7 @@ def client(db_session):
     finally:
         app.dependency_overrides.clear()
         limiter._key_func = original_key_func
+        limiter.enabled = original_enabled
 
 
 @pytest.fixture
@@ -488,6 +493,9 @@ def season_client(db_session, season_data):
     def override_get_db():
         yield db_session
 
+    original_enabled = limiter.enabled
+    limiter.enabled = False
+
     test_id = str(uuid.uuid4())
     original_key_func = limiter._key_func
     limiter._key_func = lambda request: test_id
@@ -501,3 +509,4 @@ def season_client(db_session, season_data):
     finally:
         app.dependency_overrides.clear()
         limiter._key_func = original_key_func
+        limiter.enabled = original_enabled

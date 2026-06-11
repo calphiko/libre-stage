@@ -46,7 +46,17 @@ def create_gig(request: Request, ...):
 
 ---
 
-### 3. Global Exception Handler
+### 3. Cookie-Auth + Token-Rotation
+**Status:** ✅ Implementiert
+
+- Login setzt `access_token` und `refresh_token` als HttpOnly-Cookies.
+- Refresh rotiert den Refresh-Token bei jeder Nutzung.
+- Replay-Erkennung aktiv: Wiederverwendung eines bereits widerrufenen Refresh-Tokens führt zum Widerruf aller aktiven Refresh-Tokens des Users.
+- Logout widerruft Refresh-Token, blacklistet Access-Token und löscht Auth-Cookies.
+
+---
+
+### 4. Global Exception Handler
 **Status:** ✅ Vollständig implementiert
 
 **Datei:** `backend/main.py` (Zeilen 76-92)
@@ -59,7 +69,7 @@ def create_gig(request: Request, ...):
 
 ---
 
-### 4. Health Check Endpoint
+### 5. Health Check Endpoint
 **Status:** ✅ Vollständig implementiert
 
 **Endpoint:** `GET /health`
@@ -79,7 +89,7 @@ def create_gig(request: Request, ...):
 
 ## 🔄 Empfohlene weitere Verbesserungen
 
-### 5. Router-weites Rate Limiting
+### 6. Router-weites Rate Limiting
 **Priorität:** Mittel
 
 Statt einzelne Endpoints zu dekorieren, Limiter in Router-Files anwenden:
@@ -97,26 +107,28 @@ limiter = Limiter(key_func=get_remote_address)
 
 ---
 
-### 6. SQL Injection Prevention
+### 7. SQL Injection Prevention
 **Status:** ✅ Bereits sicher durch SQLAlchemy ORM
 
 Alle Queries verwenden SQLAlchemy ORM statt Raw SQL → automatischer Schutz vor SQL Injection.
 
 ---
 
-### 7. CSRF Protection
-**Status:** ⚠️ Nicht implementiert (aber vermutlich nicht nötig)
+### 8. CSRF Protection
+**Status:** ✅ Basis-Schutz implementiert
 
-Da die API Cookie-basierte Auth verwendet, wäre CSRF-Schutz theoretisch sinnvoll. Allerdings:
-- JWT ist in HttpOnly Cookie gespeichert
-- API ist nur für eigene Frontend gedacht (kein Third-Party-Zugriff)
-- CORS ist restriktiv konfiguriert
+Für cookie-basierte Auth ist ein Double-Submit-Mechanismus aktiv:
+- `csrf_token` Cookie wird gesetzt
+- mutierende Requests (POST/PUT/PATCH/DELETE) erwarten `X-CSRF-Token`
+- Backend verifiziert Header und Cookie auf Gleichheit
+- zusätzlich wird `Origin` (oder `Referer`) gegen erlaubte Origins geprüft
 
-**Optional:** `fastapi-csrf-protect` Package hinzufügen
+**Offen (optional zur Härtung):**
+- für Produktivbetrieb `CORS_ORIGINS` sauber auf echte Frontend-Hosts einschränken
 
 ---
 
-### 8. Input Validation
+### 9. Input Validation
 **Status:** ✅ Gut umgesetzt
 
 - Pydantic-Schemas validieren alle Inputs
@@ -126,7 +138,7 @@ Da die API Cookie-basierte Auth verwendet, wäre CSRF-Schutz theoretisch sinnvol
 
 ---
 
-### 9. Logging Standardisierung
+### 10. Logging Standardisierung
 **Status:** ⚠️ Teilweise
 
 **Zu tun:**
@@ -136,7 +148,7 @@ Da die API Cookie-basierte Auth verwendet, wäre CSRF-Schutz theoretisch sinnvol
 
 ---
 
-### 10. Secrets Management
+### 11. Secrets Management
 **Status:** ✅ Gut umgesetzt
 
 - `.env` für sensitive Daten
@@ -155,7 +167,7 @@ Da die API Cookie-basierte Auth verwendet, wäre CSRF-Schutz theoretisch sinnvol
 | Exception Handler | ✅ Implementiert | Hoch |
 | Health Check | ✅ Implementiert | Mittel |
 | SQL Injection | ✅ Geschützt | Hoch |
-| CSRF Protection | ⚠️ Optional | Niedrig |
+| CSRF Protection | ✅ Basis-Schutz implementiert | Niedrig |
 | Input Validation | ✅ Gut | Hoch |
 | Logging | 🔄 Verbesserbar | Mittel |
 | Secrets Management | ✅ Gut | Hoch |
@@ -168,4 +180,3 @@ Da die API Cookie-basierte Auth verwendet, wäre CSRF-Schutz theoretisch sinnvol
 2. ⚠️ Rate Limiting für weitere sensible Endpoints hinzufügen
 3. ⚠️ Logging standardisieren
 4. ⚠️ `.env.example` erstellen
-

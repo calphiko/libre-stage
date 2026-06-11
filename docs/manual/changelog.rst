@@ -3,6 +3,19 @@
 Änderungsprotokoll
 ==================
 
+0.5.15 (2026-06-11)
+-------------------
+
+Changed
+~~~~~~~
+
+* Sicherheit: Logout-Blacklist-Decoding robustifiziert (korrekter ``algorithms``-Parameter, Logging bei Decode-Fehlern).
+* Sicherheit: Authentifizierung auf HttpOnly-Cookies umgestellt, inkl. CSRF-Schutz (Double-Submit + Origin/Referer-Pruefung).
+* Sicherheit: Refresh-Token-Rotation mit Reuse-Detection eingefuehrt; bei Replay werden aktive Refresh-Tokens des Nutzers widerrufen.
+* Frontend: Rehearsal-Highlighting ohne ``{@html}`` umgesetzt, um den Stored-XSS-Angriffsweg zu schliessen.
+* Tests: Auth-Testfixturen stabilisiert, indem Rate-Limits in Test-Clients deaktiviert und pro Test sauber zurueckgesetzt werden.
+* Chore: Projektversion auf ``0.5.15`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.14 (2026-06-11)
 -------------------
 
