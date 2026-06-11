@@ -665,6 +665,13 @@ class TopSongEntry(BaseModel):
     count: int  # Wie oft in Setlisten dieser Saison
 
 
+class TopSkippedSongEntry(BaseModel):
+    song_id: int
+    title: str
+    interpret: str
+    skipped_count: int  # Wie oft in der Saison uebersprungen
+
+
 class GenreTimelinePoint(BaseModel):
     label: str
     date: Optional[str] = None
@@ -690,6 +697,7 @@ class SeasonStatistics(BaseModel):
     genre_distribution: dict = Field(default_factory=dict)  # {genre: count}
     genre_timeline: List[GenreTimelinePoint] = Field(default_factory=list)
     top_songs: List[TopSongEntry] = Field(default_factory=list)
+    top_skipped_songs: List[TopSkippedSongEntry] = Field(default_factory=list)
     gigs_overview: List[GigOverviewEntry] = Field(default_factory=list)
 
 
