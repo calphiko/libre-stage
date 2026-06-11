@@ -1269,13 +1269,15 @@ def download_gemalist(
     wb.save(output)
     output.seek(0)
 
-    # Dateiname mit Gig-Informationen
-    filename = f"GEMA_Meldung_{gig.name}_{gig.datum.strftime('%Y-%m-%d')}.xlsx"
+    from pathvalidate import sanitize_filename
+
+    safe_name = sanitize_filename(gig.name or "gig")
+    filename = f"GEMA_Meldung_{safe_name}_{gig.datum.strftime('%Y-%m-%d')}.xlsx"
 
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
 
