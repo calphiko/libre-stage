@@ -46,6 +46,25 @@ function getCsrfToken() {
   return csrfTokenCache;
 }
 
+async function ensureCsrfToken() {
+  const existing = getCsrfToken();
+  if (existing) return existing;
+
+  try {
+    const res = await fetch(`${API_URL}/csrf`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) return null;
+
+    const payload = await res.json().catch(() => ({}));
+    rememberCsrfToken(payload?.csrf_token);
+    return getCsrfToken();
+  } catch (_err) {
+    return null;
+  }
+}
+
 async function readErrorDetail(response, fallbackMessage) {
   const data = await response.json().catch(() => ({}));
   return data.detail || fallbackMessage;
@@ -150,15 +169,7 @@ async function fetchWithAuth(url, options = {}, retryCount = 0) {
   const method = (requestOptions.method ?? 'GET').toUpperCase();
   const requiresCsrf = !['GET', 'HEAD', 'OPTIONS'].includes(method);
   if (requiresCsrf) {
-    let csrfToken = getCsrfToken();
-    if (!csrfToken && !authenticationFailed) {
-      try {
-        await refreshTokens();
-      } catch (_err) {
-        // Falls Refresh fehlschlaegt, lassen wir den Request normal laufen.
-      }
-      csrfToken = getCsrfToken();
-    }
+    let csrfToken = await ensureCsrfToken();
 
     if (csrfToken) {
       requestOptions.headers['X-CSRF-Token'] = csrfToken;
@@ -172,8 +183,7 @@ async function fetchWithAuth(url, options = {}, retryCount = 0) {
 
     if (requiresCsrf && detail === 'CSRF validation failed' && retryCount < MAX_RETRIES && !authenticationFailed) {
       try {
-        await refreshTokens();
-        const refreshedCsrfToken = getCsrfToken();
+        const refreshedCsrfToken = await ensureCsrfToken();
         if (refreshedCsrfToken) {
           requestOptions.headers['X-CSRF-Token'] = refreshedCsrfToken;
         }
@@ -261,8 +271,6 @@ export async function login(username, password) {
 }
 
 export async function logout() {
-  clearTokens();
-
   refreshFailedRecently = false;
   isRedirecting = false;
   authenticationFailed = false;
@@ -271,7 +279,7 @@ export async function logout() {
     const headers = {
       'Content-Type': 'application/json'
     };
-    const csrfToken = getCsrfToken();
+    const csrfToken = await ensureCsrfToken();
     if (csrfToken) {
       headers['X-CSRF-Token'] = csrfToken;
     }
@@ -283,6 +291,8 @@ export async function logout() {
     });
   } catch (e) {
     console.error('Logout request failed:', e);
+  } finally {
+    clearTokens();
   }
 
   return { message: 'Logged out' };
