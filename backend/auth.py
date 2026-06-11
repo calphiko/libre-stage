@@ -190,6 +190,31 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+def _create_refresh_token_record(user_id: int, db: Session) -> str:
+    import secrets
+
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+
+    db_token = models.RefreshToken(
+        token_hash=token_hash,
+        user_id=user_id,
+        expires_at=expires_at
+    )
+    db.add(db_token)
+    return token
+
+
+def revoke_all_refresh_tokens_for_user(user_id: int, db: Session):
+    """Revoke all refresh tokens for a user (used for replay mitigation)."""
+    db.query(models.RefreshToken).filter(
+        models.RefreshToken.user_id == user_id,
+        models.RefreshToken.revoked == False
+    ).update({models.RefreshToken.revoked: True}, synchronize_session=False)
+    db.commit()
+
+
 def create_refresh_token(user_id: int, db: Session) -> str:
     """
     Create a refresh token, persist its hash in the database and return
@@ -202,21 +227,48 @@ def create_refresh_token(user_id: int, db: Session) -> str:
     Returns:
         str: The raw (unhashed) refresh token.
     """
-    import secrets
-    token = secrets.token_urlsafe(32)
+    token = _create_refresh_token_record(user_id, db)
+    db.commit()
+    return token
+
+
+def rotate_refresh_token(token: str, db: Session) -> tuple[models.User, str]:
+    """
+    Rotate a refresh token and return ``(user, new_refresh_token)``.
+
+    If a revoked token is presented, all active refresh tokens of that user
+    are revoked (replay detection).
+    """
     token_hash = hashlib.sha256(token.encode()).hexdigest()
 
-    expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    db_token = db.query(models.RefreshToken).filter(
+        models.RefreshToken.token_hash == token_hash
+    ).first()
 
-    db_token = models.RefreshToken(
-        token_hash=token_hash,
-        user_id=user_id,
-        expires_at=expires_at
-    )
-    db.add(db_token)
+    if not db_token:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    user = db.query(models.User).filter(models.User.id == db_token.user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    if db_token.revoked:
+        revoke_all_refresh_tokens_for_user(user.id, db)
+        raise HTTPException(status_code=401, detail="Refresh token reuse detected")
+
+    if db_token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        db_token.revoked = True
+        db.commit()
+        raise HTTPException(status_code=401, detail="Refresh token has expired")
+
+    if user.status == "deactivated":
+        raise HTTPException(status_code=401, detail="Account is deactivated")
+
+    db_token.revoked = True
+    new_refresh_token = _create_refresh_token_record(user.id, db)
     db.commit()
 
-    return token
+    return user, new_refresh_token
 
 
 def verify_refresh_token(token: str, db: Session) -> models.User:
@@ -306,8 +358,8 @@ def blacklist_access_token(token: str, db: Session):
             )
             db.add(blacklist_entry)
             db.commit()
-    except JWTError:
-        pass  # Invalid token, ignore
+    except JWTError as exc:
+        logger.warning("Failed to decode access token for blacklisting: %s", exc)
 
 def create_password_reset_token(user_name: str):
     """
