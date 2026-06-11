@@ -103,4 +103,4 @@ def set_new_password(
         return {"message": "Password reset successful"}
     except Exception as e:
         logger.error(f"Error during password reset for user {user_name}: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=f"Error during password reset for user {user_name}")

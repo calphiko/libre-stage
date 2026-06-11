@@ -377,7 +377,7 @@ def update_user(
         raise HTTPException(status_code=403, detail="Your are not allowed to update this user!")
 
     # Felder, die niemals verändert werden dürfen:
-    forbidden_fields = {"user_name", "user_role"}
+    forbidden_fields = {"user_name", "user_role", "user_group"}
 
     for k, v in user.model_dump(exclude_unset=True).items():
         if getattr(user_db, k) == v:
@@ -438,7 +438,13 @@ def set_user_todo_done(
     db: Session = Depends(auth.get_db)
 
 ):
+
+    user = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
     db_todo = db.get(models.RehTodo, todo.id)
+    if not db_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    if not db_todo.id_user == user.id:
+        raise HTTPException(status_code=403, detail="This is not your todo!")
     db_todo.done = True
 
     db.commit()
