@@ -296,7 +296,7 @@ AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "lax")
 AUTH_COOKIE_DOMAIN = os.getenv("AUTH_COOKIE_DOMAIN")
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "X-CSRF-Token"
-CSRF_EXEMPT_PATHS = {"/login", "/refresh", "/health", "/version"}
+CSRF_EXEMPT_PATHS = {"/login", "/refresh", "/health", "/version", "/csrf"}
 
 
 def _normalize_origin(origin: str | None) -> str | None:
@@ -488,6 +488,18 @@ def logout(
     _clear_auth_cookie(response, CSRF_COOKIE_NAME)
 
     return {"message": "Logged out successfully"}
+
+
+@app.get("/csrf")
+def get_csrf_token(
+        request: Request,
+        response: Response,
+        current=Depends(auth.get_current_user)
+):
+    """Return a CSRF token for authenticated browser clients and refresh the CSRF cookie."""
+    csrf_token = request.cookies.get(CSRF_COOKIE_NAME) or secrets.token_urlsafe(32)
+    _set_csrf_cookie(response, csrf_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+    return {"csrf_token": csrf_token}
 
 @app.get("/me", response_model=schemas.UserOut)
 def get_me(current = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
