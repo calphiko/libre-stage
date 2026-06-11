@@ -377,7 +377,7 @@ def update_user(
         raise HTTPException(status_code=403, detail="Your are not allowed to update this user!")
 
     # Felder, die niemals verändert werden dürfen:
-    forbidden_fields = {"user_name", "user_role"}
+    forbidden_fields = {"user_name", "user_role", "user_group"}
 
     for k, v in user.model_dump(exclude_unset=True).items():
         if getattr(user_db, k) == v:
