@@ -509,9 +509,11 @@ def list_gigs(
 ):
     logger.info("Fetching gigs from database")
     query = db.query(models.Gig).order_by(models.Gig.datum.desc())
+
     if jahr is not None:
-        # Wir gehen davon aus, dass 'datum' als 'YYYY-MM-DD' (Text) gespeichert ist
-        query = query.filter(models.Gig.datum.startswith(str(jahr)))
+        jahr_dt = date(jahr, 1, 1)
+        jahr_dt_end = date(jahr, 12, 31)
+        query = query.filter(models.Gig.datum > jahr_dt, models.Gig.datum < jahr_dt_end)
     return query.all()
 
 
