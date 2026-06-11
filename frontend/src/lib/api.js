@@ -8,6 +8,7 @@ let refreshPromise = null;
 let refreshFailedRecently = false;
 let lastRefreshAttempt = 0;
 const REFRESH_COOLDOWN_MS = 5000; // 5 Sekunden Cooldown nach fehlgeschlagenem Refresh
+let csrfTokenCache = null;
 
 // Redirect-Schutz
 let isRedirecting = false;
@@ -15,6 +16,7 @@ let authenticationFailed = false; // Blockiert alle weiteren Requests
 
 // Legacy-Aufräumhilfe: entfernt alte localStorage-Tokenreste
 function clearTokens() {
+  csrfTokenCache = null;
   if (typeof localStorage === 'undefined') return;
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
@@ -26,6 +28,22 @@ function getCookieValue(name) {
   const parts = value.split(`; ${name}=`);
   if (parts.length !== 2) return null;
   return parts.pop().split(';').shift() ?? null;
+}
+
+function rememberCsrfToken(value) {
+  if (typeof value !== 'string') return;
+  const normalized = value.trim();
+  if (!normalized) return;
+  csrfTokenCache = normalized;
+}
+
+function getCsrfToken() {
+  const cookieToken = getCookieValue('csrf_token');
+  if (cookieToken) {
+    rememberCsrfToken(cookieToken);
+    return cookieToken;
+  }
+  return csrfTokenCache;
 }
 
 async function readErrorDetail(response, fallbackMessage) {
@@ -77,6 +95,9 @@ async function refreshTokens() {
         throw new Error(detail);
       }
 
+      const payload = await res.json().catch(() => ({}));
+      rememberCsrfToken(payload?.csrf_token);
+
       refreshFailedRecently = false;
       authenticationFailed = false;
       return true;
@@ -127,8 +148,18 @@ async function fetchWithAuth(url, options = {}, retryCount = 0) {
   };
 
   const method = (requestOptions.method ?? 'GET').toUpperCase();
-  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    const csrfToken = getCookieValue('csrf_token');
+  const requiresCsrf = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+  if (requiresCsrf) {
+    let csrfToken = getCsrfToken();
+    if (!csrfToken && !authenticationFailed) {
+      try {
+        await refreshTokens();
+      } catch (_err) {
+        // Falls Refresh fehlschlaegt, lassen wir den Request normal laufen.
+      }
+      csrfToken = getCsrfToken();
+    }
+
     if (csrfToken) {
       requestOptions.headers['X-CSRF-Token'] = csrfToken;
     }
@@ -138,12 +169,37 @@ async function fetchWithAuth(url, options = {}, retryCount = 0) {
 
   if (res.status === 403) {
     const detail = await readErrorDetail(res, 'Request blocked by security policy');
-    throw new Error(detail);
+
+    if (requiresCsrf && detail === 'CSRF validation failed' && retryCount < MAX_RETRIES && !authenticationFailed) {
+      try {
+        await refreshTokens();
+        const refreshedCsrfToken = getCsrfToken();
+        if (refreshedCsrfToken) {
+          requestOptions.headers['X-CSRF-Token'] = refreshedCsrfToken;
+        }
+        res = await fetch(url, requestOptions);
+      } catch (_err) {
+        throw new Error(detail);
+      }
+
+      if (res.status === 403) {
+        const retryDetail = await readErrorDetail(res, 'Request blocked by security policy');
+        throw new Error(retryDetail);
+      }
+    } else {
+      throw new Error(detail);
+    }
   }
 
   if (res.status === 401 && retryCount < MAX_RETRIES && !authenticationFailed) {
     try {
       await refreshTokens();
+      if (requiresCsrf) {
+        const refreshedCsrfToken = getCsrfToken();
+        if (refreshedCsrfToken) {
+          requestOptions.headers['X-CSRF-Token'] = refreshedCsrfToken;
+        }
+      }
       res = await fetch(url, requestOptions);
 
       if (res.status === 403) {
@@ -195,9 +251,13 @@ export async function login(username, password) {
     throw new Error(error.detail || 'Login failed');
   }
 
+  const payload = await res.json();
+  rememberCsrfToken(payload?.csrf_token);
+
   // Alte localStorage-Token nach erfolgreichem Cookie-Login entfernen
   clearTokens();
-  return res.json();
+  rememberCsrfToken(payload?.csrf_token);
+  return payload;
 }
 
 export async function logout() {
@@ -211,7 +271,7 @@ export async function logout() {
     const headers = {
       'Content-Type': 'application/json'
     };
-    const csrfToken = getCookieValue('csrf_token');
+    const csrfToken = getCsrfToken();
     if (csrfToken) {
       headers['X-CSRF-Token'] = csrfToken;
     }
