@@ -3,6 +3,15 @@
 Änderungsprotokoll
 ==================
 
+0.5.14 (2026-06-11)
+-------------------
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Loading Spinner hinzugefügt
+* Top-Layout: Volles Logo in Kopfzeile
+
 0.5.13 (2026-06-10)
 -------------------
 

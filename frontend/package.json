@@ -1,6 +1,6 @@
 {
   "name": "frontend2",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -34,7 +34,8 @@
     "ag-grid-community": "^34.3.0",
     "echarts": "^6.0.0",
     "lucide-svelte": "^0.562.0",
-    "svelte-dnd-action": "^0.9.65"
+    "svelte-dnd-action": "^0.9.65",
+    "svelte-loading-spinners": "^0.3.6"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
