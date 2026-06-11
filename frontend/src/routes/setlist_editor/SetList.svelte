@@ -95,7 +95,7 @@
   }
 
   async function applySetlistChange(mutator) {
-    if (!setlist) return false;
+    if (!setlist || isUpdating) return false;
 
     try {
       const draft = cloneSetlistState(setlist);
@@ -395,27 +395,27 @@
   }
 
   function handleSetSlotDragOver(targetIdx, e) {
-    if (draggingSetIdx == null) return;
+    if (isUpdating || draggingSetIdx == null) return;
     e.preventDefault();
     dropSetIdx = targetIdx;
   }
 
   async function handleSetDropToSlot(targetIdx, e) {
     e.preventDefault();
-    if (draggingSetIdx == null) return;
+    if (isUpdating || draggingSetIdx == null) return;
     await reorderSets(draggingSetIdx, targetIdx);
     resetSetDragState();
   }
 
   function handleSetEndDragOver(e) {
-    if (draggingSetIdx == null) return;
+    if (isUpdating || draggingSetIdx == null) return;
     e.preventDefault();
     dropSetIdx = setlist?.sets?.length ?? null;
   }
 
   async function handleSetDropAtEnd(e) {
     e.preventDefault();
-    if (draggingSetIdx == null || !setlist?.sets?.length) return;
+    if (isUpdating || draggingSetIdx == null || !setlist?.sets?.length) return;
     await reorderSets(draggingSetIdx, setlist.sets.length);
     resetSetDragState();
   }
@@ -425,6 +425,7 @@
   }
 
   function handleSongsConsider(setIdx, { detail }) {
+    if (isUpdating) return;
     if (!pendingSongsDragSnapshot) {
       pendingSongsDragSnapshot = cloneSetlistState(setlist);
     }
@@ -433,6 +434,7 @@
   }
 
   async function handleSongsFinalize(setIdx, { detail }) {
+    if (isUpdating) return;
     try {
       const processedSongs = cleanDnDItems(detail.items).map(song => {
         // Wenn der Song aus der SongList via svelte-dnd-action gezogen wurde, hat er eine ID beginnend mit "new-"
@@ -467,6 +469,7 @@
   }
 
   async function handleDragOverSet(setIdx, e) {
+    if (isUpdating) return;
     e.preventDefault();
     dragOverSetIdx = setIdx;
     dragOverSongId = e.dataTransfer.getData('text/plain');
@@ -487,6 +490,7 @@
   }
 
   function handleDragOverSong(setIdx, songIdx, e) {
+    if (isUpdating) return;
     e.preventDefault();
     dragOverSetIdx = setIdx;
     dragOverSongId = e.dataTransfer.getData('text/plain');
@@ -500,6 +504,7 @@
   }
 
   async function insertSetBefore(idx) {
+    if (isUpdating) return;
     const newSet = {
       songs: [],
       pause: '00:10:00',
@@ -510,6 +515,7 @@
   }
 
   async function addSetAtEnd() {
+    if (isUpdating) return;
     const newSet = {
       songs: [],
       pause: '00:10:00',
@@ -522,12 +528,14 @@
   }
 
   async function removeSet(setIdx) {
+    if (isUpdating) return;
     await applySetlistChange((draft) => {
       draft.sets.splice(setIdx, 1);
     });
   }
 
   async function removeSongFromSet(setIdx, setsong_id) {
+    if (isUpdating) return;
     if (deletingSongIds.has(setsong_id)) return;
 
     deletingSongIds = new Set(deletingSongIds).add(setsong_id);
@@ -547,6 +555,7 @@
   }
 
   async function removeLastSongFromStack() {
+    if (isUpdating) return;
     // Suche das letzte Set, das mindestens einen Song enthält.
     for (let setIdx = setlist.sets.length - 1; setIdx >= 0; setIdx--) {
       const songs = setlist.sets[setIdx].songs;
@@ -587,6 +596,8 @@
   }
 
   function handleKeyboardShortcuts(e) {
+    if (isUpdating) return;
+
     const target = e.target;
     const isTypingTarget =
       target instanceof HTMLElement &&
@@ -702,6 +713,7 @@
             class="setlist-name-input min-h-[34px]"
             value={set.setlist_name ?? ''}
             placeholder={`Set ${setIdx + 1}`}
+            disabled={isUpdating}
             onblur={async (e) => {
               await applySetlistChange((draft) => {
                 draft.sets[setIdx].setlist_name = e.target.value;
@@ -725,7 +737,9 @@
         use:dndzone={{
           items: set.songs,
           type: 'song-in-set',
-          flipDurationMs: 220
+          flipDurationMs: 220,
+          dragDisabled: isUpdating,
+          dropFromOthersDisabled: isUpdating
         }}
         onconsider={e => handleSongsConsider(setIdx, e)}
         onfinalize={e => handleSongsFinalize(setIdx, e)}
@@ -756,6 +770,7 @@
             </span>
             <button class="btn btn-sm variant-filled-error min-h-[34px] min-w-[34px] flex items-center justify-center p-0 ml-1.5 touch-manipulation"
                     aria-label="Song entfernen"
+                    disabled={isUpdating}
                     onclick={() => removeSongFromSet(setIdx, song.setsong_id)}>
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -790,6 +805,7 @@
             step="60"
             class="pause-input min-h-[32px] w-[88px]"
             value={formatPauseForInput(set.pause)}
+            disabled={isUpdating}
             onblur={async (e) => {
               const normalizedPause = normalizePauseForApi(e.target.value);
               await applySetlistChange((draft) => {
