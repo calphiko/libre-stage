@@ -290,7 +290,7 @@ def blacklist_access_token(token: str, db: Session):
         db (Session): Active database session.
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         exp = payload.get("exp")
         if not exp:
             return
