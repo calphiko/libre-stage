@@ -81,6 +81,7 @@ final class APIClient {
     }
 
     private let refreshCoordinator = RefreshCoordinator()
+    private static let authCookieNames: Set<String> = ["access_token", "refresh_token", "csrf_token"]
 
     // MARK: - Base URL
 
@@ -286,6 +287,11 @@ final class APIClient {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
+        if !["GET", "HEAD", "OPTIONS"].contains(method.uppercased()),
+           let csrfToken = Self.csrfToken(for: url) {
+            request.setValue(csrfToken, forHTTPHeaderField: "X-CSRF-Token")
+        }
+
         if let body = body, !(body is EmptyBody) {
             request.httpBody = try encoder.encode(body)
         }
@@ -304,11 +310,12 @@ final class APIClient {
     }
 
     private func refreshAccessToken() async throws {
-        guard let refresh = KeychainHelper.load(service: "de.librestage.app", account: "refresh_token") else {
-            throw AppError.unauthorized
-        }
+        let refresh = KeychainHelper.load(service: "de.librestage.app", account: "refresh_token")
         struct RefreshBody: Encodable { let refresh_token: String }
-        struct RefreshResponse: Decodable { let access_token: String; let refresh_token: String }
+        struct RefreshResponse: Decodable {
+            let access_token: String?
+            let refresh_token: String?
+        }
 
         let baseURL = try Self.validatedBaseURL(SettingsStore.shared.backendURL)
         guard let url = URL(string: "/refresh", relativeTo: baseURL)?.absoluteURL else {
@@ -317,15 +324,42 @@ final class APIClient {
         var request = URLRequest(url: url, timeoutInterval: 15)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try encoder.encode(RefreshBody(refresh_token: refresh))
+        if let refresh {
+            request.httpBody = try encoder.encode(RefreshBody(refresh_token: refresh))
+        }
 
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw AppError.unauthorized
         }
         let refreshed = try decoder.decode(RefreshResponse.self, from: data)
-        KeychainHelper.save(service: "de.librestage.app", account: "access_token", value: refreshed.access_token)
-        KeychainHelper.save(service: "de.librestage.app", account: "refresh_token", value: refreshed.refresh_token)
+        if let access = refreshed.access_token {
+            KeychainHelper.save(service: "de.librestage.app", account: "access_token", value: access)
+        }
+        if let refresh = refreshed.refresh_token {
+            KeychainHelper.save(service: "de.librestage.app", account: "refresh_token", value: refresh)
+        }
+    }
+
+    func hasAuthSessionCookie(serverURL: String) -> Bool {
+        let normalized = Self.normalizeURL(serverURL)
+        guard let url = URL(string: normalized) else { return false }
+        let cookies = HTTPCookieStorage.shared.cookies(for: url) ?? HTTPCookieStorage.shared.cookies ?? []
+        return cookies.contains { Self.authCookieNames.contains($0.name) }
+    }
+
+    func clearAuthCookies(serverURL: String) {
+        let storage = HTTPCookieStorage.shared
+        let normalized = Self.normalizeURL(serverURL)
+        let candidates = URL(string: normalized).flatMap { storage.cookies(for: $0) } ?? storage.cookies ?? []
+        for cookie in candidates where Self.authCookieNames.contains(cookie.name) {
+            storage.deleteCookie(cookie)
+        }
+    }
+
+    private static func csrfToken(for url: URL) -> String? {
+        let cookies = HTTPCookieStorage.shared.cookies(for: url) ?? HTTPCookieStorage.shared.cookies ?? []
+        return cookies.first(where: { $0.name == "csrf_token" })?.value
     }
 
     private static func parseFilename(from contentDisposition: String?) -> String? {

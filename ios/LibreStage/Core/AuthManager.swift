@@ -7,7 +7,8 @@ import Foundation
 private let keychainService = "de.librestage.app"
 
 /// Central authentication manager.
-/// Holds tokens and the current user. All values are persisted in the Keychain.
+/// Holds auth/session state and the current user.
+/// Legacy bearer tokens are persisted in Keychain; cookie sessions are handled by URLSession.
 @Observable
 final class AuthManager {
     private let accessTokenKey  = "access_token"
@@ -15,7 +16,7 @@ final class AuthManager {
 
     // MARK: - State
 
-    /// Drives the ContentRoot switch. Set to true as soon as a valid token exists.
+    /// Drives the ContentRoot switch. Set to true as soon as an auth session exists.
     var isLoggedIn: Bool = false
 
     /// Role extracted directly from the JWT on login – available immediately without fetchMe().
@@ -58,8 +59,9 @@ final class AuthManager {
     // MARK: - Init
 
     init() {
-        // Restore session if a token is still in the Keychain
-        if KeychainHelper.load(service: keychainService, account: accessTokenKey) != nil {
+        // Restore session if token-based or cookie-based auth state exists.
+        if KeychainHelper.load(service: keychainService, account: accessTokenKey) != nil
+            || APIClient.shared.hasAuthSessionCookie(serverURL: SettingsStore.shared.backendURL) {
             isLoggedIn = true
             // Try to restore role from keychain
             if let roleRaw = KeychainHelper.load(service: keychainService, account: "user_group"),
@@ -87,10 +89,15 @@ final class AuthManager {
                 body: body,
                 requiresAuth: false
             )
-            accessToken  = response.access_token
-            refreshToken = response.refresh_token
-            // Decode role from JWT payload immediately (no fetchMe needed)
-            if let role = Self.roleFromJWT(response.access_token) {
+            if let access = response.access_token {
+                accessToken = access
+            }
+            if let refresh = response.refresh_token {
+                refreshToken = refresh
+            }
+            // Decode role from JWT payload immediately if available.
+            if let access = response.access_token,
+               let role = Self.roleFromJWT(access) {
                 userGroupFromToken = role
                 KeychainHelper.save(service: keychainService, account: "user_group", value: role.rawValue)
             }
@@ -147,6 +154,7 @@ final class AuthManager {
         KeychainHelper.delete(service: keychainService, account: accessTokenKey)
         KeychainHelper.delete(service: keychainService, account: refreshTokenKey)
         KeychainHelper.delete(service: keychainService, account: "user_group")
+        APIClient.shared.clearAuthCookies(serverURL: SettingsStore.shared.backendURL)
         currentUser = nil
         sessionError = nil
         isLoggedIn  = false
@@ -182,8 +190,8 @@ private struct LoginRequest: Encodable {
 }
 
 struct LoginResponse: Decodable {
-    let access_token: String
-    let refresh_token: String
+    let access_token: String?
+    let refresh_token: String?
     let token_type: String
 }
 
