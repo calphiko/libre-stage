@@ -29,7 +29,8 @@
   let {
     setlist = $bindable(),
     canUndo = $bindable(false),
-    canRedo = $bindable(false)
+    canRedo = $bindable(false),
+    isUpdatingSpinner = $bindable(false)
   } = $props();
   const { showError } = createMessageHelpers();
 
@@ -560,6 +561,7 @@
   async function updateSetlist(data, options = {}) {
     const { showToast = true } = options;
     isUpdating = true;
+    isUpdatingSpinner = true;
     updateError = null;
     try {
       const result = await updateGigSetlist(null, data.id, data);
@@ -580,6 +582,7 @@
       }
     } finally {
       isUpdating = false;
+      isUpdatingSpinner = false;
     }
   }
 
