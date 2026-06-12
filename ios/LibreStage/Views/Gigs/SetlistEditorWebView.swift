@@ -19,9 +19,11 @@ struct SetlistEditorSheet: View {
     @State private var statusFilter = ""
     @State private var singerFilter = ""
     @State private var pendingAutoSave: Task<Void, Never>?
+    @State private var setlistPollingTask: Task<Void, Never>?
     @State private var dirtySetNameIndices: Set<Int> = []
     @State private var dirtyPauseIndices: Set<Int> = []
     @State private var activeDropTarget: DropTarget?
+    @State private var showExternalUpdateAlert = false
     @FocusState private var focusedSetNameIndex: Int?
     @FocusState private var focusedPauseIndex: Int?
 
@@ -146,9 +148,21 @@ struct SetlistEditorSheet: View {
                 if let loaded = await vm.load(gigId: gigId) {
                     draft = EditableSetlist(from: loaded)
                 }
+                startSetlistPolling()
+            }
+            .onDisappear {
+                pendingAutoSave?.cancel()
+                pendingAutoSave = nil
+                setlistPollingTask?.cancel()
+                setlistPollingTask = nil
             }
         }
         .errorBanner($vm.error)
+        .alert("Setliste aktualisiert", isPresented: $showExternalUpdateAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Die Setliste wurde zwischenzeitlich von einer anderen Sitzung geaendert und neu geladen.")
+        }
     }
 
     @ViewBuilder
@@ -908,7 +922,49 @@ struct SetlistEditorSheet: View {
             self.draft = EditableSetlist(from: updated)
             onSaved?(updated)
             normalizeSelectedSetIndex()
+            return
         }
+
+        if let conflict = vm.conflictSetlist {
+            self.draft = EditableSetlist(from: conflict)
+            onSaved?(conflict)
+            normalizeSelectedSetIndex()
+            showExternalUpdateAlert = true
+        }
+    }
+
+    private func startSetlistPolling() {
+        guard setlistPollingTask == nil else { return }
+
+        setlistPollingTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(10))
+                guard !Task.isCancelled else { break }
+                await checkForExternalSetlistUpdate()
+            }
+        }
+    }
+
+    @MainActor
+    private func checkForExternalSetlistUpdate() async {
+        guard !vm.isSaving, let currentDraft = draft else { return }
+        guard let latest = await vm.fetchSetlist(gigId: gigId) else { return }
+
+        let currentVersion = normalizedSetlistVersion(currentDraft.setlistVersion)
+        let latestVersion = normalizedSetlistVersion(latest.setlist_version)
+        guard let currentVersion, let latestVersion, currentVersion != latestVersion else { return }
+
+        draft = EditableSetlist(from: latest)
+        normalizeSelectedSetIndex()
+        showExternalUpdateAlert = true
+        onSaved?(latest)
+    }
+
+    private func normalizedSetlistVersion(_ raw: String?) -> String? {
+        guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
     }
 
     @MainActor
@@ -970,6 +1026,7 @@ private final class SetlistEditorViewModel {
     var isLoading = false
     var isSaving = false
     var error: AppError?
+    var conflictSetlist: GigSetlistOut?
 
     @MainActor
     func load(gigId: Int) async -> GigSetlistOut? {
@@ -995,18 +1052,36 @@ private final class SetlistEditorViewModel {
     func save(gigId: Int, draft: EditableSetlist) async -> GigSetlistOut? {
         isSaving = true
         defer { isSaving = false }
+        conflictSetlist = nil
 
         do {
             let body = GigSetlistUpdateIn(draft: draft)
             let updated: GigSetlistOut = try await APIClient.shared.put(path: "/gigs/\(gigId)/update_setlist/", body: body)
             return updated
         } catch let e as AppError {
+            if case .serverError(let statusCode, _) = e, statusCode == 409 {
+                if let latest = await fetchSetlist(gigId: gigId) {
+                    conflictSetlist = latest
+                }
+                error = .serverError(statusCode: statusCode, detail: "Setliste wurde zwischenzeitlich geaendert. Bitte Aktion erneut ausfuehren.")
+                return nil
+            }
             error = e
         } catch let e {
             error = .networkError(e)
         }
 
         return nil
+    }
+
+    @MainActor
+    func fetchSetlist(gigId: Int) async -> GigSetlistOut? {
+        do {
+            let setlist: GigSetlistOut = try await APIClient.shared.get(path: "/gigs/\(gigId)/setlist")
+            return setlist
+        } catch {
+            return nil
+        }
     }
 }
 
@@ -1022,6 +1097,7 @@ private struct EditableSetlist {
     var end: String?
     var status: String?
     var publish: String?
+    var setlistVersion: String?
     var sets: [EditableSet]
 
     init(from source: GigSetlistOut) {
@@ -1036,6 +1112,7 @@ private struct EditableSetlist {
         end = source.end
         status = source.status
         publish = source.publish
+        setlistVersion = source.setlist_version
         sets = source.sets.map { EditableSet(from: $0) }
         if sets.isEmpty {
             sets = [EditableSet.empty]
@@ -1367,6 +1444,7 @@ private struct GigSetlistUpdateIn: Encodable {
     let end: String?
     let status: String?
     let publish: String?
+    let setlist_version: String?
     let sets: [SetInGigUpdateIn]
 
     init(draft: EditableSetlist) {
@@ -1381,6 +1459,7 @@ private struct GigSetlistUpdateIn: Encodable {
         end = draft.end
         status = draft.status
         publish = draft.publish
+        setlist_version = draft.setlistVersion
         sets = draft.sets.map(SetInGigUpdateIn.init)
     }
 }

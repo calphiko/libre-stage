@@ -70,6 +70,7 @@ struct GigSetlistOut: Codable, Identifiable {
     let end: String?
     let status: String?
     let publish: String?
+    let setlist_version: String?
     let sets: [SetInGigOut]
     let timing: GigSetlistTimingOut?
 }

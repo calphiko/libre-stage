@@ -23,6 +23,7 @@ struct GigDetailView: View {
     @State private var showSetlistEditor = false
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     init(gig: GigOut, onGigUpdated: ((GigOut) -> Void)? = nil) {
         self.gig = gig
@@ -35,6 +36,14 @@ struct GigDetailView: View {
 
     private var currentGig: GigOut {
         editableGig ?? gig
+    }
+
+    private var isSetlistEditorDisabledOnSmallDisplays: Bool {
+#if canImport(UIKit)
+        UIDevice.current.userInterfaceIdiom == .phone
+#else
+        horizontalSizeClass == .compact
+#endif
     }
 
     var body: some View {
@@ -155,6 +164,13 @@ struct GigDetailView: View {
                                 showSetlistEditor = true
                             } label: {
                                 Label("Setliste bearbeiten", systemImage: "square.and.pencil")
+                            }
+                            .disabled(isSetlistEditorDisabledOnSmallDisplays)
+
+                            if isSetlistEditorDisabledOnSmallDisplays {
+                                Text("Setlisten-Editor ist auf kleinen Displays nicht verfuegbar.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
 
                             if vm.liveModeAvailability?.available == true {
