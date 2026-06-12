@@ -8,35 +8,66 @@ let refreshPromise = null;
 let refreshFailedRecently = false;
 let lastRefreshAttempt = 0;
 const REFRESH_COOLDOWN_MS = 5000; // 5 Sekunden Cooldown nach fehlgeschlagenem Refresh
+let csrfTokenCache = null;
 
 // Redirect-Schutz
 let isRedirecting = false;
 let authenticationFailed = false; // Blockiert alle weiteren Requests
 
-// Token-Verwaltung
-function getAccessToken() {
-  if (typeof localStorage === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
-
-function getRefreshToken() {
-  if (typeof localStorage === 'undefined') return null;
-  return localStorage.getItem('refresh_token');
-}
-
-function setTokens(accessToken, refreshToken) {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem('access_token', accessToken);
-  localStorage.setItem('refresh_token', refreshToken);
-  // Reset alle Flags on successful token set
-  refreshFailedRecently = false;
-  authenticationFailed = false;
-}
-
+// Legacy-Aufräumhilfe: entfernt alte localStorage-Tokenreste
 function clearTokens() {
+  csrfTokenCache = null;
   if (typeof localStorage === 'undefined') return;
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
+}
+
+function getCookieValue(name) {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length !== 2) return null;
+  return parts.pop().split(';').shift() ?? null;
+}
+
+function rememberCsrfToken(value) {
+  if (typeof value !== 'string') return;
+  const normalized = value.trim();
+  if (!normalized) return;
+  csrfTokenCache = normalized;
+}
+
+function getCsrfToken() {
+  const cookieToken = getCookieValue('csrf_token');
+  if (cookieToken) {
+    rememberCsrfToken(cookieToken);
+    return cookieToken;
+  }
+  return csrfTokenCache;
+}
+
+async function ensureCsrfToken() {
+  const existing = getCsrfToken();
+  if (existing) return existing;
+
+  try {
+    const res = await fetch(`${API_URL}/csrf`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) return null;
+
+    const payload = await res.json().catch(() => ({}));
+    rememberCsrfToken(payload?.csrf_token);
+    return getCsrfToken();
+  } catch (_err) {
+    return null;
+  }
+}
+
+async function readErrorDetail(response, fallbackMessage) {
+  const data = await response.json().catch(() => ({}));
+  return data.detail || fallbackMessage;
 }
 
 /**
@@ -49,46 +80,21 @@ function isOnLoginPage() {
 }
 
 /**
- * Prüft ob ein JWT abgelaufen ist (mit Buffer)
- */
-function isTokenExpired(token, bufferSeconds = 30) {
-  if (!token) return true;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const exp = payload.exp;
-    if (!exp) return true;
-    // Token ist abgelaufen wenn exp - buffer < jetzt
-    return (exp - bufferSeconds) < (Date.now() / 1000);
-  } catch (e) {
-    return true;
-  }
-}
-
-/**
- * Versucht Token automatisch zu refreshen
+ * Versucht Session automatisch zu refreshen
  * Mit Schutz gegen Race Conditions und Endlosschleifen
  */
 async function refreshTokens() {
-  // Wenn Authentication bereits fehlgeschlagen ist, nicht erneut versuchen
   if (authenticationFailed) {
     throw new Error('Authentication already failed');
   }
 
-  // Cooldown nach fehlgeschlagenem Refresh
   const now = Date.now();
   if (refreshFailedRecently && (now - lastRefreshAttempt) < REFRESH_COOLDOWN_MS) {
     throw new Error('Refresh recently failed, waiting for cooldown');
   }
 
-  // Wenn bereits ein Refresh läuft, warte auf dieses
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
-  }
-
-  const refreshTokenValue = getRefreshToken();
-  if (!refreshTokenValue) {
-    authenticationFailed = true;
-    throw new Error('No refresh token available');
   }
 
   isRefreshing = true;
@@ -98,20 +104,22 @@ async function refreshTokens() {
     try {
       const res = await fetch(`${API_URL}/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshTokenValue })
+        credentials: 'include',
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
+        const detail = await readErrorDetail(res, 'Token refresh failed');
         refreshFailedRecently = true;
         authenticationFailed = true;
-        throw new Error(errorData.detail || 'Token refresh failed');
+        throw new Error(detail);
       }
 
-      const data = await res.json();
-      setTokens(data.access_token, data.refresh_token);
-      return data.access_token;
+      const payload = await res.json().catch(() => ({}));
+      rememberCsrfToken(payload?.csrf_token);
+
+      refreshFailedRecently = false;
+      authenticationFailed = false;
+      return true;
     } catch (e) {
       refreshFailedRecently = true;
       authenticationFailed = true;
@@ -129,7 +137,6 @@ async function refreshTokens() {
  * Leitet zum Login um (nur einmal, mit Schutz)
  */
 function redirectToLogin() {
-  // Wenn bereits am Redirecten oder auf Login-Seite, nichts tun
   if (isRedirecting) return;
   if (typeof window === 'undefined') return;
   if (isOnLoginPage()) return;
@@ -138,94 +145,113 @@ function redirectToLogin() {
   authenticationFailed = true;
   clearTokens();
 
-  // Direkte Umleitung ohne setTimeout
   window.location.href = '/';
 }
 
 /**
- * Wrapper für fetch mit automatischem Token-Refresh bei 401
+ * Wrapper für fetch mit Cookie-Auth und automatischem Session-Refresh bei 401
  */
 async function fetchWithAuth(url, options = {}, retryCount = 0) {
   const MAX_RETRIES = 1;
 
-  // Wenn Authentication bereits fehlgeschlagen ist, sofort abbrechen
   if (authenticationFailed) {
     throw new Error('Authentication failed - please login again');
   }
 
-  let accessToken = getAccessToken();
-
-  // Kein Token vorhanden
-  if (!accessToken) {
-    authenticationFailed = true;
-    if (!isOnLoginPage()) {
-      redirectToLogin();
-    }
-    throw new Error('No access token');
-  }
-
-  // Proaktiv Token refreshen wenn bald abgelaufen
-  if (isTokenExpired(accessToken, 60) && !refreshFailedRecently && !authenticationFailed) {
-    try {
-      accessToken = await refreshTokens();
-    } catch (e) {
-      // Refresh fehlgeschlagen, versuche trotzdem mit altem Token
-      console.warn('Proactive token refresh failed:', e.message);
-    }
-  }
-
-  // Füge Authorization Header hinzu
-  options.headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${accessToken}`
+  const requestOptions = {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...options.headers,
+    },
   };
 
-  let res = await fetch(url, options);
+  const method = (requestOptions.method ?? 'GET').toUpperCase();
+  const requiresCsrf = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+  if (requiresCsrf) {
+    let csrfToken = await ensureCsrfToken();
 
-  // Bei 401: Versuche Token zu refreshen und Request zu wiederholen
+    if (csrfToken) {
+      requestOptions.headers['X-CSRF-Token'] = csrfToken;
+    }
+  }
+
+  let res = await fetch(url, requestOptions);
+
+  if (res.status === 403) {
+    const detail = await readErrorDetail(res, 'Request blocked by security policy');
+
+    if (requiresCsrf && detail === 'CSRF validation failed' && retryCount < MAX_RETRIES && !authenticationFailed) {
+      try {
+        const refreshedCsrfToken = await ensureCsrfToken();
+        if (refreshedCsrfToken) {
+          requestOptions.headers['X-CSRF-Token'] = refreshedCsrfToken;
+        }
+        res = await fetch(url, requestOptions);
+      } catch (_err) {
+        throw new Error(detail);
+      }
+
+      if (res.status === 403) {
+        const retryDetail = await readErrorDetail(res, 'Request blocked by security policy');
+        throw new Error(retryDetail);
+      }
+    } else {
+      throw new Error(detail);
+    }
+  }
+
   if (res.status === 401 && retryCount < MAX_RETRIES && !authenticationFailed) {
     try {
-      const newAccessToken = await refreshTokens();
-      // Wiederhole Request mit neuem Token
-      options.headers['Authorization'] = `Bearer ${newAccessToken}`;
-      res = await fetch(url, options);
+      await refreshTokens();
+      if (requiresCsrf) {
+        const refreshedCsrfToken = getCsrfToken();
+        if (refreshedCsrfToken) {
+          requestOptions.headers['X-CSRF-Token'] = refreshedCsrfToken;
+        }
+      }
+      res = await fetch(url, requestOptions);
 
-      // Wenn immer noch 401, dann ist wirklich was falsch
+      if (res.status === 403) {
+        const detail = await readErrorDetail(res, 'Request blocked by security policy');
+        throw new Error(detail);
+      }
+
       if (res.status === 401) {
+        const detail = await readErrorDetail(res, 'Authentication failed after refresh');
         authenticationFailed = true;
         if (!isOnLoginPage()) {
           redirectToLogin();
         }
-        throw new Error('Authentication failed after refresh');
+        throw new Error(detail);
       }
     } catch (e) {
-      // Refresh fehlgeschlagen
       authenticationFailed = true;
       if (!isOnLoginPage()) {
         redirectToLogin();
       }
-      throw new Error('Authentication failed');
+      throw new Error(e?.message || 'Authentication failed');
     }
   } else if (res.status === 401) {
-    // Max retries erreicht oder bereits fehlgeschlagen
+    const detail = await readErrorDetail(res, 'Authentication failed');
     authenticationFailed = true;
     if (!isOnLoginPage()) {
       redirectToLogin();
     }
-    throw new Error('Authentication failed');
+    throw new Error(detail);
   }
 
   return res;
 }
 
 export async function login(username, password) {
-  // Reset alle Flags bei neuem Login
   refreshFailedRecently = false;
   isRedirecting = false;
   authenticationFailed = false;
 
   const res = await fetch(`${API_URL}/login`, {
     method: 'POST',
+    credentials: 'include',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ username, password })
   });
@@ -235,37 +261,38 @@ export async function login(username, password) {
     throw new Error(error.detail || 'Login failed');
   }
 
-  const data = await res.json();
-  // Speichere Tokens im localStorage
-  setTokens(data.access_token, data.refresh_token);
-  return data;
+  const payload = await res.json();
+  rememberCsrfToken(payload?.csrf_token);
+
+  // Alte localStorage-Token nach erfolgreichem Cookie-Login entfernen
+  clearTokens();
+  rememberCsrfToken(payload?.csrf_token);
+  return payload;
 }
 
 export async function logout() {
-  const accessToken = getAccessToken();
-  const refreshTokenValue = getRefreshToken();
-
-  // Tokens sofort löschen (bevor Request gemacht wird)
-  clearTokens();
-
-  // Reset Flags
   refreshFailedRecently = false;
   isRedirecting = false;
   authenticationFailed = false;
 
   try {
-    if (accessToken) {
-      await fetch(`${API_URL}/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ refresh_token: refreshTokenValue || '' })
-      });
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    const csrfToken = await ensureCsrfToken();
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
     }
+
+    await fetch(`${API_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers
+    });
   } catch (e) {
     console.error('Logout request failed:', e);
+  } finally {
+    clearTokens();
   }
 
   return { message: 'Logged out' };
@@ -1094,4 +1121,3 @@ export async function triggerSendPwResetToken(user_id) {
     if (!res.ok) throw new Error('Senden des Reset-Links fehlgeschlagen');
     return res.json();
 }
-

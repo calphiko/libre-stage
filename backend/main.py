@@ -35,7 +35,7 @@ core endpoints that do not belong to a specific sub-resource:
 
 import logging
 
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 import json
@@ -54,7 +54,9 @@ from dotenv import load_dotenv
 
 from typing import List
 import os
+import secrets
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode
@@ -125,6 +127,33 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ===== EXCEPTION HANDLERS =====
 from fastapi.responses import JSONResponse
+
+
+@app.middleware("http")
+async def csrf_cookie_guard(request: Request, call_next):
+    method = request.method.upper()
+    if method in {"GET", "HEAD", "OPTIONS"}:
+        return await call_next(request)
+
+    if request.url.path in CSRF_EXEMPT_PATHS:
+        return await call_next(request)
+
+    # Legacy bearer-header clients stay supported without CSRF header.
+    if request.headers.get("Authorization"):
+        return await call_next(request)
+
+    if not request.cookies.get("access_token"):
+        return await call_next(request)
+
+    if not _is_trusted_origin(request):
+        return JSONResponse(status_code=403, content={"detail": "Origin validation failed"})
+
+    csrf_cookie = request.cookies.get(CSRF_COOKIE_NAME)
+    csrf_header = request.headers.get(CSRF_HEADER_NAME)
+    if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
+        return JSONResponse(status_code=403, content={"detail": "CSRF validation failed"})
+
+    return await call_next(request)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -262,11 +291,94 @@ def get_todo_list(user_name: str, db: Session):
     }
     return result_list
 
+AUTH_COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "false").lower() in {"1", "true", "yes", "on"}
+AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "lax")
+AUTH_COOKIE_DOMAIN = os.getenv("AUTH_COOKIE_DOMAIN")
+CSRF_COOKIE_NAME = "csrf_token"
+CSRF_HEADER_NAME = "X-CSRF-Token"
+CSRF_EXEMPT_PATHS = {"/login", "/refresh", "/health", "/version", "/csrf"}
+
+
+def _normalize_origin(origin: str | None) -> str | None:
+    if not origin:
+        return None
+    return origin.rstrip("/").lower()
+
+
+def _origin_from_referer(referer: str | None) -> str | None:
+    if not referer:
+        return None
+    parsed = urlparse(referer)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    return _normalize_origin(f"{parsed.scheme}://{parsed.netloc}")
+
+
+def _is_trusted_origin(request: Request) -> bool:
+    origin = _normalize_origin(request.headers.get("origin"))
+    referer_origin = _origin_from_referer(request.headers.get("referer"))
+    candidate = origin or referer_origin
+
+    # Non-browser clients may omit Origin/Referer.
+    if candidate is None:
+        return True
+
+    trusted = set()
+    for configured_origin in origins:
+        normalized = _normalize_origin(configured_origin)
+        parsed = urlparse(normalized or "")
+        if parsed.scheme and parsed.netloc:
+            trusted.add(normalized)
+
+    host = request.headers.get("host")
+    if host:
+        trusted.add(_normalize_origin(f"{request.url.scheme}://{host}"))
+
+    return candidate in trusted
+
+
+def _set_auth_cookie(response: Response, key: str, value: str, max_age_seconds: int) -> None:
+    response.set_cookie(
+        key=key,
+        value=value,
+        max_age=max_age_seconds,
+        httponly=True,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
+        domain=AUTH_COOKIE_DOMAIN,
+        path="/",
+    )
+
+
+def _set_csrf_cookie(response: Response, value: str, max_age_seconds: int) -> None:
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=value,
+        max_age=max_age_seconds,
+        httponly=False,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
+        domain=AUTH_COOKIE_DOMAIN,
+        path="/",
+    )
+
+
+def _clear_auth_cookie(response: Response, key: str) -> None:
+    response.delete_cookie(
+        key=key,
+        domain=AUTH_COOKIE_DOMAIN,
+        path="/",
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
+    )
+
+
 @app.post("/login")
 @limiter.limit("10/minute")
 def login(
         request: Request,
         data: schemas.LoginRequest,
+        response: Response,
         db: Session = Depends(auth.get_db)
 ):
     user = auth.authenticate_user(db, data.username, data.password)
@@ -282,11 +394,18 @@ def login(
     # Refresh Token mit langer Laufzeit (30 Tage)
     refresh_token = auth.create_refresh_token(user.id, db)
 
-    # Tokens im Response Body zurückgeben (nicht in Cookies)
-    # Client speichert diese im localStorage
+    csrf_token = secrets.token_urlsafe(32)
+
+    # HttpOnly-Cookies als primärer Auth-Kanal
+    _set_auth_cookie(response, "access_token", access_token, auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    _set_auth_cookie(response, "refresh_token", refresh_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+    _set_csrf_cookie(response, csrf_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+
+    # Tokens zusätzlich im Body für Legacy-Clients
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "csrf_token": csrf_token,
         "token_type": "bearer",
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "message": "Login successful"
@@ -297,33 +416,39 @@ def login(
 @limiter.limit("30/minute")
 def refresh_token(
         request: Request,
-        refresh_data: schemas.RefreshRequest,
+        response: Response,
+        refresh_data: schemas.RefreshRequest | None = None,
         db: Session = Depends(auth.get_db)
 ):
     """
-    Refresh Token aus Request Body lesen und neuen Access Token generieren.
-    Erwartet: { "refresh_token": "..." }
+    Refresh Token aus Cookie oder Request Body lesen und Access+Refresh rotieren.
 
-    Multi-Device Support: Der Refresh Token wird NICHT rotiert/revoked,
-    damit mehrere Geräte gleichzeitig eingeloggt bleiben können.
+    Replay-Erkennung: Wird ein bereits widerrufener Refresh-Token erneut
+    vorgelegt, werden alle aktiven Refresh-Tokens des Users widerrufen.
     """
-    refresh_token = refresh_data.refresh_token
-    if not refresh_token:
+    refresh_token_value = request.cookies.get("refresh_token")
+    if not refresh_token_value and refresh_data:
+        refresh_token_value = refresh_data.refresh_token
+    if not refresh_token_value:
         raise HTTPException(status_code=401, detail="No refresh token provided")
 
-    # Verifiziere Refresh Token und hole User
-    user = auth.verify_refresh_token(refresh_token, db)
+    user, new_refresh_token = auth.rotate_refresh_token(refresh_token_value, db)
 
-    # Erstelle nur neuen Access Token - behalte Refresh Token bei
     new_access_token = auth.create_access_token({
         "sub": user.user_name,
         "role": user.user_group
     })
 
-    # Gebe den gleichen Refresh Token zurück (kein neuer Token)
+    csrf_token = request.cookies.get(CSRF_COOKIE_NAME) or secrets.token_urlsafe(32)
+
+    _set_auth_cookie(response, "access_token", new_access_token, auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    _set_auth_cookie(response, "refresh_token", new_refresh_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+    _set_csrf_cookie(response, csrf_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+
     return {
         "access_token": new_access_token,
-        "refresh_token": refresh_token,  # Gleicher Token
+        "refresh_token": new_refresh_token,
+        "csrf_token": csrf_token,
         "token_type": "bearer",
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "message": "Token refreshed"
@@ -333,28 +458,48 @@ def refresh_token(
 @app.post("/logout")
 def logout(
         request: Request,
+        response: Response,
         logout_data: schemas.LogoutRequest = None,
         db: Session = Depends(auth.get_db)
 ):
     """
-    Logout: Blacklist Access Token und revoke Refresh Token.
-    Token wird aus Authorization Header gelesen.
+    Logout: Blacklist Access Token, revoke Refresh Token und lösche Auth-Cookies.
     """
-    # Token aus Header extrahieren
+    # Token aus Header/Cookie extrahieren
     token = auth.get_token_from_cookie_or_header(request)
 
     # Blacklist Access Token
     if token:
         auth.blacklist_access_token(token, db)
 
-    # Revoke Refresh Token wenn im Body mitgeschickt
-    if logout_data and logout_data.refresh_token:
+    refresh_token_value = request.cookies.get("refresh_token")
+    if not refresh_token_value and logout_data and logout_data.refresh_token:
+        refresh_token_value = logout_data.refresh_token
+
+    # Revoke Refresh Token
+    if refresh_token_value:
         try:
-            auth.revoke_refresh_token(logout_data.refresh_token, db)
+            auth.revoke_refresh_token(refresh_token_value, db)
         except Exception as e:
             logger.warning(f"Could not revoke refresh token during logout: {e}")
 
+    _clear_auth_cookie(response, "access_token")
+    _clear_auth_cookie(response, "refresh_token")
+    _clear_auth_cookie(response, CSRF_COOKIE_NAME)
+
     return {"message": "Logged out successfully"}
+
+
+@app.get("/csrf")
+def get_csrf_token(
+        request: Request,
+        response: Response,
+        current=Depends(auth.get_current_user)
+):
+    """Return a CSRF token for authenticated browser clients and refresh the CSRF cookie."""
+    csrf_token = request.cookies.get(CSRF_COOKIE_NAME) or secrets.token_urlsafe(32)
+    _set_csrf_cookie(response, csrf_token, auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60)
+    return {"csrf_token": csrf_token}
 
 @app.get("/me", response_model=schemas.UserOut)
 def get_me(current = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
@@ -377,7 +522,7 @@ def update_user(
         raise HTTPException(status_code=403, detail="Your are not allowed to update this user!")
 
     # Felder, die niemals verändert werden dürfen:
-    forbidden_fields = {"user_name", "user_role", "user_group"}
+    forbidden_fields = {"user_name", "user_group", "status", "musician"}
 
     for k, v in user.model_dump(exclude_unset=True).items():
         if getattr(user_db, k) == v:

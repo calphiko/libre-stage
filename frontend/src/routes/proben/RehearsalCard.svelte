@@ -67,13 +67,32 @@
     return endTime ? `${dateLabel} (${beginTime}-${endTime} Uhr)` : `${dateLabel} (${beginTime} Uhr)`;
   }
 
-  function highlight(text, query) {
-    if (!query?.trim() || !text) return text ?? '';
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return String(text).replace(
-      new RegExp(`(${escaped})`, 'gi'),
-      '<mark class="bg-warning-200 dark:bg-warning-700 rounded px-0.5">$1</mark>'
-    );
+  function splitHighlightParts(text, query) {
+    const value = text == null ? '' : String(text);
+    const normalizedQuery = query?.trim();
+
+    if (!normalizedQuery) return [{ text: value, match: false }];
+
+    const escapedQuery = normalizedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'gi');
+    const parts = [];
+    let lastIndex = 0;
+
+    for (const match of value.matchAll(regex)) {
+      const index = match.index ?? 0;
+      if (index > lastIndex) {
+        parts.push({ text: value.slice(lastIndex, index), match: false });
+      }
+
+      parts.push({ text: match[0], match: true });
+      lastIndex = index + match[0].length;
+    }
+
+    if (lastIndex < value.length) {
+      parts.push({ text: value.slice(lastIndex), match: false });
+    }
+
+    return parts.length > 0 ? parts : [{ text: value, match: false }];
   }
 
   function handleToggle() {
@@ -172,6 +191,16 @@
 </script>
 
 <div class="border border-outline-variant rounded-lg mb-2 bg-surface-1">
+  {#snippet highlightedText(text)}
+    {#each splitHighlightParts(text, searchQuery) as part, idx (`${idx}-${part.text}`)}
+      {#if part.match}
+        <mark class="bg-warning-200 dark:bg-warning-700 rounded px-0.5">{part.text}</mark>
+      {:else}
+        {part.text}
+      {/if}
+    {/each}
+  {/snippet}
+
   <button
     type="button"
     class="w-full cursor-pointer p-4 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-t-lg text-left flex items-center gap-2"
@@ -194,7 +223,7 @@
       <div class="prose prose-sm dark:prose-invert max-w-none text-sm text-on-surface leading-relaxed">
 
         {#if reh.comment}
-          <p class="whitespace-pre-wrap mb-4 text-surface-700 dark:text-surface-200">{@html highlight(reh.comment, searchQuery)}</p>
+          <p class="whitespace-pre-wrap mb-4 text-surface-700 dark:text-surface-200">{@render highlightedText(reh.comment)}</p>
           <hr class="border-surface-300 dark:border-surface-600 mb-4" />
         {/if}
 
@@ -205,20 +234,20 @@
             <div class="mb-4 rounded-md border border-surface-200 dark:border-surface-700 px-3 py-2">
               <p class="font-semibold">
                 {song.done ? '✔' : '·'}
-                {@html highlight(`${song.interpret} – ${song.title}`, searchQuery)}
+                {@render highlightedText(`${song.interpret} – ${song.title}`)}
                 {#if song.status}
                   <span class="font-normal text-surface-500 dark:text-surface-300 text-xs">({song.status})</span>
                 {/if}
               </p>
               {#if song.todo}
-                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">Todo: {@html highlight(song.todo, searchQuery)}</p>
+                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">Todo: {@render highlightedText(song.todo)}</p>
               {/if}
               {#if song.comment}
-                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">{@html highlight(song.comment, searchQuery)}</p>
+                <p class="ml-4 mt-1 text-surface-700 dark:text-surface-200">{@render highlightedText(song.comment)}</p>
               {/if}
               {#each song.song_todos ?? [] as std}
                 <p class="ml-4 mt-1 text-surface-600 dark:text-surface-300">
-                  {std.done ? '✔' : '⏳'} {users.find(u => u.id === std.id_user)?.clear_name ?? '?'}: {@html highlight(std.todo, searchQuery)}
+                  {std.done ? '✔' : '⏳'} {users.find(u => u.id === std.id_user)?.clear_name ?? '?'}: {@render highlightedText(std.todo)}
                 </p>
               {/each}
             </div>

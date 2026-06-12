@@ -95,7 +95,7 @@
   });
 
   async function loadLiveModeStatus() {
-    console.log('Loading Live-Mode status for', gigs.length, 'gigs');
+    //console.log('Loading Live-Mode status for', gigs.length, 'gigs');
 
     if (gigs.length === 0) {
       liveModeStatus = {};
@@ -113,10 +113,10 @@
       Object.entries(statuses).forEach(([gigIdStr, status]) => {
         const gigId = parseInt(gigIdStr);
         liveModeStatus[gigId] = status;
-        console.log(`Gig ${gigId}:`, status);
+        //console.log(`Gig ${gigId}:`, status);
       });
 
-      console.log('Final liveModeStatus:', liveModeStatus);
+      //console.log('Final liveModeStatus:', liveModeStatus);
     } catch (e) {
       console.error('Fehler beim Laden der Live-Mode-Status:', e);
       // Fallback: Alle auf unavailable setzen
@@ -321,7 +321,7 @@
     try {
       // OPTIONAL: Validierung vor Absenden
       const payload = normalizeGigTimeFields(editBuffer);
-      console.log(payload);
+      // console.log(payload);
       await updateGig(gig.id, payload, null);
       // Nach dem Patch neues Song-Objekt im lokalen Array ersetzen:
       gigs = gigs.map(g => g.id === gig.id ? { ...payload, id: gig.id } : g);
