@@ -48,6 +48,9 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
 
+    /// Invoked when the client determines that the current auth session is no longer valid.
+    var onUnauthorized: (@MainActor () -> Void)?
+
     private let session = URLSession.shared
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -301,11 +304,20 @@ final class APIClient {
     private func validateStatus(_ statusCode: Int, data: Data) throws {
         switch statusCode {
         case 200...299: return
-        case 401: throw AppError.unauthorized
+        case 401:
+            notifyUnauthorized()
+            throw AppError.unauthorized
         case 404: throw AppError.notFound
         default:
             let detail = (try? decoder.decode(BackendErrorBody.self, from: data))?.detail ?? HTTPURLResponse.localizedString(forStatusCode: statusCode)
             throw AppError.serverError(statusCode: statusCode, detail: detail)
+        }
+    }
+
+    private func notifyUnauthorized() {
+        guard let onUnauthorized else { return }
+        Task { @MainActor in
+            onUnauthorized()
         }
     }
 
@@ -330,6 +342,7 @@ final class APIClient {
 
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            notifyUnauthorized()
             throw AppError.unauthorized
         }
         let refreshed = try decoder.decode(RefreshResponse.self, from: data)

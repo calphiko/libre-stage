@@ -59,6 +59,10 @@ final class AuthManager {
     // MARK: - Init
 
     init() {
+        APIClient.shared.onUnauthorized = { [weak self] in
+            self?.handleUnauthorizedSession()
+        }
+
         // Restore session if token-based or cookie-based auth state exists.
         if KeychainHelper.load(service: keychainService, account: accessTokenKey) != nil
             || APIClient.shared.hasAuthSessionCookie(serverURL: SettingsStore.shared.backendURL) {
@@ -149,6 +153,12 @@ final class AuthManager {
     }
 
     // MARK: - Helpers
+
+    @MainActor
+    private func handleUnauthorizedSession() {
+        clearSession()
+        loginError = AppError.unauthorized.localizedMessage
+    }
 
     func clearSession() {
         KeychainHelper.delete(service: keychainService, account: accessTokenKey)
