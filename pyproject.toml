@@ -52,6 +52,7 @@ dependencies = [
     "urllib3==2.6.3",
     "uvicorn==0.41.0",
     "wrapt==2.1.1",
+    "pathvalidate>=3.3.1",
 ]
 
 [dependency-groups]
