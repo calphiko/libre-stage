@@ -160,6 +160,7 @@ def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
     default_song_duration, default_inter_song_break, default_set_pause = _get_setlist_timing_defaults()
     gig_start = datetime.combine(gig.datum, gig.begin or time(19, 0))
     schedule: dict[int, list[datetime]] = defaultdict(list)
+    slot_durations: dict[int, list[timedelta]] = defaultdict(list)
     set_end: dict[int, datetime] = {}
     current_time = gig_start
 
@@ -170,7 +171,13 @@ def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
         for setsong in set_songs:
             schedule[gigset.position].append(current_time)
             duration = _setsong_duration_to_timedelta(setsong, default_song_duration)
-            current_time = current_time + duration + default_inter_song_break
+            slot_duration = timedelta(0)
+            if not getattr(setsong, "uebersprungen", False):
+                slot_duration = duration + default_inter_song_break
+            slot_durations[gigset.position].append(slot_duration)
+            current_time = current_time + duration
+            if not getattr(setsong, "uebersprungen", False):
+                current_time = current_time + default_inter_song_break
 
         if set_songs and schedule[gigset.position]:
             last_song_start = schedule[gigset.position][-1]
@@ -196,6 +203,7 @@ def calculate_setlist_timing(gig: Any) -> dict[str, Any]:
 
     return {
         "schedule": dict(schedule),
+        "slot_durations": dict(slot_durations),
         "pause_before": pause_before,
         "set_end": set_end,
     }
