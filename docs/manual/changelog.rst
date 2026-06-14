@@ -3,6 +3,28 @@
 Änderungsprotokoll
 ==================
 
+0.5.16 (2026-06-14)
+-------------------
+
+Added
+~~~~~
+
+* Backend: Neuer Endpoint ``GET /csrf`` gibt fuer authentifizierte Clients ein CSRF-Token zurueck und erneuert das CSRF-Cookie.
+* Setlist-Timing: Rueckgabe um ``slot_durations`` erweitert, um effektive Slotlaengen pro Song (inkl. Inter-Song-Pausen) explizit bereitzustellen.
+* Tests: Neue Abdeckung in ``backend/tests/test_setlist_service.py`` fuer die Ausgabe von Slot-Dauern inkl. ``00:00:00`` bei uebersprungenen Songs.
+* Backend: Neue Abhaengigkeit ``pathvalidate`` aufgenommen.
+
+Changed
+~~~~~~~
+
+* Security/Auth: ``/login`` und ``/refresh`` liefern nun zusaetzlich ``csrf_token`` im Response-Payload fuer robustes CSRF-Handling im Frontend.
+* Frontend-API: CSRF-Handling robustifiziert (Token-Cache, automatisches Nachladen ueber ``/csrf``, Retry bei ``CSRF validation failed``, konsistente Header-Setzung fuer mutierende Requests).
+* Setlist-Timing: Uebersprungene Songs verursachen keine Inter-Song-Pause mehr; der betreffende Slot wird als ``0`` Sekunden gefuehrt.
+* PDF-Export: Setlisten-PDF nutzt ``slot_durations`` fuer die angezeigten Songzeiten und verbessert die Durchstreichung uebersprungener Songs (kontraststark in Screen/Print).
+* Setlist-Service: ``dump_gig_struct`` zeigt effektive Slot-Dauern im Format ``HH:MM:SS`` statt roher Songdauer.
+* Frontend-UI: Layout und Responsiveness fuer Sidebar, Header/Footer, Login-Seite und globale Komponentenabstaende/-groessen ueberarbeitet.
+* Terminfindung (Frontend): Mobile-Ansicht von Karten auf eine kompakte, tabellarische Matrix umgestellt (inkl. klarer Trennung der eigenen bearbeitbaren Zeile, read-only Darstellung anderer Teilnehmer und uebersichtlicher Header-/Zeilenstruktur bei vielen Alternativen).
+
 0.5.15 (2026-06-11)
 -------------------
 
