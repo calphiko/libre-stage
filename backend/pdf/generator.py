@@ -31,7 +31,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.utils.pdf_palette import find_logo_path, resolve_setlist_palette
 from backend.utils.setlist_timing import get_pause_before_set
 
@@ -79,6 +79,7 @@ class SetlistPDF:
             "set_header_bg": colors.HexColor("#2B1A10"),
             "comment": colors.HexColor("#FDBA74"),
             "warning": colors.HexColor("#FB923C"),
+            "strike": colors.HexColor("#F8FAFC"),
         },
         "print": {
             "bg": colors.white,
@@ -90,13 +91,15 @@ class SetlistPDF:
             "set_header_bg": colors.HexColor("#FFEDD5"),
             "comment": colors.HexColor("#C2410C"),
             "warning": colors.HexColor("#EA580C"),
+            "strike": colors.black,
         },
     }
 
-    def __init__(self, gig, schedule, singer_colors, style_mode="dark"):
+    def __init__(self, gig, schedule, singer_colors, style_mode="dark", slot_durations=None):
         self.gig = gig
         self.schedule = schedule
         self.singer_colors = singer_colors
+        self.slot_durations = slot_durations or {}
         self.style_mode = style_mode if style_mode in self.PALETTES else "dark"
         self.root_dir = Path(__file__).resolve().parents[2]
         self.logo_path = find_logo_path({"root_dir": self.root_dir})
@@ -154,6 +157,12 @@ class SetlistPDF:
         while cut and stringWidth(cut, font_name, font_size) + ellipsis_width > max_width:
             cut = cut[:-1]
         return f"{cut}{ellipsis}" if cut else ""
+
+    @staticmethod
+    def _format_slot_duration(value: timedelta) -> str:
+        total_seconds = max(0, int(value.total_seconds()))
+        minutes, seconds = divmod(total_seconds, 60)
+        return f"{minutes:02}:{seconds:02}"
 
     def build(self) -> BytesIO:
         """
@@ -396,10 +405,20 @@ class SetlistPDF:
 
                     # Bei übersprungenen Songs: durchstreichen
                     if is_uebersprungen:
-                        c.line(title_x, y-3, title_x + title_width, y-3)
+                        c.saveState()
+                        # In print mode den Strich bewusst dunkel zeichnen, auf Screen kontrastreicher.
+                        c.setStrokeColor(self.palette.get("strike", self.palette["text"]))
+                        c.setLineWidth(1.2 if self.style_mode == "print" else 1.0)
+                        c.line(title_x, y - 3, title_x + title_width, y - 3)
+                        c.restoreState()
 
                     # Song-Kommentar in Rot zwischen Titel und Dauer anzeigen
-                    dur = song.duration.strftime("%M:%S") if song.duration else "04:00"
+                    slot_duration = None
+                    if set_pos in self.slot_durations and idx_song < len(self.slot_durations[set_pos]):
+                        slot_duration = self.slot_durations[set_pos][idx_song]
+                    dur = self._format_slot_duration(slot_duration) if slot_duration is not None else (
+                        song.duration.strftime("%M:%S") if song.duration else "04:00"
+                    )
                     duration_right_x = x + 260
                     duration_left_x = duration_right_x - stringWidth(dur, self.FONT, self.FONT_SIZE)
                     comment_text = (song.comment or "").strip()

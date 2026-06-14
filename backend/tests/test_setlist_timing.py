@@ -59,10 +59,12 @@ def test_calculate_setlist_timing_uses_configured_inter_song_break(monkeypatch):
 
     assert len(starts) == 2
     assert (starts[1] - starts[0]) == timedelta(seconds=345)
+    assert timing["slot_durations"][1][0] == timedelta(seconds=345)
+    assert timing["slot_durations"][1][1] == timedelta(seconds=345)
     assert timing["set_end"][1] == starts[1] + timedelta(seconds=300)
 
 
-def test_skipped_song_has_zero_duration_in_timing(monkeypatch):
+def test_skipped_song_has_zero_duration_and_no_inter_song_break(monkeypatch):
     monkeypatch.setattr(
         setlist_timing,
         "get_config",
@@ -94,7 +96,10 @@ def test_skipped_song_has_zero_duration_in_timing(monkeypatch):
 
     assert len(starts) == 3
     assert (starts[1] - starts[0]) == timedelta(minutes=4, seconds=30)
-    assert (starts[2] - starts[1]) == timedelta(seconds=30)
+    assert (starts[2] - starts[1]) == timedelta(0)
+    assert timing["slot_durations"][1][0] == timedelta(minutes=4, seconds=30)
+    assert timing["slot_durations"][1][1] == timedelta(0)
+    assert timing["slot_durations"][1][2] == timedelta(minutes=3, seconds=30)
     assert timing["set_end"][1] == starts[2] + timedelta(minutes=3)
 
 

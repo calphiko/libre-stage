@@ -55,6 +55,37 @@
     return 'a'; // bisher kein Wert
   };
 
+  const feedbackSymbol = (value) => {
+    if (value === 'a') return '✓';
+    if (value === 'm') return '~';
+    if (value === 'o') return '✗';
+    return '–';
+  };
+
+  const feedbackText = (value) => {
+    if (value === 'a') return 'Ja';
+    if (value === 'm') return 'Vielleicht';
+    if (value === 'o') return 'Nein';
+    return 'Keine Angabe';
+  };
+
+  const compactHeaderLabel = (fieldText) => {
+    const parsed = new Date(fieldText);
+    if (Number.isNaN(parsed.getTime())) {
+      return shortFormatGermanDate(fieldText);
+    }
+
+    const datePart = parsed.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit'
+    });
+    const timePart = parsed.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return `${datePart}\n${timePart}`;
+  };
+
   const setNewFeedback = async (field, userId, value) => {
     // Prevent feedback changes if survey is closed
     if (survey.closed) return;
@@ -106,29 +137,6 @@
       console.error('Fehler beim Aktualisieren des Feedbacks:', error);
       // Optionally show error to user or revert local changes
     }
-  };
-
-  const getHeatmapStyle = (field) => {
-    const yesCount = field.feedbacks?.filter(fb => fb.value === 'a').length ?? 0;
-    if (yesCount == 0) return 'background-color: rgba(0,0,0,0);';
-    const maxCount = Math.max(...survey.fields.map(f =>
-      f.feedbacks?.filter(fb => fb.value === 'a').length ?? 0
-    ));
-
-    if (maxCount === 0) return 'background-color: #f8f9fa;';
-
-    const darkMode = $isDarkMode;
-    const intensity = (yesCount / maxCount) * 100;
-    const hue = 120 * (intensity / 100);
-    const saturation = 35 + (intensity * 0.25);
-
-    const lightness = darkMode
-      ? 25 + (intensity * 0.15)
-      : 55 + (intensity * 0.15);
-
-    const textColor = darkMode ? '#e2e8f0' : '#334155';
-
-    return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`;
   };
 
   let heatmapStyles = $derived(new Map(
@@ -291,93 +299,108 @@
 
   </div>
   </div>
-  <!-- Mobile: Karten-Layout -->
-  <div class="md:hidden space-y-6">
-  <!-- Aktueller User zuerst -->
-  {#if user}
-    {@const currentUser = users.find(u => u.id === user.id)}
-    {#if currentUser}
-      <div class="card variant-soft-primary p-4">
-        <h4 class="font-bold text-lg mb-3">{currentUser.user_name}</h4>
-        <div class="space-y-2">
-          {#each sortedFields as field}
-            {@const feedback = getFeedbackFor(field, currentUser.id)}
-            <button
-              class={`w-full p-3 rounded-lg text-left ${feedbackClass(feedback?.value)} ${!survey.closed ? 'active:scale-95' : 'opacity-50'}`}
-              disabled={survey.closed}
-              onclick={() => {
-                if (survey.closed) return;
-                const next = nextFeedbackValue(feedback?.value);
-                setNewFeedback(field, currentUser.id, next);
-              }}
-            >
-              <div class="text-sm font-medium">{formatGermanDateTime(field.field_text)}</div>
-              <div class="text-xs opacity-80 mt-1">
-                {#if feedback?.value === 'a'}✓ Ja
-                {:else if feedback?.value === 'm'}~ Vielleicht
-                {:else if feedback?.value === 'o'}✗ Nein
-                {:else}– Keine Angabe
+  <!-- Mobile: kompakte Matrix -->
+  <div class="md:hidden space-y-3">
+    <div class="rounded-lg border border-outline-variant overflow-hidden">
+      <div class="overflow-x-auto" style="scrollbar-width: thin;">
+        <table class="min-w-max border-collapse text-xs">
+          <thead>
+            <tr>
+              <th class="px-2 py-2 text-left sticky left-0 bg-surface z-20 border border-gray-300 dark:border-gray-600 min-w-[9rem]">
+                Teilnehmer
+              </th>
+              {#each sortedFields as field}
+                <th class="mobile-compact-header border border-gray-300 dark:border-gray-600 bg-surface z-10" title={formatGermanDateTime(field.field_text)}>
+                  <span class="font-semibold">{compactHeaderLabel(field.field_text)}</span>
+                </th>
+              {/each}
+            </tr>
+          </thead>
+          <tbody>
+            {#if user}
+              {@const currentUser = users.find(u => Number(u.id) === Number(user.id))}
+              {#if currentUser}
+                <tr class="mobile-spacing-row">
+                  <td colspan={sortedFields.length + 1}></td>
+                </tr>
+                <tr class="font-semibold mobile-user-row mobile-editable-row">
+                  <td class="px-2 py-2 border border-gray-300 dark:border-gray-600 sticky left-0 bg-surface z-20">
+                    <div class="leading-tight">{currentUser.user_name}</div>
+                  </td>
+                  {#each sortedFields as field}
+                    {@const feedback = getFeedbackFor(field, currentUser.id)}
+                    <td class="border border-gray-300 dark:border-gray-600 p-1">
+                      <button
+                        class={`w-10 h-10 rounded-md text-sm transition-colors ${feedbackClass(feedback?.value)} ${!survey.closed ? 'active:scale-95 cursor-pointer ring-1 ring-primary-300 dark:ring-primary-700' : 'opacity-60 cursor-not-allowed'}`}
+                        disabled={survey.closed}
+                        aria-label={`${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}`}
+                        onclick={() => {
+                          if (survey.closed) return;
+                          const next = nextFeedbackValue(feedback?.value);
+                          setNewFeedback(field, currentUser.id, next);
+                        }}
+                      >
+                        {feedbackSymbol(feedback?.value)}
+                      </button>
+                    </td>
+                  {/each}
+                </tr>
+                <tr class="mobile-spacing-row">
+                  <td colspan={sortedFields.length + 1}></td>
+                </tr>
+                {#if users.filter(u => Number(u.id) !== Number(user.id)).length > 0}
+                  <tr class="mobile-divider-row">
+                    <td colspan={sortedFields.length + 1}></td>
+                  </tr>
                 {/if}
-              </div>
-            </button>
-          {/each}
-        </div>
-      </div>
-    {/if}
-  {/if}
+              {/if}
+            {/if}
 
-  <!-- Andere User (ausklappbar) -->
-  {#if users.filter(u => !user || u.id !== user.id).length > 0}
-    <details class="card variant-soft p-4">
-      <summary class="cursor-pointer font-semibold text-lg mb-3">
-        Andere Teilnehmer ({users.filter(u => !user || u.id !== user.id).length})
-      </summary>
-      <div class="space-y-4 mt-4">
-        {#each users as u}
-          {#if !user || u.id !== user.id}
-            <div class="border border-outline-variant rounded-lg p-3">
-              <h4 class="font-semibold mb-2">{u.user_name}</h4>
-              <div class="space-y-2">
+            {#each users.filter(u => !user || Number(u.id) !== Number(user.id)) as u}
+              <tr class="mobile-user-row">
+                <td class="px-2 py-2 border border-gray-300 dark:border-gray-600 sticky left-0 bg-surface z-10">
+                  {u.user_name}
+                </td>
                 {#each sortedFields as field}
                   {@const feedback = getFeedbackFor(field, u.id)}
-                  <div class={`p-3 rounded-lg ${feedbackClass(feedback?.value)}`}>
-                    <div class="text-sm">{formatGermanDateTime(field.field_text)}</div>
-                    <div class="text-xs opacity-80 mt-1">
-                      {#if feedback?.value === 'a'}✓ Ja
-                      {:else if feedback?.value === 'm'}~ Vielleicht
-                      {:else if feedback?.value === 'o'}✗ Nein
-                      {:else}– Keine Angabe
-                      {/if}
+                  <td class="border border-gray-300 dark:border-gray-600 p-1">
+                    <div
+                      class={`w-10 h-10 rounded-md text-sm flex items-center justify-center opacity-85 ${feedbackClass(feedback?.value)}`}
+                      aria-label={`${u.user_name}, ${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}`}
+                    >
+                      {feedbackSymbol(feedback?.value)}
                     </div>
-                  </div>
+                  </td>
                 {/each}
-              </div>
-            </div>
-          {/if}
-        {/each}
+              </tr>
+            {/each}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="px-2 py-2 border border-gray-300 dark:border-gray-600 sticky left-0 bg-surface z-20 font-semibold">
+                Summe
+              </td>
+              {#each sortedFields as field}
+                {@const yesCount = (field.feedbacks?.filter(fb => fb.value === 'a').length ?? 0) - (field.feedbacks?.filter(fb => fb.value === 'o').length ?? 0)}
+                {@const maybeCount = field.feedbacks?.filter(fb => fb.value === 'm').length ?? 0}
+                <td
+                  class="px-1 py-1 border border-gray-300 dark:border-gray-600 text-center"
+                  style={heatmapStyles.get(field.id)}
+                >
+                  <div class="font-semibold leading-none">{yesCount}</div>
+                  <div class="text-[10px] opacity-80 leading-none mt-1">({maybeCount})</div>
+                </td>
+              {/each}
+            </tr>
+          </tfoot>
+        </table>
       </div>
-    </details>
-  {/if}
-
-  <!-- Summen -->
-  <div class="card variant-soft-tertiary p-4">
-    <h4 class="font-bold text-lg mb-3">Summen</h4>
-    <div class="space-y-2">
-      {#each sortedFields as field}
-          {@const yesCount = (field.feedbacks?.filter(fb => fb.value === 'a').length ?? 0) - (field.feedbacks?.filter(fb => fb.value === 'o').length ?? 0)}
-          {@const maybeCount = field.feedbacks?.filter(fb => fb.value === 'm').length ?? 0}
-          <div
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-center transition-colors"
-            style={getHeatmapStyle(field)}
-          >
-            <div class="text-sm font-medium">{formatGermanDateTime(field.field_text)}</div>
-            <div class="font-semibold text-lg">{yesCount}</div>
-            <div class="text-xs opacity-80">({maybeCount} vielleicht)</div>
-          </div>
-      {/each}
     </div>
+
+    <p class="text-xs text-on-surface-variant px-1">
+      Legende: ✓ Ja, ~ Vielleicht, ✗ Nein, – Keine Angabe
+    </p>
   </div>
-</div>
 
 </div>
 
@@ -416,5 +439,56 @@
       padding-top: 20px;
       padding-bottom: 20px;
       //background-color: rgba(255, 255, 255, 0.5);
+    }
+
+  .mobile-compact-header {
+      min-width: 58px;
+      width: 58px;
+      padding: 4px 2px;
+      vertical-align: middle;
+    }
+
+  .mobile-compact-header > span {
+      display: block;
+      width: 100%;
+      line-height: 1.05;
+      font-size: 11px;
+      text-align: center;
+      white-space: pre;
+    }
+
+  .mobile-user-row td {
+      border-bottom-width: 2px;
+    }
+
+  .mobile-editable-row td {
+      border-top-width: 2px;
+      border-bottom-width: 2px;
+      border-color: rgb(96 165 250);
+      background: color-mix(in srgb, rgb(59 130 246) 8%, transparent);
+    }
+
+  :global(.dark) .mobile-editable-row td {
+      border-color: rgb(59 130 246);
+      background: color-mix(in srgb, rgb(59 130 246) 16%, transparent);
+    }
+
+  .mobile-spacing-row td {
+      height: 8px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+  .mobile-divider-row td {
+      height: 6px;
+      padding: 0;
+      border: 0;
+      border-top: 2px solid rgb(203 213 225);
+      background: transparent;
+    }
+
+  :global(.dark) .mobile-divider-row td {
+      border-top-color: rgb(71 85 105);
     }
 </style>
