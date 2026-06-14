@@ -1317,7 +1317,9 @@ def download_setlist(
         logger.error(f"Gig with id={gig_id} not found for PDF generation")
         raise HTTPException(status_code=404, detail="Gig not found")
 
-    schedule = service.calc_schedule(gig)
+    timing = calculate_setlist_timing(gig)
+    schedule = timing["schedule"]
+    slot_durations = timing.get("slot_durations", {})
 
     service.dump_gig_struct(gig)
 
@@ -1339,7 +1341,13 @@ def download_setlist(
         for i, singer in enumerate(singers)
     }
 
-    pdf_bytes = SetlistPDF(gig, schedule, singer_colors, style_mode=design).build().getvalue()
+    pdf_bytes = SetlistPDF(
+        gig,
+        schedule,
+        singer_colors,
+        style_mode=design,
+        slot_durations=slot_durations,
+    ).build().getvalue()
     mode_suffix = "_druckfreundlich" if design == "print" else ""
     headers = {"Content-Disposition": f"inline; filename=Setliste_{gig.name}{mode_suffix}.pdf"}
     return Response(

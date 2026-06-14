@@ -24,7 +24,7 @@ expected start time for each song based on the gig start time, song
 durations and set-break durations.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session, joinedload
 from ..models import Gig, GigSet, Set, SetSong
 from ..utils.setlist_timing import calculate_setlist_timing
@@ -96,6 +96,10 @@ class SetlistService:
                 :meth:`calc_schedule`.  If supplied, song start times are
                 printed next to each song.
         """
+        timing = calculate_setlist_timing(gig)
+        effective_schedule = schedule or timing["schedule"]
+        slot_durations = timing.get("slot_durations", {})
+
         print(f"\n=== Gig {gig.id}: {gig.name} am {gig.datum} ===\n")
         print(f"  Beginn: {gig.begin}")
         for gigset in sorted(gig.sets, key=lambda x: x.position):
@@ -106,10 +110,13 @@ class SetlistService:
             for idx, setsong in enumerate(setsonglist, start=1):
                 song = setsong.song
                 zeit_str = (
-                    schedule[gigset.position][idx - 1].strftime('%H:%M')
-                    if schedule and gigset.position in schedule and idx - 1 < len(schedule[gigset.position])
+                    effective_schedule[gigset.position][idx - 1].strftime('%H:%M')
+                    if effective_schedule and gigset.position in effective_schedule and idx - 1 < len(effective_schedule[gigset.position])
                     else "-"
                 )
+                duration_slot = "-"
+                if gigset.position in slot_durations and idx - 1 < len(slot_durations[gigset.position]):
+                    duration_slot = self._format_timedelta(slot_durations[gigset.position][idx - 1])
 
                 # Markierungen für Live-Mode-Status
                 prefix = ""
@@ -132,4 +139,11 @@ class SetlistService:
                 elif setsong.feedback == 3:
                     feedback_symbol = " [++]"
 
-                print(f"     [{zeit_str}] {prefix}{setsong.position}. {song.title} / {song.singer_lead} / {song.duration}{suffix}{feedback_symbol}")
+                print(f"     [{zeit_str}] {prefix}{setsong.position}. {song.title} / {song.singer_lead} / {duration_slot}{suffix}{feedback_symbol}")
+
+    @staticmethod
+    def _format_timedelta(value: timedelta) -> str:
+        total_seconds = max(0, int(value.total_seconds()))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
