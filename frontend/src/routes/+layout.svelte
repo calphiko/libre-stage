@@ -109,24 +109,24 @@
 
 <div class="flex h-screen w-screen">
 	{#if sidebarOpen && user.user_name}
-		<aside class="w-56 shrink-0 bg-surface-100 dark:bg-surface-800 p-4 shadow-lg border-r border-surface-300/30"
+		<aside class="w-52 shrink-0 bg-surface-100/95 dark:bg-surface-800/95 p-3 shadow-md border-r border-surface-300/30 backdrop-blur-sm"
 			in:slide={{ x: -224, duration: 250 }}
 			out:slide={{ x: -224, duration: 250 }}>
 
-			<button class="ui-btn ui-btn-ghost w-full justify-start mb-4" onclick={() => sidebarOpen = false}>
+			<button class="ui-btn ui-btn-ghost w-full justify-start mb-3" onclick={() => sidebarOpen = false}>
 				〈 Menü
 			</button>
-			<nav class="space-y-2">
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/dashboard" onclick={closeOnNavigate}>Dashboard</a>
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/gigs" onclick={closeOnNavigate}>Gigs</a>
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
+			<nav class="space-y-1.5 text-sm">
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/dashboard" onclick={closeOnNavigate}>Dashboard</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/gigs" onclick={closeOnNavigate}>Gigs</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
 				{#if user.user_group === 'admin'}
-					<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
+					<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
 				{/if}
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
-				<a class="block py-2 px-3 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
 				<button class="ui-btn ui-btn-ghost w-full justify-start" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
 			</nav>
 		</aside>
@@ -134,25 +134,25 @@
 	<div class={sidebarOpen && user.user_name ? 'flex-1 flex flex-col h-full overflow-hidden' : 'w-full flex flex-col h-full overflow-hidden'}>
 		<!-- Header -->
 		{#if user.user_name}
-			<header class="bg-surface-100 dark:bg-surface-800 shadow-sm px-3 py-2 flex items-center gap-3 border-b border-surface-300/30">
+			<header class="bg-surface-100/90 dark:bg-surface-800/90 shadow-sm px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 sm:gap-3 border-b border-surface-300/30 backdrop-blur-sm">
 				{#if !(sidebarOpen && user.user_name)}
-					<button class="ui-btn ui-btn-ghost" onclick={() => sidebarOpen = true}>
-						☰ Menü
+					<button class="ui-btn ui-btn-ghost" onclick={() => sidebarOpen = true} aria-label="Menü öffnen">
+						☰ <span class="hidden sm:inline">Menü</span>
 					</button>
 				{/if}
 				<!-- Desktop -->
 				<a href="/dashboard" class="hidden md:flex items-center gap-2">
                     <div class="logo-container flex-shrink-0 ">
-                        <img src="{logoUrl}" alt="Logo" style="height:40px"/>
-                    </div>
-					<strong class="text-lg uppercase leading-none">{version_title}</strong>
-				</a>
-				<!-- Mobile -->
-				<a href="/dashboard" class="md:hidden flex items-center gap-2">
-                    <div class="logo-container flex-shrink-0 ">
-                        <img src="{logoUrl}" alt="Logo" style="height:50px"/>
+						<img src="{logoUrl}" alt="Logo" style="height:34px"/>
                     </div>
 					<strong class="text-base uppercase leading-none">{version_title}</strong>
+				</a>
+				<!-- Mobile -->
+				<a href="/dashboard" class="md:hidden flex items-center gap-1.5 min-w-0">
+                    <div class="logo-container flex-shrink-0 ">
+						<img src="{logoUrl}" alt="Logo" style="height:30px"/>
+                    </div>
+					<strong class="text-sm uppercase leading-none truncate">{version_title}</strong>
 				</a>
 			</header>
 		{/if}
@@ -164,13 +164,13 @@
 
 		<!-- Footer -->
 		{#if user.user_name}
-			<footer class="footer bg-surface-100 dark:bg-surface-800 px-2 py-1 text-center text-xs text-surface-600 dark:text-surface-300 border-t border-surface-300/30">
-				<div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 leading-tight">
+			<footer class="footer bg-surface-100/90 dark:bg-surface-800/90 px-2 py-1 text-center text-[0.7rem] sm:text-xs text-surface-600 dark:text-surface-300 border-t border-surface-300/30 backdrop-blur-sm">
+				<div class="flex flex-wrap items-center justify-center gap-x-1.5 sm:gap-x-2 gap-y-0.5 leading-tight">
 					<span>{version_title} {version} {version_branch} ({shortFormatGermanDate(version_date)})</span>
 					<span class="hidden md:inline">• {version_description}</span>
 					<span>© {new Date().getFullYear()}</span>
-					<a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a>
-					<a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Dokumentation</a>
+					<a href="https://pakleds-patentoffice.de" target="_blank" rel="noopener noreferrer" class="hidden sm:inline underline hover:text-surface-900 dark:hover:text-white">Pakled's Patent Office</a>
+					<a href="https://calphiko.codeberg.page/libre-stage" target="_blank" class="underline hover:text-surface-900 dark:hover:text-white">Doku</a>
 				</div>
 			</footer>
 		{/if}

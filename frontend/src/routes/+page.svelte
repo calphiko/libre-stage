@@ -64,12 +64,12 @@
   }
 </script>
 
-<div class="ui-page h-full flex justify-center items-center">
-	<div class="space-y-10 text-center flex flex-col items-center w-full">
+<div class="ui-page h-full grid place-items-center">
+	<div class="text-center flex flex-col items-center w-full">
         <!-- Login Box -->
 
-        <div class="grid place-items-center min-h-[80vh]  p-6 w-full">
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 w-full max-w-4xl">
+        <div class="grid place-items-center min-h-[70vh] p-3 sm:p-5 w-full">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-10 w-full max-w-3xl">
                 <!-- Logo -->
                 <div class="logo-container flex-shrink-0 ">
                     <img src="{logoUrl}" alt="Logo" class="logo-img" />
@@ -78,9 +78,9 @@
                 <!-- Login Form -->
                 <form
                     onsubmit={doLogin}
-                    class="ui-card max-w-sm w-full p-8 space-y-6"
+                    class="ui-card max-w-[22rem] w-full p-5 sm:p-6 space-y-4"
                 >
-                    <h2 class="text-3xl font-semibold text-center mb-8 text-on-surface">Login</h2>
+                    <h2 class="text-2xl font-semibold text-center mb-3 sm:mb-4 text-on-surface">Login</h2>
 
                     <div class="form-field">
                         <label for="username" class="form-label text-on-surface-variant">Benutzername</label>
@@ -109,14 +109,14 @@
                     <!-- Modern-style Primary Button -->
                     <button
                         type="submit"
-                        class="ui-btn ui-btn-primary w-full h-12 text-lg tracking-wide"
+                        class="ui-btn ui-btn-primary w-full h-10 text-base tracking-wide"
                         disabled={loading}
                     >
                         {loading ? '...' : 'Einloggen'}
                     </button>
 
                     {#if error}
-                        <div class="p-3 mt-3 rounded-lg bg-error-100 text-error-900 text-center">
+                        <div class="p-2 mt-1 rounded-md bg-error-100 text-error-900 text-center text-sm">
                             {error}
                         </div>
                     {/if}
@@ -134,18 +134,18 @@
 	}
 
 	.logo-img {
-		width: 320px;
-		height: 250px;
+    width: 260px;
+    height: 200px;
 		object-fit: contain;
 	}
 
 	@media (max-width: 1023px) {
 		.logo-container {
-			margin-bottom: 1rem;
+      margin-bottom: 0.35rem;
 		}
 		.logo-img {
-			width: 240px;
-			height: 190px;
+      width: 190px;
+      height: 145px;
 			object-fit: contain;
 		}
 	}
