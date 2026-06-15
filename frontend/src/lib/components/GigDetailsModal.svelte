@@ -521,7 +521,7 @@
               </div>
               <div class="card variant-ghost-warning p-3 text-center rounded-lg">
                 <div class="text-2xl font-bold text-warning-500">{statistics.skipped_count}</div>
-                <div class="text-xs text-on-surface-variant">Uebersprungen</div>
+                <div class="text-xs text-on-surface-variant">Übersprungen</div>
               </div>
               <div class="card variant-ghost-surface p-3 text-center rounded-lg">
                 <div class="text-2xl font-bold">{statistics.inserted_count}</div>
@@ -647,12 +647,12 @@
               {/each}
             {:else}
               <div class="card variant-ghost-surface p-6 rounded-lg text-center">
-                <p class="text-sm text-on-surface-variant">Noch keine Setliste fuer diesen Gig vorhanden.</p>
+                <p class="text-sm text-on-surface-variant">Noch keine Setliste für diesen Gig vorhanden.</p>
               </div>
             {/if}
           </div>
         {:else}
-          <p class="text-sm text-on-surface-variant">Keine Statistikdaten verfuegbar.</p>
+          <p class="text-sm text-on-surface-variant">Keine Statistikdaten verfügbar.</p>
         {/if}
       </div>
     {/if}

@@ -304,7 +304,7 @@
           {#if tabSet === 0}
             {#if upcomingRehearsals.length === 0}
               <div class="rounded-xl bg-success-100 text-success-900 p-4 mt-6 shadow text-center">
-                Keine bevorstehenden Proben geplant. 🎉
+                Keine bevorstehenden Proben geplant.
               </div>
             {:else}
               <div class="mt-4">
