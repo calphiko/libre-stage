@@ -22,7 +22,7 @@
   import { shortFormatGermanDate } from '$lib/common.js';
   import { isDarkMode } from '$lib/themeStore';
 
-    let { survey, users = [], user = {}, updateFeedback } = $props();
+    let { survey, users = [], user = {}, updateFeedback, showHeader = true } = $props();
 
   let hoveredFieldId = $state(null);
 
@@ -166,6 +166,7 @@
 
 <div class="space-y-4 relative">
 
+  {#if showHeader}
   <div>
     <h3 class="text-xl font-semibold text-on-surface">
       {survey.rf_survey}
@@ -197,6 +198,7 @@
       am {shortFormatGermanDate(survey.release_date)}
     </p>
   </div>
+  {/if}
 
   <div class="hidden md:block w-full ">
   <div class="overflow-x-auto rounded pb-4" style="scrollbar-width: thick; scrollbar-color: #3b82f6 #e5e7eb;">
