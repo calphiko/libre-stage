@@ -65,6 +65,7 @@
   let statsError = $state('');
   let statistics = $state(null);
   let genrePalette = $state({});
+  let liveMode = $state(liveModeStatus ? { ...liveModeStatus } : null);
 
   const feedbackEmoji = { 3: '😍', 2: '😊', 1: '😐' };
 
@@ -190,9 +191,19 @@
     closeAndRun(() => onOpenLiveMode(gig.id));
   }
 
-  function handleUnlockLiveMode() {
+  async function handleUnlockLiveMode() {
     if (!gig?.id) return;
-    onUnlockLiveMode(gig.id);
+    try {
+      await onUnlockLiveMode(gig.id);
+      if (liveMode) {
+        liveMode = { ...liveMode, available: true, forced: true };
+      } else {
+        liveMode = { available: true, forced: true, can_force: false };
+      }
+      showSuccess('Live Mode wurde entsperrt');
+    } catch (e) {
+      showError(e.message ?? 'Live Mode konnte nicht entsperrt werden');
+    }
   }
 
   async function exportSchedulePdf() {
@@ -355,6 +366,19 @@
             <button class="btn variant-outline-primary btn-sm w-full justify-start border border-primary-500" onclick={exportSchedulePdf}>Ablaufplan drucken</button>
             {#if canEdit}
               <button class="btn variant-filled-primary btn-sm w-full justify-start" onclick={handleEditSetlist}>Setliste bearbeiten</button>
+
+              {#if liveMode}
+                {#if liveMode.available}
+                  <button class="btn variant-filled-secondary btn-sm w-full justify-start" onclick={handleOpenLiveMode}>
+                    Live Mode
+                    {#if liveMode.forced}
+                      <span class="badge variant-soft-warning ml-1 text-xs">Entsperrt</span>
+                    {/if}
+                  </button>
+                {:else if liveMode.can_force}
+                  <button class="btn variant-soft-warning btn-sm w-full justify-start" onclick={handleUnlockLiveMode}>Live Mode entsperren</button>
+                {/if}
+              {/if}
             {/if}
           </div>
         </div>
@@ -426,21 +450,21 @@
             <div class="flex flex-wrap gap-2">
               <button class="btn variant-filled-primary btn-sm" onclick={handleEditSetlist}>Setliste bearbeiten</button>
 
-              {#if liveModeStatus}
-                {#if liveModeStatus.available}
+              {#if liveMode}
+                {#if liveMode.available}
                   <button class="btn variant-filled-secondary btn-sm" onclick={handleOpenLiveMode}>
                     Live Mode
-                    {#if liveModeStatus.forced}
+                    {#if liveMode.forced}
                       <span class="badge variant-soft-warning ml-1 text-xs">Entsperrt</span>
                     {/if}
                   </button>
-                {:else if liveModeStatus.can_force}
+                {:else if liveMode.can_force}
                   <button class="btn variant-soft-warning btn-sm" onclick={handleUnlockLiveMode}>Live Mode entsperren</button>
                 {/if}
               {/if}
 
-              {#if isAdmin}
-                <button class="btn variant-filled-error btn-sm" onclick={handleDelete}>Loeschen</button>
+              {#if canEdit}
+                <button class="btn variant-filled-error btn-sm" onclick={handleDelete}>Löschen</button>
               {/if}
             </div>
           {/if}
@@ -641,7 +665,7 @@
       </button>
       <button type="button" class="btn variant-outline-secondary border border-secondary-500" onclick={cancelEdit}>Abbrechen</button>
     {/if}
-    <button class="btn variant-ghost" onclick={() => modalState.close()}>Schliessen</button>
+    <button class="btn variant-ghost" onclick={() => modalState.close()}>Schließen</button>
   </footer>
 </div>
 
