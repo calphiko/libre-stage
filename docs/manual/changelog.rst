@@ -3,6 +3,28 @@
 Änderungsprotokoll
 ==================
 
+0.5.17 (2026-06-16)
+-------------------
+
+Added
+~~~~~
+
+* Song-Details: Neuer Edit-Mode im ``SongDetailsModal`` mit Speichern/Abbrechen direkt im Modal.
+* Song-Details: Manueller Button ``Metadaten abrufen`` im Edit-Mode; uebernimmt Dauer, Komponist, Texter und YouTube-Link ueber den bestehenden Scraper.
+* Proben: Neues ``RehearsalDetailsModal`` fuer eine detailreiche Probe-Ansicht; ``RehearsalCard`` oeffnet Details nun modal.
+* Umfragen: Neues ``SurveyDetailsModal`` fuer die kompakte Detailansicht einzelner Umfragen.
+* Umfragen: Bestehende Umfragen koennen um neue Antwortoptionen erweitert werden.
+
+Changed
+~~~~~~~
+
+* Live-Mode: Songs koennen gezielt vor einer bestehenden Position in die Setliste eingefuegt werden.
+* Live-Mode: Unlock-Handling und zugehoerige UI-Rueckmeldungen verbessert.
+* Umfragen/Terminfindung: Layout und Responsiveness in ``SurveyDetailsModal`` und ``TerminfindungView`` optimiert.
+* Umfragen: Deutsche Texte im ``SurveyDetailsModal`` sprachlich bereinigt.
+* Gigs: Modal-Handling in der Gig-Verwaltung vereinfacht und ungenutzte Funktionen entfernt.
+* Chore: Projektversion auf ``0.5.17`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+
 0.5.16 (2026-06-14)
 -------------------
 
