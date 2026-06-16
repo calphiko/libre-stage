@@ -92,9 +92,9 @@
     try {
       details = await appendSurveyFields(null, survey.id, [{ field_text: value }]);
       newOption = '';
-      optionSuccess = 'Antwortoption erfolgreich hinzugefuegt.';
+      optionSuccess = 'Antwortoption erfolgreich hinzugefügt.';
     } catch (e) {
-      optionError = e?.message || 'Antwortoption konnte nicht hinzugefuegt werden.';
+      optionError = e?.message || 'Antwortoption konnte nicht hinzugefügt werden.';
     } finally {
       addingOption = false;
     }
@@ -132,7 +132,7 @@
         {#if !survey.closed}
           <div class="space-y-2 border border-outline-variant rounded-md p-2">
             <label class="text-xs text-on-surface-variant" for="add-survey-option">
-              Neue Antwortoption hinzufuegen
+              Neue Antwortoption hinzufügen
             </label>
             <div class="flex flex-col sm:flex-row gap-2">
               <input
@@ -148,10 +148,10 @@
                 class="btn btn-xs variant-filled-primary"
                 onclick={handleAddOption}
                 disabled={addingOption}
-              >{addingOption ? 'Speichere...' : 'Hinzufuegen'}</button>
+              >{addingOption ? 'Speichere...' : 'Hinzufügen'}</button>
             </div>
             <p class="text-[11px] text-on-surface-variant">
-              Vorhandene Antwortoptionen koennen nicht geloescht werden.
+              Vorhandene Antwortoptionen können nicht gelöscht werden.
             </p>
             {#if optionError}
               <p class="text-xs text-error-500">{optionError}</p>
@@ -172,7 +172,7 @@
         {/if}
         {#if canManageActive || canDeleteClosed}
           <button type="button" class="btn btn-xs variant-filled-error" onclick={handleDelete}>
-            Loeschen
+            Löschen
           </button>
         {/if}
         </div>
