@@ -311,7 +311,7 @@ import NewPollForm from './NewPollForm.svelte';
               <ul class="list-disc list-inside space-y-1 text-sm">
                 <li>Der <strong>Ersteller</strong> ist für die Auswertung verantwortlich</li>
                 <li>Vorhandene Antwortoptionen können <strong>nicht geändert</strong> werden (Integrität!)</li>
-                <li>Neue Antwortmöglichkeiten hinzufügen? → Andere Bandmitglieder informieren!</li>
+                <li>Neue Antwortmöglichkeiten können im Tab "Administration" hinzugefügt werden - bitte informiere danach die Bandmitglieder.</li>
                 <li>Nach Auswertung: Umfrage <strong>archivieren</strong>, damit sie in "Abgeschlossene Umfragen" verschoben wird</li>
               </ul>
             </div>
@@ -369,7 +369,7 @@ import NewPollForm from './NewPollForm.svelte';
             </li>
             <li class="flex gap-2">
               <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>
-              <span>Vorhandene Antwortoptionen können <strong>nicht bearbeitet oder gelöscht</strong> werden (Schutz der Integrität bereits abgegebener Stimmen)</span>
+              <span>Vorhandene Antwortoptionen können <strong>nicht bearbeitet oder gelöscht</strong> werden (Schutz der Integrität bereits abgegebener Stimmen). Neue Optionen dürfen ergänzt werden.</span>
             </li>
             <li class="flex gap-2">
               <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>

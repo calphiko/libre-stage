@@ -18,7 +18,7 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { getSurveyDetails } from '$lib/api.js';
+  import { appendSurveyFields, getSurveyDetails } from '$lib/api.js';
   import { shortFormatGermanDate } from '$lib/common.js';
   import { modalState } from '$lib/modalState.js';
 
@@ -38,6 +38,10 @@
   let details = $state(null);
   let loading = $state(true);
   let tabSet = $state(0);
+  let newOption = $state('');
+  let addingOption = $state(false);
+  let optionError = $state('');
+  let optionSuccess = $state('');
 
   let userById = $derived(new Map(users.map(u => [u.id, u])));
   let creatorName = $derived(userById.get(survey.user_created)?.clear_name ?? '');
@@ -66,6 +70,34 @@
 
   function handleReminder() {
     onreminder?.({ id: survey.id });
+  }
+
+  async function handleAddOption() {
+    optionError = '';
+    optionSuccess = '';
+
+    const value = (newOption || '').trim();
+    if (!value) {
+      optionError = 'Bitte eine Antwortoption eingeben.';
+      return;
+    }
+
+    const existingFieldTexts = (details?.fields ?? []).map((field) => (field.field_text || '').trim().toLowerCase());
+    if (existingFieldTexts.includes(value.toLowerCase())) {
+      optionError = 'Diese Antwortoption existiert bereits.';
+      return;
+    }
+
+    addingOption = true;
+    try {
+      details = await appendSurveyFields(null, survey.id, [{ field_text: value }]);
+      newOption = '';
+      optionSuccess = 'Antwortoption erfolgreich hinzugefuegt.';
+    } catch (e) {
+      optionError = e?.message || 'Antwortoption konnte nicht hinzugefuegt werden.';
+    } finally {
+      addingOption = false;
+    }
   }
 </script>
 
@@ -97,6 +129,38 @@
     {#if tabSet === 1 && isOwner}
       <div class="border border-outline-variant rounded-lg p-3 space-y-2">
         <p class="text-xs text-on-surface-variant">Verwaltung dieser Abstimmung</p>
+        {#if !survey.closed}
+          <div class="space-y-2 border border-outline-variant rounded-md p-2">
+            <label class="text-xs text-on-surface-variant" for="add-survey-option">
+              Neue Antwortoption hinzufuegen
+            </label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                id="add-survey-option"
+                class="input flex-1"
+                type={details?.kind_of_survey === 'Terminfindung' ? 'datetime-local' : 'text'}
+                bind:value={newOption}
+                placeholder={details?.kind_of_survey === 'Terminfindung' ? 'Neuer Termin' : 'Neue Option'}
+                onkeydown={(e) => e.key === 'Enter' && handleAddOption()}
+              />
+              <button
+                type="button"
+                class="btn btn-xs variant-filled-primary"
+                onclick={handleAddOption}
+                disabled={addingOption}
+              >{addingOption ? 'Speichere...' : 'Hinzufuegen'}</button>
+            </div>
+            <p class="text-[11px] text-on-surface-variant">
+              Vorhandene Antwortoptionen koennen nicht geloescht werden.
+            </p>
+            {#if optionError}
+              <p class="text-xs text-error-500">{optionError}</p>
+            {/if}
+            {#if optionSuccess}
+              <p class="text-xs text-success-500">{optionSuccess}</p>
+            {/if}
+          </div>
+        {/if}
         <div class="flex flex-col items-stretch sm:items-start gap-2">
         {#if canManageActive}
           <button type="button" class="btn btn-xs variant-filled-warning" onclick={handleReminder}>

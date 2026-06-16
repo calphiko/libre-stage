@@ -519,3 +519,88 @@ def test_close_survey(client, auth_headers, auth_headers2, wrong_auth_header, db
     data = response.json()[0]
     assert data["closed"] is True
 
+
+def test_append_survey_fields(client, auth_headers, auth_headers2, wrong_auth_header, db_session):
+    """Admin endpoint allows adding options but never deleting existing ones."""
+    owner = User(
+        user_name="testuserix",
+        user_pw="hashed_pw",
+        user_group="admin",
+        email="test@example.com",
+        clear_name="Test User",
+        musician=True,
+        status="active"
+    )
+    db_session.add(owner)
+    db_session.commit()
+    db_session.refresh(owner)
+
+    survey = Surveys(
+        kind_of_survey="Meinungsumfrage",
+        rf_survey="Neue Optionen testen",
+        released=True,
+        closed=False,
+        user_created=owner.id,
+        release_date=datetime.now(),
+        datum=datetime.now()
+    )
+    db_session.add(survey)
+    db_session.commit()
+    db_session.refresh(survey)
+
+    existing_field = SurveyFields(id_survey=survey.id, field_text="Option A")
+    db_session.add(existing_field)
+    db_session.commit()
+
+    # Auth user missing in DB
+    response = client.post(
+        f"/surveys/{survey.id}/fields",
+        json={"fields": [{"field_text": "Option B"}]},
+        headers=wrong_auth_header,
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Your User is not found"
+
+    # Non-owner/non-admin must not edit
+    response = client.post(
+        f"/surveys/{survey.id}/fields",
+        json={"fields": [{"field_text": "Option B"}]},
+        headers=auth_headers2,
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You do not have permission to edit this survey"
+
+    # Owner can add new option (duplicate ignored)
+    response = client.post(
+        f"/surveys/{survey.id}/fields",
+        json={"fields": [{"field_text": "Option B"}, {"field_text": " option a "}]},
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    field_texts = [field["field_text"] for field in data["fields"]]
+    assert "Option A" in field_texts
+    assert "Option B" in field_texts
+    assert len(data["fields"]) == 2
+
+    # Duplicate-only payload should fail
+    response = client.post(
+        f"/surveys/{survey.id}/fields",
+        json={"fields": [{"field_text": "option a"}]},
+        headers=auth_headers,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "No new answer options were added"
+
+    # Closed surveys are immutable
+    survey.closed = True
+    db_session.commit()
+    response = client.post(
+        f"/surveys/{survey.id}/fields",
+        json={"fields": [{"field_text": "Option C"}]},
+        headers=auth_headers,
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Closed surveys cannot be edited"
+
+

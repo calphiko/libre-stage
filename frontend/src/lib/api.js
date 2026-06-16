@@ -974,6 +974,23 @@ export async function archiveSurvey(token, surveyId) {
     return res.json();
 }
 
+export async function appendSurveyFields(token, surveyId, fields) {
+    const response = await fetchWithAuth(`${API_URL}/surveys/${surveyId}/fields`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ fields })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail ?? 'Failed to append survey fields');
+    }
+
+    return response.json();
+}
+
 export async function getVersionJson() {
     const res = await fetch(`${API_URL}/version`, {
         method: 'GET',
