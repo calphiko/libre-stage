@@ -22,7 +22,7 @@
   import { getSongFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
   import {
-    getSong,
+    getSongDetails,
     getUser,
     updateSong,
     deleteSong,
@@ -168,7 +168,7 @@
   onMount(async () => {
     try {
       const [songData, userData, singerData, userList, rehearsalList] = await Promise.all([
-        getSong(null, songId),
+        getSongDetails(songId),
         getUser(),
         getSingers(),
         getUserList(),
