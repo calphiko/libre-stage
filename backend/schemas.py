@@ -812,6 +812,24 @@ class SurveyIn(BaseModel):
     fields: List[SurveyFieldIn]  # Nur die Feldtexte beim Anlegen
 
 
+class SurveyFieldAppendIn(BaseModel):
+    field_text: str = Field(..., min_length=1)
+
+    @field_validator("field_text", mode="before")
+    @classmethod
+    def strip_field_text(cls, value):
+        if not isinstance(value, str):
+            return value
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field_text must not be empty")
+        return stripped
+
+
+class SurveyFieldsAppendIn(BaseModel):
+    fields: List[SurveyFieldAppendIn] = Field(..., min_length=1)
+
+
 class PublicSongHistogram(BaseModel):
     genre: str
     count: int

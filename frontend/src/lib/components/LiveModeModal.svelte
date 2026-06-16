@@ -19,7 +19,7 @@
 <script>
   import { modalState } from '$lib/modalState.js';
 import { onMount, onDestroy } from 'svelte';
-	import { getGigLiveMode, updateSongLiveMode, insertSongAfter, getSongs } from '$lib/api.js';
+	import { getGigLiveMode, updateSongLiveMode, insertSongBefore, getSongs } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import SetlistOverviewPanel from '$lib/components/SetlistOverviewPanel.svelte';
 
@@ -39,7 +39,6 @@ import { onMount, onDestroy } from 'svelte';
   // Song einfügen
   let availableSongs = $state([]);
   let searchTerm = $state('');
-  let selectedSongToInsert = $state(null);
   let showInsertSection = $state(false);
 
   // Touch/Swipe handling
@@ -325,15 +324,13 @@ import { onMount, onDestroy } from 'svelte';
     }
   }
 
-  async function insertSong() {
-    if (!selectedSongToInsert || !currentSong) return;
+  async function insertSong(songToInsert) {
+    if (!songToInsert || !currentSong) return;
 
     try {
-      const currentSetSongId = currentSong.id; // Merke die aktuelle SetSong ID
+      const newSetSong = await insertSongBefore(null, gigId, currentSong.id, songToInsert.id);
 
-      const newSetSong = await insertSongAfter(null, gigId, currentSong.id, selectedSongToInsert.id);
-
-      showSuccess(`"${selectedSongToInsert.title}" wurde nach dem aktuellen Song eingefügt`);
+      showSuccess(`"${songToInsert.title}" wurde vor dem aktuellen Song eingefügt`);
 
       // Reload Gig-Daten OHNE Auto-Jump
       await loadGigData(true);
@@ -343,17 +340,10 @@ import { onMount, onDestroy } from 'svelte';
       const newIndex = allSongs.findIndex(s => s.id === newSetSong.id);
       if (newIndex !== -1) {
         currentIndex = newIndex;
-      } else {
-        // Fallback: Finde den ursprünglichen Song und gehe eins weiter
-        const originalIndex = allSongs.findIndex(s => s.id === currentSetSongId);
-        if (originalIndex !== -1 && originalIndex < allSongs.length - 1) {
-          currentIndex = originalIndex + 1;
-        }
       }
 
       // Zurücksetzen
       searchTerm = '';
-      selectedSongToInsert = null;
       showInsertSection = false;
 
     } catch (e) {
@@ -767,7 +757,7 @@ import { onMount, onDestroy } from 'svelte';
       <div class="card variant-filled-surface max-w-md w-full p-4 md:p-5 shadow-2xl border border-surface-500 relative max-h-[85vh] flex flex-col no-swipe">
         <button
           class="absolute top-3 right-3 btn-icon btn-icon-sm variant-ghost-surface hover:variant-filled"
-          onclick={() => { showInsertSection = false; searchTerm = ''; selectedSongToInsert = null; }}
+          onclick={() => { showInsertSection = false; searchTerm = ''; }}
           aria-label="Schließen"
         >
           ✕
@@ -795,8 +785,8 @@ import { onMount, onDestroy } from 'svelte';
             <div class="overflow-y-auto space-y-1 pr-1 scrollbar-thin flex-1 min-h-0">
               {#each filteredSongs as song}
                 <button
-                  class="w-full text-left p-2 rounded-lg transition-all border {selectedSongToInsert?.id === song.id ? 'bg-primary-500 border-primary-600 text-white shadow-md' : 'bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 border-transparent text-white'}"
-                  onclick={() => { selectedSongToInsert = song }}
+                  class="w-full text-left p-2 rounded-lg transition-all border bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 border-transparent text-white"
+                  onclick={() => insertSong(song)}
                 >
                   <div class="font-bold text-xs md:text-sm">{song.title}</div>
                   <div class="text-[10px] md:text-xs opacity-80">{song.interpret}</div>
@@ -809,14 +799,6 @@ import { onMount, onDestroy } from 'svelte';
             </div>
           {/if}
 
-          {#if selectedSongToInsert}
-            <button
-              class="btn btn-sm variant-filled-primary w-full shadow-md font-semibold mt-2 transition-all flex items-center justify-center gap-1.5 py-2 text-white"
-              onclick={insertSong}
-            >
-              <span>➕ "{selectedSongToInsert.title}" einfügen</span>
-            </button>
-          {/if}
         </div>
       </div>
     </div>

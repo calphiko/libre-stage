@@ -20,20 +20,17 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getGigs, updateGig, getSetlistPDF, addNewGig, delGig, getGigSetlistAvailability, getGemaListFile, logout as apiLogout, getLiveModeAvailability, getLiveModeAvailabilityBatch, getGigSchedule } from '$lib/api.js';
-  import { formatTime } from '$lib/common.js';
-  import { gigFields, getGigFieldsDetails } from '$lib/songFields.js';
-  import { appConfig } from '$lib/appConfig.js';
+  import { getUser, getGigs, addNewGig, delGig, getLiveModeAvailability, getLiveModeAvailabilityBatch } from '$lib/api.js';
+  import { gigFields } from '$lib/songFields.js';
   import { gigIdForEditor } from '$lib/stores.js';
 
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import LiveModeModal from '$lib/components/LiveModeModal.svelte';
+  import GigDetailsModal from '$lib/components/GigDetailsModal.svelte';
   import SeasonStatsModal from './SeasonStatsModal.svelte';
-  import GigStatsModal from './GigStatsModal.svelte';
-  import GigScheduleModal from './GigScheduleModal.svelte';
 
-  const { showError, showSuccess, showWarning } = createMessageHelpers();
+  const { showError, showSuccess } = createMessageHelpers();
 
   import NewGigForm from './NewGigForm.svelte';
 
@@ -46,20 +43,7 @@
   let jahr = $state('');
   let error = $state('');
   let showHelp = $state(false);
-  let expandedGigId = $state(null);
-  let editGigId = $state(null);
-    let liveModeStatus = $state({}); // Key: gigId, Value: { available, can_force, forced, reason }
-  let editBuffer = $state({});
-  let scheduleByGigId = $state({});
-  let scheduleLoadingByGigId = $state({});
-
-  let gigFieldsDetails = $derived(getGigFieldsDetails($appConfig));
-
-  let forceUnlocked = $state(false);
-
-  async function checkLiveMode() {
-    liveModeStatus = await getLiveModeAvailability(null, gigId, forceUnlocked);
-  }
+  let liveModeStatus = $state({}); // Key: gigId, Value: { available, can_force, forced, reason }
 
   onMount(async () => {
     try {
@@ -137,62 +121,6 @@
       showError(e.message ?? 'Fehler beim Entsperren des Live-Modus');
     }
   }
-
-
-  async function getGemaList(gig) {
-      const setlistAvailability = await getGigSetlistAvailability(null, gig.id);
-      if (!setlistAvailability.setlist_available) {
-            showError("Für diesen Gig ist keine Setliste verfügbar.");
-            return;
-      }
-
-      try {
-        const blob = await getGemaListFile(null, gig.id);
-        const url = URL.createObjectURL(blob);
-
-        // iOS-kompatibel: Link erstellen und klicken
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Liedfolge_${gig.name}_${formatDateDE(gig.datum)}.xlsx`;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-
-      } catch (e) {
-        showError(e.message ?? "Setliste drucken fehlgeschlagen");
-      }
-  }
-
-
-  async function getSetlist(gig, design = 'dark') {
-  const setlistAvailability = await getGigSetlistAvailability(null, gig.id);
-  if (!setlistAvailability.setlist_available) {
-        showError("Für diesen Gig ist keine Setliste verfügbar.");
-        return;
-  }
-  try {
-    const blob = await getSetlistPDF(null, gig.id, design);
-    const url = URL.createObjectURL(blob);
-
-    // iOS-kompatibel: Link erstellen und klicken
-    const a = document.createElement('a');
-    a.href = url;
-    const suffix = design === 'print' ? '_druckfreundlich' : '';
-    a.download = `setlist_${gig.name}_${formatDateDE(gig.datum)}${suffix}.pdf`;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  } catch (e) {
-    showError(e.message ?? "Setliste drucken fehlgeschlagen");
-  }
-}
-
   async function onJahrChange() {
     try {
       gigs = await getGigs(null, jahr);
@@ -213,50 +141,6 @@
     const dt = new Date(isoString);
     if (isNaN(dt)) return isoString;
     return dt.toLocaleDateString('de-DE');
-  }
-
-  async function loadScheduleForGig(gigId) {
-    if (scheduleByGigId[gigId] || scheduleLoadingByGigId[gigId]) return;
-    scheduleLoadingByGigId[gigId] = true;
-    scheduleLoadingByGigId = { ...scheduleLoadingByGigId };
-
-    try {
-      scheduleByGigId[gigId] = await getGigSchedule(null, gigId);
-      scheduleByGigId = { ...scheduleByGigId };
-    } catch (e) {
-      showError(e.message ?? 'Ablaufplan konnte nicht geladen werden');
-    } finally {
-      scheduleLoadingByGigId[gigId] = false;
-      scheduleLoadingByGigId = { ...scheduleLoadingByGigId };
-    }
-  }
-
-  function handleScheduleUpdated(gigId, scheduleData) {
-    scheduleByGigId[gigId] = scheduleData;
-    scheduleByGigId = { ...scheduleByGigId };
-  }
-
-  async function openScheduleModal(gig) {
-    await loadScheduleForGig(gig.id);
-    modalState.trigger({
-      component: GigScheduleModal,
-      meta: {
-        gig,
-        canEdit,
-        scheduleData: scheduleByGigId[gig.id] ?? null,
-        onScheduleUpdated: (data) => handleScheduleUpdated(gig.id, data)
-      },
-      backdropClasses: 'bg-surface-500/50 backdrop-blur-sm'
-    });
-  }
-
-  async function toggleExpand(id) {
-    if (expandedGigId === id) {
-      expandedGigId = null;
-      return;
-    }
-
-    expandedGigId = id;
   }
 
   let canEdit = $derived(user?.user_group === 'editor' || user?.user_group === 'admin');
@@ -281,56 +165,9 @@
     }
   }
 
-  function normalizeTimeWithSeconds(value) {
-    if (typeof value !== 'string') return value;
-    const trimmed = value.trim();
-    if (!trimmed) return '';
-
-    const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-    if (!match) return value;
-
-    const hh = match[1].padStart(2, '0');
-    const mm = match[2];
-    const ss = match[3] ?? '00';
-    return `${hh}:${mm}:${ss}`;
-  }
-
-  function normalizeGigTimeFields(record) {
-    const normalized = { ...record };
-    for (const field of gigFieldsDetails) {
-      if (field.type === 'time' && normalized[field.key] != null) {
-        normalized[field.key] = normalizeTimeWithSeconds(normalized[field.key]);
-      }
-    }
-    return normalized;
-  }
-
-
-  function startEdit(gig) {
-    editGigId = gig.id;
-    // Time-Inputs mit Schrittweite 1 erwarten HH:MM:SS fuer konsistente Anzeige.
-    editBuffer = normalizeGigTimeFields(gig);
-  }
-
-  function cancelEdit() {
-    editGigId = null;
-    editBuffer = {};
-  }
-
-  async function saveEdit(gig) {
-    try {
-      // OPTIONAL: Validierung vor Absenden
-      const payload = normalizeGigTimeFields(editBuffer);
-      // console.log(payload);
-      await updateGig(gig.id, payload, null);
-      // Nach dem Patch neues Song-Objekt im lokalen Array ersetzen:
-      gigs = gigs.map(g => g.id === gig.id ? { ...payload, id: gig.id } : g);
-      // Bearbeiten-Modus beenden:
-      editGigId = null;
-      editBuffer = {};
-    } catch (e) {
-      showError(e.message ?? "Update fehlgeschlagen");
-    }
+  function handleGigUpdated(updatedGig) {
+    if (!updatedGig?.id) return;
+    gigs = gigs.map((g) => (g.id === updatedGig.id ? { ...g, ...updatedGig } : g));
   }
 
   async function addGig(gig) {
@@ -361,6 +198,23 @@
             showError(e.message ?? "Löschen fehlgeschlagen");
           }
         }
+      }
+    });
+  }
+
+  function openGigDetailsModal(gig) {
+    modalState.trigger({
+      component: GigDetailsModal,
+      meta: {
+        gig,
+        canEdit,
+        isAdmin,
+        liveModeStatus: liveModeStatus[gig.id] ?? null,
+        onGigUpdated: handleGigUpdated,
+        onDeleteGig: (gigToDelete) => deleteGig(gigToDelete.id, gigToDelete.name),
+        onEditSetlist: gotoSetlistEditor,
+        onOpenLiveMode: openLiveModeModal,
+        onUnlockLiveMode: unlockLiveMode
       }
     });
   }
@@ -431,9 +285,10 @@
             <h4 class="font-semibold text-primary-500 mb-2">📋 Hauptfunktionen</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li><strong>Neuen Gig hinzufügen:</strong> Klicke auf "Neuen Gig hinzufügen" (nur Editoren/Admins)</li>
-              <li><strong>Gig-Details ansehen:</strong> Klicke auf einen Gig, um Details aufzuklappen</li>
-              <li><strong>Gig bearbeiten:</strong> Im Detail-Bereich auf "Bearbeiten" klicken (nur Editoren/Admins)</li>
+              <li><strong>Gig-Details ansehen:</strong> Klicke auf einen Gig, um das Detail-Modal zu oeffnen</li>
+              <li><strong>Gig bearbeiten:</strong> Im Detail-Modal auf "Stammdaten bearbeiten" klicken (nur Editoren/Admins)</li>
               <li><strong>Setliste bearbeiten:</strong> Klicke auf "Setliste bearbeiten" (wenn vorhanden)</li>
+              <li><strong>Ablaufplan:</strong> Im Gig-Detail-Modal den Tab "Ablaufplan" oeffnen</li>
             </ul>
           </div>
 
@@ -526,7 +381,7 @@
                 class="transition cursor-pointer {isPast(gig.datum)
                   ? 'opacity-50 dark:opacity-40 hover:opacity-80 dark:hover:opacity-60 bg-surface-50 dark:bg-surface-900'
                   : 'dark:hover:bg-surface-700 hover:bg-surface-300'}"
-                onclick={() => toggleExpand(gig.id)}
+                onclick={() => openGigDetailsModal(gig)}
               >
                 <td class="py-2 px-3 text-center">
                   {#if isPast(gig.datum)}
@@ -541,195 +396,6 @@
                   {/if}
                 {/each}
               </tr>
-
-              {#if expandedGigId === gig.id}
-                <tr>
-                  <td colspan={gigFields.length + 1} class="bg-surface-1 border-t border-outline-variant">
-                    <div class="p-6 mt-1 rounded-xl shadow-lg bg-surface-100 dark:bg-surface-800 border border-outline-variant">
-                      <div class="flex justify-between items-start mb-4">
-                        <h4 class="h4 font-semibold text-on-surface">
-                          Details zu {gig.name}
-                        </h4>
-                        <button
-                          class="btn btn-sm variant-ghost"
-                          onclick={() => expandedGigId = null}
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {#if editGigId === gig.id}
-                        <!-- Bearbeiten-Modus -->
-                        <form class="space-y-4" onsubmit={() => saveEdit(gig)}>
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {#each gigFieldsDetails as f}
-                              <div class="mb-2">
-                                <label class="block">
-                                  <span class="text-sm font-medium text-on-surface">
-                                    {f.label}
-                                    {#if f.required}
-                                      <span class="text-error-500">*</span>
-                                    {/if}
-                                  </span>
-                                  {#if f.type === 'option' && Array.isArray(f.options)}
-                                    <select
-                                      class="input mt-1 w-full"
-                                      bind:value={editBuffer[f.key]}
-                                      required={f.required}
-                                    >
-                                      {#each f.options as o}
-                                        <option value={o.key}>{o.label}</option>
-                                      {/each}
-                                    </select>
-                                  {:else if f.type === 'date'}
-                                    <input
-                                      type="date"
-                                      class="input mt-1 w-full"
-                                      bind:value={editBuffer[f.key]}
-                                      required={f.required}
-                                    />
-                                  {:else if f.type === 'time'}
-                                    <input
-                                      type="time"
-                                      class="input mt-1 w-full"
-                                      step="1"
-                                      bind:value={editBuffer[f.key]}
-                                      required={f.required}
-                                    />
-                                  {:else}
-                                    <input
-                                      type="text"
-                                      class="input mt-1 w-full"
-                                      bind:value={editBuffer[f.key]}
-                                      placeholder={f.label}
-                                      required={f.required}
-                                    />
-                                  {/if}
-                                </label>
-                              </div>
-                            {/each}
-                          </div>
-                          <div class="flex gap-2 mt-4 pt-4 border-t border-surface-300">
-                            <button type="submit" class="btn variant-filled-success btn-sm">
-                              Speichern
-                            </button>
-                            <button
-                              type="button"
-                              class="btn variant-outline-secondary btn-sm"
-                              onclick={cancelEdit}
-                            >
-                              Abbrechen
-                            </button>
-                          </div>
-                        </form>
-                      {:else}
-                        <!-- Detail-Ansicht -->
-                        <ul class="divide-y divide-surface-300 mb-4">
-                          {#each gigFieldsDetails as f}
-                            <li class="flex justify-between py-3">
-                              <span class="font-semibold text-on-surface">{f.label}</span>
-                              <span class="text-on-surface-variant">
-                                {#if f.key === 'datum' && gig[f.key]}
-                                  {formatDateDE(gig[f.key])}
-                                {:else if f.type === 'time' && gig[f.key]}
-                                  {formatTime(gig[f.key])} Uhr
-                                {:else}
-                                  {gig[f.key] ?? '–'}
-                                {/if}
-                              </span>
-                            </li>
-                          {/each}
-                        </ul>
-
-                        <!-- Button-Gruppen -->
-                        <div class="space-y-2">
-                          {#if canEdit}
-                            <div class="flex flex-wrap gap-2">
-                              <button
-                                class="btn variant-filled-primary btn-sm"
-                                onclick={() => startEdit(gig)}
-                              >
-                                Stammdaten bearbeiten
-                              </button>
-                              <button
-                                onclick={() => gotoSetlistEditor(gig.id)}
-                                class="btn variant-filled-primary btn-sm"
-                              >
-                                Setliste bearbeiten
-                              </button>
-                              <button
-                                type="button"
-                                onclick={() => openScheduleModal(gig)}
-                                class="btn variant-filled-primary btn-sm"
-                              >
-                                📋 Ablaufplan
-                              </button>
-
-                              <!-- Live-Mode Button basierend auf Verfügbarkeit -->
-                              {#if liveModeStatus[gig.id]}
-                                {#if liveModeStatus[gig.id].available}
-                                  <button
-                                    onclick={() => openLiveModeModal(gig.id)}
-                                    class="btn variant-filled-secondary btn-sm"
-                                  >
-                                    ▶ Live Mode
-                                    {#if liveModeStatus[gig.id].forced}
-                                      <span class="badge variant-soft-warning ml-1 text-xs">🔓</span>
-                                    {/if}
-                                  </button>
-                                {:else if liveModeStatus[gig.id].can_force}
-                                  <button
-                                    onclick={() => unlockLiveMode(gig.id)}
-                                    class="btn variant-soft-warning btn-sm"
-                                  >
-                                    🔓 Live Mode entsperren
-                                  </button>
-                                {/if}
-                              {/if}
-
-                              {#if isAdmin}
-                                <button
-                                  class="btn variant-filled-error btn-sm"
-                                  onclick={() => deleteGig(gig.id, gig.name)}
-                                >
-                                  Löschen
-                                </button>
-                              {/if}
-                            </div>
-                          {/if}
-
-                          <div class="flex flex-wrap gap-2 pt-2 border-t border-surface-300">
-                            <button
-                              class="btn variant-outline-primary btn-sm"
-                              onclick={() => getGemaList(gig)}
-                            >
-                              GEMA-Liste drucken
-                            </button>
-                            <button
-                              class="btn variant-outline-primary btn-sm"
-                              onclick={() => getSetlist(gig)}
-                            >
-                              Setliste drucken
-                            </button>
-                            <button
-                              class="btn variant-outline-primary btn-sm"
-                              onclick={() => getSetlist(gig, 'print')}
-                            >
-                              Setliste drucken (druckfreundlich)
-                            </button>
-                            <button
-                              class="btn variant-outline-primary btn-sm"
-                              onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
-                            >
-                              Statistik
-                            </button>
-                          </div>
-                        </div>
-                      {/if}
-                    </div>
-                  </td>
-                </tr>
-              {/if}
             {/each}
           </tbody>
         </table>
@@ -743,7 +409,7 @@
               ? 'bg-surface-50 dark:bg-surface-900 opacity-60 hover:opacity-90'
               : 'bg-surface-1'}">
             <div class="flex justify-between items-start">
-              <div class="flex-1" onclick={() => toggleExpand(gig.id)}>
+              <div class="flex-1" onclick={() => openGigDetailsModal(gig)}>
                 <div class="flex items-center gap-2 mb-1">
                   {#if isPast(gig.datum)}
                     <span class="badge variant-soft-success text-xs px-1.5 py-0.5">✓ gewesen</span>
@@ -754,180 +420,8 @@
                   {formatDateDE(gig.datum)} – {gig.kind_of_gig}
                 </p>
               </div>
-              <button class="btn btn-sm variant-tonal" onclick={() => toggleExpand(gig.id)}>
-                {#if expandedGigId === gig.id}
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M7 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                  </svg>
-                {:else}
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                  </svg>
-                {/if}
-              </button>
+              <button class="btn btn-sm variant-tonal" onclick={() => openGigDetailsModal(gig)}>Details</button>
             </div>
-
-            {#if expandedGigId === gig.id}
-              <div class="mt-3 border-t border-surface-300 pt-3 space-y-2">
-                {#if editGigId === gig.id}
-                  <!-- Bearbeiten-Modus -->
-                  <form class="space-y-3" onsubmit={() => saveEdit(gig)}>
-                    {#each gigFieldsDetails as f}
-                      <label class="block">
-                        <span class="text-sm font-medium text-on-surface-variant">
-                          {f.label}
-                          {#if f.required}
-                            <span class="text-error-500">*</span>
-                          {/if}
-                        </span>
-                        {#if f.type === 'option' && Array.isArray(f.options)}
-                          <select
-                            class="input mt-1 w-full"
-                            bind:value={editBuffer[f.key]}
-                            required={f.required}
-                          >
-                            {#each f.options as o}
-                              <option value={o.key}>{o.label}</option>
-                            {/each}
-                          </select>
-                        {:else if f.type === 'date'}
-                          <input
-                            type="date"
-                            class="input mt-1 w-full"
-                            bind:value={editBuffer[f.key]}
-                            required={f.required}
-                          />
-                        {:else if f.type === 'time'}
-                          <input
-                            type="time"
-                            class="input mt-1 w-full"
-                            step="1"
-                            bind:value={editBuffer[f.key]}
-                            required={f.required}
-                          />
-                        {:else}
-                          <input
-                            type="text"
-                            class="input mt-1 w-full"
-                            bind:value={editBuffer[f.key]}
-                            placeholder={f.label}
-                            required={f.required}
-                          />
-                        {/if}
-                      </label>
-                    {/each}
-                    <div class="flex gap-2">
-                      <button type="submit" class="btn btn-sm variant-filled-success">
-                        Speichern
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-sm variant-ghost"
-                        onclick={cancelEdit}
-                      >
-                        Abbrechen
-                      </button>
-                    </div>
-                  </form>
-                {:else}
-                  <!-- Detail-Ansicht -->
-                  {#each gigFieldsDetails as f}
-                    <div class="flex justify-between py-1 text-sm">
-                      <span class="font-semibold text-on-surface-variant">{f.label}</span>
-                      <span class="text-on-surface">
-                        {#if f.key === 'datum' && gig[f.key]}
-                          {formatDateDE(gig[f.key])}
-                        {:else if f.type === 'time' && gig[f.key]}
-                                  {formatTime(gig[f.key])} Uhr
-                        {:else}
-                          {gig[f.key] ?? '–'}
-                        {/if}
-                      </span>
-                    </div>
-                  {/each}
-
-                  <div class="flex flex-wrap gap-2 mt-4">
-                    {#if canEdit}
-                      <button
-                        class="btn variant-filled-primary btn-sm w-full"
-                        onclick={() => startEdit(gig)}
-                      >
-                        Stammdaten bearbeiten
-                      </button>
-                      <button
-                        onclick={() => gotoSetlistEditor(gig.id)}
-                        class="btn variant-filled-primary btn-sm w-full"
-                      >
-                        Setliste bearbeiten
-                      </button>
-                      <button
-                        type="button"
-                        onclick={() => openScheduleModal(gig)}
-                        class="btn variant-filled-primary btn-sm w-full"
-                      >
-                        📋 Ablaufplan
-                      </button>
-
-                      <!-- Live-Mode Button basierend auf Verfügbarkeit -->
-                      {#if liveModeStatus[gig.id]}
-                        {#if liveModeStatus[gig.id].available}
-                          <button
-                            onclick={() => openLiveModeModal(gig.id)}
-                            class="btn variant-filled-secondary btn-sm w-full"
-                          >
-                            ▶ Live Mode
-                            {#if liveModeStatus[gig.id].forced}
-                              <span class="badge variant-soft-warning ml-1 text-xs">🔓</span>
-                            {/if}
-                          </button>
-                        {:else if liveModeStatus[gig.id].can_force}
-                          <button
-                            onclick={() => unlockLiveMode(gig.id)}
-                            class="btn variant-soft-warning btn-sm w-full"
-                          >
-                            🔓 Live Mode entsperren
-                          </button>
-                        {/if}
-                      {/if}
-
-                      {#if isAdmin}
-                        <button
-                          class="btn variant-filled-error btn-sm w-full"
-                          onclick={() => deleteGig(gig.id, gig.name)}
-                        >
-                          Löschen
-                        </button>
-                      {/if}
-                    {/if}
-
-                    <button
-                      class="btn variant-outline-primary btn-sm w-full"
-                      onclick={() => getGemaList(gig)}
-                    >
-                      GEMA-Liste drucken
-                    </button>
-                    <button
-                      class="btn variant-outline-primary btn-sm w-full"
-                      onclick={() => getSetlist(gig)}
-                    >
-                      Setliste drucken
-                    </button>
-                    <button
-                      class="btn variant-outline-primary btn-sm w-full"
-                      onclick={() => getSetlist(gig, 'print')}
-                    >
-                      Setliste drucken (druckfreundlich)
-                    </button>
-                    <button
-                      class="btn variant-outline-primary btn-sm w-full"
-                      onclick={() => modalState.trigger({ component: GigStatsModal, meta: { gigId: gig.id, gigName: gig.name } })}
-                    >
-                      Statistik
-                    </button>
-                  </div>
-                {/if}
-              </div>
-            {/if}
           </div>
         {/each}
       </div>

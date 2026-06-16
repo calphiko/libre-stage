@@ -23,9 +23,7 @@
   import {
     getUser,
     getSurveys,
-    getSurveyDetails,
     getUserList,
-    updateSurveyFeedback,
     createSurvey,
     deleteSurvey,
     archiveSurvey,
@@ -41,9 +39,7 @@
   let isAdmin = $derived(user && user.user_group === 'admin');
 
 
-  import TerminfindungView from './TerminfindungView.svelte';
-  import MeinungsumfrageView from './MeinungsumfrageView.svelte';
-  import AuftrittsanfrageView from './AuftrittsanfrageView.svelte';
+  import SurveyDetailsModal from './SurveyDetailsModal.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
   let user = $state(null);
@@ -56,10 +52,6 @@
   let surveys = $state([]);
   let users  = $state([]);
   //let { users = [] } = $props();
-
-  let openValue = $state([]);
-    let loading = $state({});
-    let details = $state({});
 
   let userById = $derived(new Map(users.map(u => [u.id, u])));
   let activeSurveys = $derived(surveys.filter(s => !s.closed));
@@ -134,44 +126,20 @@ import NewPollForm from './NewPollForm.svelte';
     }
   }
 
-  async function getSurveyD(surveyId) {
-    try {
-      const details = await getSurveyDetails(null, surveyId);
-      return details;
-    } catch (e) {
-      showError('Fehler beim Laden der Umfragedetails.');
-      console.error('Fehler beim Laden der Umfragedetails:', e);
-      return null;
-    }
-  }
-
-  async function handleItemToggle(surveyId) {
-    // Toggle open/close
-    if (openValue.includes(surveyId)) {
-      openValue = openValue.filter(id => id !== surveyId);
-      return;
-    }
-    openValue = [...openValue, surveyId];
-
-    // Scroll zum Element
-    setTimeout(() => {
-      const accordionElement = document.querySelector(`[data-survey-id="${surveyId}"]`);
-      if (accordionElement) {
-        accordionElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-          inline: 'nearest'
-        });
+  function openSurveyDetails(survey) {
+    modalState.trigger({
+      component: SurveyDetailsModal,
+      props: {
+        survey,
+        users,
+        user,
+        isAdmin,
+        onarchive: (e) => closeSurvey(e.id, e.name),
+        ondelete: (e) => removeSurvey(e.id, e.name),
+        onreminder: (e) => rememberUsersWithoutFeedback(e.id),
+        onerror: (e) => showError(e.message)
       }
-    }, 150);
-
-    // Lade Details wenn noch nicht vorhanden
-    if (!details[surveyId] && !loading[surveyId]) {
-      loading = { ...loading, [surveyId]: true };
-      const d = await getSurveyD(surveyId);
-      details = { ...details, [surveyId]: d };
-      loading = { ...loading, [surveyId]: false };
-    }
+    });
   }
 
   async function removeSurvey(surveyId, surveyName) {
@@ -330,7 +298,7 @@ import NewPollForm from './NewPollForm.svelte';
           <div>
             <h4 class="font-semibold text-warning-500 mb-2">⚙️ Bedienung</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
-              <li><strong>Accordion öffnen:</strong> Klicke auf eine Umfrage, um Details zu sehen - die Seite scrollt automatisch zum Header</li>
+              <li><strong>Umfrage öffnen:</strong> Klicke auf eine Umfrage, um die Details im Modal zu sehen</li>
               <li><strong>Tab-Wechsel:</strong> Die Anzahl der Umfragen wird in Klammern angezeigt</li>
               <li><strong>Mobile-optimiert:</strong> Alle Funktionen sind auch auf dem Smartphone nutzbar</li>
             </ul>
@@ -343,7 +311,7 @@ import NewPollForm from './NewPollForm.svelte';
               <ul class="list-disc list-inside space-y-1 text-sm">
                 <li>Der <strong>Ersteller</strong> ist für die Auswertung verantwortlich</li>
                 <li>Vorhandene Antwortoptionen können <strong>nicht geändert</strong> werden (Integrität!)</li>
-                <li>Neue Antwortmöglichkeiten hinzufügen? → Andere Bandmitglieder informieren!</li>
+                <li>Neue Antwortmöglichkeiten können im Tab "Administration" hinzugefügt werden - bitte informiere danach die Bandmitglieder.</li>
                 <li>Nach Auswertung: Umfrage <strong>archivieren</strong>, damit sie in "Abgeschlossene Umfragen" verschoben wird</li>
               </ul>
             </div>
@@ -354,23 +322,23 @@ import NewPollForm from './NewPollForm.svelte';
 
 
     <!-- Regeln als Info-Box -->
-    <div class="card variant-soft-warning mb-6">
+    <div class="card variant-soft-warning mb-4">
       <button
         type="button"
-        class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
+        class="w-full px-3 py-2 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
         onclick={toggleRules}
       >
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <svg class="w-6 h-6 text-warning-600" fill="currentColor" viewBox="0 0 20 20">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-warning-600" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
             </svg>
-            <h3 class="font-semibold text-warning-900 dark:text-warning-100">
-              📋 Wichtige Regeln für Abstimmungen
+            <h3 class="font-semibold text-sm text-warning-900 dark:text-warning-100 leading-tight">
+              Wichtige Regeln für Abstimmungen
             </h3>
           </div>
           <svg
-            class="w-5 h-5 text-warning-700 dark:text-warning-300 transition-transform {rulesVisible ? 'rotate-180' : ''}"
+            class="w-4 h-4 text-warning-700 dark:text-warning-300 transition-transform {rulesVisible ? 'rotate-180' : ''}"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -401,7 +369,7 @@ import NewPollForm from './NewPollForm.svelte';
             </li>
             <li class="flex gap-2">
               <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>
-              <span>Vorhandene Antwortoptionen können <strong>nicht bearbeitet oder gelöscht</strong> werden (Schutz der Integrität bereits abgegebener Stimmen)</span>
+              <span>Vorhandene Antwortoptionen können <strong>nicht bearbeitet oder gelöscht</strong> werden (Schutz der Integrität bereits abgegebener Stimmen). Neue Optionen dürfen ergänzt werden.</span>
             </li>
             <li class="flex gap-2">
               <span class="text-warning-600 dark:text-warning-400 font-bold">•</span>
@@ -433,11 +401,11 @@ import NewPollForm from './NewPollForm.svelte';
                       <button
                         type="button"
                         class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
-                        onclick={() => handleItemToggle(survey.id)}
+                        onclick={() => openSurveyDetails(survey)}
                       >
                         <div class="flex justify-between items-center w-full">
                           <div class="flex items-center gap-2">
-                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="text-xs">▶</span>
                             <span class="font-medium text-on-surface">{survey.rf_survey}</span>
                           </div>
                           <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
@@ -447,59 +415,6 @@ import NewPollForm from './NewPollForm.svelte';
                         </div>
                       </button>
 
-                      {#if survey.user_created === user?.id || isAdmin }
-                        <div class="flex gap-2 px-2 pb-2">
-                            <button
-                                type="button"
-                                class="btn variant-filled-warning btn-sm py-0"
-                                onclick={() => rememberUsersWithoutFeedback(survey.id)}
-                              >
-                                Säumige User erinnern
-                          </button>
-                          <button
-                            type="button"
-                            class="btn variant-filled-warning btn-sm py-0"
-                            onclick={() => closeSurvey(survey.id, survey.rf_survey)}
-                          >
-                            Archivieren
-                          </button>
-                          <button
-                            type="button"
-                            class="btn variant-filled-error btn-sm py-0"
-                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      {/if}
-
-                      {#if openValue.includes(survey.id)}
-                        <div>
-                          {#if loading[survey.id]}
-                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
-                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
-                            </div>
-                          {:else if details[survey.id]}
-                            <div class="md:p-4 border-t border-outline-variant">
-                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                                {#if user}
-                                  <TerminfindungView
-                                    survey={details[survey.id]}
-                                    users={users}
-                                    {user}
-                                  />
-                                {:else}
-                                  <div>Benutzerdaten werden geladen…</div>
-                                {/if}
-                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                              {:else}
-                                <div>Unbekannter Survey-Typ.</div>
-                              {/if}
-                            </div>
-                          {/if}
-                        </div>
-                      {/if}
                     </div>
                   {/each}
                 </div>
@@ -539,11 +454,11 @@ import NewPollForm from './NewPollForm.svelte';
                       <button
                         type="button"
                         class="w-full text-left p-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
-                        onclick={() => handleItemToggle(survey.id)}
+                        onclick={() => openSurveyDetails(survey)}
                       >
                         <div class="flex justify-between items-center w-full">
                           <div class="flex items-center gap-2">
-                            <span class="text-xs">{openValue.includes(survey.id) ? '▼' : '▶'}</span>
+                            <span class="text-xs">▶</span>
                             <span class="font-medium text-on-surface">{survey.rf_survey}</span>
                           </div>
                           <span class="text-sm text-on-surface-variant hidden md:flex items-center gap-2">
@@ -554,45 +469,6 @@ import NewPollForm from './NewPollForm.svelte';
                         </div>
                       </button>
 
-                      {#if survey.user_created === user?.id}
-                        <div class="flex gap-2 px-2 pb-2">
-                          <button
-                            type="button"
-                            class="btn variant-filled-error btn-sm py-0"
-                            onclick={() => removeSurvey(survey.id, survey.rf_survey)}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      {/if}
-
-                      {#if openValue.includes(survey.id)}
-                        <div>
-                          {#if loading[survey.id]}
-                            <div class="md:p-4 border-t border-outline-variant flex justify-center items-center py-6">
-                              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-500"></div>
-                            </div>
-                          {:else if details[survey.id]}
-                            <div class="md:p-4 border-t border-outline-variant">
-                              {#if details[survey.id].kind_of_survey === 'Terminfindung'}
-                                {#if user}
-                                  <TerminfindungView
-                                    survey={details[survey.id]}
-                                    users={users}
-                                    {user}
-                                  />
-                                {:else}
-                                  <div>Benutzerdaten werden geladen…</div>
-                                {/if}
-                              {:else if details[survey.id].kind_of_survey === 'Meinungsumfrage'}
-                                <MeinungsumfrageView survey={details[survey.id]} users={users} user={user} />
-                              {:else}
-                                <div>Unbekannter Survey-Typ.</div>
-                              {/if}
-                            </div>
-                          {/if}
-                        </div>
-                      {/if}
                     </div>
                   {/each}
                 </div>

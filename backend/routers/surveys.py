@@ -272,6 +272,53 @@ def update_survey_feedback(
     logger.info(f"Successfully updated feedback for survey {survey_id}")
     return poll
 
+
+@router.post("/{survey_id}/fields", response_model=schemas.SurveyQuestionOut)
+def append_survey_fields(
+    survey_id: int,
+    payload: schemas.SurveyFieldsAppendIn,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user)
+):
+    """Append new answer options to an existing open survey."""
+    user_db = db.query(models.User).filter(models.User.user_name == current["user_name"]).first()
+    if not user_db:
+        raise HTTPException(status_code=403, detail="Your User is not found")
+
+    survey = db.query(models.Surveys).filter(models.Surveys.id == survey_id).first()
+    if survey is None:
+        logger.error(f"Survey with id {survey_id} not found")
+        raise HTTPException(status_code=404, detail="Survey not found")
+
+    if not user_db.id == survey.user_created and not user_db.user_group == "admin":
+        raise HTTPException(status_code=403, detail="You do not have permission to edit this survey")
+
+    if survey.closed:
+        raise HTTPException(status_code=403, detail="Closed surveys cannot be edited")
+
+    existing_texts = {
+        (field.field_text or "").strip().lower()
+        for field in survey.fields
+        if (field.field_text or "").strip()
+    }
+
+    added_fields = 0
+    for field in payload.fields:
+        normalized = field.field_text.strip().lower()
+        if normalized in existing_texts:
+            continue
+
+        db.add(models.SurveyFields(id_survey=survey.id, field_text=field.field_text.strip()))
+        existing_texts.add(normalized)
+        added_fields += 1
+
+    if added_fields == 0:
+        raise HTTPException(status_code=400, detail="No new answer options were added")
+
+    db.commit()
+    db.refresh(survey)
+    return survey
+
 @router.delete("/{survey_id}", response_model=List[schemas.SurveyList])
 def delete_survey(
     survey_id: int,

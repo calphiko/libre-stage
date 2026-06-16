@@ -32,7 +32,8 @@
     getSongStatistics,
     getSongFeedbackHistory,
     getRehearsalList,
-    updateRehearsals
+    updateRehearsals,
+    getSongCrawlerMetadata
   } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
@@ -67,6 +68,7 @@
   let rehearsals = $state([]);
   let selectedFutureRehearsalId = $state('');
   let isAssigningRehearsal = $state(false);
+  let isMetadataLoading = $state(false);
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
   let upcomingRehearsals = $derived(
@@ -299,6 +301,15 @@
     selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
   }
 
+  function handleDetailsEditToggle(event) {
+    const checked = !!event?.currentTarget?.checked;
+    if (checked) {
+      startEdit();
+      return;
+    }
+    cancelEdit();
+  }
+
   async function saveEdit() {
     if (isSaving) return;
     isSaving = true;
@@ -319,12 +330,6 @@
       isEditing = false;
       song = songData;
       editBuffer = { ...song };
-
-      if (true) {
-        modalState.close({ action: 'updated', data: { ...song } });
-      } else {
-        modalState.close();
-      }
     } catch (e) {
       showError(e.message ?? 'Update fehlgeschlagen');
     } finally {
@@ -383,6 +388,35 @@
     const reh = upcomingRehearsals.find(r => String(r.id) === String(selectedFutureRehearsalId));
     return reh ? formatRehearsalOption(reh.begin, reh.end) : 'Keine Zuordnung';
   }
+
+  async function fetchMetadataFromScraper() {
+    if (!canEdit || isMetadataLoading) return;
+
+    const interpret = (editBuffer.interpret ?? song?.interpret ?? '').trim();
+    const title = (editBuffer.title ?? song?.title ?? '').trim();
+
+    if (!interpret || !title) {
+      showError('Bitte zuerst Interpret und Titel eintragen.');
+      return;
+    }
+
+    isMetadataLoading = true;
+    try {
+      const data = await getSongCrawlerMetadata(interpret, title);
+      editBuffer = {
+        ...editBuffer,
+        duration: data?.duration ?? editBuffer.duration ?? '',
+        composer: data?.composer ?? editBuffer.composer ?? '',
+        texter: data?.texter ?? editBuffer.texter ?? '',
+        ytlink: data?.ytlink ?? editBuffer.ytlink ?? ''
+      };
+      showSuccess('Metadaten aus dem Scraper übernommen.');
+    } catch (e) {
+      showError(e?.message ?? 'Song-Metadaten konnten nicht geladen werden');
+    } finally {
+      isMetadataLoading = false;
+    }
+  }
 </script>
 <div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col  modal-base">
 
@@ -430,6 +464,21 @@
     <!-- Panel -->
     {#if tabSet === 0}
       <div class="flex flex-col min-h-0 flex-grow">
+        {#if canEdit}
+          <div class="flex justify-end mb-3">
+            <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <span class="text-on-surface-variant">Edit-Mode</span>
+              <input
+                type="checkbox"
+                class="checkbox"
+                checked={isEditing}
+                onchange={handleDetailsEditToggle}
+                disabled={isSaving}
+              />
+            </label>
+          </div>
+        {/if}
+
         {#if isEditing}
           <!-- Edit Mode -->
           <div class="overflow-y-auto flex-grow min-h-0">
@@ -465,6 +514,14 @@
             </form>
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
+            <button
+              type="button"
+              class="btn variant-soft-primary"
+              disabled={isSaving || isMetadataLoading}
+              onclick={fetchMetadataFromScraper}
+            >
+              {isMetadataLoading ? 'Lade Metadaten...' : 'Metadaten abrufen'}
+            </button>
             <button type="button" class="btn variant-filled-primary" disabled={isSaving} onclick={saveEdit}>
               {isSaving ? 'Wird gespeichert...' : 'Speichern'}
             </button>
@@ -501,9 +558,6 @@
             {/each}
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
-            {#if canEdit}
-              <button class="btn variant-filled-primary" onclick={startEdit}>Bearbeiten</button>
-            {/if}
             {#if song.status !== 'retired' && canEdit}
               <button class="btn variant-filled-error" onclick={handleDelete}>Löschen</button>
             {/if}
