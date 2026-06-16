@@ -651,6 +651,17 @@ export async function getSong(token, songId) {
     return res.json();
 }
 
+export async function getSongDetails(songId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/${songId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    if (!res.ok) throw new Error('Song not found');
+    return res.json();
+}
+
 export async function getSongRehearsalHistory(songId, limit = 3) {
     const res = await fetchWithAuth(`${API_URL}/songs/${songId}/rehearsal_history?limit=${limit}`, {
         method: 'GET',

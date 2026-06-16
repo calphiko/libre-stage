@@ -87,6 +87,19 @@ def get_songs(song_id: int, db: Session = Depends(auth.get_db),
     return song
 
 
+@router.get("/{song_id:int}", response_model=schemas.SongOut)
+def get_song_details(
+    song_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    """Return full song details for the song modal/edit form."""
+    song = db.query(models.Song).get(song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+    return song
+
+
 @router.get("/{song_id}/rehearsal_history", response_model=List[schemas.SongRehearsalHistoryEntry])
 def get_song_rehearsal_history(
     song_id: int,
