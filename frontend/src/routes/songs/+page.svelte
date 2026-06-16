@@ -1289,19 +1289,19 @@ let filteredSongs = $derived(songs
             <p class="text-on-surface-variant italic mt-4">Keine Song-Vorschläge vorhanden</p>
           {:else}
             <!-- Regeln als Info-Box -->
-            <div class="card variant-soft-warning mb-6 mt-4">
+            <div class="card variant-soft-warning mb-4">
               <button
                 type="button"
-                class="w-full p-4 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
+                class="w-full px-3 py-2 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
                 onclick={toggleRules}
               >
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-2">
                     <svg class="w-6 h-6 text-warning-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="font-semibold text-warning-900 dark:text-warning-100">
-                      📋 Regeln für Song-Vorschläge
+                    <h3 class="font-semibold text-sm text-warning-900 dark:text-warning-100 leading-tight">
+                      Regeln für Song-Vorschläge
                     </h3>
                   </div>
                   <svg

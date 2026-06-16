@@ -899,6 +899,20 @@ export async function insertSongAfter(token, gigId, afterSetSongId, songId) {
   return res.json();
 }
 
+export async function insertSongBefore(token, gigId, beforeSetSongId, songId) {
+  console.log('Inserting song before:', beforeSetSongId, 'song:', songId);
+  const res = await fetchWithAuth(`${API_URL}/gigs_lm/${gigId}/insert-song?before_setsong_id=${beforeSetSongId}&song_id=${songId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
 export async function getLiveModeAvailability(token, gigId, force = false) {
   const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/livemode_available?force=${force}`, {
     method: 'GET',
@@ -958,6 +972,23 @@ export async function archiveSurvey(token, surveyId) {
     });
     if (!res.ok) throw new Error('Archive survey failed');
     return res.json();
+}
+
+export async function appendSurveyFields(token, surveyId, fields) {
+    const response = await fetchWithAuth(`${API_URL}/surveys/${surveyId}/fields`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ fields })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail ?? 'Failed to append survey fields');
+    }
+
+    return response.json();
 }
 
 export async function getVersionJson() {

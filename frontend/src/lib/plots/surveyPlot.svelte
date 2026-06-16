@@ -6,7 +6,7 @@
     import { CanvasRenderer } from 'echarts/renderers';
     import { isDarkMode } from '$lib/themeStore';
 
-    let { survey, users, fieldColors } = $props();
+    let { survey, users, fieldColors, barHeight = 300, donutHeight = 300 } = $props();
 
     echarts.use([BarChart, PieChart, GridComponent, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
@@ -164,7 +164,7 @@
     }});
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-    <div bind:this={barChartRef} class="w-full" style="height:400px;"></div>
-    <div bind:this={donutChartRef} class="w-full" style="height:400px;"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+    <div bind:this={barChartRef} class="w-full" style={`height:${barHeight}px;`}></div>
+    <div bind:this={donutChartRef} class="w-full" style={`height:${donutHeight}px;`}></div>
 </div>
