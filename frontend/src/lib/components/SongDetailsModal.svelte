@@ -299,6 +299,15 @@
     selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
   }
 
+  function handleDetailsEditToggle(event) {
+    const checked = !!event?.currentTarget?.checked;
+    if (checked) {
+      startEdit();
+      return;
+    }
+    cancelEdit();
+  }
+
   async function saveEdit() {
     if (isSaving) return;
     isSaving = true;
@@ -319,12 +328,6 @@
       isEditing = false;
       song = songData;
       editBuffer = { ...song };
-
-      if (true) {
-        modalState.close({ action: 'updated', data: { ...song } });
-      } else {
-        modalState.close();
-      }
     } catch (e) {
       showError(e.message ?? 'Update fehlgeschlagen');
     } finally {
@@ -430,6 +433,21 @@
     <!-- Panel -->
     {#if tabSet === 0}
       <div class="flex flex-col min-h-0 flex-grow">
+        {#if canEdit}
+          <div class="flex justify-end mb-3">
+            <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <span class="text-on-surface-variant">Edit-Mode</span>
+              <input
+                type="checkbox"
+                class="checkbox"
+                checked={isEditing}
+                onchange={handleDetailsEditToggle}
+                disabled={isSaving}
+              />
+            </label>
+          </div>
+        {/if}
+
         {#if isEditing}
           <!-- Edit Mode -->
           <div class="overflow-y-auto flex-grow min-h-0">
@@ -501,9 +519,6 @@
             {/each}
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
-            {#if canEdit}
-              <button class="btn variant-filled-primary" onclick={startEdit}>Bearbeiten</button>
-            {/if}
             {#if song.status !== 'retired' && canEdit}
               <button class="btn variant-filled-error" onclick={handleDelete}>Löschen</button>
             {/if}
