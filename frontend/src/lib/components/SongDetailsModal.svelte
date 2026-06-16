@@ -32,7 +32,8 @@
     getSongStatistics,
     getSongFeedbackHistory,
     getRehearsalList,
-    updateRehearsals
+    updateRehearsals,
+    getSongCrawlerMetadata
   } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import ConfirmModal from '$lib/components/ConfirmModal.svelte';
@@ -67,6 +68,7 @@
   let rehearsals = $state([]);
   let selectedFutureRehearsalId = $state('');
   let isAssigningRehearsal = $state(false);
+  let isMetadataLoading = $state(false);
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
   let upcomingRehearsals = $derived(
@@ -386,6 +388,35 @@
     const reh = upcomingRehearsals.find(r => String(r.id) === String(selectedFutureRehearsalId));
     return reh ? formatRehearsalOption(reh.begin, reh.end) : 'Keine Zuordnung';
   }
+
+  async function fetchMetadataFromScraper() {
+    if (!canEdit || isMetadataLoading) return;
+
+    const interpret = (editBuffer.interpret ?? song?.interpret ?? '').trim();
+    const title = (editBuffer.title ?? song?.title ?? '').trim();
+
+    if (!interpret || !title) {
+      showError('Bitte zuerst Interpret und Titel eintragen.');
+      return;
+    }
+
+    isMetadataLoading = true;
+    try {
+      const data = await getSongCrawlerMetadata(interpret, title);
+      editBuffer = {
+        ...editBuffer,
+        duration: data?.duration ?? editBuffer.duration ?? '',
+        composer: data?.composer ?? editBuffer.composer ?? '',
+        texter: data?.texter ?? editBuffer.texter ?? '',
+        ytlink: data?.ytlink ?? editBuffer.ytlink ?? ''
+      };
+      showSuccess('Metadaten aus dem Scraper übernommen.');
+    } catch (e) {
+      showError(e?.message ?? 'Song-Metadaten konnten nicht geladen werden');
+    } finally {
+      isMetadataLoading = false;
+    }
+  }
 </script>
 <div class="card p-6 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col  modal-base">
 
@@ -483,6 +514,14 @@
             </form>
           </div>
           <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">
+            <button
+              type="button"
+              class="btn variant-soft-primary"
+              disabled={isSaving || isMetadataLoading}
+              onclick={fetchMetadataFromScraper}
+            >
+              {isMetadataLoading ? 'Lade Metadaten...' : 'Metadaten abrufen'}
+            </button>
             <button type="button" class="btn variant-filled-primary" disabled={isSaving} onclick={saveEdit}>
               {isSaving ? 'Wird gespeichert...' : 'Speichern'}
             </button>
