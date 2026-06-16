@@ -203,7 +203,7 @@
   <div class="hidden md:block w-full ">
   <div class="overflow-x-auto rounded pb-4" style="scrollbar-width: thick; scrollbar-color: #3b82f6 #e5e7eb;">
 
-   <table class="border-collapse">
+   <table class="border-collapse mx-auto">
       <thead>
         <tr>
           <th class="px-2 py-1 text-left sticky left-0 bg-surface z-10"></th>
@@ -305,7 +305,7 @@
   <div class="md:hidden space-y-3">
     <div class="rounded-lg border border-outline-variant overflow-hidden">
       <div class="overflow-x-auto" style="scrollbar-width: thin;">
-        <table class="min-w-max border-collapse text-xs">
+        <table class="min-w-max border-collapse text-xs mx-auto">
           <thead>
             <tr>
               <th class="px-2 py-2 text-left sticky left-0 bg-surface z-20 border border-gray-300 dark:border-gray-600 min-w-[9rem]">

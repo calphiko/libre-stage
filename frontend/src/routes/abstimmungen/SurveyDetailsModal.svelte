@@ -101,7 +101,7 @@
   }
 </script>
 
-<div class="card p-2.5 sm:p-4 md:p-5 w-full max-w-6xl h-[96dvh] sm:h-[90vh] md:h-[88vh] flex flex-col modal-base text-sm overflow-hidden min-w-0">
+<div class="card p-2.5 sm:p-4 md:p-5 w-full lg:w-[90vw] max-w-6xl lg:max-w-[90vw] mx-auto h-[96dvh] sm:h-[90vh] md:h-[88vh] flex flex-col modal-base text-sm overflow-hidden min-w-0">
   <header class="flex justify-between items-start gap-2 mb-2 border-b border-outline-variant pb-2 flex-shrink-0 min-h-0">
     <div class="min-w-0">
       <h2 class="text-sm sm:text-base md:text-lg font-semibold text-on-surface truncate">{survey.rf_survey}</h2>
