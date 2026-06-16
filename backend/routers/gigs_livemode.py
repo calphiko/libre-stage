@@ -25,6 +25,8 @@ navigation.  All write operations require the ``editor`` or
 Prefix: ``/gigs_lm``  |  Tag: ``gigs_lm``
 """
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 import logging
 from sqlalchemy.orm import Session
@@ -160,7 +162,8 @@ def update_songs_lm(
 @router.post("/{gig_id}/insert-song", response_model=schemas.SongInSetLM)
 def insert_song_after(
     gig_id: int,
-    after_setsong_id: int = Query(..., description="ID des SetSong, nach dem eingefügt werden soll"),
+    after_setsong_id: Optional[int] = Query(None, description="ID des SetSong, nach dem eingefügt werden soll"),
+    before_setsong_id: Optional[int] = Query(None, description="ID des SetSong, vor dem eingefügt werden soll"),
     song_id: int = Query(..., description="ID des einzufügenden Songs"),
     db: Session = Depends(auth.get_db),
     current_user: models.User = Depends(auth.get_current_user_dep)
@@ -173,9 +176,14 @@ def insert_song_after(
     if not gig:
         raise HTTPException(status_code=404, detail="Gig not found")
 
-    # SetSong existiert?
-    after_setsong = db.query(models.SetSong).filter(models.SetSong.id == after_setsong_id).first()
-    if not after_setsong:
+    if after_setsong_id is None and before_setsong_id is None:
+        raise HTTPException(status_code=400, detail="Either after_setsong_id or before_setsong_id is required")
+    if after_setsong_id is not None and before_setsong_id is not None:
+        raise HTTPException(status_code=400, detail="Use either after_setsong_id or before_setsong_id, not both")
+
+    reference_setsong_id = before_setsong_id if before_setsong_id is not None else after_setsong_id
+    reference_setsong = db.query(models.SetSong).filter(models.SetSong.id == reference_setsong_id).first()
+    if not reference_setsong:
         raise HTTPException(status_code=404, detail="SetSong not found")
 
     # Song existiert?
@@ -183,17 +191,18 @@ def insert_song_after(
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
 
-    # Alle Songs im gleichen Set mit Position > after_setsong.position um 1 erhöhen
+    # Alle Songs im gleichen Set ab Zielposition um 1 erhöhen, damit Platz entsteht.
+    insert_position = reference_setsong.position if before_setsong_id is not None else reference_setsong.position + 1
     db.query(models.SetSong).filter(
-        models.SetSong.id_set == after_setsong.id_set,
-        models.SetSong.position > after_setsong.position
+        models.SetSong.id_set == reference_setsong.id_set,
+        models.SetSong.position >= insert_position
     ).update({"position": models.SetSong.position + 1}, synchronize_session=False)
 
     # Neuen SetSong erstellen
     new_setsong = models.SetSong(
-        id_set=after_setsong.id_set,
+        id_set=reference_setsong.id_set,
         id_song=song_id,
-        position=after_setsong.position + 1,
+        position=insert_position,
         eingeschoben=True,
         uebersprungen=None,
         feedback=None
