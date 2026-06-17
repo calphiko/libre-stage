@@ -100,8 +100,10 @@ struct GigScheduleSheet: View {
                     .padding()
 #endif
             }
-            .sheet(isPresented: $showAddRowSheet) {
-                addRowSheet
+            .fullScreenCover(isPresented: $showAddRowSheet) {
+                AppModalContainer {
+                    addRowSheet
+                }
             }
         }
     }
@@ -190,23 +192,24 @@ struct GigScheduleSheet: View {
                         selection: $newRowDraft.dateTime,
                         displayedComponents: [.date, .hourAndMinute]
                     )
-                    .formFieldSurface()
+                    .addModalFieldStyle()
                     TextField("Was", text: $newRowDraft.was)
-                        .formFieldSurface()
+                        .addModalFieldStyle()
                     TextField("Wer", text: $newRowDraft.wer)
-                        .formFieldSurface()
+                        .addModalFieldStyle()
                     TextField("Wo", text: $newRowDraft.wo)
-                        .formFieldSurface()
+                        .addModalFieldStyle()
                 }
+                .addModalSectionStyle()
 
                 Section {
                     Text("Der Eintrag wird nach dem Hinzufuegen unten in der Bearbeitungsliste angezeigt und kann dort weiter angepasst werden.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+                .addModalSectionStyle()
             }
-            .softCardContainer()
-            .appShellBackground()
+            .addModalFormStyle()
             .navigationTitle("Eintrag hinzufuegen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

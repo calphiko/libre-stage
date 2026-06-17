@@ -143,7 +143,7 @@ struct GigDetailView: View {
                         } label: {
                             Label("forScore-Setliste (.4ss)", systemImage: "music.note.list")
                         }
-                        .disabled(!hasSongsInSetlist)
+                        .disabled(true)
 
                         Button {
                             Task { @MainActor in
@@ -268,6 +268,7 @@ struct GigDetailView: View {
         .appShellBackground()
         .navigationTitle(currentGig.name ?? "Gig")
         .navigationBarTitleDisplayMode(.inline)
+        .headerBodyBlend()
         .errorBanner($vm.error)
         .task {
             if editableGig == nil {
@@ -281,13 +282,15 @@ struct GigDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $showSetlistEditor) {
-            SetlistEditorSheet(
-                gigId: currentGig.id,
-                gigName: currentGig.name ?? "Gig",
-                onSaved: { updated in
-                    vm.setlist = updated
-                }
-            )
+            AppModalContainer {
+                SetlistEditorSheet(
+                    gigId: currentGig.id,
+                    gigName: currentGig.name ?? "Gig",
+                    onSaved: { updated in
+                        vm.setlist = updated
+                    }
+                )
+            }
         }
         .sheet(item: $shareItem) { item in
 #if canImport(UIKit)
@@ -297,16 +300,20 @@ struct GigDetailView: View {
                 .padding()
 #endif
         }
-        .sheet(item: $selectedSongForDetails) { item in
+        .fullScreenCover(item: $selectedSongForDetails) { item in
             NavigationStack {
                 SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
             }
         }
-        .sheet(isPresented: $showGigStats) {
-            GigStatisticsSheet(vm: vm, gig: currentGig)
+        .fullScreenCover(isPresented: $showGigStats) {
+            AppModalContainer {
+                GigStatisticsSheet(vm: vm, gig: currentGig)
+            }
         }
-        .sheet(isPresented: $showGigSchedule) {
-            GigScheduleSheet(vm: vm, gig: currentGig, canEdit: canEdit)
+        .fullScreenCover(isPresented: $showGigSchedule) {
+            AppModalContainer {
+                GigScheduleSheet(vm: vm, gig: currentGig, canEdit: canEdit)
+            }
         }
         .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
             Button("OK", role: .cancel) {}
@@ -496,6 +503,8 @@ struct GigDetailView: View {
                     Text(option.label).tag(option.key)
                 }
             }
+            .pickerStyle(.menu)
+            .listAlignedFieldSurface()
         case .time:
             HStack {
                 DatePicker(
@@ -512,14 +521,17 @@ struct GigDetailView: View {
                     .foregroundStyle(.secondary)
                 }
             }
+            .listAlignedFieldSurface()
         case .date:
             DatePicker(
                 field.required ? "\(field.label) *" : field.label,
                 selection: dateBinding(for: field.key),
                 displayedComponents: .date
             )
+            .listAlignedFieldSurface()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
+                .listAlignedFieldSurface()
         }
     }
 

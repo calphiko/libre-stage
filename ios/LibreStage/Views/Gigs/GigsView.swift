@@ -5,6 +5,7 @@
 import SwiftUI
 
 struct GigsView: View {
+    let onMenuTap: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
     @State private var vm = GigsViewModel()
@@ -12,6 +13,10 @@ struct GigsView: View {
     @State private var seasonStatsPreset: Int?
     @State private var showCreateGigSheet = false
     @State private var selectedSeason: Int?
+
+    init(onMenuTap: (() -> Void)? = nil) {
+        self.onMenuTap = onMenuTap
+    }
 
     private var canEdit: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
@@ -119,6 +124,11 @@ struct GigsView: View {
             .navigationTitle("Gigs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -162,11 +172,15 @@ struct GigsView: View {
                 selectedSeason = defaultSeasonSelection
             }
         }
-        .sheet(isPresented: $showSeasonStats) {
-            SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
+        .fullScreenCover(isPresented: $showSeasonStats) {
+            AppModalContainer {
+                SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
+            }
         }
-        .sheet(isPresented: $showCreateGigSheet) {
-            CreateGigSheet(vm: vm)
+        .fullScreenCover(isPresented: $showCreateGigSheet) {
+            AppModalContainer {
+                CreateGigSheet(vm: vm)
+            }
         }
     }
 
@@ -440,7 +454,6 @@ private struct GigRow: View {
 private struct CreateGigSheet: View {
     @Bindable var vm: GigsViewModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     @State private var draft = GigDetailsDraft()
 
     var body: some View {
@@ -449,9 +462,9 @@ private struct CreateGigSheet: View {
                 Section("Gig") {
                     ForEach(vm.gigFields) { field in
                         gigEditorView(for: field)
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
                 }
+                .addModalSectionStyle()
 
                 if vm.isCreatingGig {
                     Section {
@@ -461,11 +474,10 @@ private struct CreateGigSheet: View {
                             Spacer()
                         }
                     }
+                    .addModalSectionStyle()
                 }
             }
-            .softCardContainer()
-            .textFieldStyle(.plain)
-            .appShellBackground()
+            .addModalFormStyle()
             .navigationTitle("Neuer Gig")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -499,7 +511,7 @@ private struct CreateGigSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .time:
             HStack {
                 DatePicker(
@@ -516,17 +528,17 @@ private struct CreateGigSheet: View {
                     .foregroundStyle(.secondary)
                 }
             }
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .date:
             DatePicker(
                 field.required ? "\(field.label) *" : field.label,
                 selection: dateBinding(for: field.key),
                 displayedComponents: .date
             )
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: gigBinding(for: field.key))
-                .listAlignedFieldSurface()
+                .addModalFieldStyle()
         }
     }
 
