@@ -41,7 +41,6 @@
 		A031 /* Views/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031 /* Views/Profile/ProfileView.swift */; };
 		A031B /* Views/Profile/AboutAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031B /* Views/Profile/AboutAppView.swift */; };
 		A031C /* Views/Profile/ShareDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031C /* Views/Profile/ShareDebugView.swift */; };
-		A032 /* Views/Profile/AdminConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F032 /* Views/Profile/AdminConfigView.swift */; };
 		A040 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* Views/Components/ErrorBanner.swift */; };
 		A041 /* Views/Components/SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* Views/Components/SkeletonRow.swift */; };
 		A050 /* ViewModels/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* ViewModels/DashboardViewModel.swift */; };
@@ -120,7 +119,6 @@
 		F031 /* Views/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
 		F031B /* Views/Profile/AboutAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/AboutAppView.swift; sourceTree = "<group>"; };
 		F031C /* Views/Profile/ShareDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ShareDebugView.swift; sourceTree = "<group>"; };
-		F032 /* Views/Profile/AdminConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/AdminConfigView.swift; sourceTree = "<group>"; };
 		F040 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
 		F041 /* Views/Components/SkeletonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SkeletonRow.swift; sourceTree = "<group>"; };
 		F050 /* ViewModels/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
@@ -200,7 +198,6 @@
 				F031 /* Views/Profile/ProfileView.swift */,
 				F031B /* Views/Profile/AboutAppView.swift */,
 				F031C /* Views/Profile/ShareDebugView.swift */,
-				F032 /* Views/Profile/AdminConfigView.swift */,
 				F040 /* Views/Components/ErrorBanner.swift */,
 				F041 /* Views/Components/SkeletonRow.swift */,
 				F050 /* ViewModels/DashboardViewModel.swift */,
@@ -378,7 +375,6 @@
 				A031 /* Views/Profile/ProfileView.swift in Sources */,
 				A031B /* Views/Profile/AboutAppView.swift in Sources */,
 				A031C /* Views/Profile/ShareDebugView.swift in Sources */,
-				A032 /* Views/Profile/AdminConfigView.swift in Sources */,
 				A040 /* Views/Components/ErrorBanner.swift in Sources */,
 				A041 /* Views/Components/SkeletonRow.swift in Sources */,
 				A050 /* ViewModels/DashboardViewModel.swift in Sources */,
@@ -559,7 +555,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5.3;
+				MARKETING_VERSION = 0.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -584,7 +580,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.5.3;
+				MARKETING_VERSION = 0.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -609,7 +605,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.5.3;
+				MARKETING_VERSION = 0.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -639,7 +635,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5.3;
+				MARKETING_VERSION = 0.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
