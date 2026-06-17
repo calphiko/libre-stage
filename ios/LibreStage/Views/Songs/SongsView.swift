@@ -6,6 +6,7 @@ import SwiftUI
 import UIKit
 
 struct SongsView: View {
+    let onMenuTap: (() -> Void)?
     @Environment(\.colorScheme) private var colorScheme
     @State private var vm = SongsViewModel()
     @State private var selectedSongForDetails: SongsDetailSheetItem?
@@ -14,8 +15,12 @@ struct SongsView: View {
     @State private var createSongPrefill: AddSongPrefillRequest?
     private var externalAddSongPrefill: Binding<AddSongPrefillRequest?>
 
-    init(externalAddSongPrefill: Binding<AddSongPrefillRequest?> = .constant(nil)) {
+    init(
+        externalAddSongPrefill: Binding<AddSongPrefillRequest?> = .constant(nil),
+        onMenuTap: (() -> Void)? = nil
+    ) {
         self.externalAddSongPrefill = externalAddSongPrefill
+        self.onMenuTap = onMenuTap
     }
 
     var body: some View {
@@ -24,6 +29,11 @@ struct SongsView: View {
             .navigationTitle("Songs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -46,18 +56,20 @@ struct SongsView: View {
                 }
             }
             .headerBodyBlend()
-            .sheet(item: $selectedSongForDetails) { item in
+            .fullScreenCover(item: $selectedSongForDetails) { item in
                 NavigationStack {
                     SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
                 }
             }
-            .sheet(isPresented: $showCandidatesSheet) {
+            .fullScreenCover(isPresented: $showCandidatesSheet) {
                 NavigationStack {
                     CandidatesView(modalPresentation: true)
                 }
             }
-            .sheet(isPresented: $showCreateSongSheet) {
-                CreateSongSheet(vm: vm, initialPrefill: createSongPrefill)
+            .fullScreenCover(isPresented: $showCreateSongSheet) {
+                AppModalContainer {
+                    CreateSongSheet(vm: vm, initialPrefill: createSongPrefill)
+                }
             }
             .errorBanner($vm.error)
             .task {
@@ -116,6 +128,8 @@ struct SongsView: View {
                 selectedSongForDetails = SongsDetailSheetItem(id: songId, title: song.title)
             } label: {
                 SongRow(song: song)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else {
@@ -204,9 +218,10 @@ private struct CreateSongSheet: View {
                             Text("30s").tag(30.0)
                         }
                         .pickerStyle(.segmented)
-                        .listAlignedFieldSurface()
+                        .addModalFieldStyle()
                     }
                 }
+                .addModalSectionStyle()
 
                 Section("Song") {
                     ForEach(vm.songFields) { field in
@@ -294,7 +309,7 @@ private struct CreateSongSheet: View {
 
                         if field.key == "interpret", !hasFieldInConfig("composer") {
                             TextField("Komponist", text: binding(for: "composer"))
-                                .listAlignedFieldSurface()
+                                .addModalFieldStyle()
                                 .listRowBackground(
                                     highlightedAutofillFields.contains("composer")
                                     ? Color.green.opacity(0.18)
@@ -305,7 +320,7 @@ private struct CreateSongSheet: View {
 
                         if field.key == "interpret", !hasFieldInConfig("texter") {
                             TextField("Texter", text: binding(for: "texter"))
-                                .listAlignedFieldSurface()
+                                .addModalFieldStyle()
                                 .listRowBackground(
                                     highlightedAutofillFields.contains("texter")
                                     ? Color.green.opacity(0.18)
@@ -315,6 +330,7 @@ private struct CreateSongSheet: View {
                         }
                     }
                 }
+                .addModalSectionStyle()
 
                 if vm.isCreatingSong {
                     Section {
@@ -324,11 +340,10 @@ private struct CreateSongSheet: View {
                             Spacer()
                         }
                     }
+                    .addModalSectionStyle()
                 }
             }
-            .softCardContainer()
-            .textFieldStyle(.plain)
-            .appShellBackground()
+            .addModalFormStyle()
             .navigationTitle("Neuer Song")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -623,7 +638,7 @@ private struct CreateSongSheet: View {
                 field.required ? "\(field.label) * (Name + Name)" : "\(field.label) (Name + Name)",
                 text: binding(for: field.key)
             )
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .option:
             Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
                 if !field.required {
@@ -634,24 +649,24 @@ private struct CreateSongSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .time:
             TextField(
                 field.required ? "\(field.label) * (HH:MM:SS)" : "\(field.label) (HH:MM:SS)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .date:
             TextField(
                 field.required ? "\(field.label) * (YYYY-MM-DD)" : "\(field.label) (YYYY-MM-DD)",
                 text: binding(for: field.key)
             )
             .textInputAutocapitalization(.never)
-            .listAlignedFieldSurface()
+            .addModalFieldStyle()
         case .text:
             TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
-                .listAlignedFieldSurface()
+                .addModalFieldStyle()
         }
     }
 

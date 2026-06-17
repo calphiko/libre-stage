@@ -48,11 +48,14 @@ struct SongDetailsView: View {
 		.appShellBackground()
 		.navigationTitle(vm.song?.title ?? initialTitle ?? "Song")
 		.navigationBarTitleDisplayMode(.inline)
+		.headerBodyBlend()
 		.toolbar {
 			if modalPresentation {
-				ToolbarItem(placement: .topBarTrailing) {
-					Button("Fertig") {
+				ToolbarItem(placement: .topBarLeading) {
+					Button {
 						dismiss()
+					} label: {
+						Label("Zurueck", systemImage: "chevron.left")
 					}
 				}
 			}
@@ -159,7 +162,7 @@ struct SongDetailsView: View {
 				options: vm.singerOptions,
 				selection: singerBinding(for: field.key)
 			)
-			.formFieldSurface()
+			.listAlignedFieldSurface()
 		case .option:
 			Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
 				if !field.required {
@@ -170,21 +173,21 @@ struct SongDetailsView: View {
 				}
 			}
 			.pickerStyle(.menu)
-			.formFieldSurface()
+			.listAlignedFieldSurface()
 		case .time:
 			TextField(
 				field.required ? "\(field.label) * (HH:MM:SS)" : "\(field.label) (HH:MM:SS)",
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
-			.formFieldSurface()
+			.listAlignedFieldSurface()
 		case .date:
 			TextField(
 				field.required ? "\(field.label) * (YYYY-MM-DD)" : "\(field.label) (YYYY-MM-DD)",
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
-			.formFieldSurface()
+			.listAlignedFieldSurface()
 		case .text:
 			if field.key == "text" || field.key == "comment" {
 				TextField(
@@ -193,10 +196,10 @@ struct SongDetailsView: View {
 					axis: .vertical
 				)
 				.lineLimit(3...8)
-				.formFieldSurface()
+				.listAlignedFieldSurface()
 			} else {
 				TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
-					.formFieldSurface()
+					.listAlignedFieldSurface()
 			}
 		}
 	}
@@ -347,7 +350,7 @@ private struct SongDetailsTabBar: View {
 		}
 		.padding(.horizontal)
 		.padding(.vertical, 10)
-		.background(Color(.systemGroupedBackground))
+		.background(.clear)
 	}
 
 	private func tabButton(title: String, tab: SongDetailsTab, enabled: Bool) -> some View {

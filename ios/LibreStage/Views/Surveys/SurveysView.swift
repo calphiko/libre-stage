@@ -5,6 +5,7 @@
 import SwiftUI
 
 struct SurveysView: View {
+    let onMenuTap: (() -> Void)?
     @State private var vm = SurveysViewModel()
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
@@ -15,6 +16,10 @@ struct SurveysView: View {
     @State private var showReminderAlert = false
     @State private var surveyToDelete:  SurveyList? = nil
     @State private var surveyToArchive: SurveyList? = nil
+
+    init(onMenuTap: (() -> Void)? = nil) {
+        self.onMenuTap = onMenuTap
+    }
 
     // MARK: - Derived
 
@@ -74,6 +79,11 @@ struct SurveysView: View {
             .navigationTitle("Umfragen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -93,9 +103,11 @@ struct SurveysView: View {
                 }
             }
             .headerBodyBlend()
-            .sheet(isPresented: $showNewSheet) {
-                NewSurveySheet { newSurvey in
-                    await vm.createSurvey(newSurvey)
+            .fullScreenCover(isPresented: $showNewSheet) {
+                AppModalContainer {
+                    NewSurveySheet { newSurvey in
+                        await vm.createSurvey(newSurvey)
+                    }
                 }
             }
         }

@@ -130,8 +130,13 @@ struct SetlistEditorSheet: View {
             .navigationTitle("Setliste: \(gigName)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Zurueck") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Label("Zurueck", systemImage: "chevron.backward")
+                            .labelStyle(.titleAndIcon)
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if vm.isSaving {
