@@ -49,6 +49,7 @@ struct MeinungsumfrageDetailView: View {
         .appShellBackground()
         .navigationTitle(vm.detail?.rf_survey ?? "Umfrage")
         .navigationBarTitleDisplayMode(.inline)
+        .headerBodyBlend()
         .errorBanner(
             $vm.error,
             actionTitle: vm.error?.isUnauthorized == true ? "Erneut einloggen" : nil,

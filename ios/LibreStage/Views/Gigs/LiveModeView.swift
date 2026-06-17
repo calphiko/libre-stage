@@ -230,8 +230,9 @@ struct LiveModeView: View {
         .onChange(of: orderedSongs.map(\.id)) { _, _ in
             currentSongId = resolveCurrentSongId(preferredId: currentSongId)
         }
-        .sheet(isPresented: $showInsertSheet) {
-            NavigationStack {
+        .fullScreenCover(isPresented: $showInsertSheet) {
+            AppModalContainer {
+                NavigationStack {
                 List {
                     ForEach(Array(vm.filteredSongsForInsert(query: insertSearchQuery).enumerated()), id: \.offset) { _, song in
                         if let songId = song.id {
@@ -277,6 +278,7 @@ struct LiveModeView: View {
                         .disabled(selectedInsertSongId == nil)
                     }
                 }
+            }
             }
         }
     }

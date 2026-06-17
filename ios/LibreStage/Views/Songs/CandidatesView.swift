@@ -9,6 +9,7 @@ struct CandidatesView: View {
     @State private var vm = SongsViewModel()
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     init(modalPresentation: Bool = false) {
         self.modalPresentation = modalPresentation
@@ -29,43 +30,71 @@ struct CandidatesView: View {
             } else if vm.candidates.isEmpty {
                 ContentUnavailableView("Keine Kandidaten", systemImage: "hand.thumbsup")
             } else {
-                List(vm.candidates) { song in
-                    CandidateRow(
-                        song: song,
-                        totalEligibleVoters: vm.totalEligibleVoters,
-                        currentUserId: authManager.currentUser?.id ?? -1,
-                        canVote: isMusician,
-                        canAccept: isEditor,
-                        onVote: { feedbacks in
-                            Task {
-                                await vm.submitCandidateFeedback(
-                                    songId: song.id,
-                                    feedbacks: feedbacks
-                                )
-                            }
-                        },
-                        onAccept: {
-                            Task {
-                                await vm.acceptCandidate(songId: song.id)
-                            }
+                List {
+                    Section {
+                        Label("Vorschlaege bewerten und bei Quorum direkt uebernehmen", systemImage: "wand.and.stars")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                    Section("Song-Kandidaten (\(vm.candidates.count))") {
+                        ForEach(vm.candidates) { song in
+                            CandidateRow(
+                                song: song,
+                                totalEligibleVoters: vm.totalEligibleVoters,
+                                currentUserId: authManager.currentUser?.id ?? -1,
+                                canVote: isMusician,
+                                canAccept: isEditor,
+                                onVote: { feedbacks in
+                                    Task {
+                                        await vm.submitCandidateFeedback(
+                                            songId: song.id,
+                                            feedbacks: feedbacks
+                                        )
+                                    }
+                                },
+                                onAccept: {
+                                    Task {
+                                        await vm.acceptCandidate(songId: song.id)
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
                 .softCardContainer()
                 .refreshable { await vm.loadCandidates() }
             }
         }
         .appShellBackground()
+        .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("Kandidaten")
         .toolbar {
             if modalPresentation {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fertig") {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Label("Zurueck", systemImage: "chevron.left")
                     }
                 }
             }
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 8) {
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    Text("Kandidaten")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                }
+            }
         }
+        .headerBodyBlend()
         .errorBanner($vm.error)
         .task { await vm.loadCandidates() }
     }
