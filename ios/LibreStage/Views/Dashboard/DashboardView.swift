@@ -6,10 +6,17 @@ import SwiftUI
 import Charts
 
 struct DashboardView: View {
+    let onMenuTap: (() -> Void)?
     @Environment(DashboardViewModel.self) private var vm
     @Environment(\.colorScheme) private var colorScheme
     @State private var showCandidatesSheet = false
     @State private var selectedTodoTab: DashboardTodoTab = .open
+    @State private var hasLoadedInitially = false
+    @State private var isRefreshingDashboard = false
+
+    init(onMenuTap: (() -> Void)? = nil) {
+        self.onMenuTap = onMenuTap
+    }
 
     private var currentSeasonTitle: String {
         let year = Calendar.current.component(.year, from: Date())
@@ -27,57 +34,60 @@ struct DashboardView: View {
                         SkeletonList()
                     } else if let list = vm.todoList {
                         List {
-                            Section("Deine Todos") {
-                                Picker("Bereich", selection: $selectedTodoTab) {
-                                    ForEach(DashboardTodoTab.allCases) { tab in
-                                        Text(tab.title(counts: list)).tag(tab)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
+                            Section {
+                                todoTabHeader(list: list)
 
                                 todoSectionContent(for: selectedTodoTab, list: list)
+                            } header: {
+                                dashboardSectionHeader("Deine Todos", systemImage: "checklist", tint: .blue)
                             }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                            .listRowBackground(AppTheme.dashboardRowBackground(for: colorScheme))
 
-                            Section("Nächste Termine") {
-                                DashboardEventCard(
-                                    title: "Nächste Probe",
-                                    icon: "music.quarternote.3",
-                                    tint: .blue,
-                                    primary: vm.nextRehearsal.map {
-                                        formatDateTime($0.begin, dateStyle: .medium, timeStyle: .short)
-                                    } ?? "Keine Probe geplant",
-                                    secondary: vm.nextRehearsal?.comment
-                                )
+                            Section {
+                                HStack(alignment: .top, spacing: 10) {
+                                    DashboardEventCard(
+                                        title: "Nächste Probe",
+                                        icon: "music.quarternote.3",
+                                        tint: .blue,
+                                        primary: vm.nextRehearsal.map {
+                                            formatDateTime($0.begin, dateStyle: .medium, timeStyle: .short)
+                                        } ?? "Keine Probe geplant",
+                                        secondary: vm.nextRehearsal?.comment
+                                    )
 
-                                DashboardEventCard(
-                                    title: "Nächster Auftritt",
-                                    icon: "music.mic",
-                                    tint: .purple,
-                                    primary: vm.nextGig.map {
-                                        formatDateTime($0.datum, dateStyle: .medium, timeStyle: .none)
-                                    } ?? "Kein Auftritt geplant",
-                                    secondary: vm.nextGig?.name
-                                )
+                                    DashboardEventCard(
+                                        title: "Nächster Auftritt",
+                                        icon: "music.mic",
+                                        tint: .purple,
+                                        primary: vm.nextGig.map {
+                                            formatDateTime($0.datum, dateStyle: .medium, timeStyle: .none)
+                                        } ?? "Kein Auftritt geplant",
+                                        secondary: vm.nextGig?.name
+                                    )
+                                }
+                            } header: {
+                                dashboardSectionHeader("Nächste Termine", systemImage: "calendar", tint: .purple)
                             }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                            .listRowBackground(AppTheme.dashboardRowBackground(for: colorScheme))
 
-                            Section(currentSeasonTitle) {
+                            Section {
                                 if let stats = vm.currentSeasonStatistics {
                                     DashboardSeasonPlots(stats: stats)
                                 } else {
                                     Text("Saisonstatistik wird geladen oder ist nicht verfügbar.")
                                         .foregroundStyle(.secondary)
                                 }
+                            } header: {
+                                dashboardSectionHeader(currentSeasonTitle, systemImage: "chart.bar.xaxis", tint: .teal)
                             }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                            .listRowBackground(AppTheme.dashboardRowBackground(for: colorScheme))
                         }
                         .scrollContentBackground(.hidden)
                         .background(.clear)
                         .listStyle(.insetGrouped)
+                        .listSectionSpacing(14)
                         .refreshable {
-                            await vm.load()
-                            ensureValidTodoTab()
+                            await refreshDashboard()
                         }
                     } else {
                         ContentUnavailableView("Nichts gefunden", systemImage: "tray")
@@ -87,6 +97,11 @@ struct DashboardView: View {
             .navigationTitle("Dashboard")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -102,19 +117,71 @@ struct DashboardView: View {
             }
             .headerBodyBlend()
         }
-        .sheet(isPresented: $showCandidatesSheet) {
+        .fullScreenCover(isPresented: $showCandidatesSheet) {
             NavigationStack {
                 CandidatesView(modalPresentation: true)
             }
         }
         .errorBanner($vm.error)
         .task {
-            await vm.load()
-            ensureValidTodoTab()
+            guard !hasLoadedInitially else { return }
+            hasLoadedInitially = true
+            await refreshDashboard()
+        }
+        .onAppear {
+            guard hasLoadedInitially else { return }
+            Task { await refreshDashboard() }
+        }
+        .onChange(of: showCandidatesSheet) { _, isPresented in
+            guard !isPresented else { return }
+            Task { await refreshDashboard() }
         }
         .onChange(of: vm.totalBadgeCount) { _, _ in
             ensureValidTodoTab()
         }
+    }
+
+    @ViewBuilder
+    private func todoTabHeader(list: UserTodoList) -> some View {
+        HStack(spacing: 8) {
+            ForEach(DashboardTodoTab.allCases) { tab in
+                let count = tab.count(in: list)
+                Button {
+                    selectedTodoTab = tab
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(tab.title)
+                            .font(.subheadline.weight(selectedTodoTab == tab ? .semibold : .regular))
+                            .foregroundStyle(
+                                selectedTodoTab == tab
+                                ? (colorScheme == .dark ? .white : Color(red: 0.07, green: 0.22, blue: 0.54))
+                                : .primary
+                            )
+
+                        if tab != .done && count > 0 {
+                            Text("\(count)")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.red, in: Capsule())
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 6)
+                    .dashboardTabGlassStyle(isActive: selectedTodoTab == tab)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(AppTheme.dashboardTileBackground(for: colorScheme), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
     }
 
     @ViewBuilder
@@ -168,6 +235,9 @@ struct DashboardView: View {
                 ForEach(list.surveys_to_feedback) { survey in
                     NavigationLink(survey.rf_survey) {
                         SurveyDetailView(surveyId: survey.id, surveyType: survey.kind_of_survey)
+                            .onDisappear {
+                                Task { await refreshDashboard() }
+                            }
                     }
                 }
             }
@@ -190,11 +260,44 @@ struct DashboardView: View {
         }
     }
 
+    private func dashboardSectionHeader(_ title: String, systemImage: String, tint: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(tint)
+
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+
+            Spacer()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(AppTheme.dashboardTileBackground(for: colorScheme))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+    }
+
     private func ensureValidTodoTab() {
         guard let list = vm.todoList else { return }
         if selectedTodoTab.count(in: list) > 0 { return }
 
         selectedTodoTab = DashboardTodoTab.allCases.first(where: { $0.count(in: list) > 0 }) ?? .open
+    }
+
+    private func refreshDashboard() async {
+        guard !isRefreshingDashboard else { return }
+        isRefreshingDashboard = true
+        defer { isRefreshingDashboard = false }
+
+        await vm.load()
+        selectedTodoTab = .open
     }
 
     private func formatDateTime(
@@ -246,6 +349,15 @@ private enum DashboardTodoTab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var title: String {
+        switch self {
+        case .open: return "Offen"
+        case .songs: return "Songvotes"
+        case .surveys: return "Umfragen"
+        case .done: return "Erledigt"
+        }
+    }
+
     func count(in list: UserTodoList) -> Int {
         switch self {
         case .open:
@@ -256,15 +368,6 @@ private enum DashboardTodoTab: String, CaseIterable, Identifiable {
             list.surveys_to_feedback.count
         case .done:
             list.todo.filter { $0.done }.count
-        }
-    }
-
-    func title(counts list: UserTodoList) -> String {
-        switch self {
-        case .open: return "Offen \(count(in: list))"
-        case .songs: return "Songs \(count(in: list))"
-        case .surveys: return "Umfragen \(count(in: list))"
-        case .done: return "Erledigt \(count(in: list))"
         }
     }
 }
@@ -297,7 +400,7 @@ private struct DashboardEventCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(AppTheme.tileBackground(for: colorScheme))
+        .background(AppTheme.dashboardTileBackground(for: colorScheme))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
@@ -358,7 +461,7 @@ private struct DashboardPlotCard<Content: View>: View {
             content
         }
         .padding(10)
-        .background(AppTheme.tileBackground(for: colorScheme))
+        .background(AppTheme.dashboardTileBackground(for: colorScheme))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
@@ -512,9 +615,9 @@ private struct DashboardFeedbackPlot: View {
     }
 
     private func feedbackEmoji(for avg: Double) -> String {
-        if avg >= 2.5 { return "😊" }
-        if avg >= 1.5 { return "😐" }
-        return "😞"
+        if avg >= 2.5 { return "😍" }
+        if avg >= 1.5 { return "😊" }
+        return "😐"
     }
 }
 
