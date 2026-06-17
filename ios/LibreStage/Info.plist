@@ -7,7 +7,7 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleDisplayName</key>
-	<string>libre-stage</string>
+	<string>libreStage</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleVersion</key>
@@ -27,7 +27,7 @@
 			<array>
 				<string>librestage-calle-2j4quq2xrg</string>
 				<string>librestage</string>
-				<string>libre-stage</string>
+				<string>libreStage</string>
 			</array>
 		</dict>
 	</array>
