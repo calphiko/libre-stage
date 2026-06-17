@@ -8,7 +8,6 @@ struct RehearsalCreateSheet: View {
     let onCreate: (RehCreateRequest) async -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
 
     @State private var beginDate: Date = Calendar.current.date(
         bySettingHour: 19, minute: 0, second: 0, of: Date()
@@ -31,24 +30,22 @@ struct RehearsalCreateSheet: View {
             Form {
                 Section("Zeitraum") {
                     DatePicker("Beginn", selection: $beginDate, displayedComponents: [.date, .hourAndMinute])
-                        .listAlignedFieldSurface()
+                        .addModalFieldStyle()
                     Toggle("Ende festlegen", isOn: $hasEnd)
                     if hasEnd {
                         DatePicker("Ende", selection: $endDate, in: beginDate..., displayedComponents: [.date, .hourAndMinute])
-                            .listAlignedFieldSurface()
+                            .addModalFieldStyle()
                     }
                 }
-                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                .addModalSectionStyle()
                 Section("Kommentar") {
                     TextField("Optional", text: $comment, axis: .vertical)
                         .lineLimit(3...6)
-                        .listAlignedFieldSurface()
+                        .addModalFieldStyle()
                 }
-                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                .addModalSectionStyle()
             }
-            .softCardContainer()
-            .textFieldStyle(.plain)
-            .appShellBackground()
+            .addModalFormStyle()
             .navigationTitle("Neue Probe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

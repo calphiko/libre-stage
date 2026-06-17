@@ -180,7 +180,8 @@ struct RehearsalSongDetailView: View {
         .appShellBackground()
         .navigationTitle("\(song.interpret) – \(song.title)")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $selectedSongForDetails) { item in
+        .headerBodyBlend()
+        .fullScreenCover(item: $selectedSongForDetails) { item in
             NavigationStack {
                 SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
             }

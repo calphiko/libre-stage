@@ -41,6 +41,7 @@ struct RehearsalDetailView: View {
         .appShellBackground()
         .navigationTitle(vm.formatRangeLabel(localReh))
         .navigationBarTitleDisplayMode(.inline)
+        .headerBodyBlend()
         .toolbar {
             if !isPast && isAdmin {
                 ToolbarItem(placement: .destructiveAction) {
@@ -156,12 +157,14 @@ struct RehearsalDetailView: View {
             }
         }
         .softCardContainer()
-        .sheet(isPresented: $showSongPicker) {
-            SongPickerSheet(
-                songs: vm.songs,
-                alreadyAdded: localReh.songs.map { $0.id_song }
-            ) { song, todo in
-                addSong(song, todo: todo)
+        .fullScreenCover(isPresented: $showSongPicker) {
+            AppModalContainer {
+                SongPickerSheet(
+                    songs: vm.songs,
+                    alreadyAdded: localReh.songs.map { $0.id_song }
+                ) { song, todo in
+                    addSong(song, todo: todo)
+                }
             }
         }
     }

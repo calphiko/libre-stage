@@ -5,12 +5,17 @@
 import SwiftUI
 
 struct RehearsalsView: View {
+    let onMenuTap: (() -> Void)?
     @State private var vm = RehearsalsViewModel()
     @State private var showCreateSheet = false
     @State private var selectedTab = 0
     @State private var pastSearchQuery = ""
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
+
+    init(onMenuTap: (() -> Void)? = nil) {
+        self.onMenuTap = onMenuTap
+    }
 
     var isEditor: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
@@ -45,6 +50,11 @@ struct RehearsalsView: View {
             .navigationTitle("Proben")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -66,9 +76,11 @@ struct RehearsalsView: View {
                 }
             }
             .headerBodyBlend()
-            .sheet(isPresented: $showCreateSheet) {
-                RehearsalCreateSheet { request in
-                    await vm.create(request)
+            .fullScreenCover(isPresented: $showCreateSheet) {
+                AppModalContainer {
+                    RehearsalCreateSheet { request in
+                        await vm.create(request)
+                    }
                 }
             }
         }
