@@ -22,104 +22,106 @@ struct LoginView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                AppTheme.shellGradient(for: colorScheme)
-                    .ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 22) {
+                    VStack(spacing: 10) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 96, height: 96)
+                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                            .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 6)
 
-                ScrollView {
-                    VStack(spacing: 22) {
-                        VStack(spacing: 10) {
-                            Image("AppLogo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 96, height: 96)
-                                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                                .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 6)
+                        Text("libreStage")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
 
-                            Text("libreStage")
-                                .font(.system(size: 34, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                        Text("Band-Orga mit Groove statt Tabellenchaos")
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
 
-                            Text("Band-Orga mit Groove statt Tabellenchaos")
-                                .font(.subheadline)
-                                .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
-                        }
-                        .padding(.top, 32)
+                        Label("Mit deiner Server-Instanz verbinden", systemImage: "lock.shield")
+                            .font(.caption)
+                            .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
+                    }
+                    .padding(.top, 32)
 
-                        VStack(spacing: 14) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Server")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                TextField("https://dein-server.tld", text: $serverURL)
-                                    .keyboardType(.URL)
-                                    .textInputAutocapitalization(.never)
-                                    .autocorrectionDisabled()
-                                    .textFieldStyle(.roundedBorder)
+                    VStack(spacing: 14) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Server")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            TextField("https://dein-server.tld", text: $serverURL)
+                                .keyboardType(.URL)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .formFieldSurface()
 
-                                if let err = healthError {
-                                    Text(err)
-                                        .font(.caption)
-                                        .foregroundStyle(.red)
-                                }
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Benutzername")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                TextField("z. B. calle", text: $username)
-                                    .textInputAutocapitalization(.never)
-                                    .autocorrectionDisabled()
-                                    .textFieldStyle(.roundedBorder)
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Passwort")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                SecureField("Passwort", text: $password)
-                                    .textFieldStyle(.roundedBorder)
-                            }
-
-                            if let err = fieldError ?? authManager.loginError {
+                            if let err = healthError {
                                 Text(err)
                                     .font(.caption)
                                     .foregroundStyle(.red)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
-
-                            Button {
-                                Task { await connect() }
-                            } label: {
-                                HStack(spacing: 8) {
-                                    if authManager.isLoading || isCheckingHealth {
-                                        ProgressView()
-                                            .tint(.white)
-                                    }
-                                    Text((authManager.isLoading || isCheckingHealth) ? "Verbinde..." : "Verbinden")
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.white)
-                            .background(Color.cyan.gradient)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .disabled(serverURL.isEmpty  || username.isEmpty || password.isEmpty || authManager.isLoading || isCheckingHealth)
-                            .opacity(serverURL.isEmpty || username.isEmpty || password.isEmpty ? 0.6 : 1)
                         }
-                        .glassCardStyle()
-                        .padding(.horizontal)
 
-                        Text(appVersionLabel)
-                            .font(.caption2)
-                            .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
-                            .padding(.bottom, 20)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Benutzername")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            TextField("z. B. calle", text: $username)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .formFieldSurface()
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Passwort")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            SecureField("Passwort", text: $password)
+                                .formFieldSurface()
+                        }
+
+                        if let err = fieldError ?? authManager.loginError {
+                            Text(err)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
+                        Button {
+                            Task { await connect() }
+                        } label: {
+                            HStack(spacing: 8) {
+                                if authManager.isLoading || isCheckingHealth {
+                                    ProgressView()
+                                        .tint(.white)
+                                }
+                                Text((authManager.isLoading || isCheckingHealth) ? "Verbinde..." : "Verbinden")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.white)
+                        .background(Color.accentColor.gradient)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .disabled(serverURL.isEmpty  || username.isEmpty || password.isEmpty || authManager.isLoading || isCheckingHealth)
+                        .opacity(serverURL.isEmpty || username.isEmpty || password.isEmpty ? 0.6 : 1)
                     }
+                    .glassCardStyle()
+                    .frame(maxWidth: 560)
+                    .padding(.horizontal)
+
+                    Text(appVersionLabel)
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.onShellSecondary(for: colorScheme))
+                        .padding(.bottom, 20)
                 }
+                .frame(maxWidth: .infinity)
             }
+            .appShellBackground()
             .navigationBarHidden(true)
         }
     }
