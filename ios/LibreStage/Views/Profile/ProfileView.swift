@@ -5,6 +5,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    let onMenuTap: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
     @State private var vm = ProfileViewModel()
@@ -24,9 +25,20 @@ struct ProfileView: View {
     @State private var showAboutSheet = false
     @State private var showShareDebugSheet = false
 
+    init(onMenuTap: (() -> Void)? = nil) {
+        self.onMenuTap = onMenuTap
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Label("Account, Sicherheit und App-Einstellungen", systemImage: "person.crop.circle.badge.checkmark")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
                 // MARK: User Info
                 if let user = authManager.currentUser {
                     Section("Mein Profil") {
@@ -36,6 +48,7 @@ struct ProfileView: View {
                         LabeledContent("Rolle",       value: user.user_group.rawValue.capitalized)
                         LabeledContent("Status",      value: user.status.rawValue.capitalized)
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
 
                 // MARK: Server
@@ -46,6 +59,7 @@ struct ProfileView: View {
                         showURLSheet = true
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 // MARK: Security
                 Section("Sicherheit") {
@@ -58,6 +72,7 @@ struct ProfileView: View {
                         showPasswordSheet = true
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 Section("App") {
                     Button {
@@ -78,16 +93,7 @@ struct ProfileView: View {
                         Label("Share-Diagnose (Shazam)", systemImage: "ladybug")
                     }
                 }
-
-                if authManager.userRole == .admin {
-                    Section("Admin") {
-                        NavigationLink {
-                            AdminConfigView()
-                        } label: {
-                            Label("Konfiguration", systemImage: "slider.horizontal.3")
-                        }
-                    }
-                }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 // MARK: Logout
                 Section {
@@ -97,12 +103,18 @@ struct ProfileView: View {
                         Label("Abmelden", systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
+                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
             .softCardContainer()
             .appShellBackground()
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let onMenuTap {
+                    ToolbarItem(placement: .topBarLeading) {
+                        AppMenuButton(action: onMenuTap)
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("AppLogo")
@@ -119,9 +131,17 @@ struct ProfileView: View {
             .headerBodyBlend()
         }
         // MARK: - Password Sheet
-        .sheet(isPresented: $showPasswordSheet) {
-            NavigationStack {
+        .fullScreenCover(isPresented: $showPasswordSheet) {
+            AppModalContainer {
+                NavigationStack {
                 Form {
+                    Section {
+                        Label("Passwort sicher aktualisieren", systemImage: "lock.shield")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
                     Section("Passwort ändern") {
                         SecureField("Aktuelles Passwort", text: $oldPassword)
                             .formFieldSurface()
@@ -130,35 +150,64 @@ struct ProfileView: View {
                         SecureField("Neues Passwort (Wiederholung)", text: $confirmPassword)
                             .formFieldSurface()
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
                     if let err = vm.passwordError {
                         Section {
                             Text(err).foregroundStyle(.red).font(.caption)
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
+
                     if vm.passwordSuccess {
                         Section {
                             Label("Passwort erfolgreich geändert", systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
                         }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
+
                     Section {
                         Button("Speichern") {
                             Task { await changePassword() }
                         }
                         .disabled(vm.isChangingPassword || newPassword.isEmpty || oldPassword.isEmpty)
+
                         Button("Abbrechen", role: .cancel) { showPasswordSheet = false }
                     }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
                 .softCardContainer()
                 .appShellBackground()
                 .navigationTitle("Passwort")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        HStack(spacing: 8) {
+                            Image("AppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            Text("Passwort")
+                                .font(.headline)
+                                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Fertig") {
+                            showPasswordSheet = false
+                        }
+                    }
+                }
+                .headerBodyBlend()
             }
-            .presentationDetents([.medium])
+            }
         }
         // MARK: - URL Sheet
-        .sheet(isPresented: $showURLSheet) {
-            NavigationStack {
+        .fullScreenCover(isPresented: $showURLSheet) {
+            AppModalContainer {
+                NavigationStack {
                 Form {
                     Section("Neue Server-URL") {
                         TextField("https://…", text: $newURL)
@@ -181,15 +230,19 @@ struct ProfileView: View {
                 .navigationTitle("Server-URL")
                 .navigationBarTitleDisplayMode(.inline)
             }
-            .presentationDetents([.medium])
-        }
-        .sheet(isPresented: $showAboutSheet) {
-            NavigationStack {
-                AboutAppView(modalPresentation: true)
             }
         }
-        .sheet(isPresented: $showShareDebugSheet) {
-            ShareDebugView(modalPresentation: true)
+        .fullScreenCover(isPresented: $showAboutSheet) {
+            AppModalContainer {
+                NavigationStack {
+                    AboutAppView(modalPresentation: true)
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showShareDebugSheet) {
+            AppModalContainer {
+                ShareDebugView(modalPresentation: true)
+            }
         }
         // MARK: - Logout Confirmation
         .confirmationDialog("Wirklich abmelden?", isPresented: $showLogoutConfirm, titleVisibility: .visible) {
@@ -213,4 +266,3 @@ struct ProfileView: View {
         }
     }
 }
-
