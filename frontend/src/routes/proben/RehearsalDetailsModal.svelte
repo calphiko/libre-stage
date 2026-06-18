@@ -52,6 +52,7 @@
   let newSongTodo = $state('');
   let songToAddInput;
   let expandedSongId = $state(null);
+  let canEdit = $derived(!!isEditor);
 
   function formatTime(dateLike) {
     return new Date(dateLike).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -112,10 +113,12 @@
   }
 
   function handleDelete() {
+    if (!canEdit) return;
     ondelete?.({ id: reh.id, date: formatDeleteRangeLabel() });
   }
 
   function handleUpdate(songId = null) {
+    if (!canEdit) return;
     onupdate?.({ reh, songId });
   }
 
@@ -124,25 +127,30 @@
   }
 
   function handleSongRemove(e) {
+    if (!canEdit) return;
     reh.songs = reh.songs.filter(s => s.id !== e.id);
     handleUpdate(null);
   }
 
   function handleSongDone(e) {
+    if (!canEdit) return;
     e.song.done = !e.song.done;
     handleUpdate(e.song.id);
   }
 
   function handleStatusChange(e) {
+    if (!canEdit) return;
     e.song.status = e.status;
     handleUpdate(e.song.id);
   }
 
   function handleSongUpdate() {
+    if (!canEdit) return;
     handleUpdate(expandedSongId);
   }
 
   function handleAddTodo(e) {
+    if (!canEdit) return;
     const { song, userId, todoText } = e;
     const newTodo = {
       id: null,
@@ -158,6 +166,7 @@
   }
 
   async function addSongTodo() {
+    if (!canEdit) return;
     if (!selectedSong) {
       onerror?.({ message: 'Bitte wähle einen gültigen Song aus.' });
       searchTerm = '';
@@ -260,12 +269,18 @@
       {/if}
     </div>
   {:else}
-    {#if isEditor}
+    {#if canEdit}
       <button
         class="btn btn-xs variant-filled-error text-xs float-left mb-2 border"
         title="Probe löschen"
         onclick={handleDelete}
       >Probe löschen</button>
+    {/if}
+
+    {#if !canEdit}
+      <div class="alert variant-soft-warning mb-3">
+        <p>Keine Bearbeitungsrechte: Alle Formularfelder sind deaktiviert.</p>
+      </div>
     {/if}
 
     <div class="mb-4 clear-both">
@@ -275,10 +290,11 @@
         bind:value={reh.comment}
         onblur={() => handleUpdate(expandedSongId)}
         placeholder="Probenkommentar"
+        disabled={!canEdit}
       ></textarea>
     </div>
 
-    <form class="mb-4 border-t pt-2.5" onsubmit={(e) => { e.preventDefault(); addSongTodo(); }}>
+    <form class="mb-4 border-t pt-2.5" onsubmit={(e) => { e.preventDefault(); if (canEdit) addSongTodo(); }}>
       <h6 class="font-bold text-sm mb-1.5">Song mit Todo</h6>
       <div class="flex flex-col gap-2">
         {#if songsForSearch.length > 0}
@@ -291,6 +307,7 @@
             bind:value={searchTerm}
             placeholder="Song eingeben"
             autocomplete="off"
+            disabled={!canEdit}
             oninput={(e) => {
               const selected = songsForSearch.find(s => s.label === e.target.value);
               if (selected) {
@@ -312,9 +329,10 @@
           bind:value={newSongTodo}
           required
           placeholder="Was gibts zu tun?"
+          disabled={!canEdit}
         />
       </div>
-      <button class="btn btn-xs variant-filled-primary border mt-1.5 w-fit" type="submit">
+      <button class="btn btn-xs variant-filled-primary border mt-1.5 w-fit" type="submit" disabled={!canEdit}>
         Hinzufügen
       </button>
     </form>
@@ -327,6 +345,7 @@
           rehearsalId={reh.id}
           rehearsalBegin={reh.begin}
           {statusOptions}
+          {canEdit}
           expanded={expandedSongId === song.id}
           ontoggle={handleSongToggle}
           onremove={handleSongRemove}

@@ -26,6 +26,7 @@
     users = [],
     rehearsalId = null,
     rehearsalBegin = null,
+    canEdit = false,
     expanded = false,
     statusOptions = [],
     ontoggle,
@@ -53,22 +54,27 @@
   }
 
   function handleRemove() {
+    if (!canEdit) return;
     onremove?.({ id: song.id });
   }
 
   function handleDone() {
+    if (!canEdit) return;
     ondone?.({ song });
   }
 
   function handleStatusChange(status) {
+    if (!canEdit) return;
     onstatuschange?.({ status, song });
   }
 
   function handleBlur() {
+    if (!canEdit) return;
     onupdate?.();
   }
 
   function handleAddTodo() {
+    if (!canEdit) return;
     if (newTodoUserId && newTodoText) {
       onaddtodo?.({
         song,
@@ -126,6 +132,7 @@
         class="btn variant-filled-error border btn-sm"
         title="Song entfernen"
         onclick={handleRemove}
+        disabled={!canEdit}
       >✖</button>
       <button
         class="btn variant-filled-secondary btn-sm"
@@ -138,6 +145,7 @@
       <button
         class="btn variant-filled-success btn-sm"
         onclick={handleDone}
+        disabled={!canEdit}
       >erledigt</button>
     </div>
 
@@ -149,6 +157,7 @@
             <button
               class="btn btn-sm {getStatusButtonClass(song.status, status)}"
               onclick={() => handleStatusChange(status)}
+              disabled={!canEdit}
             >{status}</button>
           {/each}
         </div>
@@ -159,7 +168,8 @@
           class="input w-full" type="text"
           bind:value={song.todo}
           onblur={handleBlur}
-          
+          disabled={!canEdit}
+
         />
       </div>
       <div>
@@ -168,7 +178,8 @@
           class="input w-full" type="text"
           bind:value={song.setlist_comment}
           onblur={handleBlur}
-          
+          disabled={!canEdit}
+
         />
       </div>
       <div>
@@ -177,6 +188,7 @@
           class="input w-full" rows="2"
           bind:value={song.comment}
           onblur={handleBlur}
+          disabled={!canEdit}
         ></textarea>
       </div>
     </div>
@@ -193,11 +205,12 @@
           </span>
         {/each}
       </div>
-      <form class="flex gap-2 mt-2 flex-wrap" onsubmit={handleAddTodo}>
+      <form class="flex gap-2 mt-2 flex-wrap" onsubmit={(e) => { e.preventDefault(); if (canEdit) handleAddTodo(); }}>
         <select
           bind:value={newTodoUserId}
           class="input w-full max-w-xs select" required
-          
+          disabled={!canEdit}
+
         >
           <option value="" disabled selected>Wer?</option>
           {#each users as u}
@@ -209,10 +222,11 @@
           bind:value={newTodoText}
           class="input w-full max-w-xs"
           placeholder="Was soll getan werden?" required
-          
+          disabled={!canEdit}
+
           onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTodo(); } }}
         />
-        <button type="submit" class="btn variant-filled-primary btn-outline btn-sm">
+        <button type="submit" class="btn variant-filled-primary btn-outline btn-sm" disabled={!canEdit}>
           Todo hinzufügen
         </button>
       </form>
