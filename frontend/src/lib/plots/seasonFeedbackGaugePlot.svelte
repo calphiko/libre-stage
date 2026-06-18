@@ -30,9 +30,9 @@
     }
 
     function emojiFor(value: number) {
-        if (value >= 2.5) return ':)';
-        if (value >= 1.5) return ':|';
-        return ':(';
+        if (value >= 2.5) return '😍';
+        if (value >= 1.5) return '😊';
+        return '😐';
     }
 
     function buildOptions() {
