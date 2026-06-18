@@ -112,6 +112,8 @@ except FileNotFoundError:
     }
 
 
+
+
 app = FastAPI(
     root_path=api_prefix,
     redoc_url=None,
@@ -128,6 +130,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # ===== EXCEPTION HANDLERS =====
 from fastapi.responses import JSONResponse
 
+@app.on_event("startup")
+async def validate_env():
+    secret_key = (os.getenv("SECRET_KEY") or "").strip().strip('"').strip("'")
+    if secret_key in {"", "your-secret-key-here-change-in-production"}:
+        raise RuntimeError("Invalid SECRET_KEY configuration.\n\t Please modify the line 'SECRET_KEY' in .env file for valid token signing.")
 
 @app.middleware("http")
 async def csrf_cookie_guard(request: Request, call_next):

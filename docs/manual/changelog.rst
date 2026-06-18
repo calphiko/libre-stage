@@ -3,6 +3,29 @@
 Änderungsprotokoll
 ==================
 
+0.5.18 (2026-06-18)
+-------------------
+
+Added
+~~~~~
+
+* Proben/Songs: Zusätzliche Berechtigungspruefungen fuer Bearbeitungen eingefuehrt, damit Editor-Rechte konsistent durchgesetzt werden.
+
+Changed
+~~~~~~~
+
+* Proben-Details und Song-Management: Bearbeitungsrechte im UI ueberarbeitet und klarer gesteuert.
+* Gig-Set-Management: Validierung beim Hinzufuegen/Bearbeiten von Songs erweitert und Fehlerbehandlung robuster gemacht.
+* UI/UX: Modale Dialoge nutzen nun ein Fullscreen-Layout fuer eine bessere Bedienbarkeit auf kleineren Ansichten.
+* Sicherheit/Config: Startup-Validierung fuer Umgebungsparameter ergaenzt, um Fehlkonfigurationen frueh zu erkennen.
+* Chore: Projektversion auf ``0.5.18`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.18`` ergaenzt.
+
+Fixed
+~~~~~
+
+* Songs: Fehlende Funktion ``getSongDetails`` fuer das Nachladen von Song-Details ergaenzt.
+
 0.5.17 (2026-06-16)
 -------------------
 

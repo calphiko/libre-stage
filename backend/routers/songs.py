@@ -323,6 +323,10 @@ def update_song(song_id: int, song: schemas.SongIn, db: Session = Depends(auth.g
 
     logger.info(f"Updating song ID {song_id} with data: {song.model_dump(exclude_unset=True)} by user {current['user_name']}")
 
+    if not check_editor(current):
+        logger.error(f"Permission denied: User {current['user_name']} is not editor")
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     for k, v in song.model_dump(exclude_unset=True).items():
         if k == "brass" and v is not None:
             v = int(v)

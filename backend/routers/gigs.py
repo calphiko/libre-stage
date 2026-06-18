@@ -1472,95 +1472,109 @@ def update_gig_setlist(
             },
         )
 
-    # Aktuelle Sets des Gigs
-    old_gigsets = db.query(models.GigSet).filter_by(id_gig=gig_id).all()
-    existing_sets = {gs.set.id: gs.set for gs in old_gigsets}
-    old_gigset_ids = [gs.id for gs in old_gigsets]
+    input_song_ids = {
+        song_data.song_id
+        for set_data in gig.sets
+        for song_data in set_data.songs
+    }
+    existing_songs = db.query(models.Song).filter(models.Song.id.in_(input_song_ids)).all() if input_song_ids else []
+    songs_by_id = {song.id: song for song in existing_songs}
+    missing_song_ids = sorted(input_song_ids - set(songs_by_id.keys()))
+    if missing_song_ids:
+        raise HTTPException(status_code=400, detail="Song not found")
 
-    # Input-Set-IDs und -Songs extrahieren
-    input_set_ids = set(sd.set_id for sd in gig.sets if getattr(sd, 'set_id', None))
+    try:
+        # Aktuelle Sets des Gigs
+        old_gigsets = db.query(models.GigSet).filter_by(id_gig=gig_id).all()
+        existing_sets = {gs.set.id: gs.set for gs in old_gigsets}
 
-    # 1. Entferne nur GigSet-Verknüpfungen, die im neuen Input fehlen
-    for gigset in old_gigsets:
-        if gigset.set.id not in input_set_ids:
-            db.delete(gigset)
-    db.commit()
+        # Input-Set-IDs extrahieren
+        input_set_ids = {sd.set_id for sd in gig.sets if getattr(sd, 'set_id', None)}
 
-    # 2. Sets löschen, die nicht mehr genutzt werden
-    for set_id in existing_sets:
-        if set_id not in input_set_ids:
-            db.query(models.SetSong).filter_by(id_set=set_id).delete()
-            db.query(models.Set).filter_by(id=set_id).delete()
-    db.commit()
+        # 1. Entferne nur GigSet-Verknüpfungen, die im neuen Input fehlen
+        for gigset in old_gigsets:
+            if gigset.set.id not in input_set_ids:
+                db.delete(gigset)
 
-    # 3. Update/Erstelle Sets und Songs
-    new_gigsets = []
-    for set_pos, set_data in enumerate(gig.sets, start=1):
-        # Existierendes Set, falls vorhanden
-        if getattr(set_data, 'set_id', None) and set_data.set_id in existing_sets:
-            set_obj = existing_sets[set_data.set_id]
-            # Update Eigenschaften des Sets
-            set_obj.name = set_data.set_name
-            set_obj.pause = time.fromisoformat(set_data.pause) if set_data.pause else None
-            set_obj.setlist_name = set_data.setlist_name
-            db.flush()
+        # 2. Sets löschen, die nicht mehr genutzt werden
+        for set_id in existing_sets:
+            if set_id not in input_set_ids:
+                db.query(models.SetSong).filter_by(id_set=set_id).delete()
+                db.query(models.Set).filter_by(id=set_id).delete()
 
-            # Speichere Live-Mode-Daten der bestehenden SetSongs
-            old_setsongs = db.query(models.SetSong).filter_by(id_set=set_obj.id).all()
-            livemode_data = {}  # Key: song_id, Value: {eingeschoben, uebersprungen, feedback}
-            for old_ss in old_setsongs:
-                livemode_data[old_ss.id_song] = {
-                    'eingeschoben': old_ss.eingeschoben,
-                    'uebersprungen': old_ss.uebersprungen,
-                    'feedback': old_ss.feedback
-                }
+        # 3. Update/Erstelle Sets und Songs
+        for set_pos, set_data in enumerate(gig.sets, start=1):
+            # Existierendes Set, falls vorhanden
+            if getattr(set_data, 'set_id', None) and set_data.set_id in existing_sets:
+                set_obj = existing_sets[set_data.set_id]
+                # Update Eigenschaften des Sets
+                set_obj.name = set_data.set_name
+                set_obj.pause = time.fromisoformat(set_data.pause) if set_data.pause else None
+                set_obj.setlist_name = set_data.setlist_name
+                db.flush()
 
-            # Update Songs im Set: Entferne alle alten, füge neue hinzu
-            db.query(models.SetSong).filter_by(id_set=set_obj.id).delete()
-        else:
-            # Neues Set anlegen
-            set_obj = models.Set(
-                name=set_data.set_name,
-                pause=time.fromisoformat(set_data.pause) if set_data.pause else None,
-                setlist_name=set_data.setlist_name,
-            )
-            db.add(set_obj)
-            db.flush()
-            livemode_data = {}  # Keine alten Daten bei neuem Set
+                # Speichere Live-Mode-Daten der bestehenden SetSongs
+                old_setsongs = db.query(models.SetSong).filter_by(id_set=set_obj.id).all()
+                livemode_data = {}  # Key: song_id, Value: {eingeschoben, uebersprungen, feedback}
+                for old_ss in old_setsongs:
+                    livemode_data[old_ss.id_song] = {
+                        'eingeschoben': old_ss.eingeschoben,
+                        'uebersprungen': old_ss.uebersprungen,
+                        'feedback': old_ss.feedback
+                    }
 
-        # Jetzt Songs der Reihe nach neu anlegen
-        for song_pos, song_data in enumerate(set_data.songs, start=1):
-            song = db.query(models.Song).filter_by(id=song_data.song_id).first()
-            if not song:
-                raise HTTPException(status_code=400, detail=f"Song not found")
+                # Update Songs im Set: Entferne alle alten, füge neue hinzu
+                db.query(models.SetSong).filter_by(id_set=set_obj.id).delete()
+            else:
+                # Neues Set anlegen
+                set_obj = models.Set(
+                    name=set_data.set_name,
+                    pause=time.fromisoformat(set_data.pause) if set_data.pause else None,
+                    setlist_name=set_data.setlist_name,
+                )
+                db.add(set_obj)
+                db.flush()
+                livemode_data = {}  # Keine alten Daten bei neuem Set
 
-            # Hole alte Live-Mode-Daten wenn vorhanden
-            old_data = livemode_data.get(song.id, {})
+            # Jetzt Songs der Reihe nach neu anlegen
+            for song_pos, song_data in enumerate(set_data.songs, start=1):
+                song = songs_by_id.get(song_data.song_id)
+                if not song:
+                    raise HTTPException(status_code=400, detail="Song not found")
 
-            setsong = models.SetSong(
-                id_set=set_obj.id,
-                id_song=song.id,
-                position=song_pos,
-                eingeschoben=old_data.get('eingeschoben'),
-                uebersprungen=old_data.get('uebersprungen'),
-                feedback=old_data.get('feedback')
-            )
-            db.add(setsong)
+                # Hole alte Live-Mode-Daten wenn vorhanden
+                old_data = livemode_data.get(song.id, {})
 
-        # GigSet-Verknüpfung erneuern
-        gigset = db.query(models.GigSet).filter_by(id_gig=db_gig.id, id_set=set_obj.id).first()
-        if not gigset:
-            gigset = models.GigSet(
-                id_gig=db_gig.id,
-                id_set=set_obj.id,
-                position=set_pos
-            )
-            db.add(gigset)
-        else:
-            gigset.position = set_pos
-        new_gigsets.append(gigset)
+                setsong = models.SetSong(
+                    id_set=set_obj.id,
+                    id_song=song.id,
+                    position=song_pos,
+                    eingeschoben=old_data.get('eingeschoben'),
+                    uebersprungen=old_data.get('uebersprungen'),
+                    feedback=old_data.get('feedback')
+                )
+                db.add(setsong)
 
-    db.commit()
+            # GigSet-Verknüpfung erneuern
+            gigset = db.query(models.GigSet).filter_by(id_gig=db_gig.id, id_set=set_obj.id).first()
+            if not gigset:
+                gigset = models.GigSet(
+                    id_gig=db_gig.id,
+                    id_set=set_obj.id,
+                    position=set_pos
+                )
+                db.add(gigset)
+            else:
+                gigset.position = set_pos
+
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
     db.refresh(db_gig)
     return _build_setlist_payload(db_gig)
 
