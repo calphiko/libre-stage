@@ -128,6 +128,10 @@ def update_rehearsal(
     if not reh_tbu:
         raise HTTPException(status_code=404, detail="Rehearsal not found")
 
+    if not check_editor(current):
+        logger.error(f"Permission denied: User {current['user_name']} is not editor")
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     # Primitive Felder updaten (alles außer Songs)
     for k, v in data.model_dump(exclude_unset=True, exclude={"songs"}).items():
         setattr(reh_tbu, k, v)

@@ -39,7 +39,7 @@
 {#if $modalState}
   {@const ModalComponent = currentModal?.component}
   <div
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="modal-fullscreen-backdrop fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
     transition:fade={{ duration: 150 }}
     onclick={handleBackdropClick}
     role="dialog"
@@ -47,7 +47,7 @@
     onoutroend={onOutroEnd}
   >
     <div
-      class="max-h-[90vh] overflow-y-auto"
+      class="modal-fullscreen-shell"
       transition:fly={{ y: 20, duration: 200 }}
       onclick={(e) => e.stopPropagation()}
     >
