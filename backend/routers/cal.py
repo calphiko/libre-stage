@@ -78,7 +78,7 @@ def _generate_ical_file(gigs, reh, internal = False) -> BytesIO:
 
     # Add gigs
     for gig in gigs:
-        if internal == False and gig.publish == False:
+        if internal == False and gig.publish == '0':
             continue
         event = Event()
         event.add('summary', f'{ICAL_GIG_PREFIX} {gig.name or "Auftritt"}')
