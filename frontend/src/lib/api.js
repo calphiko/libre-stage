@@ -1163,3 +1163,12 @@ export async function triggerSendPwResetToken(user_id) {
     if (!res.ok) throw new Error('Senden des Reset-Links fehlgeschlagen');
     return res.json();
 }
+
+export async function getICalURLs() {
+    const res = await fetchWithAuth(`${API_URL}/ical/url`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if(!res.ok)  throw new Error('Abrufen der iCal URLs fehlgeschlagen');
+    return res.json();
+}

@@ -23,6 +23,7 @@ application.
 
 Prefix: ``/ical``  |  Tag: ``ical``
 """
+from io import BytesIO
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.responses import StreamingResponse
@@ -63,21 +64,11 @@ class LogFilter(logging.Filter):  # pragma: no cover
 uvicorn_logger = logging.getLogger("uvicorn.access")
 uvicorn_logger.addFilter(LogFilter())
 
-
-@router.get("/")
-def get_iCal_Abo(
-        db: Session = Depends(auth.get_db),
-):
+def _generate_ical_file(gigs, reh, internal = False) -> BytesIO:
     from icalendar import Calendar, Event
     from io import BytesIO
 
     berlin_tz = pytz.timezone(APP_TIMEZONE)
-
-    logger.info("Fetching gigs from database")
-    gigs = db.query(models.Gig).order_by(models.Gig.datum.desc()).all()
-    logger.info("Fetching rehearsals from database")
-    reh = db.query(models.Rehearsal).order_by(models.Rehearsal.begin.desc()).all()
-
     cal = Calendar()
     cal.add('prodid', ICAL_PRODID)
     cal.add('version', '2.0')
@@ -87,6 +78,8 @@ def get_iCal_Abo(
 
     # Add gigs
     for gig in gigs:
+        if internal == False and gig.publish == False:
+            continue
         event = Event()
         event.add('summary', f'{ICAL_GIG_PREFIX} {gig.name or "Auftritt"}')
 
@@ -121,55 +114,78 @@ def get_iCal_Abo(
         cal.add_component(event)
 
     # Add rehearsals - analog mit stabilen UIDs
-    for rehearsal in reh:
-        event = Event()
-        event.add('uid', f'rehearsal-{rehearsal.id}@{ICAL_DOMAIN}')
+    if internal == True:
+        for rehearsal in reh:
+            event = Event()
+            event.add('uid', f'rehearsal-{rehearsal.id}@{ICAL_DOMAIN}')
 
-        # Stable DTSTAMP
-        if hasattr(rehearsal, 'created_at') and rehearsal.created_at:
-            dtstamp = berlin_tz.localize(
-                rehearsal.created_at) if rehearsal.created_at.tzinfo is None else rehearsal.created_at
-        else:
-            dtstamp = rehearsal.begin if rehearsal.begin.tzinfo else berlin_tz.localize(rehearsal.begin)
-        event.add('dtstamp', dtstamp)
-
-        if rehearsal.begin.tzinfo is None:
-            dtstart = berlin_tz.localize(rehearsal.begin)
-        else:
-            dtstart = rehearsal.begin.astimezone(berlin_tz)
-        event.add('dtstart', dtstart)
-
-        if rehearsal.end:
-            if rehearsal.end.tzinfo is None:
-                dtend = berlin_tz.localize(rehearsal.end)
+            # Stable DTSTAMP
+            if hasattr(rehearsal, 'created_at') and rehearsal.created_at:
+                dtstamp = berlin_tz.localize(
+                    rehearsal.created_at) if rehearsal.created_at.tzinfo is None else rehearsal.created_at
             else:
-                dtend = rehearsal.end.astimezone(berlin_tz)
-        else:
-            dtend = dtstart + timedelta(hours=2)
-        event.add('dtend', dtend)
+                dtstamp = rehearsal.begin if rehearsal.begin.tzinfo else berlin_tz.localize(rehearsal.begin)
+            event.add('dtstamp', dtstamp)
 
-        start_label = dtstart.strftime('%H:%M')
-        end_label = dtend.strftime('%H:%M')
-        event.add('summary', f'{ICAL_REH_PREFIX} {start_label}-{end_label} Uhr')
+            if rehearsal.begin.tzinfo is None:
+                dtstart = berlin_tz.localize(rehearsal.begin)
+            else:
+                dtstart = rehearsal.begin.astimezone(berlin_tz)
+            event.add('dtstart', dtstart)
 
-        description_lines = [f'Zeit: {start_label}-{end_label} Uhr']
-        if getattr(rehearsal, 'comment', None):
-            description_lines.append(f'Kommentar: {rehearsal.comment}')
+            if rehearsal.end:
+                if rehearsal.end.tzinfo is None:
+                    dtend = berlin_tz.localize(rehearsal.end)
+                else:
+                    dtend = rehearsal.end.astimezone(berlin_tz)
+            else:
+                dtend = dtstart + timedelta(hours=2)
+            event.add('dtend', dtend)
 
-        if hasattr(rehearsal, 'songs'):
-            song_titles = [song.title for song in rehearsal.songs if hasattr(song, 'title')]
-            if song_titles:
-                description_lines.append('Agenda:')
-                description_lines.extend([f'- {t}' for t in song_titles])
+            start_label = dtstart.strftime('%H:%M')
+            end_label = dtend.strftime('%H:%M')
+            event.add('summary', f'{ICAL_REH_PREFIX} {start_label}-{end_label} Uhr')
 
-        event.add('description', "\n".join(description_lines))
+            description_lines = [f'Zeit: {start_label}-{end_label} Uhr']
+            if getattr(rehearsal, 'comment', None):
+                description_lines.append(f'Kommentar: {rehearsal.comment}')
 
-        if hasattr(rehearsal, 'ort') and rehearsal.ort:
-            event.add('location', rehearsal.ort)
+            if hasattr(rehearsal, 'songs'):
+                song_titles = [song.title for song in rehearsal.songs if hasattr(song, 'title')]
+                if song_titles:
+                    description_lines.append('Agenda:')
+                    description_lines.extend([f'- {t}' for t in song_titles])
 
-        cal.add_component(event)
+            event.add('description', "\n".join(description_lines))
 
-    ical_bytes = BytesIO(cal.to_ical())
+            if hasattr(rehearsal, 'ort') and rehearsal.ort:
+                event.add('location', rehearsal.ort)
+
+            cal.add_component(event)
+
+    return BytesIO(cal.to_ical())
+
+@router.get("/url")
+def get_iCal_url(
+        db: Session = Depends(auth.get_db),
+        current=Depends(auth.get_current_user)
+):
+    return {
+        'open': '/ical',
+        'internal': f'/ical/{auth.generate_ical_token(current["user_name"])}'
+    }
+
+
+@router.get("/")
+def get_iCal_Abo(
+        db: Session = Depends(auth.get_db),
+):
+    logger.info("Fetching gigs from database")
+    gigs = db.query(models.Gig).order_by(models.Gig.datum.desc()).all()
+    logger.info("Fetching rehearsals from database")
+    reh = db.query(models.Rehearsal).order_by(models.Rehearsal.begin.desc()).all()
+
+    ical_bytes = _generate_ical_file(gigs, reh)
     return StreamingResponse(
         ical_bytes,
         media_type="text/calendar; charset=utf-8",
@@ -180,3 +196,26 @@ def get_iCal_Abo(
             "Expires": "0"
         }
     )
+
+@router.get("/{token}")
+def get_internal_iCal_Abo(
+    token:str,
+    db: Session = Depends(auth.get_db),
+):
+    logger.info("Checking ical token... ")
+    if auth.verify_ical_token(token, db):
+        logger.info("Fetching gigs from database")
+        gigs = db.query(models.Gig).order_by(models.Gig.datum.desc()).all()
+        logger.info("Fetching rehearsals from database")
+        reh = db.query(models.Rehearsal).order_by(models.Rehearsal.begin.desc()).all()
+        ical_bytes = _generate_ical_file(gigs, reh, internal=True)
+        return StreamingResponse(
+            ical_bytes,
+            media_type="text/calendar; charset=utf-8",
+            headers={
+                "Content-Disposition": "attachment; filename=termine.ics",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
