@@ -1,11 +1,22 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
 
 function createPersistentStore(key, initial) {
-  const stored = localStorage.getItem(key);
-  const store = writable(stored ? JSON.parse(stored) : initial);
+  let initialValue = initial;
+  if (browser) {
+    try {
+      const stored = localStorage.getItem(key);
+      initialValue = stored ? JSON.parse(stored) : initial;
+    } catch (_err) {
+      initialValue = initial;
+    }
+  }
+
+  const store = writable(initialValue);
 
   store.subscribe(value => {
+    if (!browser) return;
     localStorage.setItem(key, JSON.stringify(value));
   });
 
