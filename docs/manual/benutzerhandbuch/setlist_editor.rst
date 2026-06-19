@@ -40,6 +40,31 @@ deren Status ``spielbar`` ist.
 * Mit **Enter** (ohne Zusatz-Tasten wie ``Shift``/``Ctrl``/``Cmd``) wird der erste Suchtreffer direkt am Ende der Setlist hinzugefügt.
 * Nach dem Hinzufügen per **Enter** scrollt die Ansicht automatisch ans Ende der Setlist.
 
+Set aus vergangenem Gig importieren
+-----------------------------------
+
+Über den Button **Set aus vergangenem Gig** kann ein komplettes Set aus einem bereits vergangenen Gig
+in die aktuelle Setlist übernommen werden.
+
+Ablauf:
+
+* Vergangenen Gig auswählen
+* Set aus diesem Gig auswählen
+* Mit **Als neues Set einfügen** importieren
+
+Beim Import werden bewusst nur die musikalischen Set-Daten kopiert:
+
+* **Setname**
+* **Songs** in der vorhandenen Reihenfolge
+
+Nicht übernommen werden Live-/Nachbereitungsdaten:
+
+* Song-Bewertungen (``feedback``)
+* Übersprungen-Markierungen (``uebersprungen``)
+* Eingeschoben-Markierungen (``eingeschoben``)
+
+Nach erfolgreichem Import zeigt die Oberfläche eine Toast-Bestätigung an.
+
 Drag & Drop
 -----------
 
