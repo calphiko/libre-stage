@@ -19,7 +19,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs } from '$lib/api.js';
+  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs } from '$lib/api.js';
   import SeasonGigProgressPlot from '$lib/plots/seasonGigProgressPlot.svelte';
   import SeasonSongMixPlot from '$lib/plots/seasonSongMixPlot.svelte';
   import SeasonFeedbackGaugePlot from '$lib/plots/seasonFeedbackGaugePlot.svelte';
@@ -41,6 +41,10 @@
   let seasonStats = null;
   let nextRehearsal = null;
   let nextGig = null;
+  let calUrls = {
+    open: '',
+    internal: ''
+  };
 
   let tabsBasic = 0;
   let showSeasonStats = true;
@@ -89,8 +93,10 @@
       user = await getUser();
       todos = await getUserTodos();
       setTabIndex();
-      calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ical/`;
+      calUrls = await getICalURLs();
+      calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`;
       calendarUrl = calendarUrl.replace(/^https:\/\//, 'webcal://');
+
 
       // Lade Saisonstatistiken für das aktuelle Jahr
       const currentYear = new Date().getFullYear();
@@ -406,22 +412,18 @@
             <p class="text-sm text-primary-700 dark:text-primary-50 mb-3">
               Abonniere den Bandkalender, um alle Proben und Gigs in deiner Kalender-App zu sehen.
             </p>
-            <div class="flex gap-2">
-              <input
-                type="text"
-                readonly
-                value={calendarUrl}
-                class="ui-input flex-1 text-sm"
-              />
-              <button
-                class="ui-btn ui-btn-primary"
-                onclick={() => navigator.clipboard.writeText(calendarUrl)}
-              >
-                Kopieren
-              </button>
-            </div>
+
             <p class="text-xs text-primary-700 dark:text-surface-50 mt-2">
-              Füge diese URL als Kalender-Abo in deiner Kalender-App hinzu.
+                <a
+                    href={`${calendarUrl}${calUrls.open}`}
+                    class="inline-flex items-center justify-between rounded-lg border border-primary-300 bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-900 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                > Öffentlicher Kalender (für jeden)</a>
+            </p>
+            <p class="text-xs text-primary-700 dark:text-surface-50 mt-2">
+                <a
+                    href={`${calendarUrl}${calUrls.internal}`}
+                    class="inline-flex items-center justify-between rounded-lg border border-primary-300 bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-900 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                > Interner Kalender (für dich und eventuell Lebensgefährten)</a>
             </p>
           </div>
 

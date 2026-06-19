@@ -23,7 +23,7 @@
   import { dndzone } from 'svelte-dnd-action';
   import {getFirstSinger, getColorBySinger } from '$lib/common.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
-  import { updateGigSetlist, getSong } from '$lib/api.js';
+  import { updateGigSetlist, getSong, getGigs, getSetlist } from '$lib/api.js';
 
 
   let {
@@ -32,7 +32,7 @@
     canRedo = $bindable(false),
     isUpdatingSpinner = $bindable(false)
   } = $props();
-  const { showError } = createMessageHelpers();
+  const { showError, showSuccess } = createMessageHelpers();
 
   let isUpdating = $state(false);
   let updateError = $state(null);
@@ -52,6 +52,21 @@
   let historyFuture = $state([]);
   let historySetlistId = $state(null);
   let pendingSongsDragSnapshot = $state(null);
+  let showPastSetImport = $state(false);
+  let loadingPastGigs = $state(false);
+  let loadingPastGigSets = $state(false);
+  let pastGigOptions = $state([]);
+  let selectedPastGigId = $state('');
+  let pastGigSets = $state([]);
+  let selectedPastSetId = $state('');
+
+  let selectedPastGigOption = $derived(
+    pastGigOptions.find((gigOption) => String(gigOption.id) === selectedPastGigId) ?? null
+  );
+
+  let selectedPastSetOption = $derived(
+    pastGigSets.find((setOption) => String(setOption.id) === selectedPastSetId) ?? null
+  );
 
   function cloneSetlistState(value) {
     if (value == null) return value;
@@ -103,7 +118,7 @@
       return await persistDraftWithHistory(draft);
     } catch (error) {
       console.error('Failed to apply setlist change:', error);
-      showError('Aenderung konnte nicht angewendet werden.');
+      showError('Änderung konnte nicht angewendet werden.');
       return false;
     }
   }
@@ -155,7 +170,7 @@
     historyFuture = historyFuture.slice(0, -1);
     setlist = current;
     notifyHistoryState();
-    showError('Rueckgaengig konnte nicht gespeichert werden.');
+    showError('Rückgängig konnte nicht gespeichert werden.');
   }
 
   export async function redoLastChange() {
@@ -169,7 +184,7 @@
     notifyHistoryState();
 
     const redoDraft = cloneSetlistState(next);
-    // Redo basiert ebenfalls auf dem zuletzt bestaetigten Stand.
+    // Redo basiert ebenfalls auf dem zuletzt bestätigten Stand.
     if (baseVersion) {
       redoDraft.setlist_version = baseVersion;
     }
@@ -202,6 +217,136 @@
 
   function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function isGigInPast(datum) {
+    if (!datum) return false;
+    const parsed = new Date(`${datum}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsed < today;
+  }
+
+  function formatGigOptionLabel(gig) {
+    const datePart = gig?.datum ? gig.datum : 'ohne Datum';
+    return `${datePart} - ${gig?.name ?? `Gig ${gig?.id ?? ''}`}`;
+  }
+
+  async function loadPastGigOptions() {
+    loadingPastGigs = true;
+    try {
+      const gigs = await getGigs();
+      const currentGigId = Number(setlist?.id);
+      const options = (gigs ?? [])
+        .filter((gig) => Number(gig.id) !== currentGigId)
+        .filter((gig) => isGigInPast(gig.datum))
+        .sort((a, b) => String(b.datum ?? '').localeCompare(String(a.datum ?? '')))
+        .map((gig) => ({
+          id: Number(gig.id),
+          label: formatGigOptionLabel(gig),
+        }));
+      pastGigOptions = options;
+    } catch (error) {
+      console.error('Could not load past gigs:', error);
+      showError('Vergangene Gigs konnten nicht geladen werden.');
+    } finally {
+      loadingPastGigs = false;
+    }
+  }
+
+  async function loadSetsForPastGig(gigId) {
+    if (!gigId) {
+      pastGigSets = [];
+      selectedPastSetId = '';
+      return;
+    }
+
+    loadingPastGigSets = true;
+    try {
+      const sourceSetlist = await getSetlist(null, Number(gigId));
+      pastGigSets = (sourceSetlist?.sets ?? []).map((setEntry) => ({
+        id: Number(setEntry.gigset_id ?? setEntry.id),
+        label: setEntry.setlist_name || setEntry.set_name || `Set ${setEntry.id ?? ''}`,
+        source: setEntry,
+      }));
+      selectedPastSetId = pastGigSets.length ? String(pastGigSets[0].id) : '';
+    } catch (error) {
+      console.error('Could not load sets for past gig:', error);
+      showError('Sets des ausgewählten Gigs konnten nicht geladen werden.');
+      pastGigSets = [];
+      selectedPastSetId = '';
+    } finally {
+      loadingPastGigSets = false;
+    }
+  }
+
+  async function togglePastSetImport() {
+    showPastSetImport = !showPastSetImport;
+    if (!showPastSetImport) return;
+
+    if (!pastGigOptions.length && !loadingPastGigs) {
+      await loadPastGigOptions();
+    }
+
+    if (!selectedPastGigId && pastGigOptions.length) {
+      selectedPastGigId = String(pastGigOptions[0].id);
+      await loadSetsForPastGig(selectedPastGigId);
+    }
+  }
+
+  function closePastSetImport() {
+    showPastSetImport = false;
+    selectedPastGigId = '';
+    selectedPastSetId = '';
+    pastGigSets = [];
+  }
+
+  function buildImportedSong(sourceSong) {
+    const songId = Number(sourceSong?.song_id ?? sourceSong?.id);
+    if (!songId) return null;
+    return {
+      ...sourceSong,
+      id: songId,
+      song_id: songId,
+      setsong_id: nextNegativeSetsongId--,
+      eingeschoben: null,
+      uebersprungen: null,
+      feedback: null,
+    };
+  }
+
+  async function importSelectedPastSet() {
+    if (isUpdating) return;
+    const selected = pastGigSets.find((entry) => String(entry.id) === selectedPastSetId);
+    if (!selected?.source) {
+      showError('Bitte zuerst ein Set auswählen.');
+      return;
+    }
+
+    const sourceSet = selected.source;
+    const importedSongs = (sourceSet.songs ?? [])
+      .map(buildImportedSong)
+      .filter(Boolean);
+
+    const importedSet = {
+      songs: importedSongs,
+      pause: sourceSet.pause || '00:10:00',
+      setlist_name: sourceSet.setlist_name || sourceSet.set_name || '',
+      set_name: sourceSet.set_name || sourceSet.setlist_name || 'Importiertes Set',
+    };
+
+    const ok = await applySetlistChange((draft) => {
+      draft.sets.push(importedSet);
+    });
+
+    if (ok) {
+      const importedSetName = importedSet.setlist_name || importedSet.set_name || 'Importiertes Set';
+      const importedGigName = selectedPastGigOption?.label ?? 'vergangenem Gig';
+      showSuccess(`Set "${importedSetName}" aus "${importedGigName}" wurde eingefügt.`);
+      closePastSetImport();
+    }
   }
 
   function formatPauseForInput(value) {
@@ -672,7 +817,7 @@
       ondrop={(e) => handleSetDropToSlot(setIdx, e)}
     >
       {#if draggingSetIdx !== null && dropSetIdx === setIdx}
-        <span>Hier einfuegen</span>
+        <span>Hier einfügen</span>
       {/if}
     </div>
     <div
@@ -842,15 +987,87 @@
   ondrop={handleSetDropAtEnd}
 >
   {#if draggingSetIdx !== null && dropSetIdx === (setlist?.sets?.length ?? -1)}
-    <span>Hier einfuegen (am Ende)</span>
+    <span>Hier einfügen (am Ende)</span>
   {/if}
 </div>
 
 <div class="add-set-end-container">
+  <button
+    class="btn min-h-[38px] px-4 font-semibold shadow-sm transition-all duration-150 touch-manipulation rounded-lg"
+    class:variant-filled-primary={showPastSetImport}
+    class:variant-soft-primary={!showPastSetImport}
+    onclick={togglePastSetImport}
+    disabled={isUpdating}
+  >
+    {showPastSetImport ? 'Import schliessen' : 'Set aus vergangenem Gig'}
+  </button>
   <button class="btn variant-filled-secondary hover:variant-filled-primary min-h-[38px] px-5 font-bold shadow-md transition-all duration-150 touch-manipulation rounded-lg" onclick={addSetAtEnd} disabled={isUpdating}>
     + Weiteres Set hinzufügen
   </button>
 </div>
+
+{#if showPastSetImport}
+  <div class="past-set-import-panel card variant-soft-primary p-3">
+
+    <div class="import-grid">
+      <label class="label import-field">
+        <span class="import-field-label">1) Gig auswählen</span>
+        <select
+          class="select"
+          bind:value={selectedPastGigId}
+          disabled={loadingPastGigs || isUpdating}
+          onchange={async (e) => {
+            selectedPastGigId = e.target.value;
+            await loadSetsForPastGig(selectedPastGigId);
+          }}
+        >
+          <option value="">Bitte wählen...</option>
+          {#each pastGigOptions as gigOption}
+            <option value={String(gigOption.id)}>{gigOption.label}</option>
+          {/each}
+        </select>
+      </label>
+
+      <label class="label import-field">
+        <span class="import-field-label">2) Set auswählen</span>
+        <select
+          class="select"
+          bind:value={selectedPastSetId}
+          disabled={!selectedPastGigId || loadingPastGigSets || isUpdating}
+        >
+          <option value="">Bitte wählen...</option>
+          {#each pastGigSets as setOption}
+            <option value={String(setOption.id)}>{setOption.label}</option>
+          {/each}
+        </select>
+      </label>
+    </div>
+
+    {#if selectedPastSetOption}
+      <div class="import-preview-row">
+        <span class="badge variant-soft-primary">Set: {selectedPastSetOption.label}</span>
+        <span class="badge variant-soft-secondary">Songs: {selectedPastSetOption.source?.songs?.length ?? 0}</span>
+      </div>
+    {/if}
+
+    <div class="import-action-row">
+      <button
+        class="btn variant-filled-success min-h-[38px]"
+        onclick={importSelectedPastSet}
+        disabled={!selectedPastSetId || loadingPastGigSets || isUpdating}
+      >
+        Als neues Set einfügen
+      </button>
+    </div>
+
+    {#if loadingPastGigs || loadingPastGigSets}
+      <div class="text-xs opacity-70 mt-2">Lade Daten...</div>
+    {/if}
+    {#if !loadingPastGigs && !pastGigOptions.length}
+      <div class="text-xs opacity-70 mt-2">Keine vergangenen Gigs gefunden.</div>
+    {/if}
+  </div>
+{/if}
 
 <style>
 .set-card   {
@@ -1107,7 +1324,66 @@
 .add-set-end-container {
   display: flex;
   justify-content: center;
+  gap: 0.6rem;
   padding: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.past-set-import-panel {
+  margin-top: -0.4rem;
+  margin-bottom: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-primary-500) 30%, transparent);
+}
+
+.import-headline-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.import-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.import-field {
+  gap: 0.3rem;
+}
+
+.import-field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.import-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.import-action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.55rem;
+}
+
+@media (max-width: 720px) {
+  .import-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .import-action-row {
+    justify-content: stretch;
+  }
+
+  .import-action-row .btn {
+    width: 100%;
+  }
 }
 
 .set-drop-slot {

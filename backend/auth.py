@@ -522,3 +522,37 @@ def verify_password_reset_token(token: str = Depends(oauth2_password_reset_schem
         return payload.get("sub"), token
     except JWTError:
         raise HTTPException(status_code=400, detail="Invalid token")
+
+def generate_ical_token(user_name) -> str:
+    """
+    Create a short-lived JWT token scoped to access internal ical.
+
+    Args:
+        user_name (str): The username for which the reset is requested.
+
+    Returns:
+        str: The encoded JWT string with ``scope="internal_ical_token"``.
+    """
+    current_ts = datetime.now(timezone.utc).isoformat()
+    data = {"sub": user_name, "ts": current_ts, "scope": "internal_ical_token"}
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_ical_token(token: str, db: Session) -> bool:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("scope") != "internal_ical_token":
+            raise HTTPException(status_code=400, detail="Invalid token scope")
+
+        if payload.get("ts") is None:
+            raise HTTPException(status_code=400, detail="Invalid token timestamp")
+        if payload.get("sub") is None:
+            raise HTTPException(status_code=400, detail="Invalid token subject")
+
+        user = db.query(models.User).filter(models.User.user_name == payload.get("sub")).first()
+        if user == None:
+            raise HTTPException(status_code=404, detail="User not found")
+        logger.info("iCal token verified!".format(user.user_name))
+        return True
+
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid token")

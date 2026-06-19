@@ -10,6 +10,7 @@ Added
 ~~~~~
 
 * Proben/Songs: Zusätzliche Berechtigungspruefungen fuer Bearbeitungen eingefuehrt, damit Editor-Rechte konsistent durchgesetzt werden.
+* Setlisten-Editor: Hinzufügen von Sets von verganenen Gigs ermöglicht
 
 Changed
 ~~~~~~~

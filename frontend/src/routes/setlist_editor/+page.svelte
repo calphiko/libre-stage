@@ -280,8 +280,18 @@
               <li><strong>Neues Set:</strong> Klicke auf "+ Neues Set" oder nutze <kbd class="kbd">Strg/⌘+Shift+Enter</kbd></li>
               <li><strong>Set umbenennen:</strong> Klicke auf den Set-Namen</li>
               <li><strong>Pause setzen:</strong> Klicke auf die Pause-Zeit</li>
+              <li><strong>Set aus vergangenem Gig:</strong> Nutze den Button <em>Set aus vergangenem Gig</em>, waehle Gig und Set und fuege es als neues Set ein</li>
               <li><strong>Set löschen:</strong> Klicke auf das "🗑️" Symbol beim Set</li>
               <li><strong>Set-Reihenfolge:</strong> Ziehe Sets per Drag & Drop</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-info-500 mb-1">📦 Import aus vergangenem Gig</h4>
+            <ul class="list-disc list-inside space-y-1 text-sm">
+              <li>Es werden <strong>nur Setname und Songs</strong> uebernommen</li>
+              <li><strong>Live-Daten</strong> wie Bewertungen und uebersprungene Songs werden <strong>nicht</strong> mitkopiert</li>
+              <li>Nach erfolgreichem Einfuegen erscheint eine <strong>Toast-Meldung</strong> als Bestaetigung</li>
             </ul>
           </div>
 
@@ -299,7 +309,7 @@
           <div class="alert variant-soft-primary">
             <div class="alert-message">
               <h4 class="font-semibold mb-1">💡 Tipp</h4>
-              <p class="text-sm">Alle Änderungen werden automatisch gespeichert! Du musst nicht manuell speichern.</p>
+              <p class="text-sm">Alle Änderungen werden automatisch gespeichert! Du musst nicht manuell speichern. Erfolgreiche Set-Importe werden zusaetzlich per Toast bestaetigt.</p>
             </div>
           </div>
         </div>
