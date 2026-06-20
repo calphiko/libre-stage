@@ -29,8 +29,12 @@ struct GigsView: View {
     }
 
     private var availableSeasons: [Int] {
-        vm.gigs
+        ([currentSeasonYear] + vm.gigs
             .compactMap { seasonKey(for: $0) }
+            .sorted(by: >)
+            .reduce(into: [Int]()) { acc, year in
+                if acc.last != year { acc.append(year) }
+            })
             .sorted(by: >)
             .reduce(into: [Int]()) { acc, year in
                 if acc.last != year { acc.append(year) }
@@ -42,10 +46,7 @@ struct GigsView: View {
     }
 
     private var defaultSeasonSelection: Int? {
-        if availableSeasons.contains(currentSeasonYear) {
-            return currentSeasonYear
-        }
-        return availableSeasons.first
+        currentSeasonYear
     }
 
     private var effectiveSelectedSeason: Int? {
@@ -68,35 +69,6 @@ struct GigsView: View {
                     ContentUnavailableView("Keine Gigs", systemImage: "music.mic")
                 } else {
                     List {
-                        if !availableSeasons.isEmpty {
-                            Section("Saison") {
-                                Picker("Saison", selection: seasonSelectionBinding) {
-                                    ForEach(availableSeasons, id: \.self) { year in
-                                        Text(String(year)).tag(year)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-                        }
-
-                        Section("Statistiken") {
-                            Button {
-                                seasonStatsPreset = effectiveSelectedSeason
-                                showSeasonStats = true
-                            } label: {
-                                Label("Gewählte Saison", systemImage: "chart.bar.fill")
-                            }
-
-                            Button {
-                                seasonStatsPreset = nil
-                                showSeasonStats = true
-                            } label: {
-                                Label("Alle Saisons", systemImage: "chart.xyaxis.line")
-                            }
-                        }
-                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
                         Section(selectedSeasonTitle) {
                             if filteredGigs.isEmpty {
                                 Text("Keine Gigs in dieser Saison")
@@ -141,8 +113,49 @@ struct GigsView: View {
                             .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                     }
                 }
-                if canEdit {
-                    ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Menu {
+                        ForEach(availableSeasons, id: \.self) { year in
+                            Button {
+                                selectedSeason = year
+                            } label: {
+                                if year == effectiveSelectedSeason {
+                                    Label(String(year), systemImage: "checkmark")
+                                } else {
+                                    Text(String(year))
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(String(effectiveSelectedSeason ?? currentSeasonYear))
+                                .font(.subheadline.weight(.semibold))
+                            Image(systemName: "chevron.down")
+                                .font(.caption2.weight(.semibold))
+                        }
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(AppTheme.rowBackground(for: colorScheme)))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Saison auswaehlen")
+
+                    Button {
+                        seasonStatsPreset = effectiveSelectedSeason
+                        showSeasonStats = true
+                    } label: {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                            .frame(width: 30, height: 30)
+                            .background(Circle().fill(AppTheme.rowBackground(for: colorScheme)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Saisonstatistik")
+
+                    if canEdit {
                         Button {
                             showCreateGigSheet = true
                         } label: {
@@ -173,26 +186,13 @@ struct GigsView: View {
             }
         }
         .fullScreenCover(isPresented: $showSeasonStats) {
-            AppModalContainer {
-                SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
-            }
+            SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
         }
         .fullScreenCover(isPresented: $showCreateGigSheet) {
             AppModalContainer {
                 CreateGigSheet(vm: vm)
             }
         }
-    }
-
-    private var seasonSelectionBinding: Binding<Int> {
-        Binding(
-            get: {
-                effectiveSelectedSeason
-                    ?? availableSeasons.first
-                    ?? currentSeasonYear
-            },
-            set: { selectedSeason = $0 }
-        )
     }
 
     private func isBeforeInGigList(_ lhs: GigOut, _ rhs: GigOut) -> Bool {
@@ -255,7 +255,7 @@ private struct SeasonStatisticsSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
+            Form {
                 Section("Zeitraum") {
                     Picker("Saison", selection: selectionBinding) {
                         Text("Alle Jahre").tag("all")
@@ -264,7 +264,9 @@ private struct SeasonStatisticsSheet: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .addModalFieldStyle()
                 }
+                .addModalSectionStyle()
 
                 if vm.isSeasonStatisticsLoading {
                     Section {
@@ -274,6 +276,7 @@ private struct SeasonStatisticsSheet: View {
                             Spacer()
                         }
                     }
+                    .addModalSectionStyle()
                 } else if let stats = vm.seasonStatistics {
                     Section("Uebersicht") {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
@@ -288,6 +291,7 @@ private struct SeasonStatisticsSheet: View {
                         }
                         .padding(.vertical, 2)
                     }
+                    .addModalSectionStyle()
 
                     if !stats.top_songs.isEmpty {
                         Section("Top Songs") {
@@ -307,6 +311,7 @@ private struct SeasonStatisticsSheet: View {
                                 }
                             }
                         }
+                        .addModalSectionStyle()
                     }
 
                     if !stats.gigs_overview.isEmpty {
@@ -324,21 +329,22 @@ private struct SeasonStatisticsSheet: View {
                                 }
                             }
                         }
+                        .addModalSectionStyle()
                     }
                 } else {
                     Section {
                         Text("Keine Saisonstatistiken verfuegbar.")
                             .foregroundStyle(.secondary)
                     }
+                    .addModalSectionStyle()
                 }
             }
-            .softCardContainer()
-            .appShellBackground()
+            .addModalFormStyle()
             .navigationTitle("Saisonstatistik")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Schliessen") { dismiss() }
+                    Button("Abbrechen") { dismiss() }
                 }
             }
             .task {

@@ -29,6 +29,7 @@ final class GigsViewModel {
         defer { isLoading = false }
         do {
             gigs = try await APIClient.shared.get(path: "/gigs/")
+            PushNotificationService.shared.observeGigs(gigs)
         } catch let e as AppError {
             error = e
         } catch {
@@ -70,6 +71,7 @@ final class GigsViewModel {
             let request = try draft.toCreateRequest()
             let createdList: [GigOut] = try await APIClient.shared.post(path: "/gigs/", body: request)
             gigs = createdList
+            PushNotificationService.shared.markGigsAsSeen(createdList)
             return createdList.last
         } catch let e as GigDetailsDraft.ValidationError {
             error = .serverError(statusCode: 400, detail: e.localizedDescription)
