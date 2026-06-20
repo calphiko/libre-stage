@@ -353,7 +353,7 @@ private struct HeaderBodyBlendModifier: ViewModifier {
             }
             .overlay(alignment: .top) {
                 Rectangle()
-                    .fill(colorScheme == .dark ? Color.white.opacity(0.12) : Color.black.opacity(0.10))
+                    .fill(colorScheme == .dark ? Color.white.opacity(0) : Color.black.opacity(0))
                     .frame(height: 1 / max(displayScale, 1))
                     .padding(.top, 44)
                     .allowsHitTesting(false)
