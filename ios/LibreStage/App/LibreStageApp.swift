@@ -14,6 +14,14 @@ import UserNotifications
 /// zuverlässig in den Vordergrund geholt wird – auch auf iPadOS mit mehreren Scenes.
 final class AppDelegate: NSObject, UIApplicationDelegate {
 
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
     /// Wird aufgerufen, wenn iOS die App per URL-Scheme öffnet (u. a. aus Share Extensions).
     /// Ab iOS 17 aktivieren wir die vorderste inaktive/hintergründige Scene
     /// explizit über UIWindowScene.ActivationRequestOptions.
@@ -47,6 +55,24 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             options: activationOptions,
             errorHandler: nil
         )
+    }
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Task { await PushNotificationService.shared.handleDidRegisterRemote(deviceToken: deviceToken) }
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        PushNotificationService.shared.handleDidFailRemoteRegistration()
+    }
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .badge])
     }
 }
 
@@ -116,13 +142,21 @@ struct ContentRoot: View {
             }
         }
         .onChange(of: authManager.isLoggedIn) { _, isLoggedIn in
-            if !isLoggedIn {
-                Task { await clearBadge() }
+            if isLoggedIn {
+                Task { await PushNotificationService.shared.configureForActiveSession() }
+            } else {
+                Task {
+                    await clearBadge()
+                    PushNotificationService.shared.handleLogout()
+                }
             }
         }
         .task {
-            if !authManager.isLoggedIn {
+            if authManager.isLoggedIn {
+                await PushNotificationService.shared.configureForActiveSession()
+            } else {
                 await clearBadge()
+                PushNotificationService.shared.handleLogout()
             }
         }
     }

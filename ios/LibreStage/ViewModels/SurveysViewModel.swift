@@ -51,8 +51,10 @@ final class SurveysViewModel {
         defer { isLoading = false }
         do {
             surveys = try await APIClient.shared.get(path: "/surveys/")
+            PushNotificationService.shared.observeSurveys(surveys)
             await loadUsersSilently()
             await loadPendingSurveysSilently()
+            await PushNotificationService.shared.refreshOpenSurveyReminder()
         } catch let e as AppError { error = e
             pendingSurveyIds = []
         } catch {
@@ -83,6 +85,8 @@ final class SurveysViewModel {
         defer { isLoading = false }
         do {
             surveys = try await APIClient.shared.post(path: "/surveys/", body: survey)
+            PushNotificationService.shared.markSurveysAsSeen(surveys)
+            await PushNotificationService.shared.refreshOpenSurveyReminder()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }
@@ -94,6 +98,8 @@ final class SurveysViewModel {
         do {
             struct E: Encodable {}
             surveys = try await APIClient.shared.put(path: "/surveys/close/\(id)", body: E())
+            await loadPendingSurveysSilently()
+            await PushNotificationService.shared.refreshOpenSurveyReminder()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }
@@ -104,6 +110,8 @@ final class SurveysViewModel {
     func deleteSurvey(id: Int) async {
         do {
             surveys = try await APIClient.shared.delete(path: "/surveys/\(id)")
+            await loadPendingSurveysSilently()
+            await PushNotificationService.shared.refreshOpenSurveyReminder()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }
@@ -122,6 +130,7 @@ final class SurveysViewModel {
             detail = try await APIClient.shared.get(path: "/surveys/\(surveyId)")
             // Keep list highlighting in sync with changed vote state.
             await loadPendingSurveysSilently()
+            await PushNotificationService.shared.refreshOpenSurveyReminder()
         } catch let e as AppError { error = e
         } catch { self.error = .networkError(error) }
     }

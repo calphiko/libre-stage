@@ -25,6 +25,15 @@ struct ProfileView: View {
     @State private var showAboutSheet = false
     @State private var showShareDebugSheet = false
 
+    private var pushNotificationsBinding: Binding<Bool> {
+        Binding(
+            get: { SettingsStore.shared.pushNotificationsEnabled },
+            set: { newValue in
+                Task { await PushNotificationService.shared.applyUserPreference(enabled: newValue) }
+            }
+        )
+    }
+
     init(onMenuTap: (() -> Void)? = nil) {
         self.onMenuTap = onMenuTap
     }
@@ -75,6 +84,15 @@ struct ProfileView: View {
                 .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 Section("App") {
+                    Toggle(isOn: pushNotificationsBinding) {
+                        Label("Push-Benachrichtigungen", systemImage: "bell.badge")
+                    }
+                    .disabled(true)
+
+                    Text("Bald verfuegbar")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
                     Button {
                         showAboutSheet = true
                     } label: {

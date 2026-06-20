@@ -230,6 +230,7 @@ struct MainTabView: View {
     @MainActor
     private func refreshAllBadges() async {
         await dashboardViewModel.load()
+        await PushNotificationService.shared.refreshOpenSurveyReminder()
         await refreshSongVoteBadge()
         await setAppIconBadge(appIconBadgeCount)
     }

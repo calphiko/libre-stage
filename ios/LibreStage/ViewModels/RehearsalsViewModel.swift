@@ -46,6 +46,7 @@ final class RehearsalsViewModel {
             rehearsals = try await rehs
             songs      = try await sngs
             users      = try await usrs
+            PushNotificationService.shared.observeRehearsals(rehearsals)
 
             if let config: FrontendAppConfig = try? await APIClient.shared.get(path: "/public/app_config"),
                !config.rehearsalSongStatuses.isEmpty {
@@ -66,6 +67,7 @@ final class RehearsalsViewModel {
         defer { isLoading = false }
         do {
             rehearsals = try await APIClient.shared.post(path: "/reh/", body: request)
+            PushNotificationService.shared.markRehearsalsAsSeen(rehearsals)
         } catch let e as AppError {
             error = e
         } catch {
