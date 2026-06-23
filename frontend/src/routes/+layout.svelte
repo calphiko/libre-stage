@@ -26,6 +26,7 @@
 	import ModalOverlay from '$lib/components/ModalOverlay.svelte';
 
 	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { getUser, getVersionJson, logout as apiLogout, getAppLogo } from '$lib/api.js';
 	import { loadAppConfig } from '$lib/appConfig.js';
