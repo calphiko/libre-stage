@@ -114,7 +114,7 @@
     const editableRows = formRows.filter((row) => !row.is_fixed);
     for (const row of editableRows) {
       if (!row.date || !row.time || !row.was || !row.wer || !row.wo) {
-        inlineError = 'Bitte alle flexiblen Eintraege vollstaendig ausfuellen.';
+        inlineError = 'Bitte alle flexiblen Einträge vollständig ausfüllen.';
         return;
       }
       const itemDatetime = toNaiveIso(row.date, row.time);
@@ -171,7 +171,7 @@
     {#if !editMode}
       <div class="space-y-2">
         {#if scheduleData.items.length === 0}
-          <p class="text-sm text-on-surface-variant">Noch keine Eintraege vorhanden.</p>
+          <p class="text-sm text-on-surface-variant">Noch keine Einträge vorhanden.</p>
         {:else}
           {#each scheduleData.items as item}
             <div class="flex flex-wrap items-center justify-between gap-2 border border-surface-300 dark:border-surface-700 rounded-md p-3">
@@ -196,11 +196,11 @@
       <div class="space-y-3">
         <div class="flex justify-between items-center">
           <h5 class="font-semibold text-sm">Ablaufplan bearbeiten (komplett)</h5>
-          <button type="button" class="btn btn-sm variant-filled-primary" onclick={addRow}>Eintrag hinzufuegen</button>
+          <button type="button" class="btn btn-sm variant-filled-primary" onclick={addRow}>Eintrag hinzufügen</button>
         </div>
 
         {#if formRows.filter((row) => !row.is_fixed).length === 0}
-          <p class="text-sm text-on-surface-variant">Keine flexiblen Eintraege vorhanden.</p>
+          <p class="text-sm text-on-surface-variant">Keine flexiblen Einträge vorhanden.</p>
         {/if}
 
         {#each formRows as row, index (row.row_key)}
@@ -228,7 +228,7 @@
                   type="button"
                   class="btn btn-sm variant-filled-error"
                   onclick={() => removeItem(row, index)}
-                >Loeschen</button>
+                >Löschen</button>
               {/if}
             </div>
           </div>
