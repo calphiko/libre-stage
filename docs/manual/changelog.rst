@@ -3,6 +3,29 @@
 Änderungsprotokoll
 ==================
 
+0.5.20 (2026-06-23)
+-------------------
+
+Added
+~~~~~
+
+* Gig-Ablaufplan: Pro Eintrag kann jetzt ein optionaler Kommentar erfasst und gespeichert werden.
+* Datenbank: Neue Spalte ``gig_schedule_items.comment`` inkl. Alembic-Migration ``a1b2c3d4e5f6_add_comment_to_gig_schedule_items``.
+
+Changed
+~~~~~~~
+
+* Ablaufplan-Ansicht: Kommentare werden im Ueberblick direkt unter dem Titel (``Was``) dargestellt.
+* Ablaufplan-PDF: Kommentare werden in der zweiten Spalte unter dem Titel gerendert; Zeilenumbrueche im Kommentar werden dabei beibehalten.
+* PDF-Downloadname: Unicode-faehige Normalisierung fuer Gig-Namen verbessert, ungueltige Dateinamenzeichen werden robust ersetzt.
+* Chore: Projektversion auf ``0.5.20`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.20`` ergaenzt.
+
+Fixed
+~~~~~
+
+* Frontend: ``Ablaufplan drucken`` nutzt konsistent den ``Blob`` aus ``getGigSchedulePDF`` (statt Objekt), wodurch der Fehler ``Failed to execute 'createObjectURL' on 'URL'`` behoben ist.
+
 0.5.19 (2026-06-23)
 -------------------
 

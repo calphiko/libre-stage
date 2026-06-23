@@ -410,6 +410,7 @@ class GigScheduleItemIn(BaseModel):
     was: str = Field(..., max_length=512)
     wer: str = Field(..., max_length=512)
     wo: str = Field(..., max_length=512)
+    comment: Optional[str] = Field(None, max_length=2000)
 
 
 class GigScheduleItemOut(BaseModel):
@@ -419,6 +420,7 @@ class GigScheduleItemOut(BaseModel):
     was: str
     wer: str
     wo: str
+    comment: Optional[str] = None
     is_fixed: bool = False
 
     model_config = {"from_attributes": True}
@@ -434,6 +436,7 @@ class GigScheduleBulkItemIn(BaseModel):
     was: str = Field(..., max_length=512)
     wer: str = Field(..., max_length=512)
     wo: str = Field(..., max_length=512)
+    comment: Optional[str] = Field(None, max_length=2000)
 
 
 class GigScheduleBulkUpdateIn(BaseModel):
