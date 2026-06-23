@@ -36,11 +36,17 @@
   async function exportPdf() {
     if (!gig?.id) return;
     try {
-      const blob = await getGigSchedulePDF(null, gig.id);
+      const { blob, filename } = await getGigSchedulePDF(null, gig.id);
+      const safeName = (gig.name ?? String(gig.id))
+        .normalize('NFC')
+        .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ablaufplan_${gig.id}.pdf`;
+      link.download = filename ?? `Ablaufplan_${safeName || String(gig.id)}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

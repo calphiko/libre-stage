@@ -390,8 +390,13 @@ export async function getGigSchedulePDF(token, gigId) {
     headers: { 'Content-Type': 'application/json' }
   });
   if (!res.ok) throw new Error('Ablaufplan-PDF konnte nicht geladen werden');
-  return res.blob();
+  const disposition = res.headers.get('content-disposition') ?? '';
+  const match = disposition.match(/filename[^;=\n]*=\s*(?:(['"])(.*?)\1|([^;\n]*))/i);
+  const filename = (match?.[2] || match?.[3] || '').trim() || null;
+  const blob = await res.blob();
+  return { blob, filename };
 }
+
 
 export async function createGigScheduleItem(token, gigId, payload) {
   const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/`, {

@@ -417,7 +417,7 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
         pdf.drawString(title_x, title_y, "Ablaufplan")
         pdf.setFont("Helvetica", 16)
         pdf.setFillColor(palette["muted"])
-        pdf.drawString(title_x, title_y - 20, f"Gig: {gig.name}")
+        pdf.drawString(title_x, title_y - 20, f"{gig.name}")
         pdf.setFont("Helvetica", 11)
         date_str = gig.datum.strftime("%d.%m.%Y") if gig.datum else "-"
         base_fields = [
@@ -451,9 +451,27 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
         dt_str = item.item_datetime.strftime("%d.%m.%Y %H:%M")
         was_str = item.was + (" [fix]" if item.is_fixed else "")
 
+        # Build Was-column lines: main title + optional comment (respecting newlines)
+        was_main_lines = _wrap_text(was_str, columns[1][2] - 8, "Helvetica", 9)
+        comment_text = (item.comment or "").strip()
+        comment_was_lines: list[str] = []
+        if comment_text:
+            for cline in comment_text.splitlines():
+                stripped = cline.strip()
+                if stripped:
+                    comment_was_lines.extend(
+                        _wrap_text(stripped, columns[1][2] - 8, "Helvetica-Oblique", 8)
+                    )
+                else:
+                    comment_was_lines.append("")  # preserve blank lines
+
+        # comment lines start directly after main lines (no blank separator)
+        was_comment_start: int = len(was_main_lines) if comment_was_lines else len(was_main_lines) + 9999
+        was_all_lines: list[str] = was_main_lines + comment_was_lines
+
         wrapped = {
             "Zeit": _wrap_text(dt_str, columns[0][2] - 4, "Helvetica", 9),
-            "Was": _wrap_text(was_str, columns[1][2] - 4, "Helvetica", 9),
+            "Was": was_all_lines,
             "Wer": _wrap_text(item.wer or "-", columns[2][2] - 4, "Helvetica", 9),
             "Wo": _wrap_text(item.wo or "-", columns[3][2] - 4, "Helvetica", 9),
         }
@@ -483,13 +501,20 @@ def _build_schedule_pdf(gig: models.Gig) -> bytes:
             line_y = line_center - baseline_center_offset
             for title, x, _ in columns:
                 lines = wrapped[title]
-                if idx < len(lines):
+                if idx < len(lines) and lines[idx]:  # skip empty separator/blank lines
+                    is_comment_line = title == "Was" and idx >= was_comment_start
                     if title == "Zeit":
                         pdf.setFillColor(palette["muted"])
+                        pdf.setFont("Helvetica", 9)
+                    elif is_comment_line:
+                        pdf.setFillColor(palette["muted"])
+                        pdf.setFont("Helvetica-Oblique", 8)
                     else:
                         pdf.setFillColor(palette["text"])
+                        pdf.setFont("Helvetica", 9)
                     pdf.drawString(x + 4, line_y, lines[idx])
 
+        pdf.setFont(schedule_font_name, schedule_font_size)
         y -= row_height
         pdf.setStrokeColor(palette["line"])
         pdf.setLineWidth(0.5)
@@ -906,7 +931,7 @@ def get_gig_schedule_pdf(
 
     pdf_bytes = _build_schedule_pdf(gig)
     safe_name = "".join(ch if ch.isalnum() else "_" for ch in (gig.name or "gig"))
-    headers = {"Content-Disposition": f"attachment; filename=Ablaufplan_{safe_name}_{gig_id}.pdf"}
+    headers = {"Content-Disposition": f"attachment; filename=Ablaufplan_{safe_name}_{gig.name}.pdf"}
     return Response(pdf_bytes, media_type="application/pdf", headers=headers)
 
 
@@ -1015,6 +1040,7 @@ def update_gig_schedule_bulk(
                 item.was = item_data.was
                 item.wer = item_data.wer
                 item.wo = item_data.wo
+                item.comment = item_data.comment
             else:
                 db.add(models.GigScheduleItem(gig_id=gig_id, **item_data.model_dump(exclude={"id"})))
 
