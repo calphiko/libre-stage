@@ -54,7 +54,8 @@
         time,
         was: item.was ?? '',
         wer: item.wer ?? '',
-        wo: item.wo ?? ''
+        wo: item.wo ?? '',
+        comment: item.comment ?? ''
       };
     }).sort((a, b) => {
       const aIso = toNaiveIso(a.date, a.time || '00:00');
@@ -81,7 +82,8 @@
       time: '',
       was: '',
       wer: '',
-      wo: ''
+      wo: '',
+      comment: ''
     };
 
     formRows = [
@@ -129,6 +131,7 @@
         was: row.was,
         wer: row.wer,
         wo: row.wo,
+        comment: row.comment || null,
       }))
     };
 
@@ -172,7 +175,7 @@
         {:else}
           {#each scheduleData.items as item}
             <div class="flex flex-wrap items-center justify-between gap-2 border border-surface-300 dark:border-surface-700 rounded-md p-3">
-              <div>
+              <div class="flex-1">
                 <div class="font-semibold text-sm flex items-center gap-2">
                   <span>{formatDateTime(item.item_datetime)}</span>
                   {#if item.is_fixed}
@@ -180,7 +183,10 @@
                   {/if}
                 </div>
                 <div class="text-sm text-on-surface">{item.was}</div>
-                <div class="text-xs text-on-surface-variant">{item.wer} - {item.wo}</div>
+                {#if item.comment}
+                  <div class="text-xs text-on-surface-variant italic mt-0.5 whitespace-pre-wrap">{item.comment}</div>
+                {/if}
+                <div class="text-xs text-on-surface-variant mt-1">{item.wer} - {item.wo}</div>
               </div>
             </div>
           {/each}
@@ -205,6 +211,14 @@
               <input class="input" type="text" bind:value={row.was} placeholder="Was" maxlength="512" disabled={row.is_fixed} />
               <input class="input" type="text" bind:value={row.wer} placeholder="Wer" maxlength="512" disabled={row.is_fixed} />
               <input class="input md:col-span-2" type="text" bind:value={row.wo} placeholder="Wo" maxlength="512" disabled={row.is_fixed} />
+              <textarea
+                class="input textarea md:col-span-2"
+                bind:value={row.comment}
+                placeholder="Kommentar (optional, z.B. Hinweise oder Aufgaben für diesen Punkt)"
+                maxlength="2000"
+                rows="2"
+                disabled={row.is_fixed}
+              ></textarea>
             </div>
             <div class="flex gap-2">
               {#if row.is_fixed}
