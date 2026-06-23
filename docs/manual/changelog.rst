@@ -3,6 +3,30 @@
 Änderungsprotokoll
 ==================
 
+0.5.19 (2026-06-23)
+-------------------
+
+Added
+~~~~~
+
+* Setup: Das Backend startet nicht mit dem standard-SECRET_KEY. Es muss einer vom Administrator definiert werden.
+
+Changed
+~~~~~~~
+
+* Setlist-Editor: Sets aus anderen Gigs koennen direkt in die aktuelle Setliste kopiert werden.
+* Frontend: Persistenter Store behandelt ``localStorage``-Fehler im Browser robust (z. B. bei deaktiviertem Storage).
+* Abhaengigkeiten: ``pyproject.toml`` und ``requirements.txt`` aktualisiert fuer verbesserte Kompatibilitaet und Performance.
+* Frontend: ``adapter-node`` auf Version ``5.5.4`` fixiert, um einen Upgrade-Fehler zu verhindern, der das Ausliefern statischer Dateien unterbunden hatte.
+* Chore: Projektversion auf ``0.5.19`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.19`` ergaenzt.
+
+Fixed
+~~~~~
+
+* Tests: Testkette fuer den neuen Auth-Flow korrigiert.
+* Datenbank: ``published``-Feld als ``int`` statt ``bool`` gespeichert (Datenbankkompatibilitaet).
+
 0.5.18 (2026-06-18)
 -------------------
 

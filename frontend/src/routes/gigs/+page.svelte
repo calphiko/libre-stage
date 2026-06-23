@@ -250,30 +250,31 @@
 
 </script>
 
-<div class="max-w-6xl mx-auto py-8 md:px-4">
-  <div class="card bg-surface-2 rounded-3xl shadow-md md:border md:border-outline-variant p-2 md:p-8">
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-      <div class="flex items-center gap-3 mb-4">
-        <h2 class="h2 text-on-surface">Gigs‑Liste</h2>
-        {#if canEdit}
-          <button
-            class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
-            onclick={openNewGigModal}
-            title="Neuen Gig hinzufügen"
-          >+</button>
-        {/if}
+<div class="container mx-auto py-6 pb-0 md:px-4 max-w-5xl proben-compact">
+  <div class="card bg-surface-2 rounded-lg shadow-lg md:border p-2 md:p-5 pb-0">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-3">
+          <h2 class="h2 text-on-surface">Gigs</h2>
+          {#if canEdit}
+            <button
+              class="btn-icon variant-filled-primary w-8 h-4 rounded-full text-xl leading-none"
+              onclick={openNewGigModal}
+              title="Neuen Gig hinzufügen"
+            >+</button>
+          {/if}
+        </div>
+        <button
+          class="btn variant-ghost-surface btn-sm"
+          onclick={() => showHelp = !showHelp}
+          aria-label="Hilfe anzeigen"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="hidden md:inline ml-2">Hilfe</span>
+        </button>
       </div>
-      <button
-        class="btn variant-ghost-surface btn-sm mb-4 md:mb-0"
-        onclick={() => showHelp = !showHelp}
-        aria-label="Hilfe anzeigen"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span class="hidden md:inline ml-2">Hilfe</span>
-      </button>
-    </div>
 
     {#if showHelp}
       <div class="card variant-ghost-surface mt-4 mb-6 p-4 md:p-6">
@@ -335,9 +336,9 @@
     {/if}
 
 
-    <div class="mb-5 flex flex-col md:flex-row md:justify-between md:items-center">
+    <div class="mb-0 flex flex-col md:flex-row md:justify-between md:items-center">
       <div class="flex flex-wrap items-center gap-3">
-        <div>          <label for="jahr" class="form-label text-on-surface-variant font-medium">Jahr wählen:</label>
+        <div>
           <select
               id="jahr"
               bind:value={jahr}
@@ -404,7 +405,7 @@
       <!-- Mobile Layout -->
       <div class="block md:hidden mt-5 space-y-4">
         {#each gigs as gig (gig.id)}
-          <div class="rounded-2xl p-4 shadow border border-outline-variant transition
+          <div class="rounded-2xl p-2 px-4 shadow border border-outline-variant transition
             {isPast(gig.datum)
               ? 'bg-surface-50 dark:bg-surface-900 opacity-60 hover:opacity-90'
               : 'bg-surface-1'}">
@@ -412,7 +413,7 @@
               <div class="flex-1" onclick={() => openGigDetailsModal(gig)}>
                 <div class="flex items-center gap-2 mb-1">
                   {#if isPast(gig.datum)}
-                    <span class="badge variant-soft-success text-xs px-1.5 py-0.5">✓ gewesen</span>
+                    <span class="badge variant-soft-success text-xs px-1.5 py-0.5">✓</span>
                   {/if}
                   <p class="font-semibold text-on-primary">{gig.name}</p>
                 </div>
@@ -420,7 +421,6 @@
                   {formatDateDE(gig.datum)} – {gig.kind_of_gig}
                 </p>
               </div>
-              <button class="btn btn-sm variant-tonal" onclick={() => openGigDetailsModal(gig)}>Details</button>
             </div>
           </div>
         {/each}
@@ -434,5 +434,6 @@
         {error}
       </div>
     {/if}
+    </div>
   </div>
 </div>
