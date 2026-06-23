@@ -1000,8 +1000,8 @@ let filteredSongs = $derived(songs
   <div class="card bg-surface-2 rounded-2xl shadow-md md:border md:border-outline-variant p-2 md:p-4 lg:p-5 flex-1 flex flex-col min-h-0">
 
 
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-3 md:mb-3">
-        <div class="flex items-center gap-2 mb-2 md:mb-0">
+    <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
           <h3 class="h2 text-on-surface">Songs</h3>
           {#if canEdit()}
             <button
@@ -1012,7 +1012,7 @@ let filteredSongs = $derived(songs
           {/if}
         </div>
         <button
-          class="btn variant-ghost-surface btn-sm mb-2 md:mb-0"
+          class="btn variant-ghost-surface btn-sm"
           onclick={() => {
             showHelp = !showHelp;
             refreshGridHeight();
@@ -1237,50 +1237,65 @@ let filteredSongs = $derived(songs
           </div>
 
           <!-- Kartenansicht für mobile Geräte -->
-          <div class="grid gap-3 md:hidden">
-            <input
-              type="text"
-              class="input w-full mb-3 bg-surface border-none focus:ring-primary text-surface-200"
-              placeholder="Suche Songs..."
-              bind:value={filterStringMobile}
-              oninput={mobileFilter} />
-            {#each filteredSongsMobile as song (song.id)}
-              <div class="card variant-filled-surface rounded-xl shadow-sm p-4 bg-surface-50">
-                <div class="flex justify-between items-start">
-                  <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-200">{song.title}</h3>
-                  <button class="btn btn-sm variant-tonal" onclick={() => openSongDetailsModal(song)}>
+          <div class="flex flex-col gap-2 md:hidden">
+            <!-- Suchleiste -->
+            <div class="relative mb-1">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+              </svg>
+              <input
+                type="search"
+                class="input w-full pl-9 pr-4 py-2 rounded-xl bg-surface-100 dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-sm placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                placeholder="Titel oder Interpret suchen…"
+                bind:value={filterStringMobile}
+                oninput={mobileFilter}
+              />
+            </div>
 
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                      </svg>
+            <!-- Ergebnisanzahl -->
+            <p class="text-xs text-surface-500 dark:text-surface-400 px-1">
+              {filteredSongsMobile.length} {filteredSongsMobile.length === 1 ? 'Song' : 'Songs'}
+            </p>
 
-                  </button>
-                </div>
-
-                <!-- Kompakte Metadaten -->
-                <dl class="divide-y divide-surface-300 text-sm mt-2">
-                  {#each songFields.filter(f => f.key !== 'title') as f}
-                    <div class="flex justify-between py-1">
-                      <dt class="text-surface-900">{f.label}</dt>
-                      <dd class="text-surface-900">{song[f.key] ?? '–'}</dd>
-                    </div>
-                  {/each}
-                </dl>
-
-                <!-- Erweiterte Details -->
-                {#if expandedSongId === song.id}
-                  <div class="mt-3 border-t border-surface-300 pt-2 space-y-1">
-                    <p class="text-xs text-surface-900">Details zu: {song.title}</p>
-                    {#each songFieldsDetails as f}
-                      <div class="flex justify-between py-1 text-sm">
-                        <span class="text-surface-800">{f.label}</span>
-                        <span class="text-surface-800">{song[f.key] ?? '–'}</span>
-                      </div>
-                    {/each}
-                  </div>
-                {/if}
+            <!-- Song-Liste -->
+            {#if filteredSongsMobile.length === 0}
+              <div class="flex flex-col items-center justify-center py-12 text-surface-400 gap-2">
+                <svg class="w-10 h-10 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm12 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                </svg>
+                <p class="text-sm">Keine Songs gefunden</p>
               </div>
-            {/each}
+            {:else}
+              <ul class="divide-y divide-surface-200 dark:divide-surface-700 rounded-xl overflow-hidden border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
+                {#each filteredSongsMobile as song (song.id)}
+                  <li>
+                    <button
+                      class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-surface-100 dark:hover:bg-surface-700 active:bg-surface-200 dark:active:bg-surface-600 transition-colors"
+                      onclick={() => openSongDetailsModal(song)}
+                    >
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-semibold text-sm text-on-surface truncate">{song.title}</span>
+                        <span class="text-xs text-surface-500 dark:text-surface-400 truncate mt-0.5">{song.interpret ?? '–'}</span>
+                      </div>
+                      <div class="flex items-center gap-2 shrink-0">
+                        {#if song.status}
+                          <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                            {song.status === 'spielbereit'  ? 'bg-green-100  dark:bg-green-900/40  text-green-700  dark:text-green-300' :
+                             song.status === 'proben'       ? 'bg-blue-100   dark:bg-blue-900/40   text-blue-700   dark:text-blue-300'  :
+                             song.status === 'neu'          ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                                                             'bg-surface-200 dark:bg-surface-700   text-surface-600 dark:text-surface-300'}">
+                            {song.status}
+                          </span>
+                        {/if}
+                        <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </div>
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
           </div>
 
         {:else if tabSet === 1}
@@ -1289,18 +1304,18 @@ let filteredSongs = $derived(songs
             <p class="text-on-surface-variant italic mt-4">Keine Song-Vorschläge vorhanden</p>
           {:else}
             <!-- Regeln als Info-Box -->
-            <div class="card variant-soft-warning mb-4">
+            <div class="card variant-soft-warning mb-0">
               <button
                 type="button"
                 class="w-full px-3 py-2 text-left hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors rounded-lg"
                 onclick={toggleRules}
               >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
+                <div class="flex items-center justify-between my-0 py-0">
+                  <div class="flex items-center gap-2 my-0 py-0">
                     <svg class="w-6 h-6 text-warning-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-warning-900 dark:text-warning-100 leading-tight">
+                    <h3 class="font-semibold text-sm text-warning-900 dark:text-warning-100 leading-tight my-0">
                       Regeln für Song-Vorschläge
                     </h3>
                   </div>
