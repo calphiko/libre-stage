@@ -66,3 +66,4 @@ def test_internal_ical_includes_rehearsal_time_range_summary_and_description(cli
     assert "SUMMARY:[Probe] 18:00-20:30 Uhr" in ical_text
     assert "Zeit: 18:00-20:30 Uhr" in ical_text
     assert "Kommentar: Soundcheck und Warmup" in ical_text
+
