@@ -589,6 +589,7 @@ class GigScheduleItem(Base):
     was = Column(String(512), nullable=False)
     wer = Column(String(512), nullable=False)
     wo = Column(String(512), nullable=False)
+    comment = Column(Text, nullable=True)
 
     gig: Mapped["Gig"] = relationship("Gig", back_populates="schedule_items")
 
