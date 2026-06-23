@@ -25,3 +25,4 @@ def test_ical_rehearsal_includes_time_range_summary_and_description(client, db_s
     assert "Zeit: 18:00-20:30 Uhr" in ical_text
     assert "Kommentar: Soundcheck und Warmup" in ical_text
 
+
