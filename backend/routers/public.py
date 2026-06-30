@@ -84,7 +84,7 @@ def get_song_histogram(
 
         # GET KIND OF GIG
         kind_of_gig = gig.kind_of_gig if hasattr(gig, "kind_of_gig") and gig.kind_of_gig else "Sonstiges"
-        if kind_of_gig not in histogram:
+        if kind_of_gig not in histogram[year]:
             histogram[year][kind_of_gig] = {}
 
         for gigset in gig.sets:
