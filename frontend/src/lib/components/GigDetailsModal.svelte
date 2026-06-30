@@ -36,6 +36,7 @@
   import GigSchedule from '../../routes/gigs/GigSchedule.svelte';
   import GenreDistributionPlot from '$lib/plots/genreDistributionPlot.svelte';
   import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
+  import GigSetStatusPlot from '$lib/plots/gigSetStatusPlot.svelte';
   import { marked } from 'marked';
 
   const { showError, showSuccess } = createMessageHelpers();
@@ -635,6 +636,15 @@
                 </div>
               </div>
             {/if}
+
+            <!-- Set-Status-Balkendiagramm -->
+            <div class="card variant-ghost-surface p-4 rounded-lg">
+              {#if statistics.sets?.length > 0}
+                <GigSetStatusPlot sets={statistics.sets} />
+              {:else}
+                <p class="text-xs text-on-surface-variant text-center py-4">Noch keine Setliste für diesen Gig vorhanden.</p>
+              {/if}
+            </div>
 
             {#if statistics.sets?.length > 0}
               {#each statistics.sets as set}
