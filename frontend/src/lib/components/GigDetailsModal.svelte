@@ -38,6 +38,7 @@
   import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
   import GigSetStatusPlot from '$lib/plots/gigSetStatusPlot.svelte';
   import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
 
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -101,7 +102,15 @@
     }
   }
 
-  let notesHtml = $derived(gig?.notes ? marked.parse(gig.notes) : '');
+  let notesHtml = $derived(
+    gig?.notes
+      ? DOMPurify.sanitize(/** @type {string} */ (marked.parse(gig.notes)), {
+          ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','strong','em','ul','ol','li','code','pre','blockquote','hr','a'],
+          ALLOWED_ATTR: ['href', 'title', 'target', 'rel'],
+          FORCE_BODY: true,
+        })
+      : ''
+  );
 
   const feedbackEmoji = { 3: '😍', 2: '😊', 1: '😐' };
 
@@ -714,26 +723,17 @@
       <!-- Protokoll-Tab -->
       <div class="space-y-3">
         {#if canEdit}
-          <div class="flex justify-end gap-2">
-            {#if notesEditMode}
-              <button
-                type="button"
-                class="btn btn-sm variant-filled-success"
+          <div class="flex justify-end mb-3">
+            <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <span class="text-on-surface-variant">Edit-Mode</span>
+              <input
+                type="checkbox"
+                class="checkbox"
+                checked={notesEditMode}
+                onchange={(e) => e.currentTarget.checked ? startNotesEdit() : cancelNotesEdit()}
                 disabled={notesSaving}
-                onclick={saveNotes}
-              >{notesSaving ? 'Wird gespeichert…' : 'Speichern'}</button>
-              <button
-                type="button"
-                class="btn btn-sm variant-outline-secondary border border-secondary-500"
-                onclick={cancelNotesEdit}
-              >Abbrechen</button>
-            {:else}
-              <button
-                type="button"
-                class="btn btn-sm variant-outline-primary border border-primary-500"
-                onclick={startNotesEdit}
-              >Bearbeiten</button>
-            {/if}
+              />
+            </label>
           </div>
         {/if}
 
@@ -773,6 +773,12 @@
         {isSaving ? 'Wird gespeichert...' : 'Speichern'}
       </button>
       <button type="button" class="btn variant-outline-secondary border border-secondary-500" onclick={cancelEdit}>Abbrechen</button>
+    {/if}
+    {#if notesEditMode}
+      <button type="button" class="btn variant-filled-success" disabled={notesSaving} onclick={saveNotes}>
+        {notesSaving ? 'Wird gespeichert…' : 'Speichern'}
+      </button>
+      <button type="button" class="btn variant-outline-secondary border border-secondary-500" onclick={cancelNotesEdit}>Abbrechen</button>
     {/if}
     <button class="btn variant-ghost" onclick={() => modalState.close()}>Schließen</button>
   </footer>
