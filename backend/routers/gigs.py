@@ -1136,6 +1136,27 @@ def update_gig(
     return db_gig
 
 
+@router.patch("/{gig_id}/notes", response_model=schemas.GigOut)
+def update_gig_notes(
+        gig_id: int,
+        payload: schemas.GigNotesIn,
+        db: Session = Depends(auth.get_db),
+        current=Depends(auth.get_current_user)
+):
+    """Speichert das Freitext-Protokoll (Markdown) eines Gigs."""
+    if not check_editor(current):
+        raise HTTPException(status_code=401, detail="User role does not allow to update a gig!")
+
+    db_gig = db.query(models.Gig).get(gig_id)
+    if not db_gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    db_gig.notes = payload.notes
+    db.commit()
+    db.refresh(db_gig)
+    return db_gig
+
+
 def parse_name(full_name: str) -> dict:
     """
     Teilt einen vollständigen Namen in Vor- und Nachname auf.

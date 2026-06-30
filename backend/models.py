@@ -249,6 +249,7 @@ class Gig(Base):
     end = Column(Time)
     status = Column(String)
     publish = Column(String)
+    notes = Column(Text, nullable=True)
 
     sets: Mapped[list["GigSet"]] = relationship(
         "GigSet", back_populates="gig", order_by="GigSet.position"

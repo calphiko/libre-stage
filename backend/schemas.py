@@ -302,6 +302,7 @@ class GigIn(BaseModel):
     status: Optional[str] = None
     id: int = None
     publish: Optional[int] = None
+    notes: Optional[str] = None
 
     @field_validator("datum", mode="before")
     @classmethod
@@ -401,6 +402,7 @@ class GigOut(BaseModel):
     status: Optional[str] = None
     id: int = None
     publish: int = None
+    notes: Optional[str] = None
 
     model_config = {"from_attributes": True}  # <--- das ist essenziell!
 
@@ -441,6 +443,10 @@ class GigScheduleBulkItemIn(BaseModel):
 
 class GigScheduleBulkUpdateIn(BaseModel):
     items: List[GigScheduleBulkItemIn] = Field(default_factory=list)
+
+
+class GigNotesIn(BaseModel):
+    notes: Optional[str] = None
 
 class SetOut(BaseModel):
     id: int
@@ -496,6 +502,7 @@ class GigSetlistOut(BaseModel):
     status: Optional[str] = None
     publish: Optional[str] = None
     setlist_version: Optional[str] = None
+    notes: Optional[str] = None
     sets: List[SetInGigOut]
     timing: Optional[GigSetlistTimingOut] = None
 
