@@ -461,6 +461,16 @@ export async function updateGig(gigId, data, token) {
     return res.json();
   }
 
+export async function updateGigNotes(gigId, notes) {
+  const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/notes`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
+  if (!res.ok) throw new Error('Protokoll konnte nicht gespeichert werden');
+  return res.json();
+}
+
 export async function updateSong(songId, data, token) {
     const res = await fetchWithAuth(`${API_URL}/songs/${songId}`, {
       method: 'PUT',

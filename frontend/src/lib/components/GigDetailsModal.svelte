@@ -19,6 +19,7 @@
 <script>
   import {
     updateGig,
+    updateGigNotes,
     getGigSetlistAvailability,
     getSetlistPDF,
     getGemaListFile,
@@ -35,6 +36,7 @@
   import GigSchedule from '../../routes/gigs/GigSchedule.svelte';
   import GenreDistributionPlot from '$lib/plots/genreDistributionPlot.svelte';
   import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
+  import { marked } from 'marked';
 
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -66,6 +68,39 @@
   let statistics = $state(null);
   let genrePalette = $state({});
   let liveMode = $state(liveModeStatus ? { ...liveModeStatus } : null);
+
+  // Protokoll-Tab
+  let notesEditMode = $state(false);
+  let notesBuffer = $state('');
+  let notesSaving = $state(false);
+
+  function startNotesEdit() {
+    notesBuffer = gig?.notes ?? '';
+    notesEditMode = true;
+  }
+
+  function cancelNotesEdit() {
+    notesEditMode = false;
+    notesBuffer = '';
+  }
+
+  async function saveNotes() {
+    if (!gig?.id || notesSaving) return;
+    notesSaving = true;
+    try {
+      const updated = await updateGigNotes(gig.id, notesBuffer);
+      gig = { ...gig, notes: updated.notes };
+      onGigUpdated(gig);
+      notesEditMode = false;
+      showSuccess('Protokoll gespeichert');
+    } catch (e) {
+      showError(e.message ?? 'Protokoll konnte nicht gespeichert werden');
+    } finally {
+      notesSaving = false;
+    }
+  }
+
+  let notesHtml = $derived(gig?.notes ? marked.parse(gig.notes) : '');
 
   const feedbackEmoji = { 3: '😍', 2: '😊', 1: '😐' };
 
@@ -330,6 +365,10 @@
       class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 3 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
       onclick={() => tabSet = 3}
     >Statistik</button>
+    <button
+      class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 4 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+      onclick={() => tabSet = 4}
+    >Protokoll</button>
   </div>
 
   <div class="overflow-y-auto flex-grow min-h-0 pr-1">
@@ -659,6 +698,60 @@
           </div>
         {:else}
           <p class="text-sm text-on-surface-variant">Keine Statistikdaten verfügbar.</p>
+        {/if}
+      </div>
+    {:else if tabSet === 4}
+      <!-- Protokoll-Tab -->
+      <div class="space-y-3">
+        {#if canEdit}
+          <div class="flex justify-end gap-2">
+            {#if notesEditMode}
+              <button
+                type="button"
+                class="btn btn-sm variant-filled-success"
+                disabled={notesSaving}
+                onclick={saveNotes}
+              >{notesSaving ? 'Wird gespeichert…' : 'Speichern'}</button>
+              <button
+                type="button"
+                class="btn btn-sm variant-outline-secondary border border-secondary-500"
+                onclick={cancelNotesEdit}
+              >Abbrechen</button>
+            {:else}
+              <button
+                type="button"
+                class="btn btn-sm variant-outline-primary border border-primary-500"
+                onclick={startNotesEdit}
+              >Bearbeiten</button>
+            {/if}
+          </div>
+        {/if}
+
+        {#if notesEditMode}
+          <textarea
+            class="textarea w-full font-mono text-sm"
+            rows="20"
+            placeholder="Protokoll / Notizen (Markdown wird unterstützt)&#10;&#10;## Nachbesprechung&#10;- Sound war gut&#10;- **Mikrofon** bei Song 3 ausgefallen"
+            bind:value={notesBuffer}
+          ></textarea>
+          <p class="text-xs text-on-surface-variant mt-1">
+            Markdown wird unterstützt: **fett**, *kursiv*, ## Überschrift, - Liste, `code`
+          </p>
+        {:else if gig?.notes}
+          <div class="card variant-ghost-surface p-4 rounded-lg prose prose-sm max-w-none dark:prose-invert">
+            {@html notesHtml}
+          </div>
+        {:else}
+          <div class="card variant-ghost-surface p-6 rounded-lg text-center">
+            <p class="text-sm text-on-surface-variant">Noch kein Protokoll vorhanden.</p>
+            {#if canEdit}
+              <button
+                type="button"
+                class="btn btn-sm variant-outline-primary border border-primary-500 mt-3"
+                onclick={startNotesEdit}
+              >Protokoll anlegen</button>
+            {/if}
+          </div>
         {/if}
       </div>
     {/if}

@@ -1098,3 +1098,81 @@ def test_bulk_update_gig_schedule_rejects_fixed_collision(client, auth_headers, 
     assert response.status_code == 409
 
 
+# ── Protokoll / Notes Tests ──────────────────────────────────────────────────
+
+def test_patch_gig_notes_saves_and_returns(client, auth_headers, db_session):
+    """Editor kann Notizen speichern; Antwort enthält das notes-Feld."""
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Notes Gig",
+        datum=date(2035, 6, 1),
+        kind_of_gig="Festival",
+        venue="Open Air",
+        doors=time(17, 0),
+        begin=time(18, 0),
+        end=time(22, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    payload = {"notes": "## Nachbesprechung\n\n- Sound war gut\n- **Mikrofon** ausgefallen"}
+    response = client.patch(f"/gigs/{gig.id}/notes", json=payload, headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "notes" in data
+    assert "Nachbesprechung" in data["notes"]
+    assert data["id"] == gig.id
+
+
+def test_patch_gig_notes_visible_in_get(client, auth_headers, db_session):
+    """Gespeicherte Notizen erscheinen in der Gig-Liste."""
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Notes Visibility Gig",
+        datum=date(2035, 7, 1),
+        kind_of_gig="Concert",
+        venue="Stadthalle",
+        doors=time(18, 0),
+        begin=time(19, 0),
+        end=time(23, 0),
+        publish=0,
+        notes="Initiale Notiz",
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    response = client.get("/gigs/", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    gig_data = next((g for g in data if g["id"] == gig.id), None)
+    assert gig_data is not None
+    assert gig_data.get("notes") == "Initiale Notiz"
+
+
+def test_patch_gig_notes_forbidden_for_user(client, auth_headers2, db_session):
+    """Normaler User (keine Editor-Rolle) darf keine Notizen speichern."""
+    from backend.models import Gig
+
+    gig = Gig(
+        name="Forbidden Notes Gig",
+        datum=date(2035, 8, 1),
+        kind_of_gig="Concert",
+        venue="Club",
+        doors=time(20, 0),
+        begin=time(21, 0),
+        end=time(23, 0),
+        publish=0,
+    )
+    db_session.add(gig)
+    db_session.commit()
+    db_session.refresh(gig)
+
+    response = client.patch(f"/gigs/{gig.id}/notes", json={"notes": "Hacker"}, headers=auth_headers2)
+    assert response.status_code == 401
+
