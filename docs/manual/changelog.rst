@@ -3,6 +3,37 @@
 Änderungsprotokoll
 ==================
 
+0.5.21 (2026-06-30)
+-------------------
+
+Added
+~~~~~
+
+* Gig-Protokoll: Neuer Tab **Protokoll** im ``GigDetailsModal`` ermöglicht das Erfassen und Bearbeiten von Nachbesprechungsnotizen pro Gig.
+  Inhalte werden als Markdown gespeichert und gerendert (``**fett**``, *kursiv*, Überschriften, Listen, ``code``).
+* Gig-Protokoll: Neuer Backend-Endpoint ``PUT /gigs/{gig_id}/notes`` mit Authentifizierung und Berechtigungsprüfung.
+* Gig-Protokoll: Neues Schema-Feld ``notes`` in ``GigUpdate`` und ``GigOut``; Hilfsfunktion ``updateGigNotes`` in der Frontend-API ergaenzt.
+* Gig-Protokoll: Neue Alembic-Migration ``0ba4c6c97dad_add_notes_to_gigs`` fuegt Spalte ``gigs.notes TEXT`` hinzu.
+* Gig-Protokoll: Backend-Tests fuer den neuen Notes-Endpoint ergaenzt (Speichern, Berechtigungspruefung, leerer Inhalt).
+* Gig-Statistik: Neue Komponente ``gigSetStatusPlot.svelte`` – gestapeltes Balkendiagramm **Songs je Set** im Statistik-Tab des ``GigDetailsModal``.
+  X-Achse: Set-Namen; Y-Achse: Anzahl Songs farblich unterteilt in Gespielt (blau), Eingeschoben (gruen) und Uebersprungen (gelb, negativ unterhalb der X-Achse).
+  Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab > 12 Sets sowie Dark-Mode.
+
+Changed
+~~~~~~~
+
+* Gig-Statistik: Uebersprungene Songs werden als negativer Balken **unterhalb der X-Achse** dargestellt (divergierendes Balkendiagramm).
+* Gig-Statistik: Chart-Design an den Genre-Verteilungs-Plot angeglichen (gleiche Grid-Abstände, ``barMaxWidth: 26``, Achsen-Styling, Legende oben, kompakte Zentrierung bei ≤ 8 Sets).
+* Gig-Statistik: Sektion ``Songs je Set`` wird immer angezeigt, sobald Statistikdaten geladen sind – bei fehlender Setliste erscheint ein Hinweistext statt eines leeren Bereichs.
+* Gig-Ablaufplan: Deutschsprachige Bezeichnungen in der ``GigSchedule``-Komponente korrigiert.
+* Chore: Projektversion auf ``0.5.21`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.21`` ergaenzt.
+
+Fixed
+~~~~~
+
+* Public-Endpoint: Im Song-Histogramm-Endpoint (``/public/song_histogram``) wurde ``kind_of_gig`` faelschlicherweise gegen das globale statt das jahresspezifische Histogramm-Dict geprueft, was zu einem ``KeyError`` fuehren konnte. Korrektur: Pruefung erfolgt jetzt korrekt gegen ``histogram[year]``.
+
 0.5.20 (2026-06-23)
 -------------------
 
