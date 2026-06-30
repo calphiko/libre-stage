@@ -38,6 +38,7 @@
   import FeedbackDistributionPlot from '$lib/plots/feedbackDistributionPlot.svelte';
   import GigSetStatusPlot from '$lib/plots/gigSetStatusPlot.svelte';
   import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
 
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -101,7 +102,15 @@
     }
   }
 
-  let notesHtml = $derived(gig?.notes ? marked.parse(gig.notes) : '');
+  let notesHtml = $derived(
+    gig?.notes
+      ? DOMPurify.sanitize(/** @type {string} */ (marked.parse(gig.notes)), {
+          ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','strong','em','ul','ol','li','code','pre','blockquote','hr','a'],
+          ALLOWED_ATTR: ['href', 'title', 'target', 'rel'],
+          FORCE_BODY: true,
+        })
+      : ''
+  );
 
   const feedbackEmoji = { 3: '😍', 2: '😊', 1: '😐' };
 
