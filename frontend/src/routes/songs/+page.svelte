@@ -87,17 +87,11 @@
 
   function openModal(song) {
     modalState.trigger({
-    component: SongDetailsModal,
-    meta: {
-      songId: song.id
-    },
-    response: async (result) => {
-      if (result?.action === 'updated') {
-        await refreshSongLists();
-      } else if (result?.action === 'delete') {
-        await refreshSongLists();
-      }
-    }
+      component: SongDetailsModal,
+      meta: {
+        songId: song.id
+      },
+      onClose: () => refreshSongLists()
     });
   }
 
