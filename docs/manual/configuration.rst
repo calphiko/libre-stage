@@ -147,3 +147,42 @@ Für den Entwicklungsmodus wird die API-URL über ``VITE_API_URL`` gesteuert:
 
    # frontend/.env (für lokale Entwicklung)
    VITE_API_URL=http://localhost:8000
+
+Selbstheilung bei fehlenden Keys
+---------------------------------
+
+Ab ``v0.5.22`` prüft das Backend beim Start automatisch, ob alle Pflicht-Keys in
+``appConfig.json`` vorhanden sind.  Fehlt ein Key, wird er sofort mit einem
+leeren Standardwert befüllt und die Datei atomar zurückgeschrieben – die
+Anwendung startet damit fehlerfrei weiter.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Key
+     - Standardwert bei fehlendem Eintrag
+   * - ``genres``
+     - ``[]`` (leere Liste)
+   * - ``gigTypes``
+     - ``[]`` (leere Liste)
+   * - ``songStatuses``
+     - ``[]`` (leere Liste)
+   * - ``gigStatuses``
+     - ``[]`` (leere Liste)
+   * - ``tonekeys``
+     - ``[]`` (leere Liste)
+   * - ``rehearsalSongStatuses``
+     - ``[]`` (leere Liste)
+   * - ``danceStyles``
+     - ``[]`` (leere Liste)
+   * - ``setlist_timing``
+     - Standard-Timings: Song 240 s, Pause zwischen Songs 30 s, Set-Pause 600 s
+
+.. note::
+
+   Alle automatisch ergänzten Keys werden im Server-Log mit ``WARNING``-Level
+   gemeldet.  Die ergänzte ``appConfig.json`` sollte anschliessend über die
+   Admin-Oberfläche (:ref:`admin_konfiguration`) mit den gewünschten Werten
+   befüllt werden.
+

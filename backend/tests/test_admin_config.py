@@ -47,6 +47,7 @@ def test_admin_can_update_soft_config(client, test_user, auth_headers, temp_app_
         "gigStatuses": [{"key": "angefragt", "label": "Angefragt"}],
         "tonekeys": [{"key": None, "label": ""}, {"key": "C", "label": "C"}],
         "rehearsalSongStatuses": ["neu", "in arbeit", "fertig"],
+        "danceStyles": [{"key": "Walzer", "label": "Walzer"}],
         "setlist_timing": [
             {"DEFAULT_SONG_DURATION_SECONDS": 250},
             {"DEFAULT_INTER_SONG_BREAK_SECONDS": 35},
@@ -79,6 +80,7 @@ def test_admin_update_soft_config_validation_error(client, test_user, auth_heade
         "gigStatuses": [],
         "tonekeys": [],
         "rehearsalSongStatuses": [],
+        "danceStyles": [],
         "setlist_timing": [
             {"DEFAULT_SONG_DURATION_SECONDS": 240},
             {"DEFAULT_INTER_SONG_BREAK_SECONDS": 30},
@@ -100,6 +102,7 @@ def test_public_app_config_reflects_admin_update(client, test_user, auth_headers
         "gigStatuses": [{"key": "fix", "label": "Fix"}],
         "tonekeys": [{"key": None, "label": ""}, {"key": "Dm", "label": "Dm"}],
         "rehearsalSongStatuses": ["neu"],
+        "danceStyles": [{"key": "Tango", "label": "Tango"}],
         "setlist_timing": [
             {"DEFAULT_SONG_DURATION_SECONDS": 300},
             {"DEFAULT_INTER_SONG_BREAK_SECONDS": 25},

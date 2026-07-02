@@ -286,11 +286,13 @@
     editBuffer = { ...song };
     selectedFutureRehearsalId = findFutureRehearsalIdForSong(song.id, rehearsals);
     songFieldsDetails.forEach(field => {
-      if (field.type === 'singer_list' && typeof editBuffer[field.key] === 'string') {
-        editBuffer[field.key] = editBuffer[field.key]
-          .split('+')
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+      if (field.type === 'singer_list' || field.type === 'multi_select') {
+        const val = editBuffer[field.key];
+        if (typeof val === 'string') {
+          editBuffer[field.key] = val.split('+').map(s => s.trim()).filter(s => s.length > 0);
+        } else if (!Array.isArray(val)) {
+          editBuffer[field.key] = [];
+        }
       }
     });
   }
@@ -316,7 +318,7 @@
     try {
       const dataToSend = { ...editBuffer };
       songFieldsDetails.forEach(field => {
-        if (field.type === 'singer_list' && Array.isArray(dataToSend[field.key])) {
+        if ((field.type === 'singer_list' || field.type === 'multi_select') && Array.isArray(dataToSend[field.key])) {
           dataToSend[field.key] = dataToSend[field.key].join(' + ');
         }
       });
@@ -505,6 +507,13 @@
                       bind:selected={editBuffer[songField.key]}
                       options={singers}
                       placeholder="Sänger hinzufügen"
+                    />
+                  {:else if songField.type === 'multi_select'}
+                    <SingersList
+                      class="flex-grow"
+                      bind:selected={editBuffer[songField.key]}
+                      options={songField.options ?? []}
+                      placeholder="{songField.label} hinzufügen"
                     />
                   {:else}
                     <input type="text" class="input flex-grow" bind:value={editBuffer[songField.key]} placeholder={songField.label} required={songField.required} minlength="1" maxlength="255" pattern=".*\S+.*" />

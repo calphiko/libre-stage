@@ -23,6 +23,7 @@
   import { findBestSongDuplicate } from '$lib/songDuplicateCheck.js';
   import { getSongCrawlerMetadata } from '$lib/api.js';
   import { fade, fly } from 'svelte/transition';
+  import SingersList from '$lib/components/SingersList.svelte';
 
   // Diese Props werden vom Modal übergeben
   let { response = () => {}, parent, existingSongs = [] } = $props();
@@ -32,6 +33,15 @@
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
 
   let song = $state({});
+
+  // multi_select-Felder müssen als Array initialisiert sein, da SingersList kein null/undefined verarbeitet
+  $effect(() => {
+    songFieldsDetails.forEach(f => {
+      if (f.type === 'multi_select' && !Array.isArray(song[f.key])) {
+        song[f.key] = [];
+      }
+    });
+  });
   let duplicateMatch = $state(null);
   let isMetadataLoading = $state(false);
   let lastMetadataKey = $state('');
@@ -124,10 +134,13 @@
   }
 
   function submit() {
-    //console.log("Song: ", song);
-
-    modalState.close(song)
-    //response({ datum, name });
+    const dataToSend = { ...song };
+    getSongFieldsDetails($appConfig).forEach(field => {
+      if (field.type === 'multi_select' && Array.isArray(dataToSend[field.key])) {
+        dataToSend[field.key] = dataToSend[field.key].join(' + ');
+      }
+    });
+    modalState.close(dataToSend)
     modalState.close();
   }
 
@@ -140,7 +153,16 @@
     <div class="overflow-y-auto flex-grow">
         <form class=" card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
           {#each songFieldsDetails as songField}
-            {#if songField.type != "singer_list"}
+            {#if songField.type === 'multi_select'}
+                <div class="mb-3 d-flex align-items-center gap-2 flex-nowrap">
+                  <label>{songField.label}</label>
+                  <SingersList
+                    bind:selected={song[songField.key]}
+                    options={songField.options ?? []}
+                    placeholder="{songField.label} hinzufügen"
+                  />
+                </div>
+            {:else if songField.type != "singer_list"}
                 <div class="mb-3 d-flex align-items-center gap-2 flex-nowrap">
                   <label>
                     {songField.label}
