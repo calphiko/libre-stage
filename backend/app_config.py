@@ -47,10 +47,11 @@ _REQUIRED_KEYS = [
     "tonekeys",
     "rehearsalSongStatuses",
     "setlist_timing",
+    "danceStyles",
 ]
 
 SOFT_CONFIG_KEYS = tuple(_REQUIRED_KEYS)
-_OBJECT_SOFT_KEYS = {"genres", "gigTypes", "songStatuses", "gigStatuses", "tonekeys"}
+_OBJECT_SOFT_KEYS = {"genres", "gigTypes", "songStatuses", "gigStatuses", "tonekeys", "danceStyles"}
 _STRING_SOFT_KEYS = {"rehearsalSongStatuses"}
 _SETLIST_TIMING_SOFT_KEYS = {"setlist_timing"}
 _SETLIST_TIMING_KEYS = (
@@ -58,6 +59,12 @@ _SETLIST_TIMING_KEYS = (
     "DEFAULT_INTER_SONG_BREAK_SECONDS",
     "DEFAULT_SET_PAUSE_SECONDS",
 )
+
+_DEFAULT_SETLIST_TIMING = [
+    {"DEFAULT_SONG_DURATION_SECONDS": 240},
+    {"DEFAULT_INTER_SONG_BREAK_SECONDS": 30},
+    {"DEFAULT_SET_PAUSE_SECONDS": 600},
+]
 
 
 class ConfigValidationError(ValueError):
@@ -74,12 +81,42 @@ def _validate_required_keys(config: dict) -> None:
         raise ConfigValidationError(f"appConfig.json ist unvollstaendig! Fehlende Keys: {', '.join(missing)}")
 
 
+def _ensure_required_keys(config: dict) -> list[str]:
+    """Ensure all required keys exist in *config*, inserting empty defaults if missing.
+
+    For list-based soft-config keys (genres, gigTypes, etc.) an empty list is
+    inserted.  For ``setlist_timing`` the built-in default timings are used.
+
+    Returns a list of key names that were added so the caller can log / persist
+    the changes.
+    """
+    added: list[str] = []
+    for key in _REQUIRED_KEYS:
+        if key not in config:
+            if key in _SETLIST_TIMING_SOFT_KEYS:
+                config[key] = list(_DEFAULT_SETLIST_TIMING)
+            else:
+                # _OBJECT_SOFT_KEYS and _STRING_SOFT_KEYS both use plain lists
+                config[key] = []
+            added.append(key)
+    return added
+
+
 def _load_config_from_disk() -> dict:
     with open(_config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
     if not isinstance(config, dict):
         raise ConfigValidationError("appConfig.json muss ein JSON-Objekt sein")
-    _validate_required_keys(config)
+
+    added = _ensure_required_keys(config)
+    if added:
+        logger.warning(
+            "appConfig.json: Fehlende Keys wurden mit leeren Standardwerten ergaenzt "
+            "und zurueckgeschrieben: %s",
+            ", ".join(added),
+        )
+        _write_config_atomic(config)
+
     return config
 
 
