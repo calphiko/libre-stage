@@ -3,6 +3,34 @@
 Änderungsprotokoll
 ==================
 
+0.5.22 (2026-07-02)
+-------------------
+
+Added
+~~~~~
+
+* Konfiguration: ``app_config.py`` prüft beim Start, ob alle erwarteten Pflicht-Keys in der ``appConfig.json`` vorhanden sind.
+  Fehlende Keys werden automatisch mit leeren Listen (``[]``) bzw. – für ``setlist_timing`` – mit sinnvollen Standard-Werten befüllt.
+  Die ergänzte Konfiguration wird atomar zurückgeschrieben, sodass die Datei dauerhaft konsistent bleibt.
+  Ein ``WARNING``-Log nennt alle automatisch ergänzten Keys.
+* Sicherheit: ``DOMPurify`` (``dompurify ^3.4.11``) integriert – Markdown-gerenderter HTML-Inhalt der Gig-Protokoll-Notizen wird vor der Darstellung
+  bereinigt (erlaubte Tags: Überschriften, Textformatierung, Listen, Code, Links; erlaubte Attribute: ``href``, ``title``, ``target``, ``rel``).
+* Abhängigkeiten: ``@types/dompurify ^3.0.5`` als Dev-Dependency hinzugefügt.
+* Styling: ``@tailwindcss/typography ^0.5.20`` als Dev-Dependency hinzugefügt und über ``@plugin "@tailwindcss/typography"`` in ``app.css`` aktiviert –
+  ermöglicht sauberes typografisches Rendering von Markdown-Inhalten.
+
+Changed
+~~~~~~~
+
+* Gig-Protokoll: Edit-Toggle im ``GigDetailsModal`` auf **Checkbox** umgestellt.
+  Statt separater Bearbeiten/Abbrechen-Buttons im Tab-Bereich steuert eine ``Edit-Mode``-Checkbox den Editiermodus;
+  Speichern- und Abbrechen-Buttons wurden in die modale **Footer-Leiste** verschoben, konsistent mit den übrigen Modal-Aktionen.
+* Konfiguration: ``_load_config_from_disk`` ruft statt ``_validate_required_keys`` die neue Funktion ``_ensure_required_keys`` auf,
+  die bei fehlenden Keys nicht mehr abbricht, sondern Standardwerte einsetzt und persistiert.
+  ``_validate_required_keys`` bleibt für den Admin-Update-Pfad (``update_soft_config``) unverändert erhalten.
+* Chore: Projektversion auf ``0.5.22`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.22`` ergaenzt; Konfigurationsdokumentation um Selbstheilungs-Verhalten aktualisiert.
+
 0.5.21 (2026-06-30)
 -------------------
 
