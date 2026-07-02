@@ -31,7 +31,7 @@
   let activeIndex = $state(-1);
 
   let available = $derived(options
-    .filter(o => !selected.includes(o))
+    .filter(o => !Array.isArray(selected) || !selected.includes(o))
     .filter(o => o.toLowerCase().includes(input.trim().toLowerCase())));
 
   function addTag(value) {
@@ -93,6 +93,14 @@
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   });
+
+  function onBlur() {
+    // Kurzer Delay, damit onmousedown auf einem Vorschlag noch feuern kann
+    setTimeout(() => {
+      open = false;
+      activeIndex = -1;
+    }, 150);
+  }
 </script>
 
 <div class="tag-input" role="application">
@@ -119,7 +127,9 @@
     type="text"
     bind:value={input}
     placeholder={placeholder}
-    oninput={() => { open = input.trim() !== ''; activeIndex = 0; }}
+    oninput={() => { open = available.length > 0; activeIndex = 0; }}
+    onfocus={() => { open = available.length > 0; activeIndex = -1; }}
+    onblur={onBlur}
     onkeydown={onKeyDown}
     aria-autocomplete="list"
     aria-expanded={open}

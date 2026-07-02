@@ -149,6 +149,7 @@ class SoftConfigUpdateIn(BaseModel):
     tonekeys: List[Union[str, SoftConfigOption]]
     rehearsalSongStatuses: List[Union[str, SoftConfigOption]]
     setlist_timing: List[Dict[str, int]]
+    danceStyles: List[Union[str, SoftConfigOption]]
 
     model_config = {"extra": "forbid"}
 
@@ -161,6 +162,7 @@ class SoftConfigOut(BaseModel):
     tonekeys: List[SoftConfigOption]
     rehearsalSongStatuses: List[str]
     setlist_timing: List[Dict[str, int]]
+    danceStyles: List[SoftConfigOption]
 
 
 class SoftConfigMeta(BaseModel):
@@ -184,6 +186,7 @@ class SongIn(BaseModel):
     genre: str= Field(..., max_length=100)
     singer_background: Optional[str] = Field(None, max_length=200)
     singer_lead: Optional[str] = Field(None, max_length=200)
+    dance_styles: Optional[str] = Field(None, max_length=512)
     composer: Optional[str] = Field(None, max_length=500)
     texter: Optional[str] = Field(None, max_length=500)
     publisher: Optional[str] = Field(None, max_length=500)
@@ -236,6 +239,7 @@ class SongCandidateOut(BaseModel):
     genre: Optional[str] = None
     singer_lead: Optional[str] = None
     singer_background: Optional[str] = None
+    dance_styles: Optional[str] = None
     composer: Optional[str] = None
     tone_key: Optional[str] = None
     status: Optional[str] = None
@@ -252,6 +256,7 @@ class SongOut(BaseModel):
     genre: Optional[str] = None
     singer_background: Optional[str] = None
     singer_lead: Optional[str] = None
+    dance_styles: Optional[str] = None
     composer: Optional[str] = None
     texter: Optional[str] = None
     publisher: Optional[str] = None

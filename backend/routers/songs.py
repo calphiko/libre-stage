@@ -376,6 +376,7 @@ def create_song(
         genre=song.genre,
         singer_background=song.singer_background,
         singer_lead=song.singer_lead,
+        dance_styles=song.dance_styles,
         composer=song.composer,
         texter=song.texter,
         publisher=song.publisher,

@@ -355,6 +355,7 @@ class Song(Base):
     genre = Column(String(512))
     singer_background = Column(String(512))
     singer_lead = Column(String(512))
+    dance_styles = Column(String(512))
     composer = Column(String(1024))
     texter = Column(String(1024))
     publisher = Column(String(1024))
@@ -385,6 +386,7 @@ class Song(Base):
             "genre": self.genre.strip() if self.genre else "",
             "singer_lead": self.singer_lead if self.singer_lead else "",
             "singer_background": self.singer_background if self.singer_background else "",
+            "dance_styles": self.dance_styles if self.dance_styles else "",
             "duration": self.duration.strftime("%H:%M:%S") if type(self.duration) == time else "00:00:00",
             "brass": self.brass,
             "tone_key": self.tone_key,
