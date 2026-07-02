@@ -269,6 +269,19 @@
     "spielbar",
     "retired"
   ],
+  "danceStyles": [
+    { "key": "Walzer", "label": "Walzer" },
+    { "key": "Tango", "label": "Tango" },
+    { "key": "Foxtrott", "label": "Foxtrott" },
+    { "key": "Quickstep", "label": "Quickstep" },
+    { "key": "Wiener Walzer", "label": "Wiener Walzer" },
+    { "key": "Cha-Cha-Cha", "label": "Cha-Cha-Cha" },
+    { "key": "Samba", "label": "Samba" },
+    { "key": "Rumba", "label": "Rumba" },
+    { "key": "Paso Doble", "label": "Paso Doble" },
+    { "key": "Jive", "label": "Jive" },
+    { "key": "Discofox", "label": "Discofox" }
+  ],
   "setlist_timing": [
     {
       "DEFAULT_SONG_DURATION_SECONDS": 240
