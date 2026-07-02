@@ -51,6 +51,12 @@ export function getSongFieldsDetails(config) {
       label: 'Background Gesang',
       type: 'singer_list'
     },
+    {
+      key: 'dance_styles',
+      label: 'Tanzart',
+      type: 'multi_select',
+      options: (config?.danceStyles ?? []).map(d => d.key ?? d.label).filter(Boolean)
+    },
     { key: 'composer', label: 'Komponist' },
     { key: 'texter', label: 'Texter' },
     { key: 'publisher', label: 'Publisher' },
