@@ -16,8 +16,11 @@
   import { formatGermanDateTime } from '$lib/common.js';
   import { toastState } from '$lib/toast.js';
 
-  const objectKeys = ['genres', 'gigTypes', 'songStatuses', 'gigStatuses', 'tonekeys'];
-  const stringKeys = ['rehearsalSongStatuses'];
+  // Keys whose values are plain string arrays (not {key, label} object arrays).
+  // Everything else that the backend returns as an array is treated as an object list.
+  // setlist_timing is always rendered separately and never appears here.
+  const STRING_KEYS = new Set(['rehearsalSongStatuses']);
+
   const timingKeys = [
     'DEFAULT_SONG_DURATION_SECONDS',
     'DEFAULT_INTER_SONG_BREAK_SECONDS',
@@ -38,18 +41,24 @@
   let saving = $state(false);
   let updatedAt = $state('');
 
-  let form = $state({
-    genres: [],
-    gigTypes: [],
-    songStatuses: [],
-    gigStatuses: [],
-    tonekeys: [],
-    rehearsalSongStatuses: [],
-    setlist_timing: []
-  });
+  // Populated entirely from the API response – no manual key list needed.
+  let form = $state({});
 
   let original = $state(null);
   let timingPickerValues = $state({});
+
+  // Derived directly from what the backend returns: all array keys that are not
+  // setlist_timing and not in STRING_KEYS are rendered as {key, label} object lists.
+  let objectKeys = $derived(
+    Object.keys(form).filter(
+      (k) => k !== 'setlist_timing' && !STRING_KEYS.has(k) && Array.isArray(form[k])
+    )
+  );
+
+  // All array keys that the backend tagged as plain-string lists.
+  let stringKeys = $derived(
+    Object.keys(form).filter((k) => STRING_KEYS.has(k) && Array.isArray(form[k]))
+  );
 
   function deepClone(value) {
     return JSON.parse(JSON.stringify(value));
