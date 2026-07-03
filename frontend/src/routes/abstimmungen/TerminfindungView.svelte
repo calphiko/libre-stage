@@ -26,6 +26,20 @@
 
   let hoveredFieldId = $state(null);
 
+  // Local draft comments keyed by field.id for the current user.
+  let fieldComments = $state({});
+
+  // Pre-fill fieldComments from existing feedback when survey loads.
+  $effect(() => {
+    if (!survey?.fields || !user) return;
+    for (const field of survey.fields) {
+      const myFb = getFeedbackFor(field, user.id);
+      if (myFb && !(field.id in fieldComments)) {
+        fieldComments[field.id] = myFb.comment ?? '';
+      }
+    }
+  });
+
   // Helper: Map User-ID → User
   let userById = $derived(new Map(users.map(u => [Number(u.id), u])));
 
@@ -33,8 +47,10 @@
     new Date(a.field_text) - new Date(b.field_text)
   ));
 
-
-
+  // Fields where the current user has cast a vote (non-null value).
+  let myVotedFields = $derived(
+    user ? sortedFields.filter(f => getFeedbackFor(f, user.id)?.value != null) : []
+  );
 
   // Helper: Feedback eines Users für ein bestimmtes Feld
   const getFeedbackFor = (field, userId) =>
@@ -86,6 +102,20 @@
     return `${datePart}\n${timePart}`;
   };
 
+  // Builds the full feedback list for the API call, injecting the current
+  // user's comment drafts from fieldComments.
+  const buildAllFeedbacks = () =>
+    survey.fields.flatMap(f =>
+      (f.feedbacks || []).map(fb => ({
+        id_sv_field: f.id,
+        id_user: fb.id_user,
+        value: fb.value,
+        comment: Number(fb.id_user) === Number(user?.id)
+          ? (fieldComments[f.id] ?? fb.comment ?? null)
+          : (fb.comment ?? null)
+      }))
+    );
+
   const setNewFeedback = async (field, userId, value) => {
     // Prevent feedback changes if survey is closed
     if (survey.closed) return;
@@ -101,10 +131,8 @@
 
     // Update or add the feedback locally first
     if (feedbackIndex !== undefined && feedbackIndex >= 0) {
-      // Update existing feedback
       survey.fields[fieldIndex].feedbacks[feedbackIndex].value = value;
     } else {
-      // Add new feedback
       if (!survey.fields[fieldIndex].feedbacks) {
         survey.fields[fieldIndex].feedbacks = [];
       }
@@ -114,28 +142,28 @@
         value: value,
         comment: null
       });
+      // Initialize comment draft for the new feedback entry.
+      if (Number(userId) === Number(user?.id) && !(field.id in fieldComments)) {
+        fieldComments[field.id] = '';
+      }
     }
 
-    // Collect all feedbacks from all fields
-    const allFeedbacks = survey.fields.flatMap(f =>
-      (f.feedbacks || []).map(fb => ({
-        id_sv_field: f.id,
-        id_user: fb.id_user,
-        value: fb.value,
-        comment: fb.comment || null
-      }))
-    );
-
     try {
-      // Send all feedbacks to backend
-      const updatedSurvey = await updateSurveyFeedback(null, survey.id, allFeedbacks);
-
-      // Update local survey object with the response
+      const updatedSurvey = await updateSurveyFeedback(null, survey.id, buildAllFeedbacks());
       survey = updatedSurvey;
-
     } catch (error) {
       console.error('Fehler beim Aktualisieren des Feedbacks:', error);
-      // Optionally show error to user or revert local changes
+    }
+  };
+
+  // Persists the current comment drafts without changing any vote.
+  const saveComments = async () => {
+    if (!user || survey.closed) return;
+    try {
+      const updatedSurvey = await updateSurveyFeedback(null, survey.id, buildAllFeedbacks());
+      survey = updatedSurvey;
+    } catch (error) {
+      console.error('Fehler beim Speichern der Kommentare:', error);
     }
   };
 
@@ -236,11 +264,13 @@
                 {u.user_name}
               </td>
               {#each sortedFields as field}
+                {@const myComment = fieldComments[field.id]?.trim()}
                 <td
-                  class={`px-2 py-1 border border-gray-300 dark:border-gray-600 text-center transition-colors ${!survey.closed ? 'cursor-pointer' : 'cursor-not-allowed'} ${feedbackClass(getFeedbackFor(field, u.id)?.value)}`}
+                  class={`relative px-2 py-1 border border-gray-300 dark:border-gray-600 text-center transition-colors ${!survey.closed ? 'cursor-pointer' : 'cursor-not-allowed'} ${feedbackClass(getFeedbackFor(field, u.id)?.value)}`}
                   class:ring-2={hoveredFieldId === field.id}
                   class:ring-secondary={hoveredFieldId === field.id}
                   class:brightness-110={hoveredFieldId === field.id}
+                  title={myComment ? `💬 ${myComment}` : undefined}
                   onmouseenter={() => hoveredFieldId = field.id}
                   onmouseleave={() => hoveredFieldId = null}
                   onclick={() => {
@@ -249,6 +279,9 @@
                     setNewFeedback(field, u.id, next);
                   }}
                 >
+                  {#if myComment}
+                    <span class="text-sm leading-none opacity-70">💬</span>
+                  {/if}
                 </td>
               {/each}
             </tr>
@@ -261,14 +294,19 @@
                 {u.user_name}
               </td>
               {#each sortedFields as field}
+                {@const otherComment = getFeedbackFor(field, u.id)?.comment?.trim()}
                 <td
-                  class={`px-2 py-1 border border-gray-300 dark:border-gray-600 text-center transition-colors ${feedbackClass(getFeedbackFor(field, u.id)?.value)}`}
+                  class={`relative px-2 py-1 border border-gray-300 dark:border-gray-600 text-center transition-colors ${feedbackClass(getFeedbackFor(field, u.id)?.value)}`}
                   class:ring-4={hoveredFieldId === field.id}
                   class:ring-secondary={hoveredFieldId === field.id}
                   class:brightness-110={hoveredFieldId === field.id}
+                  title={otherComment ? `💬 ${otherComment}` : undefined}
                   onmouseenter={() => hoveredFieldId = field.id}
                   onmouseleave={() => hoveredFieldId = null}
                 >
+                  {#if otherComment}
+                    <span class="text-sm leading-none opacity-70">💬</span>
+                  {/if}
                 </td>
               {/each}
             </tr>
@@ -331,18 +369,20 @@
                   </td>
                   {#each sortedFields as field}
                     {@const feedback = getFeedbackFor(field, currentUser.id)}
+                    {@const myComment = fieldComments[field.id]?.trim()}
                     <td class="border border-gray-300 dark:border-gray-600 p-1">
                       <button
-                        class={`w-10 h-10 rounded-md text-sm transition-colors ${feedbackClass(feedback?.value)} ${!survey.closed ? 'active:scale-95 cursor-pointer ring-1 ring-primary-300 dark:ring-primary-700' : 'opacity-60 cursor-not-allowed'}`}
+                        class={`w-10 h-10 rounded-md text-sm transition-colors flex flex-col items-center justify-center leading-none gap-0.5 ${feedbackClass(feedback?.value)} ${!survey.closed ? 'active:scale-95 cursor-pointer ring-1 ring-primary-300 dark:ring-primary-700' : 'opacity-60 cursor-not-allowed'}`}
                         disabled={survey.closed}
-                        aria-label={`${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}`}
+                        aria-label={`${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}${myComment ? ' – ' + myComment : ''}`}
+                        title={myComment ? `💬 ${myComment}` : undefined}
                         onclick={() => {
                           if (survey.closed) return;
                           const next = nextFeedbackValue(feedback?.value);
                           setNewFeedback(field, currentUser.id, next);
                         }}
                       >
-                        {feedbackSymbol(feedback?.value)}
+                        {#if myComment}<span class="text-[10px] opacity-70 leading-none">💬</span>{/if}
                       </button>
                     </td>
                   {/each}
@@ -365,12 +405,14 @@
                 </td>
                 {#each sortedFields as field}
                   {@const feedback = getFeedbackFor(field, u.id)}
+                  {@const otherComment = feedback?.comment?.trim()}
                   <td class="border border-gray-300 dark:border-gray-600 p-1">
                     <div
-                      class={`w-10 h-10 rounded-md text-sm flex items-center justify-center opacity-85 ${feedbackClass(feedback?.value)}`}
-                      aria-label={`${u.user_name}, ${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}`}
+                      class={`w-10 h-10 rounded-md text-sm flex flex-col items-center justify-center leading-none gap-0.5 opacity-85 ${feedbackClass(feedback?.value)}`}
+                      aria-label={`${u.user_name}, ${formatGermanDateTime(field.field_text)}: ${feedbackText(feedback?.value)}${otherComment ? ' – ' + otherComment : ''}`}
+                      title={otherComment ? `💬 ${otherComment}` : undefined}
                     >
-                      {feedbackSymbol(feedback?.value)}
+                      {#if otherComment}<span class="text-[10px] opacity-70 leading-none">💬</span>{/if}
                     </div>
                   </td>
                 {/each}
@@ -403,6 +445,37 @@
       Legende: ✓ Ja, ~ Vielleicht, ✗ Nein, – Keine Angabe
     </p>
   </div>
+
+  <!-- Comment section – visible below both desktop and mobile matrix -->
+  {#if user && !survey.closed && myVotedFields.length > 0}
+    <div class="mt-4 space-y-2">
+      <p class="text-sm font-medium text-on-surface-variant">
+        Kommentare zu deinen Terminen <span class="font-normal opacity-70">(optional)</span>
+      </p>
+      <div class="space-y-2">
+        {#each myVotedFields as field}
+          {@const fb = getFeedbackFor(field, user.id)}
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-32 text-xs text-on-surface-variant pt-2 leading-tight">
+              {shortFormatGermanDate(field.field_text)}
+            </div>
+            <span
+              class={`flex-shrink-0 w-6 h-6 rounded text-sm flex items-center justify-center ${feedbackClass(fb?.value)}`}
+              title={feedbackText(fb?.value)}
+            >{feedbackSymbol(fb?.value)}</span>
+            <textarea
+              class="ui-input flex-1 text-xs resize-none"
+              rows="1"
+              placeholder="Kommentar (optional)…"
+              bind:value={fieldComments[field.id]}
+              onblur={() => saveComments()}
+              onkeydown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveComments(); } }}
+            ></textarea>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
 </div>
 

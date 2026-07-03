@@ -57,6 +57,21 @@
     return maxCount > 0 && (field.feedbacks?.length ?? 0) === maxCount;
   };
 
+  // Local draft comments keyed by field.id – used for the current user's input.
+  // Other users' comments are read directly from the survey data.
+  let fieldComments = $state<Record<number, string>>({});
+
+  // Pre-fill fieldComments with the current user's existing comments when survey loads.
+  $effect(() => {
+    if (!survey?.fields || !user) return;
+    for (const field of survey.fields) {
+      const myFb = field.feedbacks?.find((fb: any) => Number(fb.id_user) === Number(user.id));
+      if (myFb && !(field.id in fieldComments)) {
+        fieldComments[field.id] = myFb.comment ?? '';
+      }
+    }
+  });
+
   const getAllFeedbacks = (surveyFields) =>
     surveyFields.flatMap(f =>
       (f.feedbacks || [])
@@ -65,7 +80,10 @@
           id_sv_field: f.id,
           id_user: fb.id_user,
           value: fb.value,
-          comment: fb.comment || null
+          // For the current user use the live draft; for others keep the stored value.
+          comment: Number(fb.id_user) === Number(user?.id)
+            ? (fieldComments[f.id] ?? fb.comment ?? null)
+            : (fb.comment ?? null)
         }))
     );
 
@@ -82,9 +100,11 @@
 
     if (feedbackExists) {
       field.feedbacks.splice(existingFeedbackIndex, 1);
+      delete fieldComments[fieldId];
     } else {
       if (!field.feedbacks) field.feedbacks = [];
       field.feedbacks.push({ id_sv_field: fieldId, id_user: userId, value: 'a', comment: null });
+      fieldComments[fieldId] = '';
     }
 
     try {
@@ -94,6 +114,18 @@
     } catch (error) {
       console.error('Fehler beim Aktualisieren des Feedbacks:', error);
       survey = survey;
+    }
+  };
+
+  // Saves the current comment draft for a field without toggling the vote.
+  const saveComment = async (field) => {
+    if (!user || survey.closed) return;
+    try {
+      const allFeedbacks = getAllFeedbacks(survey.fields);
+      const updatedSurvey = await updateSurveyFeedback(null, survey.id, allFeedbacks);
+      survey = updatedSurvey;
+    } catch (error) {
+      console.error('Fehler beim Speichern des Kommentars:', error);
     }
   };
 </script>
@@ -154,6 +186,19 @@
               </span>
             </div>
           </div>
+
+          {#if selected && !survey.closed}
+            <div class="mt-2 ml-9" onclick={(e) => e.stopPropagation()} role="presentation">
+              <textarea
+                class="ui-input w-full text-xs resize-none"
+                rows="2"
+                placeholder="Kommentar zur Wahl (optional)…"
+                bind:value={fieldComments[field.id]}
+                onblur={() => saveComment(field)}
+                onkeydown={(e) => e.stopPropagation()}
+              ></textarea>
+            </div>
+          {/if}
 
           {#if field.feedbacks && field.feedbacks.length}
             <details class="mt-1.5 ml-8">
