@@ -3,6 +3,40 @@
 Änderungsprotokoll
 ==================
 
+0.5.23 (2026-07-03)
+-------------------
+
+Added
+~~~~~
+
+* Abstimmungen / Meinungsumfrage: User können zu ihrer gewählten Option einen **Kommentar** hinterlassen.
+  Eine Inline-Textarea erscheint direkt unter der ausgewählten Option; der Kommentar wird beim Verlassen des Feldes (``onblur``) gespeichert.
+  Bestehende Kommentare anderer User werden weiterhin in der aufklappbaren Feedback-Liste angezeigt.
+* Abstimmungen / Terminumfrage: Neuer **Kommentarbereich unterhalb der Matrix** – für jeden Termin, bei dem der User abgestimmt hat,
+  steht ein Kommentarfeld bereit. Speichern erfolgt ebenfalls ``onblur`` oder per ``Enter``.
+* Abstimmungen / Terminumfrage: Grid-Zellen zeigen ein zentriertes **💬**-Symbol, sobald ein Kommentar vorliegt
+  (Desktop: in der leeren Zelle; Mobile: unterhalb des Farbfeldes).
+* Abstimmungen / Terminumfrage: Beim Hover über eine Zelle wird der gespeicherte Kommentar als **Tooltip** angezeigt
+  (Desktop und Mobile über ``title``-Attribut sowie ``aria-label``).
+* Abstimmungen / Terminumfrage: Im Kommentarbereich zeigt die zweite Spalte ein **farbiges Vote-Symbol**
+  (grün/gelb/rot gemäß Abstimmung), konsistent mit der Matrix-Darstellung.
+* Backend-Tests: Alle ``test_admin_config``-Testpayloads um ``danceStyles`` ergaenzt,
+  das als Pflichtfeld in ``SoftConfigUpdateIn`` hinzugekommen war.
+
+Changed
+~~~~~~~
+
+* Admin-Konfiguration: Das Frontend leitet ``objectKeys`` und ``stringKeys`` jetzt **dynamisch aus der API-Antwort** ab,
+  statt sie hart zu kodieren. Neue Objekt-Keys im Backend erscheinen automatisch als editierbare Sektion;
+  nur der Typ-Hinweis ``STRING_KEYS`` bleibt im Frontend gepflegt.
+  ``form`` startet als leeres ``{}`` und wird vollständig vom Backend befüllt.
+* Abstimmungen / Terminumfrage: Mobile-Layout zeigt in den Vote-Feldern **nur noch die Hintergrundfarbe**
+  (kein ✓/~/✗-Symbol mehr); ein vorhandener Kommentar wird durch 💬 signalisiert.
+* Abstimmungen / Terminumfrage: ``buildAllFeedbacks()`` als zentrale Hilfsfunktion extrahiert –
+  eigene Kommentar-Drafts werden konsistent bei jedem API-Call mitgesendet.
+* Chore: Projektversion auf ``0.5.23`` erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).
+* Manual: Changelog fuer Release ``0.5.23`` ergaenzt; Abstimmungs-Dokumentation aktualisiert.
+
 0.5.22 (2026-07-02)
 -------------------
 
