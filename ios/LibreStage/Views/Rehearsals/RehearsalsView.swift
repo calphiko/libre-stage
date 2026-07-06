@@ -22,7 +22,8 @@ struct RehearsalsView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
             Group {
                 if vm.isLoading && vm.rehearsals.isEmpty {
                     SkeletonList()
@@ -50,22 +51,10 @@ struct RehearsalsView: View {
             .navigationTitle("Proben")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        Text("Proben")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                    }
+                    Text("Proben")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
                 if isEditor {
                     ToolbarItem(placement: .primaryAction) {
@@ -83,10 +72,17 @@ struct RehearsalsView: View {
                     }
                 }
             }
+            .errorBanner($vm.error)
+            .task { await vm.load() }
         }
-        .errorBanner($vm.error)
-        .task { await vm.load() }
+
+        if let onMenuTap {
+            AppMenuButton(action: onMenuTap)
+                .padding(.leading, 12)
+                .padding(.top, 0)
+        }
     }
+}
 
     // MARK: - Aktuelle Proben
 
