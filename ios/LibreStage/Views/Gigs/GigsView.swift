@@ -61,9 +61,10 @@ struct GigsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if vm.isLoading && vm.gigs.isEmpty {
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
+                Group {
+                    if vm.isLoading && vm.gigs.isEmpty {
                     SkeletonList()
                 } else if vm.gigs.isEmpty {
                     ContentUnavailableView("Keine Gigs", systemImage: "music.mic")
@@ -96,22 +97,10 @@ struct GigsView: View {
             .navigationTitle("Gigs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        Text("Gigs")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                    }
+                    Text("Gigs")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
@@ -176,24 +165,31 @@ struct GigsView: View {
                     selectedSeason = currentSelection
                 }
             }
-        }
-        .errorBanner($vm.error)
-        .task {
-            await vm.loadGigFieldConfig()
-            await vm.load()
-            if selectedSeason == nil {
-                selectedSeason = defaultSeasonSelection
+            .errorBanner($vm.error)
+            .task {
+                await vm.loadGigFieldConfig()
+                await vm.load()
+                if selectedSeason == nil {
+                    selectedSeason = defaultSeasonSelection
+                }
+            }
+            .fullScreenCover(isPresented: $showSeasonStats) {
+                SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
+            }
+            .fullScreenCover(isPresented: $showCreateGigSheet) {
+                AppModalContainer {
+                    CreateGigSheet(vm: vm)
+                }
             }
         }
-        .fullScreenCover(isPresented: $showSeasonStats) {
-            SeasonStatisticsSheet(vm: vm, availableSeasons: availableSeasons, initialSeason: seasonStatsPreset)
-        }
-        .fullScreenCover(isPresented: $showCreateGigSheet) {
-            AppModalContainer {
-                CreateGigSheet(vm: vm)
-            }
+
+        if let onMenuTap {
+            AppMenuButton(action: onMenuTap)
+                .padding(.leading, 12)
+                .padding(.top, 0)
         }
     }
+}
 
     private func isBeforeInGigList(_ lhs: GigOut, _ rhs: GigOut) -> Bool {
         let today = Calendar.current.startOfDay(for: Date())
