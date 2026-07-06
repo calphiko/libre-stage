@@ -54,7 +54,8 @@ struct SurveysView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
             // Always a VStack – stable root type, avoids navigation destination loss
             VStack(spacing: 0) {
                 if vm.isLoading && vm.surveys.isEmpty {
@@ -79,22 +80,10 @@ struct SurveysView: View {
             .navigationTitle("Umfragen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        Text("Umfragen")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                    }
+                    Text("Umfragen")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button { showNewSheet = true } label: {
@@ -160,6 +149,13 @@ struct SurveysView: View {
         .task { await vm.loadList() }
         .onChange(of: vm.reminderResult) { _, new in
             if new != nil { showReminderAlert = true }
+        }
+
+        if let onMenuTap {
+            AppMenuButton(action: onMenuTap)
+                .padding(.leading, 12)
+                .padding(.top, 0)
+        }
         }
     }
 
