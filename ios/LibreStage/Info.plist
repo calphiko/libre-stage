@@ -37,6 +37,8 @@
 	<string>Das Mikrofon wird benoetigt, um Songs automatisch zu erkennen.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
