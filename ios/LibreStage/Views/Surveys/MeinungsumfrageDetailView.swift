@@ -15,6 +15,8 @@ struct MeinungsumfrageDetailView: View {
     @State private var localUser: UserOut? = nil
     @State private var isUpdating = false
     @State private var expandedId: Int? = nil
+    @State private var commentDraftByFieldId: [Int: String] = [:]
+    @FocusState private var focusedCommentFieldId: Int?
 
     private var me: UserOut? { passedUser ?? authManager.currentUser ?? localUser }
 
@@ -39,7 +41,10 @@ struct MeinungsumfrageDetailView: View {
         return Group {
             if let survey = vm.detail {
                 listContent(survey, me: currentUser)
-                    .refreshable { await vm.loadDetail(id: surveyId) }
+                    .refreshable {
+                        await vm.loadDetail(id: surveyId)
+                        syncCommentDrafts(from: vm.detail, userId: me?.id)
+                    }
             } else if vm.isLoading {
                 SkeletonList()
             } else {
@@ -58,6 +63,16 @@ struct MeinungsumfrageDetailView: View {
         .task {
             await ensureUserContext()
             await vm.loadDetail(id: surveyId)
+            syncCommentDrafts(from: vm.detail, userId: me?.id)
+        }
+        .onChange(of: focusedCommentFieldId) { oldValue, newValue in
+            guard let oldFieldId = oldValue,
+                  oldFieldId != newValue,
+                  let userId = me?.id else { return }
+
+            Task {
+                await persistCommentOnBlur(fieldId: oldFieldId, userId: userId)
+            }
         }
     }
 
@@ -180,51 +195,107 @@ struct MeinungsumfrageDetailView: View {
         let hasVoted = hasVoted(field)
         let isTop    = isTopVoted(survey: survey, field: field)
         let expanded = expandedId == field.id
+        let actionEnabled = !survey.closed && !isUpdating
 
         VStack(alignment: .leading, spacing: 0) {
-            Button {
-                guard !survey.closed && !isUpdating else { return }
+            HStack(spacing: 10) {
+                Text("\(index + 1)")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
+                    .frame(width: 24, height: 24)
+                    .background(hasVoted ? c : c.opacity(0.45))
+                    .clipShape(Circle())
+
+                Text(field.field_text)
+                    .font(.subheadline)
+                    .fontWeight(isTop ? .bold : .semibold)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+
+                Spacer()
+
+                Image(systemName: actionEnabled ? "hand.tap.fill" : "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(actionEnabled ? c : .secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(actionEnabled ? c.opacity(0.14) : Color.secondary.opacity(0.08))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(actionEnabled ? c.opacity(0.45) : Color.secondary.opacity(0.2), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .contentShape(Rectangle())
+            .accessibilityAddTraits(.isButton)
+            .onTapGesture {
+                guard actionEnabled else { return }
                 Task {
                     isUpdating = true
                     await toggleVote(survey: survey, field: field)
                     isUpdating = false
                 }
-            } label: {
-                HStack(spacing: 12) {
-                    Text("\(index + 1)")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .frame(width: 26, height: 26)
-                        .background(hasVoted ? c : c.opacity(0.35))
-                        .clipShape(Circle())
-                        .shadow(color: hasVoted ? c.opacity(0.4) : .clear, radius: 4)
+            }
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(field.field_text)
-                            .font(.subheadline)
-                            .fontWeight(isTop ? .bold : .regular)
-                            .foregroundStyle(.primary)
-                        if hasVoted {
-                            Text("Deine Stimme \u{2713}")
-                                .font(.caption2).foregroundStyle(c)
+            HStack(spacing: 12) {
+                if hasVoted {
+                    Text("Deine Stimme \u{2713}")
+                        .font(.caption2)
+                        .foregroundStyle(c)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("\(field.feedbacks.count)")
+                        .font(.title3.bold())
+                        .foregroundStyle(hasVoted ? c : Color.secondary)
+                    Text(field.feedbacks.count == 1 ? "Stimme" : "Stimmen")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.top, 6)
+            .padding(.bottom, 4)
+
+            if let me,
+               let myFeedback = field.feedbacks.first(where: { $0.id_user == me.id }) {
+                Divider()
+                VStack(alignment: .leading, spacing: 8) {
+                    TextField(
+                        "Dein Kommentar (optional)",
+                        text: Binding(
+                            get: { commentDraft(for: field, userId: me.id) },
+                            set: { commentDraftByFieldId[field.id] = $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .lineLimit(1...3)
+                    .textInputAutocapitalization(.sentences)
+                    .focused($focusedCommentFieldId, equals: field.id)
+                    .disabled(survey.closed || isUpdating)
+
+                    if !survey.closed {
+                        Button {
+                            Task {
+                                isUpdating = true
+                                await updateComment(
+                                    survey: survey,
+                                    fieldId: field.id,
+                                    userId: me.id
+                                )
+                                isUpdating = false
+                            }
+                        } label: {
+                            Label("Kommentar speichern", systemImage: "text.bubble")
+                                .font(.caption)
                         }
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text("\(field.feedbacks.count)")
-                            .font(.title3.bold())
-                            .foregroundStyle(hasVoted ? c : Color.secondary)
-                        Text(field.feedbacks.count == 1 ? "Stimme" : "Stimmen")
-                            .font(.caption2).foregroundStyle(.secondary)
+                        .buttonStyle(.borderless)
+                        .disabled(isUpdating)
                     }
                 }
                 .padding(.vertical, 6)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .disabled(survey.closed || isUpdating)
 
             if !field.feedbacks.isEmpty {
                 Divider()
@@ -311,8 +382,9 @@ struct MeinungsumfrageDetailView: View {
                                         value: fb.value, comment: fb.comment))
                 }
                 if !alreadyVoted {
+                    let comment = normalizedCommentDraft(forFieldId: f.id)
                     payload.append(.init(id_sv_field: f.id, id_user: userId,
-                                        value: "a", comment: nil))
+                                        value: "a", comment: comment))
                 }
                 // If alreadyVoted: don't include user's entry → backend deletes it
             } else {
@@ -324,8 +396,97 @@ struct MeinungsumfrageDetailView: View {
         }
         await vm.updateFeedback(surveyId: surveyId, feedbacks: payload)
         if vm.error == nil {
+            syncCommentDrafts(from: vm.detail, userId: userId)
             onFeedbackChanged?()
         }
+    }
+
+    @MainActor
+    private func updateComment(
+        survey: SurveyQuestionOut,
+        fieldId: Int,
+        userId: Int
+    ) async {
+        let sourceSurvey = vm.detail ?? survey
+        guard let field = sourceSurvey.fields.first(where: { $0.id == fieldId }) else { return }
+
+        // Meinungsumfragen haben semantisch nur "hat abgestimmt"; falls der Backend-Wert leer ist,
+        // senden wir stabil "a", damit der Kommentar persistiert.
+        let currentValue = field.feedbacks.first(where: { $0.id_user == userId })?.value ?? "a"
+
+        let updatedComment = normalizedCommentDraft(forFieldId: fieldId)
+        var payload: [SurveyFeedbackPayload] = []
+
+        for f in sourceSurvey.fields {
+            if f.id == fieldId {
+                for fb in f.feedbacks where fb.id_user != userId {
+                    payload.append(.init(id_sv_field: f.id, id_user: fb.id_user,
+                                        value: fb.value, comment: fb.comment))
+                }
+                payload.append(.init(id_sv_field: f.id, id_user: userId,
+                                    value: currentValue, comment: updatedComment))
+            } else {
+                for fb in f.feedbacks {
+                    payload.append(.init(id_sv_field: f.id, id_user: fb.id_user,
+                                        value: fb.value, comment: fb.comment))
+                }
+            }
+        }
+
+        await vm.updateFeedback(surveyId: surveyId, feedbacks: payload)
+        if vm.error == nil {
+            syncCommentDrafts(from: vm.detail, userId: userId)
+            onFeedbackChanged?()
+        }
+    }
+
+    private func commentDraft(for field: SurveyFieldsOut, userId: Int) -> String {
+        if let draft = commentDraftByFieldId[field.id] {
+            return draft
+        }
+        return field.feedbacks.first(where: { $0.id_user == userId })?.comment ?? ""
+    }
+
+    private func normalizedCommentDraft(forFieldId fieldId: Int) -> String? {
+        let trimmed = (commentDraftByFieldId[fieldId] ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private func syncCommentDrafts(from survey: SurveyQuestionOut?, userId: Int?) {
+        guard let survey, let userId else {
+            commentDraftByFieldId = [:]
+            return
+        }
+
+        var next: [Int: String] = [:]
+        for field in survey.fields {
+            if let myFeedback = field.feedbacks.first(where: { $0.id_user == userId }) {
+                next[field.id] = myFeedback.comment ?? ""
+            }
+        }
+        commentDraftByFieldId = next
+    }
+
+    @MainActor
+    private func persistCommentOnBlur(fieldId: Int, userId: Int) async {
+        guard !isUpdating else { return }
+        guard let survey = vm.detail else { return }
+        guard let field = survey.fields.first(where: { $0.id == fieldId }) else { return }
+        guard field.feedbacks.contains(where: { $0.id_user == userId }) else { return }
+
+        let draft = normalizedCommentDraft(forFieldId: fieldId)
+        let current = field.feedbacks
+            .first(where: { $0.id_user == userId })?
+            .comment?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let currentNormalized = (current?.isEmpty == true) ? nil : current
+
+        guard draft != currentNormalized else { return }
+
+        isUpdating = true
+        await updateComment(survey: survey, fieldId: fieldId, userId: userId)
+        isUpdating = false
     }
 }
 
