@@ -119,6 +119,7 @@ struct PrivacyPolicyView: View {
         .appShellBackground()
         .navigationTitle("Datenschutz")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationSubpage()
     }
 
     @ViewBuilder

@@ -13,6 +13,7 @@ struct GigsView: View {
     @State private var seasonStatsPreset: Int?
     @State private var showCreateGigSheet = false
     @State private var selectedSeason: Int?
+    @State private var isInSubpage = false
 
     init(onMenuTap: (() -> Void)? = nil) {
         self.onMenuTap = onMenuTap
@@ -182,8 +183,9 @@ struct GigsView: View {
                 }
             }
         }
+        .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
-        if let onMenuTap {
+        if let onMenuTap, !isInSubpage {
             AppMenuButton(action: onMenuTap)
                 .padding(.leading, 12)
                 .padding(.top, 0)

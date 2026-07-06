@@ -43,6 +43,7 @@
 		A031C /* Views/Profile/ShareDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F031C /* Views/Profile/ShareDebugView.swift */; };
 		A040 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* Views/Components/ErrorBanner.swift */; };
 		A041 /* Views/Components/SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* Views/Components/SkeletonRow.swift */; };
+				A042 /* Views/Components/NavigationSubpageModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F042 /* Views/Components/NavigationSubpageModifier.swift */; };
 		A050 /* ViewModels/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* ViewModels/DashboardViewModel.swift */; };
 		A051 /* ViewModels/GigsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* ViewModels/GigsViewModel.swift */; };
 		A052 /* ViewModels/RehearsalsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F052 /* ViewModels/RehearsalsViewModel.swift */; };
@@ -122,6 +123,7 @@
 		F031C /* Views/Profile/ShareDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Profile/ShareDebugView.swift; sourceTree = "<group>"; };
 		F040 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
 		F041 /* Views/Components/SkeletonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SkeletonRow.swift; sourceTree = "<group>"; };
+		F042 /* Views/Components/NavigationSubpageModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/NavigationSubpageModifier.swift; sourceTree = "<group>"; };
 		F050 /* ViewModels/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
 		F051 /* ViewModels/GigsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/GigsViewModel.swift; sourceTree = "<group>"; };
 		F052 /* ViewModels/RehearsalsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/RehearsalsViewModel.swift; sourceTree = "<group>"; };
@@ -202,6 +204,7 @@
 				F031C /* Views/Profile/ShareDebugView.swift */,
 				F040 /* Views/Components/ErrorBanner.swift */,
 				F041 /* Views/Components/SkeletonRow.swift */,
+				F042 /* Views/Components/NavigationSubpageModifier.swift */,
 				F050 /* ViewModels/DashboardViewModel.swift */,
 				F051 /* ViewModels/GigsViewModel.swift */,
 				F052 /* ViewModels/RehearsalsViewModel.swift */,
@@ -380,6 +383,7 @@
 				A031C /* Views/Profile/ShareDebugView.swift in Sources */,
 				A040 /* Views/Components/ErrorBanner.swift in Sources */,
 				A041 /* Views/Components/SkeletonRow.swift in Sources */,
+				A042 /* Views/Components/NavigationSubpageModifier.swift in Sources */,
 				A050 /* ViewModels/DashboardViewModel.swift in Sources */,
 				A051 /* ViewModels/GigsViewModel.swift in Sources */,
 				A052 /* ViewModels/RehearsalsViewModel.swift in Sources */,

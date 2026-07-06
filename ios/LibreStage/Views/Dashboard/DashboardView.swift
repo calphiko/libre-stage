@@ -13,6 +13,7 @@ struct DashboardView: View {
     @State private var selectedTodoTab: DashboardTodoTab = .open
     @State private var hasLoadedInitially = false
     @State private var isRefreshingDashboard = false
+    @State private var isInSubpage = false
 
     init(onMenuTap: (() -> Void)? = nil) {
         self.onMenuTap = onMenuTap
@@ -128,8 +129,9 @@ struct DashboardView: View {
                 ensureValidTodoTab()
             }
         }
+        .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
-        if let onMenuTap {
+        if let onMenuTap, !isInSubpage {
             AppMenuButton(action: onMenuTap)
                 .padding(.leading, 12)
                 .padding(.top, 0)

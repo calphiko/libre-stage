@@ -74,6 +74,7 @@ struct MeinungsumfrageDetailView: View {
                 await persistCommentOnBlur(fieldId: oldFieldId, userId: userId)
             }
         }
+        .navigationSubpage()
     }
 
     @MainActor

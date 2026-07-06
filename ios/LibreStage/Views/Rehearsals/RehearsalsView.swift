@@ -10,6 +10,7 @@ struct RehearsalsView: View {
     @State private var showCreateSheet = false
     @State private var selectedTab = 0
     @State private var pastSearchQuery = ""
+    @State private var isInSubpage = false
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
 
@@ -75,8 +76,9 @@ struct RehearsalsView: View {
             .errorBanner($vm.error)
             .task { await vm.load() }
         }
+        .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
-        if let onMenuTap {
+        if let onMenuTap, !isInSubpage {
             AppMenuButton(action: onMenuTap)
                 .padding(.leading, 12)
                 .padding(.top, 0)

@@ -24,6 +24,7 @@ struct ProfileView: View {
     @State private var showLogoutConfirm = false
     @State private var showAboutSheet = false
     @State private var showShareDebugSheet = false
+    @State private var isInSubpage = false
 
     private var pushNotificationsBinding: Binding<Bool> {
         Binding(
@@ -257,9 +258,10 @@ struct ProfileView: View {
             }
             Button("Abbrechen", role: .cancel) {}
         }
+        .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
         }
 
-        if let onMenuTap {
+        if let onMenuTap, !isInSubpage {
             AppMenuButton(action: onMenuTap)
                 .padding(.leading, 12)
                 .padding(.top, 0)

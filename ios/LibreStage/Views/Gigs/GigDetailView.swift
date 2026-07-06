@@ -320,6 +320,7 @@ struct GigDetailView: View {
         } message: {
             Text(downloadErrorMessage)
         }
+        .navigationSubpage()
     }
 
     private func liveModeReasonText(_ reason: String) -> String {

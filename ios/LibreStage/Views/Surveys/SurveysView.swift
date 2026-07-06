@@ -16,6 +16,7 @@ struct SurveysView: View {
     @State private var showReminderAlert = false
     @State private var surveyToDelete:  SurveyList? = nil
     @State private var surveyToArchive: SurveyList? = nil
+    @State private var isInSubpage = false
 
     init(onMenuTap: (() -> Void)? = nil) {
         self.onMenuTap = onMenuTap
@@ -150,8 +151,9 @@ struct SurveysView: View {
         .onChange(of: vm.reminderResult) { _, new in
             if new != nil { showReminderAlert = true }
         }
+        .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
-        if let onMenuTap {
+        if let onMenuTap, !isInSubpage {
             AppMenuButton(action: onMenuTap)
                 .padding(.leading, 12)
                 .padding(.top, 0)

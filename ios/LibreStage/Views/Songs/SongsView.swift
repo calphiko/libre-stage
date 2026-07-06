@@ -13,6 +13,7 @@ struct SongsView: View {
     @State private var showCandidatesSheet = false
     @State private var showCreateSongSheet = false
     @State private var createSongPrefill: AddSongPrefillRequest?
+    @State private var isInSubpage = false
     private var externalAddSongPrefill: Binding<AddSongPrefillRequest?>
 
     init(
@@ -99,8 +100,9 @@ struct SongsView: View {
                     }
                 }
             }
+            .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
-            if let onMenuTap {
+            if let onMenuTap, !isInSubpage {
                 AppMenuButton(action: onMenuTap)
                     .padding(.leading, 12)
                     .padding(.top, 0)

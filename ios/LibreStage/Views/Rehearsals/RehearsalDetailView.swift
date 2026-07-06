@@ -68,6 +68,7 @@ struct RehearsalDetailView: View {
         } message: {
             Text("Diese Aktion kann nicht rückgängig gemacht werden.")
         }
+        .navigationSubpage()
     }
 
     // MARK: - Protokoll-Ansicht (vergangene Probe, read-only)
