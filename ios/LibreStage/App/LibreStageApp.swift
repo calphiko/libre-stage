@@ -94,6 +94,7 @@ struct LibreStageApp: App {
             ContentRoot()
                 .environment(authManager)
                 .environment(incomingSongRouteStore)
+                .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     incomingSongRouteStore.handleIncomingURL(url)
                 }
