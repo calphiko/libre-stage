@@ -56,8 +56,8 @@
 		A061 /* Core/AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F061 /* Core/AppTheme.swift */; };
 		A062 /* Core/SongRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F062 /* Core/SongRecognitionService.swift */; };
 		A063 /* Core/IncomingSongRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F063 /* Core/IncomingSongRouteStore.swift */; };
-		A065 /* Core/PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F065 /* Core/PushNotificationService.swift */; };
 		A064 /* Views/Gigs/SetlistEditorWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F064 /* Views/Gigs/SetlistEditorWebView.swift */; };
+		A065 /* Core/PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F065 /* Core/PushNotificationService.swift */; };
 		A070 /* LibreStageShareExtension/ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F070 /* LibreStageShareExtension/ShareViewController.swift */; };
 		A072 /* LibreStageShareExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = PROD02 /* LibreStageShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -135,8 +135,8 @@
 		F061 /* Core/AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AppTheme.swift; sourceTree = "<group>"; };
 		F062 /* Core/SongRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/SongRecognitionService.swift; sourceTree = "<group>"; };
 		F063 /* Core/IncomingSongRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/IncomingSongRouteStore.swift; sourceTree = "<group>"; };
-		F065 /* Core/PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PushNotificationService.swift; sourceTree = "<group>"; };
 		F064 /* Views/Gigs/SetlistEditorWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/SetlistEditorWebView.swift; sourceTree = "<group>"; };
+		F065 /* Core/PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PushNotificationService.swift; sourceTree = "<group>"; };
 		F070 /* LibreStageShareExtension/ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibreStageShareExtension/ShareViewController.swift; sourceTree = "<group>"; };
 		F071 /* LibreStageShareExtension/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = LibreStageShareExtension/Info.plist; sourceTree = "<group>"; };
 		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -559,7 +559,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -584,7 +584,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -609,7 +609,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -639,7 +639,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.librestage.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
