@@ -25,7 +25,8 @@ struct DashboardView: View {
 
     var body: some View {
         @Bindable var vm = vm
-        NavigationStack {
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
             ZStack {
                 AppTheme.shellGradient(for: colorScheme).ignoresSafeArea()
 
@@ -97,49 +98,44 @@ struct DashboardView: View {
             .navigationTitle("Dashboard")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        Text("Dashboard")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                    }
+                    Text("Dashboard")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
             }
             .headerBodyBlend()
-        }
-        .fullScreenCover(isPresented: $showCandidatesSheet) {
-            NavigationStack {
-                CandidatesView(modalPresentation: true)
+            .fullScreenCover(isPresented: $showCandidatesSheet) {
+                NavigationStack {
+                    CandidatesView(modalPresentation: true)
+                }
+            }
+            .errorBanner($vm.error)
+            .task {
+                guard !hasLoadedInitially else { return }
+                hasLoadedInitially = true
+                await refreshDashboard()
+            }
+            .onAppear {
+                guard hasLoadedInitially else { return }
+                Task { await refreshDashboard() }
+            }
+            .onChange(of: showCandidatesSheet) { _, isPresented in
+                guard !isPresented else { return }
+                Task { await refreshDashboard() }
+            }
+            .onChange(of: vm.totalBadgeCount) { _, _ in
+                ensureValidTodoTab()
             }
         }
-        .errorBanner($vm.error)
-        .task {
-            guard !hasLoadedInitially else { return }
-            hasLoadedInitially = true
-            await refreshDashboard()
-        }
-        .onAppear {
-            guard hasLoadedInitially else { return }
-            Task { await refreshDashboard() }
-        }
-        .onChange(of: showCandidatesSheet) { _, isPresented in
-            guard !isPresented else { return }
-            Task { await refreshDashboard() }
-        }
-        .onChange(of: vm.totalBadgeCount) { _, _ in
-            ensureValidTodoTab()
+
+        if let onMenuTap {
+            AppMenuButton(action: onMenuTap)
+                .padding(.leading, 12)
+                .padding(.top, 0)
         }
     }
+}
 
     @ViewBuilder
     private func todoTabHeader(list: UserTodoList) -> some View {
