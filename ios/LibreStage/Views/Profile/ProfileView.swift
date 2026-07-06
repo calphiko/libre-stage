@@ -39,7 +39,8 @@ struct ProfileView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
             Form {
                 Section {
                     Label("Account, Sicherheit und App-Einstellungen", systemImage: "person.crop.circle.badge.checkmark")
@@ -128,26 +129,13 @@ struct ProfileView: View {
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        Text("Profil")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                    }
+                    Text("Profil")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
             }
             .headerBodyBlend()
-        }
         // MARK: - Password Sheet
         .fullScreenCover(isPresented: $showPasswordSheet) {
             AppModalContainer {
@@ -268,6 +256,14 @@ struct ProfileView: View {
                 Task { await authManager.logout() }
             }
             Button("Abbrechen", role: .cancel) {}
+        }
+        }
+
+        if let onMenuTap {
+            AppMenuButton(action: onMenuTap)
+                .padding(.leading, 12)
+                .padding(.top, 0)
+        }
         }
     }
 
