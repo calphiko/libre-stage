@@ -7,15 +7,41 @@ import UserNotifications
 
 struct AppMenuButton: View {
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+        let logoSize: CGFloat = 40      // Kompakter, eleganter Bildbereich
+        let buttonSize: CGFloat = 52    // Professionelle, schlanke Touch-Target-Größe
+
         Button(action: action) {
-            Image(systemName: "line.3.horizontal")
-                .font(.headline.weight(.semibold))
+            Image("AppLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: logoSize, height: logoSize)
         }
+        .buttonStyle(.plain)
+        .frame(width: buttonSize, height: buttonSize)
+        .background {
+            // Vollständig transparent, aber mit leichtem Material-Effekt für Lesbarkeit bei hellen Hintergründen
+            Circle()
+                .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.15))
+        }
+        .overlay {
+            // Eine dünne, edle und kontrastreiche Konturlinie
+            Circle()
+                .strokeBorder(
+                    colorScheme == .dark ? Color.white.opacity(0.4) : Color.black.opacity(0.6),
+                    lineWidth: 1.0 // Dünne Outline für ein klares, minimalistisches Design
+                )
+        }
+        .contentShape(Circle())
+        // Ein minimalistischer, subtiler Schatten, um Tiefe zu erzeugen
+        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+        .zIndex(999)
         .accessibilityLabel("Navigation oeffnen")
     }
 }
+
 
 private enum AppSection: Int, CaseIterable, Identifiable {
     case dashboard
@@ -132,9 +158,7 @@ struct MainTabView: View {
         case .surveys:
             SurveysView(onMenuTap: openMenu)
         case .songs:
-            NavigationStack {
-                SongsView(externalAddSongPrefill: $deepLinkSongPrefill, onMenuTap: openMenu)
-            }
+            SongsView(externalAddSongPrefill: $deepLinkSongPrefill, onMenuTap: openMenu)
         case .profile:
             ProfileView(onMenuTap: openMenu)
         }
