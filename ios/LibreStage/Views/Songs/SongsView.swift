@@ -24,62 +24,88 @@ struct SongsView: View {
     }
 
     var body: some View {
-        contentView
-            .appShellBackground()
-            .navigationTitle("Songs")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if let onMenuTap {
-                    ToolbarItem(placement: .topBarLeading) {
-                        AppMenuButton(action: onMenuTap)
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+        ZStack(alignment: .topLeading) {
+            NavigationStack {
+                contentView
+                .appShellBackground()
+                .navigationTitle("Songs")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
                         Text("Songs")
                             .font(.headline)
                             .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                     }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showCandidatesSheet = true
+                        } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: "hand.thumbsup")
+
+                                if vm.openCandidateVotesCount > 0 {
+                                    Text(badgeLabel(for: vm.openCandidateVotesCount))
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Color.red, in: Capsule())
+                                        .offset(x: 11, y: -8)
+                                }
+                            }
+                        }
+                        .accessibilityLabel("Song-Kandidaten bewerten")
+                        .accessibilityValue(vm.openCandidateVotesCount > 0 ? "\(vm.openCandidateVotesCount) offene Abstimmungen" : "Keine offenen Abstimmungen")
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            createSongPrefill = nil
+                            showCreateSongSheet = true
+                        } label: {
+                            Label("Song hinzufuegen", systemImage: "plus")
+                        }
+                    }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        createSongPrefill = nil
-                        showCreateSongSheet = true
-                    } label: {
-                        Label("Song hinzufuegen", systemImage: "plus")
+                .headerBodyBlend()
+                .fullScreenCover(item: $selectedSongForDetails) { item in
+                    NavigationStack {
+                        SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+                    }
+                }
+                .fullScreenCover(isPresented: $showCandidatesSheet) {
+                    NavigationStack {
+                        CandidatesView(modalPresentation: true)
+                    }
+                }
+                .fullScreenCover(isPresented: $showCreateSongSheet) {
+                    AppModalContainer {
+                        CreateSongSheet(vm: vm, initialPrefill: createSongPrefill)
+                    }
+                }
+                .errorBanner($vm.error)
+                .task {
+                    consumeExternalAddSongPrefillIfNeeded()
+                    await vm.loadSongFieldConfig()
+                    await vm.loadSongs()
+                    await vm.loadOpenCandidateVotesCount()
+                }
+                .onChange(of: externalAddSongPrefill.wrappedValue?.id) { _, _ in
+                    consumeExternalAddSongPrefillIfNeeded()
+                }
+                .onChange(of: showCandidatesSheet) { _, isPresented in
+                    guard !isPresented else { return }
+                    Task {
+                        await vm.loadOpenCandidateVotesCount()
                     }
                 }
             }
-            .headerBodyBlend()
-            .fullScreenCover(item: $selectedSongForDetails) { item in
-                NavigationStack {
-                    SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
-                }
+
+            if let onMenuTap {
+                AppMenuButton(action: onMenuTap)
+                    .padding(.leading, 12)
+                    .padding(.top, 0)
             }
-            .fullScreenCover(isPresented: $showCandidatesSheet) {
-                NavigationStack {
-                    CandidatesView(modalPresentation: true)
-                }
-            }
-            .fullScreenCover(isPresented: $showCreateSongSheet) {
-                AppModalContainer {
-                    CreateSongSheet(vm: vm, initialPrefill: createSongPrefill)
-                }
-            }
-            .errorBanner($vm.error)
-            .task {
-                consumeExternalAddSongPrefillIfNeeded()
-                await vm.loadSongFieldConfig()
-                await vm.loadSongs()
-            }
-            .onChange(of: externalAddSongPrefill.wrappedValue?.id) { _, _ in
-                consumeExternalAddSongPrefillIfNeeded()
-            }
+        }
     }
 
     private func consumeExternalAddSongPrefillIfNeeded() {
@@ -97,16 +123,18 @@ struct SongsView: View {
             ContentUnavailableView("Keine Songs", systemImage: "music.note")
         } else {
             List {
-                Section {
-                    Button {
-                        showCandidatesSheet = true
-                    } label: {
-                        Label("Song-Kandidaten bewerten", systemImage: "hand.thumbsup")
-                            .foregroundStyle(Color.accentColor)
+                if !vm.availableDanceStyles.isEmpty {
+                    Section("Filter") {
+                        Picker("Tanzstil", selection: $vm.selectedDanceStyleFilter) {
+                            Text("Alle").tag("")
+                            ForEach(vm.availableDanceStyles, id: \.self) { danceStyle in
+                                Text(danceStyle).tag(danceStyle)
+                            }
+                        }
+                        .pickerStyle(.menu)
                     }
-                    .buttonStyle(.plain)
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                 }
-                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
                 Section("Repertoire (\(vm.filtered.count))") {
                     ForEach(vm.filtered) { song in
@@ -116,9 +144,16 @@ struct SongsView: View {
                 .listRowBackground(AppTheme.rowBackground(for: colorScheme))
             }
             .listStyle(.insetGrouped)
-            .searchable(text: $vm.searchText, prompt: "Titel oder Interpret suchen")
-            .refreshable { await vm.loadSongs() }
+            .searchable(text: $vm.searchText, prompt: "Titel, Interpret oder Tanzstil suchen")
+            .refreshable {
+                await vm.loadSongs()
+                await vm.loadOpenCandidateVotesCount()
+            }
         }
+    }
+
+    private func badgeLabel(for count: Int) -> String {
+        count > 99 ? "99+" : "\(count)"
     }
 
     @ViewBuilder
@@ -763,6 +798,15 @@ private struct SongRow: View {
                     Text(genre)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                }
+                if let danceStyle = song.dance_styles,
+                   !danceStyle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(danceStyle)
+                        .font(.caption2)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(Color.accentColor.opacity(0.14))
+                        .clipShape(Capsule())
                 }
             }
         }

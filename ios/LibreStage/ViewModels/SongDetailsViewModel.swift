@@ -72,28 +72,7 @@ final class SongDetailsViewModel {
     }
 
     private func mergeSong(base: SongInSetOut, enriched: SongOut?) -> SongInSetOut {
-        SongInSetOut(
-            id: base.id,
-            setsong_id: base.setsong_id,
-            song_id: base.song_id,
-            position: base.position,
-            title: base.title,
-            duration: base.duration ?? enriched?.duration,
-            singer_lead: base.singer_lead ?? enriched?.singer_lead,
-            singer_background: base.singer_background ?? enriched?.singer_background,
-            interpret: base.interpret ?? enriched?.interpret,
-            genre: base.genre ?? enriched?.genre,
-            composer: base.composer ?? enriched?.composer,
-            texter: base.texter ?? enriched?.texter,
-            publisher: base.publisher ?? enriched?.publisher,
-            arrangement: base.arrangement ?? enriched?.arrangement,
-            tone_key: base.tone_key ?? enriched?.tone_key,
-            ytlink: base.ytlink ?? enriched?.ytlink,
-            comment: base.comment ?? enriched?.comment,
-            text: base.text,
-            brass: base.brass ?? enriched?.brass,
-            status: base.status ?? enriched?.status
-        )
+        base.merging(enriched)
     }
 
     @MainActor

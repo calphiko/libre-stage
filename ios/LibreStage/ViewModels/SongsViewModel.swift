@@ -8,18 +8,41 @@ import Foundation
 final class SongsViewModel {
     var songs: [SongOut] = []
     var candidates: [SongCandidateOut] = []
+    var openCandidateVotesCount: Int = 0
     var totalEligibleVoters: Int = 0
     var songFields: [SongFieldDefinition] = SongFieldDefinition.fromConfig(nil)
     var isLoading = false
     var isCreatingSong = false
     var error: AppError?
     var searchText = ""
+    var selectedDanceStyleFilter = ""
+
+    var availableDanceStyles: [String] {
+        Array(
+            Set(
+                songs.compactMap {
+                    let style = ($0.dance_styles ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    return style.isEmpty ? nil : style
+                }
+            )
+        )
+        .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
 
     var filtered: [SongOut] {
-        guard !searchText.isEmpty else { return songs }
-        return songs.filter {
-            ($0.title ?? "").localizedCaseInsensitiveContains(searchText) ||
-            ($0.interpret ?? "").localizedCaseInsensitiveContains(searchText)
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return songs.filter { song in
+            let matchesDanceStyle = selectedDanceStyleFilter.isEmpty
+                || (song.dance_styles ?? "").caseInsensitiveCompare(selectedDanceStyleFilter) == .orderedSame
+
+            guard matchesDanceStyle else { return false }
+
+            guard !query.isEmpty else { return true }
+
+            return (song.title ?? "").localizedCaseInsensitiveContains(query)
+                || (song.interpret ?? "").localizedCaseInsensitiveContains(query)
+                || (song.dance_styles ?? "").localizedCaseInsensitiveContains(query)
         }
     }
 
@@ -29,6 +52,18 @@ final class SongsViewModel {
         defer { isLoading = false }
         do {
             songs = try await APIClient.shared.get(path: "/songs/")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func loadOpenCandidateVotesCount() async {
+        do {
+            let todos: UserTodoList = try await APIClient.shared.get(path: "/user_todos")
+            openCandidateVotesCount = todos.songs_to_feedback.count
         } catch let e as AppError {
             error = e
         } catch {

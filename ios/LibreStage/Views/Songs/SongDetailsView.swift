@@ -130,6 +130,8 @@ struct SongDetailsView: View {
 				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else if let song = vm.song {
 				Section("Details") {
+					SongDetailLine(label: "Tanzstil", value: song.dance_styles)
+
 					ForEach(vm.songFields) { field in
 						SongDetailLine(
 							label: field.label,

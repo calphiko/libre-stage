@@ -9,6 +9,7 @@ struct SongOut: Codable, Identifiable {
     let title: String?
     let interpret: String?
     let genre: String?
+    let dance_styles: String?
     let singer_background: String?
     let singer_lead: String?
     let composer: String?
