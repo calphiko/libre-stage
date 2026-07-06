@@ -29,6 +29,7 @@ struct SongInSetOut: Codable, Identifiable {
     let singer_background: String?
     let interpret: String?
     let genre: String?
+    let dance_styles: String?
     let composer: String?
     let texter: String?
     let publisher: String?
@@ -39,6 +40,81 @@ struct SongInSetOut: Codable, Identifiable {
     let text: String?
     let brass: Int?
     let status: String?
+
+    init(
+        id: Int,
+        setsong_id: Int?,
+        song_id: Int,
+        position: Int?,
+        title: String,
+        duration: String?,
+        singer_lead: String?,
+        singer_background: String?,
+        interpret: String?,
+        genre: String?,
+        dance_styles: String?,
+        composer: String?,
+        texter: String?,
+        publisher: String?,
+        arrangement: String?,
+        tone_key: String?,
+        ytlink: String?,
+        comment: String?,
+        text: String?,
+        brass: Int?,
+        status: String?
+    ) {
+        self.id = id
+        self.setsong_id = setsong_id
+        self.song_id = song_id
+        self.position = position
+        self.title = title
+        self.duration = duration
+        self.singer_lead = singer_lead
+        self.singer_background = singer_background
+        self.interpret = interpret
+        self.genre = genre
+        self.dance_styles = dance_styles
+        self.composer = composer
+        self.texter = texter
+        self.publisher = publisher
+        self.arrangement = arrangement
+        self.tone_key = tone_key
+        self.ytlink = ytlink
+        self.comment = comment
+        self.text = text
+        self.brass = brass
+        self.status = status
+    }
+}
+
+extension SongInSetOut {
+    /// Gibt eine Kopie zurück, bei der fehlende Felder aus `enriched` aufgefüllt werden.
+    func merging(_ enriched: SongOut?) -> SongInSetOut {
+        SongInSetOut(
+            id: id,
+            setsong_id: setsong_id,
+            song_id: song_id,
+            position: position,
+            title: title,
+            duration: duration ?? enriched?.duration,
+            singer_lead: singer_lead ?? enriched?.singer_lead,
+            singer_background: singer_background ?? enriched?.singer_background,
+            interpret: interpret ?? enriched?.interpret,
+            genre: genre ?? enriched?.genre,
+            dance_styles: dance_styles ?? enriched?.dance_styles,
+            composer: composer ?? enriched?.composer,
+            texter: texter ?? enriched?.texter,
+            publisher: publisher ?? enriched?.publisher,
+            arrangement: arrangement ?? enriched?.arrangement,
+            tone_key: tone_key ?? enriched?.tone_key,
+            ytlink: ytlink ?? enriched?.ytlink,
+            comment: comment ?? enriched?.comment,
+            text: text,
+            brass: brass ?? enriched?.brass,
+            status: status ?? enriched?.status
+        )
+    }
 }
 
 struct SetInGigOut: Codable, Identifiable {
