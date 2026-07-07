@@ -90,6 +90,16 @@
   /** @type {any[]|null} */
   let quickChecklist    = $state(null);
 
+  // Setlisten-Sperre: nach mehr als 7 Tagen nach dem Gig nur noch Admins
+  let setlistLocked = $derived((() => {
+    if (!gig?.datum) return false;
+    const gigDate = new Date(gig.datum);
+    const cutoff = new Date(gigDate);
+    cutoff.setDate(cutoff.getDate() + 7);
+    return cutoff < new Date();
+  })());
+  let canEditSetlist = $derived(canEdit && (!setlistLocked || isAdmin));
+
   // Lade Verfügbarkeit sofort beim Öffnen des Modals
   $effect(() => {
     if (gig?.id && !quickAvailability && !quickAvailabilityErr) {
@@ -644,7 +654,12 @@
             <button class="btn variant-outline-primary btn-sm w-full justify-start border border-primary-500" onclick={getGemaList}>GEMA-Liste drucken</button>
             <button class="btn variant-outline-primary btn-sm w-full justify-start border border-primary-500" onclick={exportSchedulePdf}>Ablaufplan drucken</button>
             {#if canEdit}
-              <button class="btn variant-filled-primary btn-sm w-full justify-start" onclick={handleEditSetlist}>Setliste bearbeiten</button>
+              <button
+                class="btn variant-filled-primary btn-sm w-full justify-start"
+                onclick={handleEditSetlist}
+                disabled={!canEditSetlist}
+                title={!canEditSetlist ? 'Gesperrt – nach mehr als einer Woche nur noch für Admins bearbeitbar' : undefined}
+              >{setlistLocked ? '🔒 ' : ''}Setliste bearbeiten</button>
 
               {#if liveMode}
                 {#if liveMode.available}
@@ -727,7 +742,12 @@
         <div class="space-y-2">
           {#if canEdit}
             <div class="flex flex-wrap gap-2">
-              <button class="btn variant-filled-primary btn-sm" onclick={handleEditSetlist}>Setliste bearbeiten</button>
+              <button
+                class="btn variant-filled-primary btn-sm"
+                onclick={handleEditSetlist}
+                disabled={!canEditSetlist}
+                title={!canEditSetlist ? 'Gesperrt – nach mehr als einer Woche nur noch für Admins bearbeitbar' : undefined}
+              >{setlistLocked ? '🔒 ' : ''}Setliste bearbeiten</button>
 
               {#if liveMode}
                 {#if liveMode.available}
@@ -764,6 +784,12 @@
           <button type="button" class="btn btn-sm variant-outline-primary border border-primary-500" onclick={exportSchedulePdf}>PDF exportieren</button>
         </div>
 
+        {#if setlistLocked && isAdmin}
+          <div class="alert variant-soft-warning p-3 rounded text-sm">
+            ⚠️ Dieser Gig liegt mehr als eine Woche zurück. Als Admin kannst du Setliste und Ablaufplan noch bearbeiten.
+          </div>
+        {/if}
+
         {#if scheduleLoading && !scheduleData}
           <div class="flex justify-center py-12">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
@@ -771,7 +797,7 @@
         {:else}
           <GigSchedule
             gig={gig}
-            canEdit={canEdit}
+            canEdit={canEditSetlist}
             scheduleData={scheduleData}
             onScheduleUpdated={handleScheduleUpdated}
           />
