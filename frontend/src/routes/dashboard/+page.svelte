@@ -37,6 +37,8 @@
       doneTodos: []
   };
 
+  let pendingAvailabilityGigs = [];
+
   let calendarUrl = '';
   let seasonStats = null;
   let nextRehearsal = null;
@@ -83,8 +85,10 @@
           tabsBasic = 1;
       } else if ((todos.surveysForFeedback?.length ?? 0) > 0) {
           tabsBasic = 2;
+      } else if (pendingAvailabilityGigs.length > 0) {
+          tabsBasic = 3;
       } else {
-          tabsBasic = 3; // Zeige erledigte Todos, wenn keine offenen vorhanden sind
+          tabsBasic = 4; // Zeige erledigte Todos, wenn keine offenen vorhanden sind
       }
   }
 
@@ -92,6 +96,7 @@
     try {
       user = await getUser();
       todos = await getUserTodos();
+      pendingAvailabilityGigs = todos.pendingAvailabilityGigs ?? [];
       setTabIndex();
       calUrls = await getICalURLs();
       calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`;
@@ -152,7 +157,7 @@
 
       <div class="mt-7">
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Deine Todos</h2>
-        {#if (todos.songsForFeedback?.length ?? 0) == 0 && (todos.surveysForFeedback?.length ?? 0) == 0 && todos.notDoneTodos.length == 0}
+        {#if (todos.songsForFeedback?.length ?? 0) == 0 && (todos.surveysForFeedback?.length ?? 0) == 0 && todos.notDoneTodos.length == 0 && pendingAvailabilityGigs.length == 0}
           <div class="rounded-xl p-4 mt-4 shadow text-center dashboard-success-panel text-on-surface">
             Du hast keine offenen Todos! 🎉
           </div>
@@ -173,7 +178,12 @@
               <span class="md:hidden">📊 ({todos.surveysForFeedback?.length ?? 0})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 3} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 3 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+            <button onclick={() => tabsBasic = 3} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 3 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {pendingAvailabilityGigs.length > 0 ? 'font-bold' : ''}">
+              <span class="hidden md:inline">Gig-Rückmeldungen ({pendingAvailabilityGigs.length})</span>
+              <span class="md:hidden">👥 ({pendingAvailabilityGigs.length})</span>
+            </button>
+
+            <button onclick={() => tabsBasic = 4} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 4 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
               <span class="hidden md:inline">Erledigt ({todos.doneTodos.length})</span>
               <span class="md:hidden">✓ ({todos.doneTodos.length})</span>
             </button>
@@ -280,6 +290,51 @@
                 {/each}
               </div>
             {:else if tabsBasic === 3}
+              <!-- Gig-Rückmeldungen ausstehend -->
+              {#if pendingAvailabilityGigs.length === 0}
+                <p class="text-sm text-on-surface-variant italic">Alle Gigs haben eine Rückmeldung von dir.</p>
+              {:else}
+                <div class="hidden md:block">
+                  <table class="ui-table mb-6 bg-surface-1 text-on-surface">
+                    <thead class="text-on-surface">
+                      <tr>
+                        <th class="font-semibold py-2 px-3 border-b">Datum</th>
+                        <th class="font-semibold py-2 px-3 border-b">Name</th>
+                        <th class="font-semibold py-2 px-3 border-b">Art</th>
+                        <th class="font-semibold py-2 px-3 border-b"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each pendingAvailabilityGigs as g (g.id)}
+                        <tr class="transition">
+                          <td class="px-3 py-2 whitespace-nowrap">{g.datum ? new Date(g.datum).toLocaleDateString('de-DE') : '-'}</td>
+                          <td class="px-3 py-2 font-medium">{g.name}</td>
+                          <td class="px-3 py-2 text-on-surface-variant">{g.kind_of_gig ?? '-'}</td>
+                          <td class="px-3 py-2">
+                            <a class="ui-btn ui-btn-primary px-3 py-1 text-sm" href="/gigs">Rückmelden</a>
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="block md:hidden mt-5">
+                  {#each pendingAvailabilityGigs as g (g.id)}
+                    <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
+                      <h5 class="font-bold mb-1 text-primary-900">
+                        {g.datum ? new Date(g.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                      </h5>
+                      <p class="mb-1 font-medium">{g.name}</p>
+                      {#if g.kind_of_gig}
+                        <p class="text-sm text-on-surface-variant mb-2">{g.kind_of_gig}</p>
+                      {/if}
+                      <a class="ui-btn ui-btn-primary w-full py-2 text-center block" href="/gigs">Rückmelden</a>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {:else if tabsBasic === 4}
               <div class="hidden md:block">
                 <table class="ui-table mb-1 bg-surface-1 text-on-surface">
                   <thead class="text-on-surface">
@@ -449,11 +504,12 @@
               </div>
 
               <div>
-                <h4 class="font-semibold text-secondary-500 mb-2">Die vier Bereiche</h4>
+                <h4 class="font-semibold text-secondary-500 mb-2">Die fünf Bereiche</h4>
                 <ul class="list-disc list-inside space-y-1 text-sm">
                   <li><strong>Offene Todos:</strong> Deine persoenlichen Aufgaben fuer Songs.</li>
                   <li><strong>Songs:</strong> Songs, die auf dein Feedback warten.</li>
                   <li><strong>Abstimmungen:</strong> Umfragen, an denen du noch nicht teilgenommen hast.</li>
+                  <li><strong>Gig-Rückmeldungen:</strong> Bevorstehende Gigs, für die du noch keine Verfügbarkeit gemeldet hast.</li>
                   <li><strong>Erledigt:</strong> Alle abgeschlossenen Todos zur Uebersicht.</li>
                 </ul>
               </div>

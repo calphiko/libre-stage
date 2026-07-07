@@ -25,6 +25,7 @@ Prefix: ``/availability``  |  Tag: ``availability``
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from datetime import date
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path
@@ -95,6 +96,44 @@ def _build_response(
         summary=summary,
         my_status=my_entry.status if my_entry else None,
     )
+
+
+@router.get("/pending_gigs", response_model=List[schemas.PendingAvailabilityGigOut])
+def get_pending_availability_gigs(
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    """Return upcoming gigs for which the current user has not yet submitted availability."""
+    current_user_id = _get_user_id(current, db)
+    today = date.today()
+
+    upcoming_gigs = (
+        db.query(models.Gig)
+        .filter(models.Gig.datum >= today)
+        .filter(models.Gig.status != "abgelehnt")
+        .order_by(models.Gig.datum)
+        .all()
+    )
+
+    # Filter out gigs that already have an availability entry for the current user
+    submitted_gig_ids = {
+        row.event_id
+        for row in db.query(models.Availability.event_id)
+        .filter_by(user_id=current_user_id, event_type="gig")
+        .all()
+    }
+
+    pending = [g for g in upcoming_gigs if g.id not in submitted_gig_ids]
+
+    return [
+        schemas.PendingAvailabilityGigOut(
+            id=g.id,
+            name=g.name,
+            datum=g.datum,
+            kind_of_gig=g.kind_of_gig,
+        )
+        for g in pending
+    ]
 
 
 @router.get("/{event_type}/{event_id}", response_model=schemas.EventAvailabilityOut)

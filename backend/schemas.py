@@ -124,6 +124,7 @@ class UserTodoList(BaseModel):
     todo: List[UserTodo] = Field(default_factory=list)
     songs_to_feedback: List[SongForFeedback] = Field(default_factory=list)
     surveys_to_feedback: List[SurveyForFeedback] = Field(default_factory=list)
+    pending_gigs: List["PendingAvailabilityGigOut"] = Field(default_factory=list)
 
 class PasswordUpdateRequest(BaseModel):
     user_id: int
@@ -938,4 +939,15 @@ class EventAvailabilityOut(BaseModel):
     availabilities: List[AvailabilityOut] = Field(default_factory=list)
     summary: Dict[str, int] = Field(default_factory=dict)
     my_status: Optional[str] = None
+
+
+class PendingAvailabilityGigOut(BaseModel):
+    """A gig for which the current user has not yet submitted availability."""
+    id: int
+    name: str
+    datum: Optional[date] = None
+    kind_of_gig: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
 

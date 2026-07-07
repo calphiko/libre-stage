@@ -49,7 +49,7 @@ from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, auth
 from backend.app_config import app_config  # Validiert appConfig.json beim Startup
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from dotenv import load_dotenv
 
 from typing import List
@@ -267,6 +267,21 @@ def get_todo_list(user_name: str, db: Session):
         .all()
     )
 
+    db_pending_gigs = (
+        db.query(models.Gig)
+        .filter(models.Gig.datum >= date.today())
+        .filter(models.Gig.status != "abgelehnt")
+        .outerjoin(
+            models.Availability,
+            (models.Availability.event_id == models.Gig.id) &
+            (models.Availability.event_type == "gig") &
+            (models.Availability.user_id == user.id)
+        )
+        .filter(models.Availability.id == None)
+        .order_by(models.Gig.datum)
+        .all()
+    )
+
     result_list = {
         "todo":  [
             {
@@ -294,7 +309,15 @@ def get_todo_list(user_name: str, db: Session):
                 "rf_survey": survey.rf_survey,
                 "release_date": survey.release_date.isoformat() if survey.release_date else None
             } for survey in db_surveys_to_todo
-        ]
+        ],
+        "pending_gigs": [
+            {
+                "id": g.id,
+                "name": g.name,
+                "datum": g.datum.isoformat() if g.datum else None,
+                "kind_of_gig": g.kind_of_gig,
+            } for g in db_pending_gigs
+        ],
     }
     return result_list
 
