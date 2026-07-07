@@ -3,8 +3,48 @@
 Änderungsprotokoll
 ==================
 
+0.5.24 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Verfügbarkeitsmanagement**: Bandmitglieder können für jeden Gig und jede
+  Probe ihren Teilnahmestatus hinterlegen (✅ Dabei / ❓ Vielleicht / ❌ Nicht dabei).
+  Bei Absagen kann optional eine Aushilfe eingetragen werden – entweder als
+  registriertes Bandmitglied (Dropdown) oder als freier Text für externe Personen.
+* Gig-Details / Tab **Übersicht**: Neue Karte **📅 Verfügbarkeit** zeigt sofort
+  beim Öffnen des Modals eine kompakte Schnellübersicht (Zähler je Status,
+  farbige Name-Badges, eingetragene Aushilfen). Link **Details →** wechselt
+  direkt in den Verfügbarkeits-Tab.
+* Gig-Details: Neuer Tab **Verfügbarkeit** (Tab 5) mit dem vollständigen
+  ``AvailabilityWidget``: eigene Statuswahl, Aushilfeformular, Kommentar und
+  vollständige Teilnehmerliste inkl. „Keine Rückmeldung"-Sektion.
+  Die Musikerliste wird beim ersten Öffnen des Tabs nachgeladen.
+* Proben-Details: Aufklappbarer Bereich **📅 Verfügbarkeit** oben im Modal
+  mit demselben Widget; Status- und Aushilfeänderungen werden sofort gespeichert.
+* Backend: Neuer Router ``/availability`` mit Endpunkten
+  ``GET/PUT/DELETE /availability/{event_type}/{event_id}``
+  (``event_type`` = ``rehearsal`` oder ``gig``).
+* Datenbank: Neue Tabelle ``availability`` über Alembic-Migration
+  ``e1f2a3b4c5d6_add_availability_table``; ``upgrade``/``downgrade`` vollständig implementiert.
+* Frontend-API: Neue Hilfsfunktionen ``getAvailability``, ``setAvailability``,
+  ``deleteAvailability`` in ``api.js``.
+* Demo-Datenbank: ``init_demo_db.py`` erzeugt realistische Availability-Einträge
+  für alle drei Gigs und die zukünftige Probe (alle Status-Varianten, externe und
+  interne Aushilfen).
+* Manual: Neues Kapitel :ref:`verfuegbarkeit` im Benutzerhandbuch;
+  Querverweise in :ref:`gigs` und :ref:`proben` ergänzt.
+
+Changed
+~~~~~~~
+
+* Chore: Projektversion auf ``0.5.24`` erhöht (``version.json``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.24`` ergänzt.
+
 0.5.23 (2026-07-03)
 -------------------
+
 
 Added
 ~~~~~

@@ -131,3 +131,15 @@ Der Button **Saison-Statistiken** zeigt aggregierte Daten aller Gigs der laufend
    :alt: Gigs Detail Screenshot
    :width: 500px
    :align: center
+
+Verfügbarkeit
+-------------
+
+Im Tab **Übersicht** des Gig-Detail-Dialogs zeigt eine kompakte Karte die aktuellen
+Verfügbarkeitsrückmeldungen der Bandmitglieder (Zähler ✅/❓/❌, farbige Name-Badges,
+eingetragene Aushilfen). Der Link **Details →** öffnet direkt den Tab **Verfügbarkeit**,
+in dem jedes Mitglied seinen Status setzen und eine Aushilfe benennen kann.
+
+Vollständige Dokumentation: :ref:`verfuegbarkeit`.
+
+
