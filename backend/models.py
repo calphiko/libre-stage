@@ -260,6 +260,12 @@ class Gig(Base):
         order_by="GigScheduleItem.item_datetime",
         cascade="all, delete-orphan",
     )
+    checklist_items: Mapped[list["GigChecklistItem"]] = relationship(
+        "GigChecklistItem",
+        back_populates="gig",
+        order_by="GigChecklistItem.position",
+        cascade="all, delete-orphan",
+    )
 
     def debug_dump(self, schedule=None):
         """
@@ -663,6 +669,42 @@ class SurveyFeedback(Base):
     comment= Column(Text, nullable=True)
 
 
+class GigChecklistItem(Base):
+    """
+    A single to-do / preparation item for a gig.
+
+    Attributes:
+        id (int): Primary key.
+        gig_id (int): Foreign key to :class:`Gig`.
+        title (str): Short description of the task.
+        category (str | None): Grouping label (e.g. ``Equipment``,
+            ``Soundcheck``, ``Abbau``).
+        assignee_user_id (int | None): FK to :class:`User`; the band
+            member responsible for this item.
+        assignee_name (str | None): Free-text assignee name (used when
+            the responsible person is not a registered user).
+        done (bool): Whether the item has been completed.
+        due_datetime (datetime | None): Optional deadline / scheduled time.
+        position (int): Display order within the gig's checklist.
+        gig (Gig): The owning gig.
+        assignee (User | None): The responsible user, if any.
+    """
+    __tablename__ = "gig_checklist_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gig_id = Column(Integer, ForeignKey("gigs.id"), nullable=False)
+    title = Column(String(512), nullable=False)
+    category = Column(String(128), nullable=True)
+    assignee_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    assignee_name = Column(String(512), nullable=True)
+    done = Column(Boolean, nullable=False, default=False)
+    due_datetime = Column(DateTime, nullable=True)
+    position = Column(Integer, nullable=False, default=0)
+
+    gig = relationship("Gig", back_populates="checklist_items")
+    assignee = relationship("User", foreign_keys=[assignee_user_id])
+
+
 class Availability(Base):
     """
     Tracks whether a user is available for a rehearsal or gig.
@@ -696,4 +738,3 @@ class Availability(Base):
 
     user = relationship('User', foreign_keys=[user_id])
     substitute_user = relationship('User', foreign_keys=[substitute_user_id])
-

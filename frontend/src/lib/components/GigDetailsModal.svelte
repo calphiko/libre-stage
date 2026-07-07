@@ -31,6 +31,8 @@
     getAvailability
   } from '$lib/api.js';
   import AvailabilityWidget from '$lib/components/AvailabilityWidget.svelte';
+  import GigChecklistTab from '$lib/components/GigChecklistTab.svelte';
+  import { getGigChecklist } from '$lib/api.js';
   import { formatTime } from '$lib/common.js';
   import { getGigFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
@@ -84,12 +86,25 @@
   let quickAvailability     = $state(null);
   let quickAvailabilityErr  = $state('');
 
+  // Checklisten-Schnellübersicht auf Tab 0
+  /** @type {any[]|null} */
+  let quickChecklist    = $state(null);
+
   // Lade Verfügbarkeit sofort beim Öffnen des Modals
   $effect(() => {
     if (gig?.id && !quickAvailability && !quickAvailabilityErr) {
       getAvailability(null, 'gig', gig.id)
         .then(d => { quickAvailability = d; })
         .catch(e => { quickAvailabilityErr = e.message; });
+    }
+  });
+
+  // Lade Checkliste sofort beim Öffnen des Modals
+  $effect(() => {
+    if (gig?.id && !quickChecklist) {
+      getGigChecklist(null, gig.id)
+        .then(d => { quickChecklist = d; })
+        .catch(() => { quickChecklist = []; });
     }
   });
 
@@ -102,6 +117,12 @@
   function qaDisplayName(a) {
     return a.clear_name || a.user_name || '?';
   }
+
+  // Derived für die Checklisten-Schnellübersicht
+  let qclTotal    = $derived(quickChecklist?.length ?? 0);
+  let qclDone     = $derived(quickChecklist?.filter(i => i.done).length ?? 0);
+  let qclPct      = $derived(qclTotal > 0 ? Math.round((qclDone / qclTotal) * 100) : 0);
+  let qclOpen     = $derived(quickChecklist?.filter(i => !i.done) ?? []);
 
   // Protokoll-Tab
   let notesEditMode = $state(false);
@@ -392,13 +413,20 @@
     }
   });
 
-  // Schnellübersicht auf Tab 0 neu laden, wenn man von Tab 5 zurückwechselt
+  // Schnellübersicht auf Tab 0 neu laden, wenn man von Tab 5/6 zurückwechselt
   let _prevTab = $state(0);
   $effect(() => {
-    if (tabSet === 0 && _prevTab === 5 && gig?.id) {
-      getAvailability(null, 'gig', gig.id)
-        .then(d => { quickAvailability = d; })
-        .catch(() => {});
+    if (tabSet === 0 && (_prevTab === 5 || _prevTab === 6) && gig?.id) {
+      if (_prevTab === 5) {
+        getAvailability(null, 'gig', gig.id)
+          .then(d => { quickAvailability = d; })
+          .catch(() => {});
+      }
+      if (_prevTab === 6) {
+        getGigChecklist(null, gig.id)
+          .then(d => { quickChecklist = d; })
+          .catch(() => {});
+      }
     }
     _prevTab = tabSet;
   });
@@ -410,7 +438,24 @@
     <button class="btn-icon btn-icon-sm variant-ghost" onclick={() => modalState.close()}>✕</button>
   </header>
 
-  <div class="flex gap-1 mb-4 flex-shrink-0 border-b border-surface-300">
+  <!-- Mobile: Dropdown tab selector -->
+  <div class="mb-4 flex-shrink-0 sm:hidden">
+    <select
+      class="select w-full"
+      value={tabSet}
+      onchange={(e) => tabSet = parseInt(e.currentTarget.value)}
+    >
+      <option value={0}>🏠 Übersicht</option>
+      <option value={1}>📋 Stammdaten</option>
+      <option value={2}>🎵 Ablaufplan</option>
+      <option value={3}>📊 Statistik</option>
+      <option value={4}>📝 Protokoll</option>
+      <option value={5}>👥 Verfügbarkeit</option>
+      <option value={6}>✅ Checkliste</option>
+    </select>
+  </div>
+  <!-- Desktop: Tab buttons -->
+  <div class="hidden sm:flex gap-1 mb-4 flex-shrink-0 border-b border-surface-300">
     <button
       class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 0 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
       onclick={() => tabSet = 0}
@@ -435,6 +480,10 @@
       class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 5 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
       onclick={() => tabSet = 5}
     >Verfügbarkeit</button>
+    <button
+      class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 6 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+      onclick={() => tabSet = 6}
+    >✅ Checkliste</button>
   </div>
 
   <div class="overflow-y-auto flex-grow min-h-0 pr-1">
@@ -531,6 +580,56 @@
                   </div>
                 {/each}
               </div>
+            {/if}
+          {/if}
+        </div>
+
+        <!-- ── Schnellübersicht Checkliste ──────────────────────────── -->
+        <div class="card variant-ghost-surface p-4 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold">✅ Checkliste</h4>
+            <button
+              class="btn btn-sm variant-ghost text-xs text-primary-500 hover:underline p-0"
+              onclick={() => tabSet = 6}
+            >Details →</button>
+          </div>
+
+          {#if quickChecklist === null}
+            <p class="text-xs text-on-surface-variant">Lade …</p>
+          {:else if qclTotal === 0}
+            <p class="text-xs text-on-surface-variant italic">Noch keine Einträge.</p>
+          {:else}
+            <!-- Fortschrittsbalken -->
+            <div class="flex items-center gap-2 mb-2">
+              <div class="flex-1 bg-surface-200 dark:bg-surface-700 rounded-full h-2">
+                <div
+                  class="h-2 rounded-full transition-all {qclPct === 100 ? 'bg-success-500' : 'bg-primary-500'}"
+                  style="width:{qclPct}%"
+                ></div>
+              </div>
+              <span class="text-xs font-semibold flex-shrink-0 {qclPct === 100 ? 'text-success-600' : 'text-on-surface-variant'}">
+                {qclDone}/{qclTotal}
+              </span>
+            </div>
+
+            <!-- Offene Punkte (max. 4) -->
+            {#if qclOpen.length > 0}
+              <div class="space-y-0.5">
+                {#each qclOpen.slice(0, 4) as item}
+                  <div class="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                    <span class="w-3 h-3 rounded border border-outline-variant flex-shrink-0"></span>
+                    <span class="truncate">{item.title}</span>
+                    {#if item.category}
+                      <span class="badge variant-ghost text-xs flex-shrink-0">{item.category}</span>
+                    {/if}
+                  </div>
+                {/each}
+                {#if qclOpen.length > 4}
+                  <p class="text-xs text-on-surface-variant italic pl-4.5">… und {qclOpen.length - 4} weitere</p>
+                {/if}
+              </div>
+            {:else}
+              <p class="text-xs text-success-600 dark:text-success-400 font-medium">Alle Punkte erledigt 🎉</p>
             {/if}
           {/if}
         </div>
@@ -907,6 +1006,14 @@
             />
           {/if}
         </div>
+      </div>
+    {/if}
+
+    <!-- ── Tab 6: Checkliste ───────────────────────────────────────── -->
+    {#if tabSet === 6}
+      <div class="card variant-ghost-surface p-4 rounded-lg">
+        <h4 class="text-sm font-semibold mb-3">Vorbereitungs-Checkliste</h4>
+        <GigChecklistTab {gig} {canEdit} />
       </div>
     {/if}
 

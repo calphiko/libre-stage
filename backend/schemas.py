@@ -873,6 +873,35 @@ class PublicDate(BaseModel):
         )
 
 
+# ===== GIG CHECKLIST =====
+
+class GigChecklistItemIn(BaseModel):
+    """Input schema for creating or updating a checklist item."""
+    title: str = Field(..., min_length=1, max_length=512)
+    category: Optional[str] = Field(None, max_length=128)
+    assignee_user_id: Optional[int] = None
+    assignee_name: Optional[str] = Field(None, max_length=512)
+    done: bool = False
+    due_datetime: Optional[datetime] = None
+    position: int = 0
+
+
+class GigChecklistItemOut(BaseModel):
+    """Output schema for a single checklist item."""
+    id: int
+    gig_id: int
+    title: str
+    category: Optional[str] = None
+    assignee_user_id: Optional[int] = None
+    assignee_name: Optional[str] = None
+    assignee_clear_name: Optional[str] = None
+    done: bool
+    due_datetime: Optional[datetime] = None
+    position: int
+
+    model_config = {"from_attributes": True}
+
+
 # ===== AVAILABILITY =====
 
 class AvailabilityStatus(str, Enum):

@@ -59,7 +59,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode, availability
+from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode, availability, gig_checklist
 from backend.utils.token_cleanup import cleanup_expired_tokens
 from backend.utils.password_validator import validate_password
 
@@ -632,3 +632,4 @@ app.include_router(password_reset.router)
 app.include_router(public.router)
 app.include_router(gigs_livemode.router)
 app.include_router(availability.router)
+app.include_router(gig_checklist.router)

@@ -1235,3 +1235,56 @@ export async function deleteAvailability(token, eventType, eventId) {
     if (!res.ok) throw new Error('Verfügbarkeit konnte nicht entfernt werden');
     return res.json();
 }
+
+// ===== GIG CHECKLIST API =====
+
+export async function getGigChecklist(token, gigId) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/checklist`, { method: 'GET' });
+    if (!res.ok) throw new Error('Checkliste konnte nicht geladen werden');
+    return res.json();
+}
+
+export async function createChecklistItem(token, gigId, data) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/checklist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Eintrag konnte nicht erstellt werden');
+    }
+    return res.json();
+}
+
+export async function updateChecklistItem(token, gigId, itemId, data) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/checklist/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Eintrag konnte nicht gespeichert werden');
+    }
+    return res.json();
+}
+
+export async function toggleChecklistItemDone(token, gigId, itemId) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/checklist/${itemId}/done`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Status konnte nicht geändert werden');
+    return res.json();
+}
+
+export async function deleteChecklistItem(token, gigId, itemId) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/checklist/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Eintrag konnte nicht gelöscht werden');
+    return res.json();
+}
+
