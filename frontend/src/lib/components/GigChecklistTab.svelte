@@ -14,6 +14,8 @@
     deleteChecklistItem,
     getUserList,
   } from '$lib/api.js';
+  import { modalState } from '$lib/modalState.js';
+  import ChecklistItemDetailModal from '$lib/components/ChecklistItemDetailModal.svelte';
 
   /** @type {{ id: number, datum?: string, begin?: string }} */
   let { gig = null, canEdit = false } = $props();
@@ -42,6 +44,7 @@
       due_datetime: '',
       done: false,
       position: 0,
+      comment: '',
     };
   }
 
@@ -121,6 +124,7 @@
         : '',
       done: item.done,
       position: item.position,
+      comment: item.comment ?? '',
     };
     formOpen = true;
     loadMusicians();
@@ -136,6 +140,7 @@
       due_datetime:     form.due_datetime || null,
       done:             form.done,
       position:         form.position,
+      comment:          form.comment.trim() || null,
     };
     try {
       if (editingItem) {
@@ -152,6 +157,17 @@
   function cancelForm() {
     formOpen = false;
     editingItem = null;
+  }
+
+  function openDetail(item) {
+    modalState.trigger({
+      component: ChecklistItemDetailModal,
+      meta: {
+        item: { ...item, gig_id: gig.id, gig_name: gig.name, gig_datum: gig.datum },
+        canEdit,
+        onItemUpdated: (updatedItems) => { items = updatedItems; },
+      },
+    });
   }
 
   onMount(load);
@@ -282,6 +298,17 @@
         </label>
       {/if}
 
+      <!-- Kommentar / Protokoll -->
+      <div class="md:col-span-2">
+        <label class="text-xs text-on-surface-variant block mb-0.5">Kommentar / Ergebnis</label>
+        <textarea
+          class="textarea textarea-sm w-full text-xs"
+          rows="2"
+          bind:value={form.comment}
+          placeholder="z.B. Erledigt – PA steht bereit. Kabel fehlt noch."
+        ></textarea>
+      </div>
+
       <div class="flex gap-2 mt-1">
         <button class="btn btn-sm variant-filled-primary border" type="submit">
           {editingItem ? 'Speichern' : 'Hinzufügen'}
@@ -329,7 +356,11 @@
                 </button>
 
                 <!-- Title + meta -->
-                <div class="flex-1 min-w-0">
+                <button
+                  class="flex-1 min-w-0 text-left cursor-pointer hover:opacity-80 transition-opacity"
+                  type="button"
+                  onclick={() => openDetail(item)}
+                >
                   <span class="text-xs font-medium {item.done ? 'line-through' : ''}">{item.title}</span>
                   <div class="flex flex-wrap gap-2 mt-0.5 text-xs text-on-surface-variant">
                     {#if item.due_datetime}
@@ -346,7 +377,12 @@
                       </span>
                     {/if}
                   </div>
-                </div>
+                  {#if item.comment}
+                    <p class="text-xs text-on-surface-variant italic mt-0.5 break-words">
+                      💬 {item.comment}
+                    </p>
+                  {/if}
+                </button>
 
                 <!-- Actions (editor only) -->
                 {#if canEdit}

@@ -69,6 +69,7 @@ def _serialize(item: models.GigChecklistItem) -> schemas.GigChecklistItemOut:
         done=item.done,
         due_datetime=item.due_datetime,
         position=item.position,
+        comment=item.comment,
     )
 
 
@@ -129,6 +130,7 @@ def create_checklist_item(
         done=data.done,
         due_datetime=data.due_datetime,
         position=data.position if data.position else max_pos,
+        comment=data.comment,
     )
     db.add(item)
     db.commit()
@@ -165,6 +167,7 @@ def update_checklist_item(
     item.done = data.done
     item.due_datetime = data.due_datetime
     item.position = data.position
+    item.comment = data.comment
     db.commit()
     return _list_items(gig_id, db)
 

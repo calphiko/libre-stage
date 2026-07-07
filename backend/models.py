@@ -700,6 +700,7 @@ class GigChecklistItem(Base):
     done = Column(Boolean, nullable=False, default=False)
     due_datetime = Column(DateTime, nullable=True)
     position = Column(Integer, nullable=False, default=0)
+    comment = Column(Text, nullable=True)
 
     gig = relationship("Gig", back_populates="checklist_items")
     assignee = relationship("User", foreign_keys=[assignee_user_id])

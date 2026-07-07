@@ -120,11 +120,24 @@ class SurveyForFeedback(BaseModel):
     rf_survey: str
     release_date: Optional[str] = None
 
+class GigChecklistTodoOut(BaseModel):
+    """A gig checklist item assigned to the current user that is not yet done."""
+    id: int
+    gig_id: int
+    gig_name: str
+    gig_datum: Optional[date] = None
+    title: str
+    category: Optional[str] = None
+    due_datetime: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
 class UserTodoList(BaseModel):
     todo: List[UserTodo] = Field(default_factory=list)
     songs_to_feedback: List[SongForFeedback] = Field(default_factory=list)
     surveys_to_feedback: List[SurveyForFeedback] = Field(default_factory=list)
     pending_gigs: List["PendingAvailabilityGigOut"] = Field(default_factory=list)
+    gig_checklist_todos: List[GigChecklistTodoOut] = Field(default_factory=list)
 
 class PasswordUpdateRequest(BaseModel):
     user_id: int
@@ -885,6 +898,7 @@ class GigChecklistItemIn(BaseModel):
     done: bool = False
     due_datetime: Optional[datetime] = None
     position: int = 0
+    comment: Optional[str] = None
 
 
 class GigChecklistItemOut(BaseModel):
@@ -899,6 +913,7 @@ class GigChecklistItemOut(BaseModel):
     done: bool
     due_datetime: Optional[datetime] = None
     position: int
+    comment: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

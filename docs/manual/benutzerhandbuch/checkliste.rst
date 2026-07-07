@@ -35,6 +35,24 @@ Aufgaben verwalten
        Fälligkeit sortiert hervorgehoben
    * - **Erledigt**
      - Häkchen – nur Admins und Editors dürfen Aufgaben als erledigt markieren
+   * - **Kommentar / Ergebnis**
+     - Freitextfeld zur Protokollierung des Ergebnisses (z. B. „PA steht bereit,
+       Kabel fehlt noch"). Wird in der Liste mit 💬-Symbol angezeigt.
+
+Aufgaben-Detailansicht
+----------------------
+
+Ein Klick auf den Titel einer Aufgabe öffnet das **Detailmodal**. Es zeigt:
+
+* Titel und Erledigungsstatus
+* Gig-Name und -Datum
+* Kategorie, Zuständiger, Fälligkeitsdatum (rot wenn überfällig)
+* Kommentar / Ergebnis
+
+Admins und Editors können direkt im Modal:
+
+* die Aufgabe als **erledigt** oder **offen** markieren
+* alle Felder über ein Inline-Formular **bearbeiten**
 
 Schnellübersicht auf Tab 0
 --------------------------
@@ -52,10 +70,19 @@ Abhaken und Bearbeiten
 Nur Admins und Editors können:
 
 * das Häkchen einer Aufgabe setzen oder entfernen
-* eine Aufgabe bearbeiten (Bleistift-Symbol)
+* eine Aufgabe bearbeiten (Bleistift-Symbol oder Detailmodal)
 * eine Aufgabe löschen (Mülleimer-Symbol)
 
-Normale Mitglieder sehen die Liste und den Fortschritt in Lese-Ansicht.
+Normale Mitglieder sehen die Liste, den Fortschritt und alle Kommentare in
+Lese-Ansicht. Sie können das Detailmodal öffnen, aber keine Änderungen vornehmen.
+
+Dashboard-Integration
+---------------------
+
+Offene Checklisten-Aufgaben, die einem Mitglied persönlich zugewiesen sind,
+erscheinen automatisch im Tab **✅ Checkliste** im Dashboard-Bereich „Deine Todos".
+Ein Klick auf eine Aufgabe öffnet ebenfalls das Detailmodal.
+Admins und Editors können Aufgaben direkt vom Dashboard aus als erledigt markieren.
 
 .. note::
 

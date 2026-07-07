@@ -3,6 +3,56 @@
 Änderungsprotokoll
 ==================
 
+0.5.26 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Kommentarfeld in der Gig-Checkliste**: Jede Aufgabe erhält ein optionales
+  Feld **Kommentar / Ergebnis**, um das Ergebnis oder Rückstände zu protokollieren.
+  Vorhandene Kommentare werden in der Listenansicht mit 💬-Symbol angezeigt.
+
+  * Datenbank: neue Spalte ``comment TEXT`` in ``gig_checklist_items`` via
+    Alembic-Migration ``c3d4e5f6a1b2_add_comment_to_checklist_items``.
+  * Schema: ``GigChecklistItemIn`` / ``GigChecklistItemOut`` um ``comment`` ergänzt.
+
+* **Checklisten-Detailmodal**: Klick auf eine Aufgabe in der Checkliste öffnet
+  ein Modal mit allen Details (Titel, Status, Gig, Kategorie, Zuständiger,
+  Fälligkeit, Kommentar). Admins und Editors können darin die Aufgabe direkt
+  erledigen oder über ein Inline-Formular bearbeiten.
+  Das Modal ist sowohl in der Gig-Checkliste als auch im Dashboard erreichbar.
+
+* **Dashboard – Tab „✅ Checkliste"**: Zeigt offene Gig-Checklisten-Aufgaben,
+  die dem eingeloggten Mitglied zugewiesen sind. Klick auf einen Eintrag öffnet
+  das Detailmodal; Admins/Editors können Aufgaben direkt als erledigt markieren.
+
+* **Dashboard – Tab „👥 Gig-Rückmeldungen"**: Zeigt bevorstehende Gigs, für die
+  noch keine Verfügbarkeitsrückmeldung abgegeben wurde. Link führt zur
+  Gig-Übersicht.
+
+* **Dashboard – Todos aus ``GET /user_todos``**: Der bestehende Backend-Endpunkt
+  liefert nun zwei zusätzliche Felder:
+
+  * ``gig_checklist_todos`` – offene, dem User zugewiesene Checklisten-Aufgaben
+  * ``pending_gigs`` – Gigs ohne Verfügbarkeitseintrag des Users
+
+  Beide Felder werden in einem einzigen API-Call mitgeliefert; kein separater
+  Request mehr nötig.
+
+* Zusätzlicher Backend-Endpunkt ``GET /availability/pending_gigs`` bleibt
+  weiterhin verfügbar (für externe Nutzung).
+
+Changed
+~~~~~~~
+
+* Dashboard-Hilfetext aktualisiert: beschreibt jetzt alle sechs Todo-Tabs.
+* :ref:`checkliste`: Neue Abschnitte *Kommentarfeld*, *Aufgaben-Detailansicht*
+  und *Dashboard-Integration*.
+* :ref:`dashboard`: vollständig überarbeitet; beschreibt alle sechs Tabs,
+  Nächste Termine, Saison-Statistiken und Kalender-Abo.
+* Chore: Projektversion auf ``0.5.26`` erhöht.
+
 0.5.25 (2026-07-07)
 -------------------
 

@@ -806,6 +806,7 @@ export async function getUserTodos(token) {
         songsForFeedback: todos.songs_to_feedback,
         surveysForFeedback: todos.surveys_to_feedback,
         pendingAvailabilityGigs: todos.pending_gigs ?? [],
+        gigChecklistTodos: todos.gig_checklist_todos ?? [],
     };
 }
 
