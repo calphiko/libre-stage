@@ -368,6 +368,15 @@ body {
   border-radius: 0 !important;
 }
 
+/* Hide scrollbar while keeping scroll functionality */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ============================================================
    Unified UI primitives used across pages
    ============================================================ */
@@ -786,4 +795,3 @@ textarea.input:focus {
     font-size: 0.88rem;
   }
 }
-

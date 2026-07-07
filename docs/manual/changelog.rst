@@ -3,8 +3,149 @@
 Änderungsprotokoll
 ==================
 
+0.5.26 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Kommentarfeld in der Gig-Checkliste**: Jede Aufgabe erhält ein optionales
+  Feld **Kommentar / Ergebnis**, um das Ergebnis oder Rückstände zu protokollieren.
+  Vorhandene Kommentare werden in der Listenansicht mit 💬-Symbol angezeigt.
+
+  * Datenbank: neue Spalte ``comment TEXT`` in ``gig_checklist_items`` via
+    Alembic-Migration ``c3d4e5f6a1b2_add_comment_to_checklist_items``.
+  * Schema: ``GigChecklistItemIn`` / ``GigChecklistItemOut`` um ``comment`` ergänzt.
+
+* **Checklisten-Detailmodal**: Klick auf eine Aufgabe in der Checkliste öffnet
+  ein Modal mit allen Details (Titel, Status, Gig, Kategorie, Zuständiger,
+  Fälligkeit, Kommentar). Admins und Editors können darin die Aufgabe direkt
+  erledigen oder über ein Inline-Formular bearbeiten.
+  Das Modal ist sowohl in der Gig-Checkliste als auch im Dashboard erreichbar.
+
+* **Dashboard – Tab „✅ Checkliste"**: Zeigt offene Gig-Checklisten-Aufgaben,
+  die dem eingeloggten Mitglied zugewiesen sind. Klick auf einen Eintrag öffnet
+  das Detailmodal; Admins/Editors können Aufgaben direkt als erledigt markieren.
+
+* **Dashboard – Tab „👥 Gig-Rückmeldungen"**: Zeigt bevorstehende Gigs, für die
+  noch keine Verfügbarkeitsrückmeldung abgegeben wurde. Link führt zur
+  Gig-Übersicht.
+
+* **Dashboard – Todos aus ``GET /user_todos``**: Der bestehende Backend-Endpunkt
+  liefert nun zwei zusätzliche Felder:
+
+  * ``gig_checklist_todos`` – offene, dem User zugewiesene Checklisten-Aufgaben
+  * ``pending_gigs`` – Gigs ohne Verfügbarkeitseintrag des Users
+
+  Beide Felder werden in einem einzigen API-Call mitgeliefert; kein separater
+  Request mehr nötig.
+
+* Zusätzlicher Backend-Endpunkt ``GET /availability/pending_gigs`` bleibt
+  weiterhin verfügbar (für externe Nutzung).
+
+Changed
+~~~~~~~
+
+* Dashboard-Hilfetext aktualisiert: beschreibt jetzt alle sechs Todo-Tabs.
+* :ref:`checkliste`: Neue Abschnitte *Kommentarfeld*, *Aufgaben-Detailansicht*
+  und *Dashboard-Integration*.
+* :ref:`dashboard`: vollständig überarbeitet; beschreibt alle sechs Tabs,
+  Nächste Termine, Saison-Statistiken und Kalender-Abo.
+* Chore: Projektversion auf ``0.5.26`` erhöht.
+
+0.5.25 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Gig-Checkliste**: Jeder Gig erhält einen neuen Tab **✅ Checkliste** (Tab 6)
+  mit einer strukturierten Aufgabenliste für die Gig-Vorbereitung.
+  Aufgaben besitzen Titel, Kategorie, optional einen Verantwortlichen (Mitglied
+  oder Freitext) sowie ein optionales Fälligkeitsdatum.
+  Admins und Editors können Aufgaben anlegen, bearbeiten, löschen und als erledigt
+  markieren; normale Mitglieder sehen die Liste in Lese-Ansicht.
+* Gig-Details / Tab **Übersicht**: Neue Karte **✅ Checkliste** zeigt sofort
+  einen Fortschrittsbalken (erledigte / offene Punkte) sowie bis zu vier offene
+  Aufgaben als Schnellvorschau. Der Link **Details →** wechselt direkt in den
+  Checklisten-Tab.
+* Backend: Neuer Router ``/gigs/{gig_id}/checklist`` mit Endpunkten
+  ``GET``, ``POST``, ``PUT /{item_id}``, ``PATCH /{item_id}/done``,
+  ``DELETE /{item_id}``. Das Abhaken (``PATCH done``) setzt ``check_editor``
+  voraus.
+* Datenbank: Neue Tabelle ``gig_checklist_items`` über Alembic-Migration
+  ``f1a2b3c4d5e6_add_gig_checklist_items``; ``upgrade``/``downgrade`` vollständig
+  implementiert.
+* Frontend-API: Neue Hilfsfunktionen ``getGigChecklist``, ``createChecklistItem``,
+  ``updateChecklistItem``, ``toggleChecklistItemDone``, ``deleteChecklistItem``
+  in ``api.js``.
+* Manual: Neues Kapitel :ref:`checkliste` im Benutzerhandbuch;
+  Querverweise in :ref:`gigs` ergänzt.
+
+* **Setlisten-Sperre**: Setliste und Ablaufplan eines Gigs sind nach mehr als
+  sieben Tagen seit dem Gig-Datum für Editors gesperrt. Admins können weiterhin
+  Änderungen vornehmen.
+
+  * Backend: Hilfsfunktion ``_is_setlist_locked`` prüft das Gig-Datum; alle
+    schreibenden Endpunkte (``PUT /update_setlist/``, ``POST/PUT/DELETE
+    /schedule/``) geben bei überschrittener Frist und fehlendem Admin-Recht
+    ``403 SETLIST_LOCKED`` zurück.
+  * Frontend: Berechneter Zustand ``setlistLocked`` und ``canEditSetlist``;
+    Button **Setliste bearbeiten** wird deaktiviert (🔒-Präfix, Tooltip).
+    Im Ablaufplan-Tab erhalten Admins einen gelben Hinweis.
+
+* **Mobiles Tab-Layout**: Im Gig-Detail-Dialog werden die sieben Tabs auf
+  kleinen Bildschirmen (< ``sm``) durch ein natives ``<select>``-Dropdown
+  ersetzt; auf größeren Bildschirmen bleiben die Tab-Buttons unverändert.
+
+Changed
+~~~~~~~
+
+* Chore: Projektversion auf ``0.5.25`` erhöht (``version.json``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.25`` ergänzt.
+
+0.5.24 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Verfügbarkeitsmanagement**: Bandmitglieder können für jeden Gig und jede
+  Probe ihren Teilnahmestatus hinterlegen (✅ Dabei / ❓ Vielleicht / ❌ Nicht dabei).
+  Bei Absagen kann optional eine Aushilfe eingetragen werden – entweder als
+  registriertes Bandmitglied (Dropdown) oder als freier Text für externe Personen.
+* Gig-Details / Tab **Übersicht**: Neue Karte **📅 Verfügbarkeit** zeigt sofort
+  beim Öffnen des Modals eine kompakte Schnellübersicht (Zähler je Status,
+  farbige Name-Badges, eingetragene Aushilfen). Link **Details →** wechselt
+  direkt in den Verfügbarkeits-Tab.
+* Gig-Details: Neuer Tab **Verfügbarkeit** (Tab 5) mit dem vollständigen
+  ``AvailabilityWidget``: eigene Statuswahl, Aushilfeformular, Kommentar und
+  vollständige Teilnehmerliste inkl. „Keine Rückmeldung"-Sektion.
+  Die Musikerliste wird beim ersten Öffnen des Tabs nachgeladen.
+* Proben-Details: Aufklappbarer Bereich **📅 Verfügbarkeit** oben im Modal
+  mit demselben Widget; Status- und Aushilfeänderungen werden sofort gespeichert.
+* Backend: Neuer Router ``/availability`` mit Endpunkten
+  ``GET/PUT/DELETE /availability/{event_type}/{event_id}``
+  (``event_type`` = ``rehearsal`` oder ``gig``).
+* Datenbank: Neue Tabelle ``availability`` über Alembic-Migration
+  ``e1f2a3b4c5d6_add_availability_table``; ``upgrade``/``downgrade`` vollständig implementiert.
+* Frontend-API: Neue Hilfsfunktionen ``getAvailability``, ``setAvailability``,
+  ``deleteAvailability`` in ``api.js``.
+* Demo-Datenbank: ``init_demo_db.py`` erzeugt realistische Availability-Einträge
+  für alle drei Gigs und die zukünftige Probe (alle Status-Varianten, externe und
+  interne Aushilfen).
+* Manual: Neues Kapitel :ref:`verfuegbarkeit` im Benutzerhandbuch;
+  Querverweise in :ref:`gigs` und :ref:`proben` ergänzt.
+
+Changed
+~~~~~~~
+
+* Chore: Projektversion auf ``0.5.24`` erhöht (``version.json``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.24`` ergänzt.
+
 0.5.23 (2026-07-03)
 -------------------
+
 
 Added
 ~~~~~
