@@ -1187,3 +1187,51 @@ export async function getICalURLs() {
     if(!res.ok)  throw new Error('Abrufen der iCal URLs fehlgeschlagen');
     return res.json();
 }
+
+// ===== AVAILABILITY API =====
+
+/**
+ * Lädt alle Verfügbarkeitseinträge für ein Ereignis (Probe oder Gig).
+ * @param {*} token  (unused, kept for API consistency)
+ * @param {'rehearsal'|'gig'} eventType
+ * @param {number} eventId
+ */
+export async function getAvailability(token, eventType, eventId) {
+    const res = await fetchWithAuth(`${API_URL}/availability/${eventType}/${eventId}`, {
+        method: 'GET',
+    });
+    if (!res.ok) throw new Error('Verfügbarkeit konnte nicht geladen werden');
+    return res.json();
+}
+
+/**
+ * Setzt oder aktualisiert die eigene Verfügbarkeit für ein Ereignis.
+ * @param {*} token
+ * @param {'rehearsal'|'gig'} eventType
+ * @param {number} eventId
+ * @param {{ status: string, comment?: string, substitute_name?: string, substitute_user_id?: number }} data
+ */
+export async function setAvailability(token, eventType, eventId, data) {
+    const res = await fetchWithAuth(`${API_URL}/availability/${eventType}/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Verfügbarkeit konnte nicht gespeichert werden');
+    return res.json();
+}
+
+/**
+ * Entfernt den eigenen Verfügbarkeitseintrag für ein Ereignis.
+ * @param {*} token
+ * @param {'rehearsal'|'gig'} eventType
+ * @param {number} eventId
+ */
+export async function deleteAvailability(token, eventType, eventId) {
+    const res = await fetchWithAuth(`${API_URL}/availability/${eventType}/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Verfügbarkeit konnte nicht entfernt werden');
+    return res.json();
+}

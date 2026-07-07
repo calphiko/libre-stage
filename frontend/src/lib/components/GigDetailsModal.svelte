@@ -26,8 +26,11 @@
     getGigSchedule,
     getGigSchedulePDF,
     getGigStatistics,
-    getGenrePalette
+    getGenrePalette,
+    getUserList,
+    getAvailability
   } from '$lib/api.js';
+  import AvailabilityWidget from '$lib/components/AvailabilityWidget.svelte';
   import { formatTime } from '$lib/common.js';
   import { getGigFieldsDetails } from '$lib/songFields.js';
   import { appConfig } from '$lib/appConfig.js';
@@ -49,6 +52,7 @@
     canEdit = false,
     isAdmin = false,
     liveModeStatus = null,
+    currentUserId = null,
     onGigUpdated = () => {},
     onDeleteGig = () => {},
     onEditSetlist = () => {},
@@ -70,6 +74,34 @@
   let statistics = $state(null);
   let genrePalette = $state({});
   let liveMode = $state(liveModeStatus ? { ...liveModeStatus } : null);
+
+  // Verfügbarkeits-Tab
+  let availabilityMusicians = $state([]);
+  let availabilityLoading   = $state(false);
+
+  // Schnellübersicht auf Tab 0
+  /** @type {{ availabilities: any[], summary: Record<string,number>, my_status: string|null }|null} */
+  let quickAvailability     = $state(null);
+  let quickAvailabilityErr  = $state('');
+
+  // Lade Verfügbarkeit sofort beim Öffnen des Modals
+  $effect(() => {
+    if (gig?.id && !quickAvailability && !quickAvailabilityErr) {
+      getAvailability(null, 'gig', gig.id)
+        .then(d => { quickAvailability = d; })
+        .catch(e => { quickAvailabilityErr = e.message; });
+    }
+  });
+
+  // Derived für die Schnellübersicht
+  let qaAvailable   = $derived(quickAvailability?.availabilities?.filter(a => a.status === 'available')   ?? []);
+  let qaMaybe       = $derived(quickAvailability?.availabilities?.filter(a => a.status === 'maybe')       ?? []);
+  let qaUnavailable = $derived(quickAvailability?.availabilities?.filter(a => a.status === 'unavailable') ?? []);
+  let qaTotal       = $derived((quickAvailability?.availabilities?.length ?? 0));
+
+  function qaDisplayName(a) {
+    return a.clear_name || a.user_name || '?';
+  }
 
   // Protokoll-Tab
   let notesEditMode = $state(false);
@@ -350,6 +382,26 @@
   $effect(() => {
     if (tabSet === 3) loadStats();
   });
+
+  $effect(() => {
+    if (tabSet === 5 && availabilityMusicians.length === 0 && !availabilityLoading) {
+      availabilityLoading = true;
+      getUserList().then(users => {
+        availabilityMusicians = users.filter(u => u.musician !== false);
+      }).catch(() => {}).finally(() => { availabilityLoading = false; });
+    }
+  });
+
+  // Schnellübersicht auf Tab 0 neu laden, wenn man von Tab 5 zurückwechselt
+  let _prevTab = $state(0);
+  $effect(() => {
+    if (tabSet === 0 && _prevTab === 5 && gig?.id) {
+      getAvailability(null, 'gig', gig.id)
+        .then(d => { quickAvailability = d; })
+        .catch(() => {});
+    }
+    _prevTab = tabSet;
+  });
 </script>
 
 <div class="card p-5 w-[96vw] max-w-7xl h-[90vh] flex flex-col modal-base">
@@ -379,6 +431,10 @@
       class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 4 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
       onclick={() => tabSet = 4}
     >Protokoll</button>
+    <button
+      class="btn btn-sm rounded-b-none border-b-2 transition-colors {tabSet === 5 ? 'border-primary-500 variant-soft-primary' : 'border-transparent variant-ghost'}"
+      onclick={() => tabSet = 5}
+    >Verfügbarkeit</button>
   </div>
 
   <div class="overflow-y-auto flex-grow min-h-0 pr-1">
@@ -408,6 +464,75 @@
               <span class="font-medium text-right">{gig.begin ? `${formatTime(gig.begin)} Uhr` : '-'}</span>
             </div>
           </div>
+        </div>
+
+        <!-- ── Schnellübersicht Verfügbarkeit ──────────────────────── -->
+        <div class="card variant-ghost-surface p-4 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold">📅 Verfügbarkeit</h4>
+            <button
+              class="btn btn-sm variant-ghost text-xs text-primary-500 hover:underline p-0"
+              onclick={() => tabSet = 5}
+            >Details →</button>
+          </div>
+
+          {#if !quickAvailability && !quickAvailabilityErr}
+            <p class="text-xs text-on-surface-variant">Lade …</p>
+          {:else if quickAvailabilityErr}
+            <p class="text-xs text-error-500">{quickAvailabilityErr}</p>
+          {:else if qaTotal === 0}
+            <p class="text-xs text-on-surface-variant italic">Noch keine Rückmeldungen.</p>
+          {:else}
+            <!-- Zähler-Zeile -->
+            <div class="flex flex-wrap gap-3 text-xs font-medium mb-2">
+              {#if qaAvailable.length > 0}
+                <span class="text-success-600 dark:text-success-400">✅ {qaAvailable.length} Dabei</span>
+              {/if}
+              {#if qaMaybe.length > 0}
+                <span class="text-warning-600 dark:text-warning-400">❓ {qaMaybe.length} Vielleicht</span>
+              {/if}
+              {#if qaUnavailable.length > 0}
+                <span class="text-error-600 dark:text-error-400">❌ {qaUnavailable.length} Nicht dabei</span>
+              {/if}
+            </div>
+
+            <!-- Dabei -->
+            {#if qaAvailable.length > 0}
+              <div class="flex flex-wrap gap-1 mb-1.5">
+                {#each qaAvailable as a}
+                  <span class="badge variant-soft-success text-xs">{qaDisplayName(a)}</span>
+                {/each}
+              </div>
+            {/if}
+
+            <!-- Vielleicht -->
+            {#if qaMaybe.length > 0}
+              <div class="flex flex-wrap gap-1 mb-1.5">
+                {#each qaMaybe as a}
+                  <span class="badge variant-soft-warning text-xs">{qaDisplayName(a)}</span>
+                {/each}
+              </div>
+            {/if}
+
+            <!-- Nicht dabei (mit Aushilfe) -->
+            {#if qaUnavailable.length > 0}
+              <div class="space-y-0.5">
+                {#each qaUnavailable as a}
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span class="badge variant-soft-error">{qaDisplayName(a)}</span>
+                    {#if a.substitute_clear_name || a.substitute_name}
+                      <span class="text-on-surface-variant">
+                        → <strong>{a.substitute_clear_name || a.substitute_name}</strong>
+                      </span>
+                    {/if}
+                    {#if a.comment}
+                      <span class="text-on-surface-variant italic">„{a.comment}"</span>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          {/if}
         </div>
 
         <div class="card variant-ghost-surface p-4 rounded-lg space-y-2">
@@ -765,6 +890,26 @@
         {/if}
       </div>
     {/if}
+
+    <!-- ── Tab 5: Verfügbarkeit ───────────────────────────────────── -->
+    {#if tabSet === 5}
+      <div class="space-y-3">
+        <div class="card variant-ghost-surface p-4 rounded-lg">
+          <h4 class="text-sm font-semibold mb-3">Verfügbarkeit für diesen Gig</h4>
+          {#if availabilityLoading}
+            <p class="text-xs text-on-surface-variant">Lade Mitgliederliste …</p>
+          {:else}
+            <AvailabilityWidget
+              eventType="gig"
+              eventId={gig?.id}
+              {currentUserId}
+              musicians={availabilityMusicians}
+            />
+          {/if}
+        </div>
+      </div>
+    {/if}
+
   </div>
 
   <footer class="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-surface-300">

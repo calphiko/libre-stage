@@ -182,6 +182,7 @@
         isEditor,
         isPast,
         searchQuery,
+        currentUserId: user?.id ?? null,
         onupdate: (e) => updateRehearsal(e.reh),
         ondelete: (e) => delRehearsal(e.id, e.date),
         onerror: (e) => showError(e.message),

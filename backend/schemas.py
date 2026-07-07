@@ -873,4 +873,40 @@ class PublicDate(BaseModel):
         )
 
 
+# ===== AVAILABILITY =====
+
+class AvailabilityStatus(str, Enum):
+    available = "available"
+    unavailable = "unavailable"
+    maybe = "maybe"
+
+
+class AvailabilityIn(BaseModel):
+    """Input schema for setting one's own availability for an event."""
+    status: AvailabilityStatus
+    comment: Optional[str] = Field(None, max_length=1000)
+    substitute_name: Optional[str] = Field(None, max_length=512)
+    substitute_user_id: Optional[int] = None
+
+
+class AvailabilityOut(BaseModel):
+    """Output schema for a single availability entry."""
+    id: int
+    user_id: int
+    user_name: str
+    clear_name: Optional[str] = None
+    status: str
+    comment: Optional[str] = None
+    substitute_name: Optional[str] = None
+    substitute_user_id: Optional[int] = None
+    substitute_clear_name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class EventAvailabilityOut(BaseModel):
+    """Aggregated availability information for a single event."""
+    availabilities: List[AvailabilityOut] = Field(default_factory=list)
+    summary: Dict[str, int] = Field(default_factory=dict)
+    my_status: Optional[str] = None
 

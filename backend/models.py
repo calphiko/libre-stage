@@ -662,3 +662,38 @@ class SurveyFeedback(Base):
     value = Column(Text, nullable=False)
     comment= Column(Text, nullable=True)
 
+
+class Availability(Base):
+    """
+    Tracks whether a user is available for a rehearsal or gig.
+
+    Attributes:
+        id (int): Primary key.
+        user_id (int): Foreign key to :class:`User`.
+        event_type (str): Either ``rehearsal`` or ``gig``.
+        event_id (int): ID of the referenced rehearsal or gig.
+        status (str): ``available``, ``unavailable`` or ``maybe``.
+        comment (str | None): Optional free-text comment.
+        substitute_name (str | None): Name of an external substitute.
+        substitute_user_id (int | None): FK to :class:`User` if the
+            substitute is already registered in the system.
+        user (User): The user who set this entry.
+        substitute_user (User | None): The substitute user, if any.
+    """
+    __tablename__ = "availability"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'event_type', 'event_id', name='_availability_uc'),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    event_type = Column(String(32), nullable=False)   # "rehearsal" or "gig"
+    event_id = Column(Integer, nullable=False)
+    status = Column(String(32), nullable=False)        # "available" | "unavailable" | "maybe"
+    comment = Column(Text, nullable=True)
+    substitute_name = Column(String(512), nullable=True)
+    substitute_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+
+    user = relationship('User', foreign_keys=[user_id])
+    substitute_user = relationship('User', foreign_keys=[substitute_user_id])
+

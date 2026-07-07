@@ -209,6 +209,7 @@
         gig,
         canEdit,
         isAdmin,
+        currentUserId: user?.id ?? null,
         liveModeStatus: liveModeStatus[gig.id] ?? null,
         onGigUpdated: handleGigUpdated,
         onDeleteGig: (gigToDelete) => deleteGig(gigToDelete.id, gigToDelete.name),
