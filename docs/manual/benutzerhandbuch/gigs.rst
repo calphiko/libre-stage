@@ -142,4 +142,30 @@ in dem jedes Mitglied seinen Status setzen und eine Aushilfe benennen kann.
 
 Vollständige Dokumentation: :ref:`verfuegbarkeit`.
 
+Gig-Checkliste
+--------------
+
+Über den Tab **✅ Checkliste** (Tab 6) kann eine strukturierte Aufgabenliste für die
+Gig-Vorbereitung gepflegt werden. Admins und Editors können Aufgaben anlegen, mit
+Kategorie, Verantwortlichem und Fälligkeitsdatum versehen sowie abhaken.
+
+Eine kompakte Fortschrittsanzeige ist auch direkt im Tab **Übersicht** sichtbar.
+
+Vollständige Dokumentation: :ref:`checkliste`.
+
+Setlisten-Sperre
+----------------
+
+Um die Datenkonsistenz vergangener Auftritte zu schützen, gilt folgende Regelung:
+
+* **Bis eine Woche nach dem Gig-Datum** können Admins und Editors die Setliste und
+  den Ablaufplan wie gewohnt bearbeiten.
+* **Mehr als sieben Tage nach dem Gig-Datum** ist die Bearbeitung für Editors
+  gesperrt. Der Button **Setliste bearbeiten** wird deaktiviert (ausgegraut mit
+  Schloss-Symbol 🔒) und zeigt einen Tooltip mit dem Hinweis.
+  Admins können weiterhin Änderungen vornehmen; sie erhalten im Ablaufplan-Tab
+  einen gelben Hinweis.
+* Der Sperrmechanismus gilt für die Setliste (Song-Reihenfolge) und den
+  Ablaufplan (Zeitplan-Einträge). Die Checkliste ist davon nicht betroffen.
+
 

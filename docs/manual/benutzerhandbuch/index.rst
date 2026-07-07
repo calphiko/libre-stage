@@ -16,6 +16,7 @@ Dieser Abschnitt beschreibt alle Funktionen von libreStage aus Benutzersicht.
    songs
    proben
    verfuegbarkeit
+   checkliste
    abstimmungen
    benutzer
    konfiguration

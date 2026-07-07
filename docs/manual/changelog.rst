@@ -3,6 +3,57 @@
 Änderungsprotokoll
 ==================
 
+0.5.25 (2026-07-07)
+-------------------
+
+Added
+~~~~~
+
+* **Gig-Checkliste**: Jeder Gig erhält einen neuen Tab **✅ Checkliste** (Tab 6)
+  mit einer strukturierten Aufgabenliste für die Gig-Vorbereitung.
+  Aufgaben besitzen Titel, Kategorie, optional einen Verantwortlichen (Mitglied
+  oder Freitext) sowie ein optionales Fälligkeitsdatum.
+  Admins und Editors können Aufgaben anlegen, bearbeiten, löschen und als erledigt
+  markieren; normale Mitglieder sehen die Liste in Lese-Ansicht.
+* Gig-Details / Tab **Übersicht**: Neue Karte **✅ Checkliste** zeigt sofort
+  einen Fortschrittsbalken (erledigte / offene Punkte) sowie bis zu vier offene
+  Aufgaben als Schnellvorschau. Der Link **Details →** wechselt direkt in den
+  Checklisten-Tab.
+* Backend: Neuer Router ``/gigs/{gig_id}/checklist`` mit Endpunkten
+  ``GET``, ``POST``, ``PUT /{item_id}``, ``PATCH /{item_id}/done``,
+  ``DELETE /{item_id}``. Das Abhaken (``PATCH done``) setzt ``check_editor``
+  voraus.
+* Datenbank: Neue Tabelle ``gig_checklist_items`` über Alembic-Migration
+  ``f1a2b3c4d5e6_add_gig_checklist_items``; ``upgrade``/``downgrade`` vollständig
+  implementiert.
+* Frontend-API: Neue Hilfsfunktionen ``getGigChecklist``, ``createChecklistItem``,
+  ``updateChecklistItem``, ``toggleChecklistItemDone``, ``deleteChecklistItem``
+  in ``api.js``.
+* Manual: Neues Kapitel :ref:`checkliste` im Benutzerhandbuch;
+  Querverweise in :ref:`gigs` ergänzt.
+
+* **Setlisten-Sperre**: Setliste und Ablaufplan eines Gigs sind nach mehr als
+  sieben Tagen seit dem Gig-Datum für Editors gesperrt. Admins können weiterhin
+  Änderungen vornehmen.
+
+  * Backend: Hilfsfunktion ``_is_setlist_locked`` prüft das Gig-Datum; alle
+    schreibenden Endpunkte (``PUT /update_setlist/``, ``POST/PUT/DELETE
+    /schedule/``) geben bei überschrittener Frist und fehlendem Admin-Recht
+    ``403 SETLIST_LOCKED`` zurück.
+  * Frontend: Berechneter Zustand ``setlistLocked`` und ``canEditSetlist``;
+    Button **Setliste bearbeiten** wird deaktiviert (🔒-Präfix, Tooltip).
+    Im Ablaufplan-Tab erhalten Admins einen gelben Hinweis.
+
+* **Mobiles Tab-Layout**: Im Gig-Detail-Dialog werden die sieben Tabs auf
+  kleinen Bildschirmen (< ``sm``) durch ein natives ``<select>``-Dropdown
+  ersetzt; auf größeren Bildschirmen bleiben die Tab-Buttons unverändert.
+
+Changed
+~~~~~~~
+
+* Chore: Projektversion auf ``0.5.25`` erhöht (``version.json``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.25`` ergänzt.
+
 0.5.24 (2026-07-07)
 -------------------
 
