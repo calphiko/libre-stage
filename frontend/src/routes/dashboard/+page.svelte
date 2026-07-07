@@ -19,7 +19,9 @@
 <script>
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs } from '$lib/api.js';
+  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs, toggleChecklistItemDone } from '$lib/api.js';
+  import { modalState } from '$lib/modalState.js';
+  import ChecklistItemDetailModal from '$lib/components/ChecklistItemDetailModal.svelte';
   import SeasonGigProgressPlot from '$lib/plots/seasonGigProgressPlot.svelte';
   import SeasonSongMixPlot from '$lib/plots/seasonSongMixPlot.svelte';
   import SeasonFeedbackGaugePlot from '$lib/plots/seasonFeedbackGaugePlot.svelte';
@@ -36,6 +38,8 @@
       notDoneTodos: [],
       doneTodos: []
   };
+
+  let pendingAvailabilityGigs = [];
 
   let calendarUrl = '';
   let seasonStats = null;
@@ -79,12 +83,16 @@
   function setTabIndex() {
     if (todos.notDoneTodos.length > 0) {
           tabsBasic = 0;
-      } else if ((todos.songsForFeedback?.length ?? 0) > 0) {
+      } else if ((todos.gigChecklistTodos?.length ?? 0) > 0) {
           tabsBasic = 1;
-      } else if ((todos.surveysForFeedback?.length ?? 0) > 0) {
+      } else if ((todos.songsForFeedback?.length ?? 0) > 0) {
           tabsBasic = 2;
+      } else if ((todos.surveysForFeedback?.length ?? 0) > 0) {
+          tabsBasic = 3;
+      } else if (pendingAvailabilityGigs.length > 0) {
+          tabsBasic = 4;
       } else {
-          tabsBasic = 3; // Zeige erledigte Todos, wenn keine offenen vorhanden sind
+          tabsBasic = 5; // Zeige erledigte Todos, wenn keine offenen vorhanden sind
       }
   }
 
@@ -92,6 +100,7 @@
     try {
       user = await getUser();
       todos = await getUserTodos();
+      pendingAvailabilityGigs = todos.pendingAvailabilityGigs ?? [];
       setTabIndex();
       calUrls = await getICalURLs();
       calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`;
@@ -139,6 +148,34 @@
         showError(`Fehler beim Aktualisieren: ${e.message}`);
       }
   }
+
+  async function markChecklistItemDone(item) {
+      try {
+        await toggleChecklistItemDone(null, item.gig_id, item.id);
+        // Remove item from list optimistically
+        todos = { ...todos, gigChecklistTodos: todos.gigChecklistTodos.filter(i => i.id !== item.id) };
+        setTabIndex();
+        showSuccess("Aufgabe als erledigt markiert");
+      } catch (e) {
+        showError(`Fehler: ${e.message}`);
+      }
+  }
+
+  function openChecklistItemModal(item) {
+    const canEdit = user?.user_group === 'editor' || user?.user_group === 'admin';
+    modalState.trigger({
+      component: ChecklistItemDetailModal,
+      meta: {
+        item,
+        canEdit,
+        onItemUpdated: async () => {
+          todos = await getUserTodos().catch(() => todos);
+          pendingAvailabilityGigs = todos.pendingAvailabilityGigs ?? [];
+          setTabIndex();
+        },
+      },
+    });
+  }
 </script>
 
 <div class="ui-page ui-page-gradient">
@@ -152,7 +189,7 @@
 
       <div class="mt-7">
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Deine Todos</h2>
-        {#if (todos.songsForFeedback?.length ?? 0) == 0 && (todos.surveysForFeedback?.length ?? 0) == 0 && todos.notDoneTodos.length == 0}
+        {#if (todos.songsForFeedback?.length ?? 0) == 0 && (todos.surveysForFeedback?.length ?? 0) == 0 && todos.notDoneTodos.length == 0 && pendingAvailabilityGigs.length == 0 && (todos.gigChecklistTodos?.length ?? 0) == 0}
           <div class="rounded-xl p-4 mt-4 shadow text-center dashboard-success-panel text-on-surface">
             Du hast keine offenen Todos! 🎉
           </div>
@@ -163,17 +200,27 @@
               <span class="md:hidden">Offen ({todos.notDoneTodos.length})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 1} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 1 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
+            <button onclick={() => tabsBasic = 1} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 1 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.gigChecklistTodos?.length ?? 0) > 0 ? 'font-bold' : ''}">
+              <span class="hidden md:inline">Checkliste ({todos.gigChecklistTodos?.length ?? 0})</span>
+              <span class="md:hidden">✅ ({todos.gigChecklistTodos?.length ?? 0})</span>
+            </button>
+
+            <button onclick={() => tabsBasic = 2} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 2 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.songsForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
               <span class="hidden md:inline">Songs ({todos.songsForFeedback?.length ?? 0})</span>
               <span class="md:hidden">🎵 ({todos.songsForFeedback?.length ?? 0})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 2} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 2 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
+            <button onclick={() => tabsBasic = 3} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 3 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {(todos.surveysForFeedback?.length ?? 0) > 0 ? 'font-bold' : ''}">
               <span class="hidden md:inline">Abstimmungen ({todos.surveysForFeedback?.length ?? 0})</span>
               <span class="md:hidden">📊 ({todos.surveysForFeedback?.length ?? 0})</span>
             </button>
 
-            <button onclick={() => tabsBasic = 3} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 3 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+            <button onclick={() => tabsBasic = 4} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 4 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'} {pendingAvailabilityGigs.length > 0 ? 'font-bold' : ''}">
+              <span class="hidden md:inline">Gig-Rückmeldungen ({pendingAvailabilityGigs.length})</span>
+              <span class="md:hidden">👥 ({pendingAvailabilityGigs.length})</span>
+            </button>
+
+            <button onclick={() => tabsBasic = 5} class="ui-tab transition-colors whitespace-nowrap {tabsBasic === 5 ? 'ui-tab-active' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
               <span class="hidden md:inline">Erledigt ({todos.doneTodos.length})</span>
               <span class="md:hidden">✓ ({todos.doneTodos.length})</span>
             </button>
@@ -222,6 +269,68 @@
                 {/each}
               </div>
             {:else if tabsBasic === 1}
+              <!-- Gig-Checklisten-Todos -->
+              {#if (todos.gigChecklistTodos?.length ?? 0) === 0}
+                <p class="text-sm text-on-surface-variant italic">Keine offenen Checklisten-Aufgaben.</p>
+              {:else}
+                <div class="hidden md:block">
+                  <table class="ui-table mb-6 bg-surface-1 text-on-surface">
+                    <thead class="text-on-surface">
+                      <tr>
+                        <th class="font-semibold py-2 px-3 border-b">Gig</th>
+                        <th class="font-semibold py-2 px-3 border-b">Datum</th>
+                        <th class="font-semibold py-2 px-3 border-b">Aufgabe</th>
+                        <th class="font-semibold py-2 px-3 border-b">Kategorie</th>
+                        <th class="font-semibold py-2 px-3 border-b">Fälligkeit</th>
+                        <th class="font-semibold py-2 px-3 border-b">Done</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each todos.gigChecklistTodos as item (item.id)}
+                        <tr class="transition cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800"
+                            onclick={() => openChecklistItemModal(item)}>
+                          <td class="px-3 py-2 font-medium">{item.gig_name}</td>
+                          <td class="px-3 py-2 whitespace-nowrap">{item.gig_datum ? new Date(item.gig_datum).toLocaleDateString('de-DE') : '-'}</td>
+                          <td class="px-3 py-2">{item.title}</td>
+                          <td class="px-3 py-2 text-on-surface-variant">{item.category ?? '-'}</td>
+                          <td class="px-3 py-2 whitespace-nowrap {item.due_datetime && new Date(item.due_datetime) < new Date() ? 'text-error-600 font-semibold' : 'text-on-surface-variant'}">
+                            {item.due_datetime ? new Date(item.due_datetime).toLocaleDateString('de-DE') : '-'}
+                          </td>
+                          <td class="px-3 py-2" onclick={(e) => e.stopPropagation()}>
+                            <button
+                              class="ui-btn ui-btn-primary px-3 py-0 text-base"
+                              onclick={() => markChecklistItemDone(item)}
+                            >✓</button>
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="block md:hidden mt-5">
+                  {#each todos.gigChecklistTodos as item (item.id)}
+                    <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
+                      <button class="w-full text-left mb-1" onclick={() => openChecklistItemModal(item)}>
+                        <h5 class="font-bold text-primary-900">{item.gig_name}</h5>
+                        <p class="font-medium">{item.title}</p>
+                        {#if item.category}
+                          <p class="text-sm text-on-surface-variant">{item.category}</p>
+                        {/if}
+                        {#if item.due_datetime}
+                          <p class="text-sm mb-1 {new Date(item.due_datetime) < new Date() ? 'text-error-600 font-semibold' : 'text-on-surface-variant'}">
+                            Fällig: {new Date(item.due_datetime).toLocaleDateString('de-DE')}
+                          </p>
+                        {/if}
+                      </button>
+                      <button
+                        class="ui-btn variant-filled-success w-full py-2"
+                        onclick={() => markChecklistItemDone(item)}
+                      >✓ Erledigt</button>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {:else if tabsBasic === 2}
               <div class="hidden md:block">
                 <table class="ui-table mb-1 bg-surface-1 text-on-surface">
                   <thead class="text-on-surface">
@@ -251,7 +360,7 @@
                   </div>
                 {/each}
               </div>
-            {:else if tabsBasic === 2}
+            {:else if tabsBasic === 3}
               <div class="hidden md:block">
                 <table class="ui-table mb-1 bg-surface-1 text-on-surface">
                   <thead class="text-on-surface">
@@ -279,7 +388,52 @@
                   </div>
                 {/each}
               </div>
-            {:else if tabsBasic === 3}
+            {:else if tabsBasic === 4}
+              <!-- Gig-Rückmeldungen ausstehend -->
+              {#if pendingAvailabilityGigs.length === 0}
+                <p class="text-sm text-on-surface-variant italic">Alle Gigs haben eine Rückmeldung von dir.</p>
+              {:else}
+                <div class="hidden md:block">
+                  <table class="ui-table mb-6 bg-surface-1 text-on-surface">
+                    <thead class="text-on-surface">
+                      <tr>
+                        <th class="font-semibold py-2 px-3 border-b">Datum</th>
+                        <th class="font-semibold py-2 px-3 border-b">Name</th>
+                        <th class="font-semibold py-2 px-3 border-b">Art</th>
+                        <th class="font-semibold py-2 px-3 border-b"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each pendingAvailabilityGigs as g (g.id)}
+                        <tr class="transition">
+                          <td class="px-3 py-2 whitespace-nowrap">{g.datum ? new Date(g.datum).toLocaleDateString('de-DE') : '-'}</td>
+                          <td class="px-3 py-2 font-medium">{g.name}</td>
+                          <td class="px-3 py-2 text-on-surface-variant">{g.kind_of_gig ?? '-'}</td>
+                          <td class="px-3 py-2">
+                            <a class="ui-btn ui-btn-primary px-3 py-1 text-sm" href="/gigs">Rückmelden</a>
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="block md:hidden mt-5">
+                  {#each pendingAvailabilityGigs as g (g.id)}
+                    <div class="ui-card-muted p-4 mb-4 border border-outline-variant text-on-surface shadow">
+                      <h5 class="font-bold mb-1 text-primary-900">
+                        {g.datum ? new Date(g.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                      </h5>
+                      <p class="mb-1 font-medium">{g.name}</p>
+                      {#if g.kind_of_gig}
+                        <p class="text-sm text-on-surface-variant mb-2">{g.kind_of_gig}</p>
+                      {/if}
+                      <a class="ui-btn ui-btn-primary w-full py-2 text-center block" href="/gigs">Rückmelden</a>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {:else if tabsBasic === 5}
               <div class="hidden md:block">
                 <table class="ui-table mb-1 bg-surface-1 text-on-surface">
                   <thead class="text-on-surface">
@@ -449,11 +603,13 @@
               </div>
 
               <div>
-                <h4 class="font-semibold text-secondary-500 mb-2">Die vier Bereiche</h4>
+                <h4 class="font-semibold text-secondary-500 mb-2">Die sechs Bereiche</h4>
                 <ul class="list-disc list-inside space-y-1 text-sm">
                   <li><strong>Offene Todos:</strong> Deine persoenlichen Aufgaben fuer Songs.</li>
+                  <li><strong>Checkliste:</strong> Offene Gig-Checklisten-Aufgaben, die dir zugewiesen sind.</li>
                   <li><strong>Songs:</strong> Songs, die auf dein Feedback warten.</li>
                   <li><strong>Abstimmungen:</strong> Umfragen, an denen du noch nicht teilgenommen hast.</li>
+                  <li><strong>Gig-Rückmeldungen:</strong> Bevorstehende Gigs, für die du noch keine Verfügbarkeit gemeldet hast.</li>
                   <li><strong>Erledigt:</strong> Alle abgeschlossenen Todos zur Uebersicht.</li>
                 </ul>
               </div>

@@ -38,6 +38,7 @@ from backend.models import (
     Rehearsal, RehSong, RehTodo,
     Gig, Set, SetSong, GigSet, GigScheduleItem,
     Surveys, SurveyFields, SurveyFeedback,
+    Availability,
 )
 
 # ─── DB-Pfad ────────────────────────────────────────────────────────────────
@@ -512,6 +513,54 @@ def run():
             comment=None,
         ))
 
+    # ── AVAILABILITY ─────────────────────────────────────────────────────────
+    # Vergangener Gig (gig1): alle dabei gewesen – rückblickende Einträge
+    db.add_all([
+        Availability(user_id=alice.id, event_type="gig", event_id=gig1.id,
+                     status="available", comment="War ein toller Abend!"),
+        Availability(user_id=bob.id,   event_type="gig", event_id=gig1.id,
+                     status="available"),
+        Availability(user_id=carol.id, event_type="gig", event_id=gig1.id,
+                     status="available"),
+        Availability(user_id=dave.id,  event_type="gig", event_id=gig1.id,
+                     status="available"),
+    ])
+
+    # Zukünftiger Gig (gig2): gemischte Rückmeldungen
+    db.add_all([
+        Availability(user_id=alice.id, event_type="gig", event_id=gig2.id,
+                     status="available"),
+        Availability(user_id=bob.id,   event_type="gig", event_id=gig2.id,
+                     status="available"),
+        Availability(user_id=carol.id, event_type="gig", event_id=gig2.id,
+                     status="unavailable",
+                     comment="Bin leider verhindert.",
+                     substitute_name="Klaus Müller"),   # externe Aushilfe
+        # Dave hat noch nicht geantwortet → kein Eintrag
+    ])
+
+    # Zukünftiger Gig (gig3, Anfrage): erste Reaktionen
+    db.add_all([
+        Availability(user_id=alice.id, event_type="gig", event_id=gig3.id,
+                     status="maybe", comment="Hängt vom Termin ab."),
+        Availability(user_id=bob.id,   event_type="gig", event_id=gig3.id,
+                     status="available"),
+        # Carol und Dave noch ohne Rückmeldung
+    ])
+
+    # Zukünftige Probe (reh3): Verfügbarkeiten
+    db.add_all([
+        Availability(user_id=alice.id, event_type="rehearsal", event_id=reh3.id,
+                     status="available"),
+        Availability(user_id=bob.id,   event_type="rehearsal", event_id=reh3.id,
+                     status="available"),
+        Availability(user_id=carol.id, event_type="rehearsal", event_id=reh3.id,
+                     status="unavailable",
+                     substitute_user_id=dave.id),  # Dave springt ein
+        Availability(user_id=dave.id,  event_type="rehearsal", event_id=reh3.id,
+                     status="maybe", comment="Wahrscheinlich, aber nicht sicher."),
+    ])
+
     db.commit()
     db.close()
 
@@ -523,6 +572,7 @@ def run():
     print(f"   carol  / Demo1234!   (Rolle: user, Musikerin)")
     print(f"   dave   / Demo1234!   (Rolle: user, Musiker)")
     print(f"\n🎵 {len(song_objs)} Songs, 3 Proben, 3 Gigs, 2 Umfragen angelegt.")
+    print(f"📅 Availability-Einträge: Gig1 (4×✅), Gig2 (2×✅ 1×❌), Gig3 (1×✅ 1×❓), Probe3 (2×✅ 1×❌ 1×❓)")
 
 
 if __name__ == "__main__":

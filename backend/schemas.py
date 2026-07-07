@@ -120,10 +120,24 @@ class SurveyForFeedback(BaseModel):
     rf_survey: str
     release_date: Optional[str] = None
 
+class GigChecklistTodoOut(BaseModel):
+    """A gig checklist item assigned to the current user that is not yet done."""
+    id: int
+    gig_id: int
+    gig_name: str
+    gig_datum: Optional[date] = None
+    title: str
+    category: Optional[str] = None
+    due_datetime: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
 class UserTodoList(BaseModel):
     todo: List[UserTodo] = Field(default_factory=list)
     songs_to_feedback: List[SongForFeedback] = Field(default_factory=list)
     surveys_to_feedback: List[SurveyForFeedback] = Field(default_factory=list)
+    pending_gigs: List["PendingAvailabilityGigOut"] = Field(default_factory=list)
+    gig_checklist_todos: List[GigChecklistTodoOut] = Field(default_factory=list)
 
 class PasswordUpdateRequest(BaseModel):
     user_id: int
@@ -872,5 +886,83 @@ class PublicDate(BaseModel):
             Art=gig.kind_of_gig or ""
         )
 
+
+# ===== GIG CHECKLIST =====
+
+class GigChecklistItemIn(BaseModel):
+    """Input schema for creating or updating a checklist item."""
+    title: str = Field(..., min_length=1, max_length=512)
+    category: Optional[str] = Field(None, max_length=128)
+    assignee_user_id: Optional[int] = None
+    assignee_name: Optional[str] = Field(None, max_length=512)
+    done: bool = False
+    due_datetime: Optional[datetime] = None
+    position: int = 0
+    comment: Optional[str] = None
+
+
+class GigChecklistItemOut(BaseModel):
+    """Output schema for a single checklist item."""
+    id: int
+    gig_id: int
+    title: str
+    category: Optional[str] = None
+    assignee_user_id: Optional[int] = None
+    assignee_name: Optional[str] = None
+    assignee_clear_name: Optional[str] = None
+    done: bool
+    due_datetime: Optional[datetime] = None
+    position: int
+    comment: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+# ===== AVAILABILITY =====
+
+class AvailabilityStatus(str, Enum):
+    available = "available"
+    unavailable = "unavailable"
+    maybe = "maybe"
+
+
+class AvailabilityIn(BaseModel):
+    """Input schema for setting one's own availability for an event."""
+    status: AvailabilityStatus
+    comment: Optional[str] = Field(None, max_length=1000)
+    substitute_name: Optional[str] = Field(None, max_length=512)
+    substitute_user_id: Optional[int] = None
+
+
+class AvailabilityOut(BaseModel):
+    """Output schema for a single availability entry."""
+    id: int
+    user_id: int
+    user_name: str
+    clear_name: Optional[str] = None
+    status: str
+    comment: Optional[str] = None
+    substitute_name: Optional[str] = None
+    substitute_user_id: Optional[int] = None
+    substitute_clear_name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class EventAvailabilityOut(BaseModel):
+    """Aggregated availability information for a single event."""
+    availabilities: List[AvailabilityOut] = Field(default_factory=list)
+    summary: Dict[str, int] = Field(default_factory=dict)
+    my_status: Optional[str] = None
+
+
+class PendingAvailabilityGigOut(BaseModel):
+    """A gig for which the current user has not yet submitted availability."""
+    id: int
+    name: str
+    datum: Optional[date] = None
+    kind_of_gig: Optional[str] = None
+
+    model_config = {"from_attributes": True}
 
 

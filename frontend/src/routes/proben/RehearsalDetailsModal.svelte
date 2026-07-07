@@ -20,6 +20,7 @@
   import { tick } from 'svelte';
   import { modalState } from '$lib/modalState.js';
   import RehearsalSongCard from './RehearsalSongCard.svelte';
+  import AvailabilityWidget from '$lib/components/AvailabilityWidget.svelte';
   import { appConfig } from '$lib/appConfig.js';
 
   let {
@@ -31,6 +32,7 @@
     isEditor = false,
     isPast = false,
     searchQuery = '',
+    currentUserId = null,
     onupdate,
     ondelete,
     onerror,
@@ -39,6 +41,12 @@
   } = $props();
 
   let statusOptions = $derived($appConfig?.rehearsalSongStatuses ?? []);
+
+  // Verfügbarkeits-Sektion
+  let showAvailability = $state(false);
+
+  // Musiker-Liste für den Widget (nur Musiker)
+  let musicianList = $derived(users.filter(u => u.musician !== false));
 
   const dateOptions = {
     weekday: 'long',
@@ -231,6 +239,28 @@
     </div>
     <button type="button" class="btn-icon btn-icon-sm variant-ghost" onclick={() => modalState.close()}>✕</button>
   </header>
+
+  <!-- Verfügbarkeit -->
+  <div class="flex-shrink-0 mb-2 border border-outline-variant rounded-lg overflow-hidden">
+    <button
+      type="button"
+      class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+      onclick={() => showAvailability = !showAvailability}
+    >
+      <span>📅 Verfügbarkeit</span>
+      <span class="text-on-surface-variant">{showAvailability ? '▲' : '▼'}</span>
+    </button>
+    {#if showAvailability}
+      <div class="p-3">
+        <AvailabilityWidget
+          eventType="rehearsal"
+          eventId={reh.id}
+          {currentUserId}
+          musicians={musicianList}
+        />
+      </div>
+    {/if}
+  </div>
 
   <div class="flex-1 overflow-y-auto pr-1">
 

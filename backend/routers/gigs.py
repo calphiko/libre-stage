@@ -47,6 +47,17 @@ from backend.utils.setlist_timing import calculate_setlist_timing, serialize_tim
 from backend import models, schemas, auth, app_config
 
 import openpyxl
+
+
+def _is_setlist_locked(gig_datum) -> bool:
+    """Return True if the gig is older than 7 days and should be locked for non-admins."""
+    if gig_datum is None:
+        return False
+    if isinstance(gig_datum, datetime):
+        gig_date = gig_datum.date()
+    else:
+        gig_date = gig_datum
+    return (date.today() - gig_date).days > 7
 from openpyxl.styles import Font, Alignment
 from io import BytesIO
 from reportlab.lib import colors
@@ -949,6 +960,15 @@ def create_gig_schedule_item(
     if not gig:
         raise HTTPException(status_code=404, detail="Gig not found")
 
+    if _is_setlist_locked(gig.datum) and not check_admin(current):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "SETLIST_LOCKED",
+                "message": "Der Ablaufplan kann nach mehr als einer Woche nur noch von Admins bearbeitet werden.",
+            },
+        )
+
     _raise_if_schedule_conflict(db, gig, payload.item_datetime)
 
     item = models.GigScheduleItem(gig_id=gig_id, **payload.model_dump())
@@ -1068,6 +1088,15 @@ def update_gig_schedule_item(
     if not gig:
         raise HTTPException(status_code=404, detail="Gig not found")
 
+    if _is_setlist_locked(gig.datum) and not check_admin(current):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "SETLIST_LOCKED",
+                "message": "Der Ablaufplan kann nach mehr als einer Woche nur noch von Admins bearbeitet werden.",
+            },
+        )
+
     item = db.query(models.GigScheduleItem).filter_by(id=item_id, gig_id=gig_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Schedule item not found")
@@ -1100,6 +1129,15 @@ def delete_gig_schedule_item(
     gig = db.query(models.Gig).get(gig_id)
     if not gig:
         raise HTTPException(status_code=404, detail="Gig not found")
+
+    if _is_setlist_locked(gig.datum) and not check_admin(current):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "SETLIST_LOCKED",
+                "message": "Der Ablaufplan kann nach mehr als einer Woche nur noch von Admins bearbeitet werden.",
+            },
+        )
 
     item = db.query(models.GigScheduleItem).filter_by(id=item_id, gig_id=gig_id).first()
     if not item:
@@ -1500,6 +1538,16 @@ def update_gig_setlist(
     if not check_editor(current):
         logger.error(f"Permission denied: User {current['user_name']} is not editor")
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    if _is_setlist_locked(db_gig.datum) and not check_admin(current):
+        logger.warning(f"Setlist locked: gig_id={gig_id} is older than 7 days, user {current['user_name']} is not admin")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "SETLIST_LOCKED",
+                "message": "Die Setliste kann nach mehr als einer Woche nur noch von Admins bearbeitet werden.",
+            },
+        )
 
     current_payload = _build_setlist_payload(db_gig)
     if gig.setlist_version and gig.setlist_version != current_payload["setlist_version"]:

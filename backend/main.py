@@ -49,7 +49,7 @@ from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, auth
 from backend.app_config import app_config  # Validiert appConfig.json beim Startup
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from dotenv import load_dotenv
 
 from typing import List
@@ -59,7 +59,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode
+from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode, availability, gig_checklist
 from backend.utils.token_cleanup import cleanup_expired_tokens
 from backend.utils.password_validator import validate_password
 
@@ -267,6 +267,30 @@ def get_todo_list(user_name: str, db: Session):
         .all()
     )
 
+    db_pending_gigs = (
+        db.query(models.Gig)
+        .filter(models.Gig.datum >= date.today())
+        .filter(models.Gig.status != "abgelehnt")
+        .outerjoin(
+            models.Availability,
+            (models.Availability.event_id == models.Gig.id) &
+            (models.Availability.event_type == "gig") &
+            (models.Availability.user_id == user.id)
+        )
+        .filter(models.Availability.id == None)
+        .order_by(models.Gig.datum)
+        .all()
+    )
+
+    db_checklist_todos = (
+        db.query(models.GigChecklistItem)
+        .join(models.Gig, models.GigChecklistItem.gig_id == models.Gig.id)
+        .filter(models.GigChecklistItem.assignee_user_id == user.id)
+        .filter(models.GigChecklistItem.done == False)
+        .order_by(models.Gig.datum, models.GigChecklistItem.position)
+        .all()
+    )
+
     result_list = {
         "todo":  [
             {
@@ -294,7 +318,26 @@ def get_todo_list(user_name: str, db: Session):
                 "rf_survey": survey.rf_survey,
                 "release_date": survey.release_date.isoformat() if survey.release_date else None
             } for survey in db_surveys_to_todo
-        ]
+        ],
+        "pending_gigs": [
+            {
+                "id": g.id,
+                "name": g.name,
+                "datum": g.datum.isoformat() if g.datum else None,
+                "kind_of_gig": g.kind_of_gig,
+            } for g in db_pending_gigs
+        ],
+        "gig_checklist_todos": [
+            {
+                "id": item.id,
+                "gig_id": item.gig_id,
+                "gig_name": item.gig.name if item.gig else "",
+                "gig_datum": item.gig.datum.isoformat() if item.gig and item.gig.datum else None,
+                "title": item.title,
+                "category": item.category,
+                "due_datetime": item.due_datetime.isoformat() if item.due_datetime else None,
+            } for item in db_checklist_todos
+        ],
     }
     return result_list
 
@@ -631,3 +674,5 @@ app.include_router(admin.router)
 app.include_router(password_reset.router)
 app.include_router(public.router)
 app.include_router(gigs_livemode.router)
+app.include_router(availability.router)
+app.include_router(gig_checklist.router)

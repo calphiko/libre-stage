@@ -103,3 +103,15 @@ iCal-Export
 Proben erscheinen automatisch im öffentlichen iCal-Feed unter ``/ical/``.
 Der Kalendereintrag enthält den Zeitbereich (Start-Ende) im Titel und in der
 Beschreibung.
+
+Verfügbarkeit
+-------------
+
+Im Probe-Detail-Dialog (aufgeklappte Probe) befindet sich oben ein
+aufklappbarer Bereich **📅 Verfügbarkeit**.
+Jedes Mitglied kann dort seinen Status (✅ Dabei, ❓ Vielleicht, ❌ Nicht dabei)
+eintragen sowie bei Abwesenheit eine Aushilfe benennen.
+
+Vollständige Dokumentation: :ref:`verfuegbarkeit`.
+
+
