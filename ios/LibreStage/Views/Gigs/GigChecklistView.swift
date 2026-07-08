@@ -115,9 +115,7 @@ struct GigChecklistView: View {
                             Picker("Zustaendig (Bandmitglied)", selection: $formAssigneeUserId) {
                                 Text("- Keine Auswahl -").tag(Optional<Int>.none)
                                 ForEach(vm.users) { user in
-                                    Text(user.clear_name?.isEmpty == false
-                                         ? user.clear_name!
-                                         : user.user_name)
+                                    Text(user.displayName)
                                         .tag(Optional(user.id))
                                 }
                             }

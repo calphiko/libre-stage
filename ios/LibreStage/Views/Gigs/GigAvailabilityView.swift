@@ -70,14 +70,14 @@ struct GigAvailabilityView: View {
                             Picker("Bandmitglied als Aushilfe", selection: $substituteUserId) {
                                 Text("- Externe Aushilfe -").tag(Optional<Int>.none)
                                 ForEach(vm.users.filter { $0.id != currentUserId }) { user in
-                                    Text(user.clear_name?.isEmpty == false ? user.clear_name! : user.user_name)
+                                    Text(user.displayName)
                                         .tag(Optional(user.id))
                                 }
                             }
                             .onChange(of: substituteUserId) { _, newId in
                                 if let id = newId,
                                    let u = vm.users.first(where: { $0.id == id }) {
-                                    substituteName = u.clear_name?.isEmpty == false ? u.clear_name! : u.user_name
+                                    substituteName = u.displayName
                                 } else {
                                     substituteName = ""
                                 }
@@ -236,3 +236,5 @@ struct GigAvailabilityView: View {
         substituteUserId = nil
     }
 }
+
+

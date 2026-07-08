@@ -61,21 +61,14 @@ struct UserOut: Codable, Identifiable {
     }
 }
 
+/// Leichtgewichtiges User-Element vom /user_list Endpunkt (nur Musiker, aktiv).
+/// Entspricht dem UserListElem-Schema im Backend.
 struct UserListElem: Codable, Identifiable {
     let id: Int
     let user_name: String
     let clear_name: String
-    let email: String
 
-    private enum CodingKeys: String, CodingKey {
-        case id, user_name, clear_name, email
-    }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        id = try c.decodeIfPresent(Int.self, forKey: .id) ?? -1
-        user_name = try c.decodeIfPresent(String.self, forKey: .user_name) ?? ""
-        clear_name = try c.decodeIfPresent(String.self, forKey: .clear_name) ?? user_name
-        email = try c.decodeIfPresent(String.self, forKey: .email) ?? ""
+    var displayName: String {
+        clear_name.isEmpty ? user_name : clear_name
     }
 }

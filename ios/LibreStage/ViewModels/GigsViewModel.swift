@@ -111,7 +111,7 @@ final class GigDetailViewModel {
     var isChecklistLoading = false
 
     // Users (für Assignee-Auswahl)
-    var users: [UserOut] = []
+    var users: [UserListElem] = []
     var isUsersLoading = false
 
     @MainActor
@@ -347,10 +347,9 @@ final class GigDetailViewModel {
         isUsersLoading = true
         defer { isUsersLoading = false }
         do {
-            let all: [UserOut] = try await APIClient.shared.get(path: "/admin/users")
-            users = all.filter { $0.musician == true }
+            users = try await APIClient.shared.get(path: "/user_list")
         } catch {
-            // nicht-kritisch
+            // nicht-kritisch – Picker bleibt einfach leer
         }
     }
 
