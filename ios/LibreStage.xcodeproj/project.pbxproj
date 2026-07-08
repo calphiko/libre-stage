@@ -60,6 +60,10 @@
 		A064 /* Views/Gigs/SetlistEditorWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F064 /* Views/Gigs/SetlistEditorWebView.swift */; };
 		A065 /* Core/PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F065 /* Core/PushNotificationService.swift */; };
 		A070 /* LibreStageShareExtension/ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F070 /* LibreStageShareExtension/ShareViewController.swift */; };
+                A080 /* Models/Availability.swift in Sources */ = {isa = PBXBuildFile; fileRef = F080 /* Models/Availability.swift */; };
+                A081 /* Models/GigChecklist.swift in Sources */ = {isa = PBXBuildFile; fileRef = F081 /* Models/GigChecklist.swift */; };
+                A082 /* Views/Gigs/GigAvailabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F082 /* Views/Gigs/GigAvailabilityView.swift */; };
+                A083 /* Views/Gigs/GigChecklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F083 /* Views/Gigs/GigChecklistView.swift */; };
 		A072 /* LibreStageShareExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = PROD02 /* LibreStageShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -140,6 +144,10 @@
 		F064 /* Views/Gigs/SetlistEditorWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/SetlistEditorWebView.swift; sourceTree = "<group>"; };
 		F065 /* Core/PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PushNotificationService.swift; sourceTree = "<group>"; };
 		F070 /* LibreStageShareExtension/ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibreStageShareExtension/ShareViewController.swift; sourceTree = "<group>"; };
+		F080 /* Models/Availability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/Availability.swift; sourceTree = "<group>"; };
+		F081 /* Models/GigChecklist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/GigChecklist.swift; sourceTree = "<group>"; };
+		F082 /* Views/Gigs/GigAvailabilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigAvailabilityView.swift; sourceTree = "<group>"; };
+		F083 /* Views/Gigs/GigChecklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Gigs/GigChecklistView.swift; sourceTree = "<group>"; };
 		F071 /* LibreStageShareExtension/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = LibreStageShareExtension/Info.plist; sourceTree = "<group>"; };
 		PROD01 /* LibreStage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreStage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PROD02 /* LibreStageShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LibreStageShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -179,6 +187,8 @@
 				F014 /* Models/Survey.swift */,
 				F015 /* Models/Todo.swift */,
 				F016 /* Models/AdminConfig.swift */,
+				F081 /* Models/GigChecklist.swift */,
+				F080 /* Models/Availability.swift */,
 				F020 /* Views/Auth/LoginView.swift */,
 				F021 /* Views/Dashboard/DashboardView.swift */,
 				F022 /* Views/Gigs/GigsView.swift */,
@@ -186,6 +196,8 @@
 				F024 /* Views/Gigs/LiveModeView.swift */,
 				F024B /* Views/Gigs/GigScheduleSheet.swift */,
 				F064 /* Views/Gigs/SetlistEditorWebView.swift */,
+				F083 /* Views/Gigs/GigChecklistView.swift */,
+				F082 /* Views/Gigs/GigAvailabilityView.swift */,
 				F025 /* Views/Rehearsals/RehearsalsView.swift */,
 				F026 /* Views/Rehearsals/RehearsalDetailView.swift */,
 				F026B /* Views/Rehearsals/RehearsalCreateSheet.swift */,
@@ -398,6 +410,10 @@
 				A063 /* Core/IncomingSongRouteStore.swift in Sources */,
 				A065 /* Core/PushNotificationService.swift in Sources */,
 				A064 /* Views/Gigs/SetlistEditorWebView.swift in Sources */,
+                                A080 /* Models/Availability.swift in Sources */,
+                                A081 /* Models/GigChecklist.swift in Sources */,
+                                A082 /* Views/Gigs/GigAvailabilityView.swift in Sources */,
+                                A083 /* Views/Gigs/GigChecklistView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

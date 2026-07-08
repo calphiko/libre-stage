@@ -28,10 +28,41 @@ struct SurveyForFeedback: Codable, Identifiable {
     let release_date: String?
 }
 
+struct GigChecklistTodo: Codable, Identifiable {
+    let id: Int
+    let gig_id: Int
+    let gig_name: String
+    let gig_datum: String?
+    let title: String
+    let category: String?
+    let due_datetime: String?
+
+    var isOverdue: Bool {
+        guard let raw = due_datetime else { return false }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: raw) { return date < Date() }
+        // fallback ohne Fraktion
+        let f2 = ISO8601DateFormatter()
+        f2.formatOptions = [.withFullDate, .withTime, .withColonSeparatorInTime]
+        if let date = f2.date(from: raw) { return date < Date() }
+        return false
+    }
+}
+
+struct PendingAvailabilityGig: Codable, Identifiable {
+    let id: Int
+    let name: String?
+    let datum: String?
+    let kind_of_gig: String?
+}
+
 struct UserTodoList: Codable {
     let todo: [UserTodo]
     let songs_to_feedback: [SongForFeedback]
     let surveys_to_feedback: [SurveyForFeedback]
+    let pending_gigs: [PendingAvailabilityGig]
+    let gig_checklist_todos: [GigChecklistTodo]
 }
 
 struct PasswordUpdateRequest: Encodable {

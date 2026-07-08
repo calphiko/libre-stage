@@ -18,6 +18,8 @@ final class DashboardViewModel {
         return t.todo.filter { !$0.done }.count
              + t.songs_to_feedback.count
              + t.surveys_to_feedback.count
+             + t.gig_checklist_todos.count
+             + t.pending_gigs.count
     }
 
     var todoBadgeCount: Int {
@@ -26,6 +28,14 @@ final class DashboardViewModel {
 
     var surveyBadgeCount: Int {
         todoList?.surveys_to_feedback.count ?? 0
+    }
+
+    var checklistBadgeCount: Int {
+        todoList?.gig_checklist_todos.count ?? 0
+    }
+
+    var pendingGigsBadgeCount: Int {
+        todoList?.pending_gigs.count ?? 0
     }
 
     @MainActor
@@ -77,6 +87,24 @@ final class DashboardViewModel {
             self.error = .networkError(error)
         }
     }
+
+    @MainActor
+    func markChecklistItemDone(gigId: Int, itemId: Int) async {
+        do {
+            let _: [GigChecklistItem] = try await APIClient.shared.patch(
+                path: "/gigs/\(gigId)/checklist/\(itemId)/done",
+                body: EmptyBody()
+            )
+            // Reload todos so badge counts refresh
+            todoList = try await APIClient.shared.get(path: "/user_todos")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    private struct EmptyBody: Encodable {}
 
     private func findNextRehearsal(in rehearsals: [RehListElem]) -> RehListElem? {
         let now = Date()

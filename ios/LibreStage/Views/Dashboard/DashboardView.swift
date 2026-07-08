@@ -201,6 +201,21 @@ struct DashboardView: View {
                 }
             }
 
+        case .gigChecklist:
+            if list.gig_checklist_todos.isEmpty {
+                Text("Keine offenen Checklisten-Aufgaben.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(list.gig_checklist_todos) { item in
+                    GigChecklistTodoRow(item: item) {
+                        Task {
+                            await vm.markChecklistItemDone(gigId: item.gig_id, itemId: item.id)
+                            ensureValidTodoTab()
+                        }
+                    }
+                }
+            }
+
         case .songs:
             if list.songs_to_feedback.isEmpty {
                 Text("Keine offenen Song-Votes")
@@ -237,6 +252,16 @@ struct DashboardView: View {
                                 Task { await refreshDashboard() }
                             }
                     }
+                }
+            }
+
+        case .pendingGigs:
+            if list.pending_gigs.isEmpty {
+                Text("Alle Auftritte haben eine Rueckmeldung von dir.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(list.pending_gigs) { gig in
+                    PendingGigRow(gig: gig)
                 }
             }
 
@@ -341,18 +366,22 @@ struct DashboardView: View {
 
 private enum DashboardTodoTab: String, CaseIterable, Identifiable {
     case open
+    case gigChecklist
     case songs
     case surveys
+    case pendingGigs
     case done
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .open: return "Offen"
-        case .songs: return "Songvotes"
-        case .surveys: return "Umfragen"
-        case .done: return "Erledigt"
+        case .open:         return "Offen"
+        case .gigChecklist: return "Checkliste"
+        case .songs:        return "Songvotes"
+        case .surveys:      return "Umfragen"
+        case .pendingGigs:  return "Auftritte"
+        case .done:         return "Erledigt"
         }
     }
 
@@ -360,10 +389,14 @@ private enum DashboardTodoTab: String, CaseIterable, Identifiable {
         switch self {
         case .open:
             list.todo.filter { !$0.done }.count
+        case .gigChecklist:
+            list.gig_checklist_todos.count
         case .songs:
             list.songs_to_feedback.count
         case .surveys:
             list.surveys_to_feedback.count
+        case .pendingGigs:
+            list.pending_gigs.count
         case .done:
             list.todo.filter { $0.done }.count
         }
@@ -665,5 +698,97 @@ private struct TodoRow: View {
             }
             .buttonStyle(.plain)
         }
+    }
+}
+
+private struct GigChecklistTodoRow: View {
+    let item: GigChecklistTodo
+    let onDone: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.title).font(.body)
+                HStack(spacing: 6) {
+                    Text(item.gig_name)
+                        .font(.caption).foregroundStyle(.secondary)
+                    if let datum = item.gig_datum {
+                        Text("·").font(.caption).foregroundStyle(.secondary)
+                        Text(formatDate(datum))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                if let cat = item.category, !cat.isEmpty {
+                    Text(cat)
+                        .font(.caption2)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(Color.secondary.opacity(0.12), in: Capsule())
+                        .foregroundStyle(.secondary)
+                }
+                if item.isOverdue {
+                    Label("Überfällig", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption2).foregroundStyle(.red)
+                }
+            }
+            Spacer()
+            Button { onDone() } label: {
+                Image(systemName: "checkmark.circle")
+                    .font(.title2)
+                    .foregroundStyle(.blue)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func formatDate(_ raw: String) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withFullDate]
+        if let d = f.date(from: raw) {
+            let out = DateFormatter()
+            out.locale = Locale(identifier: "de_DE")
+            out.dateStyle = .short
+            return out.string(from: d)
+        }
+        return raw
+    }
+}
+
+private struct PendingGigRow: View {
+    let gig: PendingAvailabilityGig
+
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(gig.name ?? "Auftritt")
+                    .font(.body)
+                HStack(spacing: 6) {
+                    if let datum = gig.datum {
+                        Text(formatDate(datum))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    if let kind = gig.kind_of_gig, !kind.isEmpty {
+                        Text("·").font(.caption).foregroundStyle(.secondary)
+                        Text(kind).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            Spacer()
+            Label("Noch keine Rückmeldung", systemImage: "questionmark.circle")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+                .labelStyle(.iconOnly)
+        }
+    }
+
+    private func formatDate(_ raw: String) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withFullDate]
+        if let d = f.date(from: raw) {
+            let out = DateFormatter()
+            out.locale = Locale(identifier: "de_DE")
+            out.dateStyle = .medium
+            return out.string(from: d)
+        }
+        return raw
     }
 }

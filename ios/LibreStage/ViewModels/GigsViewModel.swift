@@ -101,6 +101,19 @@ final class GigDetailViewModel {
     var isGigStatisticsLoading = false
     var error: AppError?
 
+    // Availability
+    var availability: EventAvailabilityOut? = nil
+    var isAvailabilityLoading = false
+    var isAvailabilitySaving = false
+
+    // Checklist
+    var checklist: [GigChecklistItem] = []
+    var isChecklistLoading = false
+
+    // Users (für Assignee-Auswahl)
+    var users: [UserOut] = []
+    var isUsersLoading = false
+
     @MainActor
     func loadGigFieldConfig() async {
         do {
@@ -227,6 +240,121 @@ final class GigDetailViewModel {
             self.error = .networkError(error)
         }
     }
+
+    // MARK: - Availability
+
+    @MainActor
+    func loadAvailability(gigId: Int) async {
+        isAvailabilityLoading = true
+        defer { isAvailabilityLoading = false }
+        do {
+            availability = try await APIClient.shared.get(path: "/availability/gig/\(gigId)")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func setAvailability(gigId: Int, data: AvailabilityIn) async {
+        isAvailabilitySaving = true
+        defer { isAvailabilitySaving = false }
+        do {
+            availability = try await APIClient.shared.put(path: "/availability/gig/\(gigId)", body: data)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func deleteAvailability(gigId: Int) async {
+        isAvailabilitySaving = true
+        defer { isAvailabilitySaving = false }
+        do {
+            availability = try await APIClient.shared.delete(path: "/availability/gig/\(gigId)")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    // MARK: - Checklist
+
+    @MainActor
+    func loadChecklist(gigId: Int) async {
+        isChecklistLoading = true
+        defer { isChecklistLoading = false }
+        do {
+            checklist = try await APIClient.shared.get(path: "/gigs/\(gigId)/checklist")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func createChecklistItem(gigId: Int, item: GigChecklistItemIn) async {
+        do {
+            checklist = try await APIClient.shared.post(path: "/gigs/\(gigId)/checklist", body: item)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func updateChecklistItem(gigId: Int, itemId: Int, item: GigChecklistItemIn) async {
+        do {
+            checklist = try await APIClient.shared.put(path: "/gigs/\(gigId)/checklist/\(itemId)", body: item)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func toggleChecklistItemDone(gigId: Int, itemId: Int) async {
+        do {
+            checklist = try await APIClient.shared.patch(path: "/gigs/\(gigId)/checklist/\(itemId)/done", body: EmptyBody())
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func deleteChecklistItem(gigId: Int, itemId: Int) async {
+        do {
+            checklist = try await APIClient.shared.delete(path: "/gigs/\(gigId)/checklist/\(itemId)")
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error)
+        }
+    }
+
+    @MainActor
+    func loadUsersIfNeeded() async {
+        guard users.isEmpty, !isUsersLoading else { return }
+        isUsersLoading = true
+        defer { isUsersLoading = false }
+        do {
+            let all: [UserOut] = try await APIClient.shared.get(path: "/admin/users")
+            users = all.filter { $0.musician == true }
+        } catch {
+            // nicht-kritisch
+        }
+    }
+
+    private struct EmptyBody: Encodable {}
 
     @MainActor
     func downloadSetlistPDF(gig: GigOut) async -> URL? {

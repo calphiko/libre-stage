@@ -21,6 +21,8 @@ struct GigDetailView: View {
     @State private var downloadErrorMessage = ""
     @State private var selectedSongForDetails: GigSongDetailSheetItem?
     @State private var showSetlistEditor = false
+    @State private var showAvailability = false
+    @State private var showChecklist = false
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -107,6 +109,18 @@ struct GigDetailView: View {
 
                     // MARK: Aktionen (für alle)
                     Section("Aktionen") {
+                        Button {
+                            showAvailability = true
+                        } label: {
+                            availabilityRowLabel()
+                        }
+
+                        Button {
+                            showChecklist = true
+                        } label: {
+                            checklistRowLabel()
+                        }
+
                         Button {
                             showGigSchedule = true
                         } label: {
@@ -280,6 +294,8 @@ struct GigDetailView: View {
             if canEdit {
                 await vm.loadLiveModeAvailability(gigId: gig.id)
             }
+            await vm.loadAvailability(gigId: gig.id)
+            await vm.loadChecklist(gigId: gig.id)
         }
         .fullScreenCover(isPresented: $showSetlistEditor) {
             AppModalContainer {
@@ -320,7 +336,61 @@ struct GigDetailView: View {
         } message: {
             Text(downloadErrorMessage)
         }
+        .sheet(isPresented: $showAvailability) {
+            GigAvailabilityView(gig: currentGig, vm: vm)
+                .environment(authManager)
+        }
+        .sheet(isPresented: $showChecklist) {
+            GigChecklistView(gig: currentGig, vm: vm)
+                .environment(authManager)
+        }
         .navigationSubpage()
+    }
+
+    @ViewBuilder
+    private func availabilityRowLabel() -> some View {
+        let avail = vm.availability
+        HStack {
+            Label("Verfuegbarkeit", systemImage: "person.3.fill")
+            Spacer()
+            if let s = avail?.summary {
+                HStack(spacing: 6) {
+                    if s.available > 0 {
+                        Label("\(s.available)", systemImage: "checkmark.circle.fill")
+                            .font(.caption).foregroundStyle(.green)
+                    }
+                    if s.maybe > 0 {
+                        Label("\(s.maybe)", systemImage: "questionmark.circle.fill")
+                            .font(.caption).foregroundStyle(.orange)
+                    }
+                    if s.unavailable > 0 {
+                        Label("\(s.unavailable)", systemImage: "xmark.circle.fill")
+                            .font(.caption).foregroundStyle(.red)
+                    }
+                }
+            } else if vm.isAvailabilityLoading {
+                ProgressView().scaleEffect(0.7)
+            }
+            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private func checklistRowLabel() -> some View {
+        let items = vm.checklist
+        let done = items.filter(\.done).count
+        HStack {
+            Label("Checkliste", systemImage: "checklist")
+            Spacer()
+            if !items.isEmpty {
+                Text("\(done)/\(items.count)")
+                    .font(.caption)
+                    .foregroundStyle(done == items.count ? .green : .secondary)
+            } else if vm.isChecklistLoading {
+                ProgressView().scaleEffect(0.7)
+            }
+            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+        }
     }
 
     private func liveModeReasonText(_ reason: String) -> String {
