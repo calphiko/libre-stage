@@ -14,11 +14,21 @@ struct GigChecklistView: View {
     @State private var editingItem: GigChecklistItem? = nil
     @State private var formTitle = ""
     @State private var formCategory = ""
+    @State private var formCategoryCustom = false   // true = "Eigene..." gewählt
     @State private var formAssigneeUserId: Int? = nil
     @State private var formAssigneeName = ""
     @State private var formDone = false
     @State private var formComment = ""
     @State private var showDeleteConfirm: GigChecklistItem? = nil
+
+    private static let predefinedCategories = ["Equipment", "Soundcheck", "Aufbau", "Abbau", "Sonstiges"]
+
+    /// Vordefinierte + bereits verwendete Kategorien, dedupliziert und sortiert
+    private var allCategoryOptions: [String] {
+        let used = vm.checklist.compactMap(\.category).filter { !$0.isEmpty }
+        let merged = Set(Self.predefinedCategories + used)
+        return merged.sorted()
+    }
 
     private var canEdit: Bool {
         authManager.userRole == .admin || authManager.userRole == .editor
@@ -63,28 +73,72 @@ struct GigChecklistView: View {
 
                 if showAddForm && canEdit {
                     Section(editingItem == nil ? "Neuer Eintrag" : "Eintrag bearbeiten") {
+
+                        // Titel
                         TextField("Titel *", text: $formTitle)
-                        TextField("Kategorie", text: $formCategory)
-                        if !vm.users.isEmpty {
+
+                        // ── Kategorie-Picker ──────────────────────────────
+                        Picker("Kategorie", selection: Binding<String>(
+                            get: { formCategoryCustom ? "__custom__" : formCategory },
+                            set: { val in
+                                if val == "__custom__" {
+                                    formCategoryCustom = true
+                                    formCategory = ""
+                                } else {
+                                    formCategoryCustom = false
+                                    formCategory = val
+                                }
+                            }
+                        )) {
+                            Text("- Keine Kategorie -").tag("")
+                            ForEach(allCategoryOptions, id: \.self) { cat in
+                                Text(cat).tag(cat)
+                            }
+                            Text("Eigene...").tag("__custom__")
+                        }
+                        .pickerStyle(.menu)
+
+                        if formCategoryCustom {
+                            TextField("Eigene Kategorie eingeben", text: $formCategory)
+                        }
+
+                        // ── Zuständigkeit: Bandmitglied ───────────────────
+                        if vm.isUsersLoading {
+                            HStack {
+                                Text("Bandmitglieder werden geladen")
+                                    .foregroundStyle(.secondary)
+                                    .font(.subheadline)
+                                Spacer()
+                                ProgressView().scaleEffect(0.8)
+                            }
+                        } else {
                             Picker("Zustaendig (Bandmitglied)", selection: $formAssigneeUserId) {
                                 Text("- Keine Auswahl -").tag(Optional<Int>.none)
                                 ForEach(vm.users) { user in
-                                    Text(user.clear_name?.isEmpty == false ? user.clear_name! : user.user_name)
+                                    Text(user.clear_name?.isEmpty == false
+                                         ? user.clear_name!
+                                         : user.user_name)
                                         .tag(Optional(user.id))
                                 }
                             }
+                            .pickerStyle(.menu)
                             .onChange(of: formAssigneeUserId) { _, _ in
                                 if formAssigneeUserId != nil { formAssigneeName = "" }
                             }
                         }
+
+                        // ── Zuständigkeit: externe Person ─────────────────
                         if formAssigneeUserId == nil {
-                            TextField("Zustaendig (extern)", text: $formAssigneeName)
+                            TextField("Zustaendig (externe Person)", text: $formAssigneeName)
                         }
+
                         if editingItem != nil {
                             Toggle("Bereits erledigt", isOn: $formDone)
                         }
+
                         TextField("Kommentar / Ergebnis", text: $formComment, axis: .vertical)
                             .lineLimit(2...4)
+
                         HStack {
                             Button(editingItem == nil ? "Hinzufuegen" : "Speichern") {
                                 Task { await saveForm() }
@@ -126,7 +180,6 @@ struct GigChecklistView: View {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             openNewForm()
-                            Task { await vm.loadUsersIfNeeded() }
                         } label: {
                             Label("Hinzufuegen", systemImage: "plus")
                         }
@@ -196,7 +249,6 @@ struct GigChecklistView: View {
                 Menu {
                     Button {
                         openEditForm(item)
-                        Task { await vm.loadUsersIfNeeded() }
                     } label: {
                         Label("Bearbeiten", systemImage: "pencil")
                     }
@@ -215,15 +267,26 @@ struct GigChecklistView: View {
 
     private func openNewForm() {
         editingItem = nil; formTitle = ""; formCategory = ""
+        formCategoryCustom = false
         formAssigneeUserId = nil; formAssigneeName = ""; formDone = false; formComment = ""
         showAddForm = true
+        Task { await vm.loadUsersIfNeeded() }
     }
 
     private func openEditForm(_ item: GigChecklistItem) {
-        editingItem = item; formTitle = item.title; formCategory = item.category ?? ""
+        editingItem = item; formTitle = item.title
+        let cat = item.category ?? ""
+        if cat.isEmpty {
+            formCategory = ""; formCategoryCustom = false
+        } else if allCategoryOptions.contains(cat) {
+            formCategory = cat; formCategoryCustom = false
+        } else {
+            formCategory = cat; formCategoryCustom = true
+        }
         formAssigneeUserId = item.assignee_user_id; formAssigneeName = item.assignee_name ?? ""
         formDone = item.done; formComment = item.comment ?? ""
         showAddForm = true
+        Task { await vm.loadUsersIfNeeded() }
     }
 
     private func cancelForm() { showAddForm = false; editingItem = nil }
