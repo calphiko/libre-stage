@@ -18,6 +18,7 @@ Prefix: ``/gigs/{gig_id}/checklist``  |  Tag: ``checklist``
 # (at your option) any later version.
 
 import logging
+from datetime import date
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path
@@ -110,9 +111,14 @@ def create_checklist_item(
     current=Depends(auth.get_current_user),
 ):
     """Add a new checklist item to a gig."""
-    _get_gig_or_404(gig_id, db)
+    gig = _get_gig_or_404(gig_id, db)
     if not check_editor(current):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    if gig.datum < date.today():
+        raise HTTPException(
+            status_code=403,
+            detail="Für vergangene Gigs können keine neuen Checklisten-Einträge angelegt werden.",
+        )
 
     # Validate assignee
     if data.assignee_user_id is not None:
