@@ -98,6 +98,11 @@
     cutoff.setDate(cutoff.getDate() + 7);
     return cutoff < new Date();
   })());
+
+  /** Gig liegt in der Vergangenheit (Vergleich ohne Uhrzeit) */
+  let gigIsPast = $derived(
+    gig?.datum ? new Date(gig.datum) < new Date(new Date().toDateString()) : false
+  );
   let canEditSetlist = $derived(canEdit && (!setlistLocked || isAdmin));
 
   // Lade Verfügbarkeit sofort beim Öffnen des Modals
@@ -1029,6 +1034,7 @@
               eventId={gig?.id}
               {currentUserId}
               musicians={availabilityMusicians}
+              readonly={gigIsPast}
             />
           {/if}
         </div>

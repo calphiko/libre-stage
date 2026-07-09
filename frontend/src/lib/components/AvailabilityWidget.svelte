@@ -36,7 +36,12 @@
      * When provided the widget also shows who has not responded yet.
      * @type {UserLike[]}
      */
-    musicians = []
+    musicians = [],
+    /**
+     * Wenn true, ist das Event vergangen – Rückmeldungen können nur gelesen,
+     * nicht mehr geändert werden.
+     */
+    readonly = false,
   } = $props();
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -163,49 +168,67 @@
     <!-- ── Eigene Verfügbarkeit ─────────────────────────────────────── -->
     <div class="mb-3">
       <p class="text-xs font-semibold text-on-surface-variant mb-1.5">Meine Verfügbarkeit:</p>
-      <div class="flex flex-wrap gap-2">
 
-        <button
-          class="btn btn-sm border {myStatus === 'available'
-            ? 'variant-filled-success'
-            : 'variant-ghost-success border-success-400'}"
-          onclick={() => selectStatus('available')}
-          disabled={saving}
-          title="Ich bin dabei"
-        >✅ Dabei</button>
-
-        <button
-          class="btn btn-sm border {myStatus === 'maybe'
-            ? 'variant-filled-warning'
-            : 'variant-ghost-warning border-warning-400'}"
-          onclick={() => selectStatus('maybe')}
-          disabled={saving}
-          title="Ich bin vielleicht dabei"
-        >❓ Vielleicht</button>
-
-        <button
-          class="btn btn-sm border {myStatus === 'unavailable'
-            ? 'variant-filled-error'
-            : 'variant-ghost-error border-error-400'}"
-          onclick={() => selectStatus('unavailable')}
-          disabled={saving}
-          title="Ich bin nicht dabei"
-        >❌ Nicht dabei</button>
-
+      {#if readonly}
+        <p class="text-xs text-on-surface-variant italic">
+          🔒 Vergangenes Event – keine Rückmeldung mehr möglich.
+        </p>
         {#if myStatus}
-          <button
-            class="btn btn-sm variant-ghost text-on-surface-variant"
-            onclick={clearEntry}
-            disabled={saving}
-            title="Rückmeldung zurückziehen"
-          >✕</button>
+          <div class="mt-1.5 flex gap-2">
+            {#if myStatus === 'available'}
+              <span class="badge variant-filled-success text-xs">✅ Dabei</span>
+            {:else if myStatus === 'maybe'}
+              <span class="badge variant-filled-warning text-xs">❓ Vielleicht</span>
+            {:else if myStatus === 'unavailable'}
+              <span class="badge variant-filled-error text-xs">❌ Nicht dabei</span>
+            {/if}
+          </div>
         {/if}
+      {:else}
+        <div class="flex flex-wrap gap-2">
 
-      </div>
+          <button
+            class="btn btn-sm border {myStatus === 'available'
+              ? 'variant-filled-success'
+              : 'variant-ghost-success border-success-400'}"
+            onclick={() => selectStatus('available')}
+            disabled={saving}
+            title="Ich bin dabei"
+          >✅ Dabei</button>
+
+          <button
+            class="btn btn-sm border {myStatus === 'maybe'
+              ? 'variant-filled-warning'
+              : 'variant-ghost-warning border-warning-400'}"
+            onclick={() => selectStatus('maybe')}
+            disabled={saving}
+            title="Ich bin vielleicht dabei"
+          >❓ Vielleicht</button>
+
+          <button
+            class="btn btn-sm border {myStatus === 'unavailable'
+              ? 'variant-filled-error'
+              : 'variant-ghost-error border-error-400'}"
+            onclick={() => selectStatus('unavailable')}
+            disabled={saving}
+            title="Ich bin nicht dabei"
+          >❌ Nicht dabei</button>
+
+          {#if myStatus}
+            <button
+              class="btn btn-sm variant-ghost text-on-surface-variant"
+              onclick={clearEntry}
+              disabled={saving}
+              title="Rückmeldung zurückziehen"
+            >✕</button>
+          {/if}
+
+        </div>
+      {/if}
     </div>
 
     <!-- ── Aushilfe (nur wenn "Nicht dabei") ─────────────────────── -->
-    {#if showSubstituteForm}
+    {#if showSubstituteForm && !readonly}
       <div class="mb-3 p-2.5 rounded-lg bg-surface-100 dark:bg-surface-800 border border-outline-variant">
         <p class="text-xs font-semibold mb-2">🔄 Aushilfe eintragen</p>
 
@@ -237,7 +260,7 @@
     {/if}
 
     <!-- ── Kommentar ──────────────────────────────────────────────── -->
-    {#if myStatus}
+    {#if myStatus && !readonly}
       <div class="mb-3">
         <input
           class="input input-sm w-full text-xs"
@@ -250,7 +273,7 @@
     {/if}
 
     <!-- Speichern-Spinner -->
-    {#if saving}
+    {#if saving && !readonly}
       <p class="text-xs text-on-surface-variant mb-2">Wird gespeichert …</p>
     {/if}
 
