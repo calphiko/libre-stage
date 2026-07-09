@@ -20,6 +20,25 @@ struct GigAvailabilityView: View {
 
     private var currentUserId: Int? { authManager.currentUser?.id }
 
+    private var gigDate: Date? {
+        guard let datum = gig.datum else { return nil }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withFullDate]
+        if let d = iso.date(from: datum) { return d }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.date(from: datum)
+    }
+
+    /// Rückmeldung ist nur bis einschließlich dem Tag des Gigs möglich (0 Tage danach).
+    private var canSubmitAvailability: Bool {
+        guard let date = gigDate else { return true }
+        let gigDay = Calendar.current.startOfDay(for: date)
+        let today = Calendar.current.startOfDay(for: Date())
+        return today <= gigDay
+    }
+
     private var available: [AvailabilityEntry] {
         vm.availability?.availabilities.filter { $0.status == "available" } ?? []
     }
@@ -35,31 +54,37 @@ struct GigAvailabilityView: View {
             List {
                 // MARK: Eigene Verfuegbarkeit
                 Section("Meine Verfuegbarkeit") {
-                    HStack(spacing: 8) {
-                        statusButton(label: "Dabei", icon: "checkmark.circle.fill", color: .green, status: "available")
-                        statusButton(label: "Vielleicht", icon: "questionmark.circle.fill", color: .orange, status: "maybe")
-                        statusButton(label: "Absage", icon: "xmark.circle.fill", color: .red, status: "unavailable")
-                    }
-                    .buttonStyle(.plain)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-
-                    if !myStatus.isEmpty {
-                        TextField("Kommentar (optional)", text: $myComment)
-                            .onSubmit { saveAvailability() }
-
-                        Button("Rueckmeldung zurueckziehen", role: .destructive) {
-                            Task { await clearAvailability() }
+                    if canSubmitAvailability {
+                        HStack(spacing: 8) {
+                            statusButton(label: "Dabei", icon: "checkmark.circle.fill", color: .green, status: "available")
+                            statusButton(label: "Vielleicht", icon: "questionmark.circle.fill", color: .orange, status: "maybe")
+                            statusButton(label: "Absage", icon: "xmark.circle.fill", color: .red, status: "unavailable")
                         }
-                        .font(.subheadline)
-                    }
+                        .buttonStyle(.plain)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 
-                    if vm.isAvailabilitySaving {
-                        HStack {
-                            ProgressView().scaleEffect(0.8)
-                            Text("Wird gespeichert ...")
-                                .font(.caption).foregroundStyle(.secondary)
+                        if !myStatus.isEmpty {
+                            TextField("Kommentar (optional)", text: $myComment)
+                                .onSubmit { saveAvailability() }
+
+                            Button("Rueckmeldung zurueckziehen", role: .destructive) {
+                                Task { await clearAvailability() }
+                            }
+                            .font(.subheadline)
                         }
+
+                        if vm.isAvailabilitySaving {
+                            HStack {
+                                ProgressView().scaleEffect(0.8)
+                                Text("Wird gespeichert ...")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    } else {
+                        Label("Rückmeldung war nur bis zum Tag des Gigs möglich.", systemImage: "lock.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
 

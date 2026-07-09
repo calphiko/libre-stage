@@ -34,6 +34,23 @@ struct GigChecklistView: View {
         authManager.userRole == .admin || authManager.userRole == .editor
     }
 
+    private var gigDate: Date? {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withFullDate]
+        if let d = iso.date(from: gig.datum ?? "") { return d }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.date(from: gig.datum ?? "")
+    }
+
+    /// Neue Checklisten-Items dürfen nur bis 2 Tage nach dem Gig hinzugefügt werden.
+    private var canAddChecklistItems: Bool {
+        guard let date = gigDate else { return true }
+        let deadline = Calendar.current.date(byAdding: .day, value: 2, to: Calendar.current.startOfDay(for: date))!
+        return Calendar.current.startOfDay(for: Date()) <= deadline
+    }
+
     private var total: Int { vm.checklist.count }
     private var doneCount: Int { vm.checklist.filter(\.done).count }
     private var progressPct: Double {
@@ -154,9 +171,11 @@ struct GigChecklistView: View {
                     }
                 } else if total == 0 {
                     Section {
-                        Text(canEdit
+                        Text(canEdit && canAddChecklistItems
                              ? "Noch keine Eintraege. Tippe auf \"+\" um loszulegen."
-                             : "Noch keine Eintraege.")
+                             : canEdit
+                                 ? "Noch keine Eintraege. Frist zum Hinzufügen ist abgelaufen."
+                                 : "Noch keine Eintraege.")
                             .foregroundStyle(.secondary).font(.subheadline)
                     }
                 } else {
@@ -176,10 +195,16 @@ struct GigChecklistView: View {
                 }
                 if canEdit {
                     ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            openNewForm()
-                        } label: {
-                            Label("Hinzufuegen", systemImage: "plus")
+                        if canAddChecklistItems {
+                            Button {
+                                openNewForm()
+                            } label: {
+                                Label("Hinzufuegen", systemImage: "plus")
+                            }
+                        } else {
+                            Label("Frist abgelaufen", systemImage: "lock.fill")
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
                         }
                     }
                 }
