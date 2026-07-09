@@ -98,6 +98,18 @@ def _build_response(
     )
 
 
+def _assert_gig_not_past(event_type: str, event_id: int, db: Session) -> None:
+    """Raise HTTP 403 if the event is a past gig."""
+    if event_type != "gig":
+        return
+    gig = db.query(models.Gig).filter_by(id=event_id).first()
+    if gig and gig.datum < date.today():
+        raise HTTPException(
+            status_code=403,
+            detail="Für vergangene Gigs können keine Verfügbarkeiten mehr geändert werden.",
+        )
+
+
 @router.get("/pending_gigs", response_model=List[schemas.PendingAvailabilityGigOut])
 def get_pending_availability_gigs(
     db: Session = Depends(auth.get_db),
@@ -162,6 +174,8 @@ def set_availability(
     if event_type not in VALID_EVENT_TYPES:
         raise HTTPException(status_code=400, detail="Invalid event_type. Use 'rehearsal' or 'gig'.")
 
+    _assert_gig_not_past(event_type, event_id, db)
+
     current_user_id = _get_user_id(current, db)
 
     # Validate substitute_user_id if provided
@@ -218,6 +232,8 @@ def delete_availability(
     """Remove the current user's availability entry for an event."""
     if event_type not in VALID_EVENT_TYPES:
         raise HTTPException(status_code=400, detail="Invalid event_type. Use 'rehearsal' or 'gig'.")
+
+    _assert_gig_not_past(event_type, event_id, db)
 
     current_user_id = _get_user_id(current, db)
 

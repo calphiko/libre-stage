@@ -27,7 +27,7 @@ Covers:
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from backend import models, auth
 
@@ -53,11 +53,26 @@ def rehearsal(db_session):
 
 @pytest.fixture
 def gig(db_session):
-    """Create a single gig for testing."""
-    from datetime import date, time
+    """Create a single future gig for testing."""
     g = models.Gig(
         name="Test Gig",
         datum=date.today() + timedelta(days=14),
+        kind_of_gig="Stadtfest",
+        status="angenommen",
+        publish="0",
+    )
+    db_session.add(g)
+    db_session.commit()
+    db_session.refresh(g)
+    return g
+
+
+@pytest.fixture
+def past_gig(db_session):
+    """Create a gig whose date is yesterday."""
+    g = models.Gig(
+        name="Past Gig",
+        datum=date.today() - timedelta(days=1),
         kind_of_gig="Stadtfest",
         status="angenommen",
         publish="0",
@@ -396,12 +411,13 @@ def test_availability_event_type_isolation(
 # ---------------------------------------------------------------------------
 
 def test_availability_season_gig(season_client):
-    """Smoke-test: set + get availability for the first gig in the season data."""
+    """Smoke-test: set + get availability for the first *future* gig in the season data."""
     client, headers, data = season_client
-    gig = data["gigs"][0]
+    # gigs[0] is a past gig; gigs[1] is the future gig (datum = today + 14 days)
+    future_gig = next(g for g in data["gigs"] if g.datum >= date.today())
 
     resp = client.put(
-        f"/availability/gig/{gig.id}",
+        f"/availability/gig/{future_gig.id}",
         json={"status": "available", "comment": "Bin dabei!"},
         headers=headers,
     )
@@ -411,7 +427,74 @@ def test_availability_season_gig(season_client):
     assert body["summary"]["available"] == 1
 
     # Verify via GET
-    get_resp = client.get(f"/availability/gig/{gig.id}", headers=headers)
+    get_resp = client.get(f"/availability/gig/{future_gig.id}", headers=headers)
     assert get_resp.status_code == 200
     assert get_resp.json()["my_status"] == "available"
+
+
+# ---------------------------------------------------------------------------
+# Past-gig lock: PUT and DELETE must be rejected
+# ---------------------------------------------------------------------------
+
+def test_put_availability_past_gig_rejected(client, auth_headers, test_user, past_gig):
+    """PUT availability for a past gig must return 403."""
+    resp = client.put(
+        f"/availability/gig/{past_gig.id}",
+        json={"status": "available"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_delete_availability_past_gig_rejected(
+    client, auth_headers, test_user, db_session, past_gig
+):
+    """DELETE availability for a past gig must return 403, even if an entry exists."""
+    # Insert an entry directly (bypassing the locked PUT endpoint)
+    entry = models.Availability(
+        user_id=test_user.id,
+        event_type="gig",
+        event_id=past_gig.id,
+        status="available",
+    )
+    db_session.add(entry)
+    db_session.commit()
+
+    resp = client.delete(
+        f"/availability/gig/{past_gig.id}",
+        headers=auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_put_availability_past_gig_error_message(client, auth_headers, test_user, past_gig):
+    """The 403 response for a past gig must include a meaningful German message."""
+    resp = client.put(
+        f"/availability/gig/{past_gig.id}",
+        json={"status": "maybe"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 403
+    assert "vergangen" in resp.json()["detail"].lower()
+
+
+def test_past_gig_lock_does_not_affect_rehearsals(client, auth_headers, test_user, rehearsal):
+    """The past-gig lock must NOT affect rehearsal availability (rehearsals have no datum)."""
+    resp = client.put(
+        f"/availability/rehearsal/{rehearsal.id}",
+        json={"status": "available"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+
+
+def test_get_availability_past_gig_still_readable(client, auth_headers, test_user, past_gig):
+    """GET must still work for past gigs (read-only, no lock on reads)."""
+    resp = client.get(
+        f"/availability/gig/{past_gig.id}",
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    assert "availabilities" in resp.json()
+
 
