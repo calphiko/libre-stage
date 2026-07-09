@@ -3,6 +3,67 @@
 Änderungsprotokoll
 ==================
 
+0.5.27 (2026-07-09)
+-------------------
+
+Added
+~~~~~
+
+* **Kanban-Ansicht für die Gig-Checkliste**: Die Checkliste im Tab
+  **✅ Checkliste** des Gig-Detaildialogs bietet nun wahlweise eine
+  **Kanban-Board-Ansicht** neben der bestehenden Listenansicht.
+  Ein Toggle-Schalter (☰ Liste / ⬛ Kanban) im Header wechselt zwischen
+  beiden Modi. Das Board zeigt zwei Spalten – **Offen** (gelb) und
+  **Erledigt** (grün) – mit kompakten Karten pro Aufgabe (Titel, Kategorie-
+  Badge, Fälligkeit, Zuständiger, Kommentar). Editors können Aufgaben
+  direkt per Schaltfläche zwischen den Spalten verschieben.
+
+* **Vergangenheitssperre – Gig-Checkliste (Frontend)**: Für vergangene Gigs
+  wird der **+ Eintrag**-Button ausgeblendet und durch einen 🔒-Hinweis
+  ersetzt. Das Formular lässt sich auch programmatisch nicht mehr öffnen.
+
+* **Vergangenheitssperre – Gig-Checkliste (Backend)**: Der Endpoint
+  ``POST /gigs/{gig_id}/checklist`` lehnt neue Einträge für vergangene Gigs
+  mit **HTTP 403** ab
+  (*„Für vergangene Gigs können keine neuen Checklisten-Einträge angelegt werden."*).
+
+* **Vergangenheitssperre – Verfügbarkeit (Frontend)**: Das
+  ``AvailabilityWidget`` erhält einen neuen Prop ``readonly``. Bei
+  vergangenen Gigs werden die Statusbuttons (Dabei / Vielleicht / Nicht
+  dabei) sowie das Aushilfe-Formular und das Kommentarfeld ausgeblendet;
+  stattdessen erscheint der Hinweis
+  *„🔒 Vergangenes Event – keine Rückmeldung mehr möglich."*
+  Die bereits abgegebene eigene Rückmeldung bleibt als Badge sichtbar;
+  die Gesamtübersicht aller Rückmeldungen ist weiterhin lesbar.
+  Der ``GigDetailsModal`` berechnet ``gigIsPast`` und übergibt es als
+  ``readonly`` an das Widget.
+
+* **Vergangenheitssperre – Verfügbarkeit (Backend)**: Die Endpoints
+  ``PUT /availability/gig/{id}`` und ``DELETE /availability/gig/{id}``
+  lehnen Schreibzugriffe auf vergangene Gigs mit **HTTP 403** ab.
+  Proben (``event_type=rehearsal``) sind nicht betroffen. Lesezugriffe
+  (``GET``) bleiben für alle Events uneingeschränkt.
+
+* **Tests – Verfügbarkeit (vergangene Gigs)**: Fünf neue Tests in
+  ``test_availability.py`` decken die Vergangenheitssperre ab:
+  PUT → 403, DELETE → 403, Fehlermeldung enthält „vergangen",
+  Proben nicht betroffen, GET weiterhin lesbar.
+
+* **Tests – Gig-Checkliste** (neue Datei ``test_gig_checklist.py``):
+  12 Tests für GET (leer, 404, Lesezugriff auf vergangene Gigs) und POST
+  (Erfolgsfall, vollständige Rückgabe, 404, fehlende Berechtigung,
+  vergangener Gig → 403 mit Fehlermeldung, kein DB-Eintrag nach Ablehnung).
+
+Changed
+~~~~~~~
+
+* **+ Eintrag-Button**: Verwendet nun ``variant-filled-primary`` (ohne
+  ``border``) – konsistent mit anderen Hinzufügen-Buttons (z. B. im
+  Ablaufplan).
+* Chore: Projektversion auf ``0.5.27`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.27`` ergänzt.
+
 0.5.26 (2026-07-07)
 -------------------
 
