@@ -8,6 +8,7 @@ struct GigsView: View {
     let onMenuTap: (() -> Void)?
     @Environment(AuthManager.self) private var authManager
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var vm = GigsViewModel()
     @State private var showSeasonStats = false
     @State private var seasonStatsPreset: Int?
@@ -95,15 +96,15 @@ struct GigsView: View {
                 }
             }
             .appShellBackground()
-            .navigationTitle("Gigs")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItemGroup(placement: .primaryAction) {
                     Text("Gigs")
                         .font(.headline)
                         .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                }
-                ToolbarItemGroup(placement: .primaryAction) {
+                        .padding(.trailing, 4)
+
                     Menu {
                         ForEach(availableSeasons, id: \.self) { year in
                             Button {
@@ -117,17 +118,25 @@ struct GigsView: View {
                             }
                         }
                     } label: {
-                        HStack(spacing: 4) {
-                            Text(String(effectiveSelectedSeason ?? currentSeasonYear))
+                        if sizeClass == .compact {
+                            Image(systemName: "calendar")
                                 .font(.subheadline.weight(.semibold))
-                            Image(systemName: "chevron.down")
-                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                                .frame(width: 30, height: 30)
+                                .background(Circle().fill(AppTheme.rowBackground(for: colorScheme)))
+                        } else {
+                            HStack(spacing: 4) {
+                                Text(String(effectiveSelectedSeason ?? currentSeasonYear))
+                                    .font(.subheadline.weight(.semibold))
+                                Image(systemName: "chevron.down")
+                                    .font(.caption2.weight(.semibold))
+                            }
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(AppTheme.rowBackground(for: colorScheme)))
+                            .contentShape(Rectangle())
                         }
-                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(AppTheme.rowBackground(for: colorScheme)))
-                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Saison auswaehlen")
@@ -249,7 +258,12 @@ private struct SeasonStatisticsSheet: View {
     let initialSeason: Int?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedSeason: Int?
+
+    private var currentSeasonYear: Int {
+        Calendar.current.component(.year, from: Date())
+    }
 
     var body: some View {
         NavigationStack {
@@ -338,15 +352,28 @@ private struct SeasonStatisticsSheet: View {
                 }
             }
             .addModalFormStyle()
+            .appShellBackground()
             .navigationTitle("Saisonstatistik")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Label("Zurück", systemImage: "chevron.backward")
+                            .labelStyle(.iconOnly)
+                            .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("Saisonstatistik")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.onShellPrimary(for: colorScheme))
                 }
             }
+            .headerBodyBlend()
             .task {
-                selectedSeason = initialSeason ?? selectedSeason ?? availableSeasons.first
+                selectedSeason = initialSeason ?? currentSeasonYear
                 await vm.loadSeasonStatistics(year: selectedSeason)
             }
             .onChange(of: selectedSeason) { _, newYear in

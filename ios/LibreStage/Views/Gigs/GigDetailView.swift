@@ -171,201 +171,202 @@ struct GigDetailView: View {
                                 } else {
                                     presentDownloadError(documentName: "forScore-Setliste")
                                 }
-                            } label: {
-                                Label("forScore-Setliste (.4ss)", systemImage: "music.note.list")
                             }
-                            .disabled(true)
+                        } label: {
+                            Label("forScore-Setliste (.4ss)", systemImage: "music.note.list")
+                        }
+                        .disabled(true)
 
+                        Button {
+                            Task { @MainActor in
+                                if let fileURL = await vm.downloadGemaList(gig: currentGig) {
+                                    shareItem = ShareSheetItem(url: fileURL)
+                                } else {
+                                    presentDownloadError(documentName: "GEMA-Liste")
+                                }
+                            }
+                        } label: {
+                            Label("GEMA-Liste herunterladen", systemImage: "tablecells.badge.ellipsis")
+                        }
+                        .disabled(!hasSongsInSetlist)
+
+                        if canEdit {
                             Button {
-                                Task { @MainActor in
-                                    if let fileURL = await vm.downloadGemaList(gig: currentGig) {
-                                        shareItem = ShareSheetItem(url: fileURL)
-                                    } else {
-                                        presentDownloadError(documentName: "GEMA-Liste")
-                                    }
+                                showSetlistEditor = true
+                            } label: {
+                                Label("Setliste bearbeiten", systemImage: "square.and.pencil")
+                            }
+                            .disabled(isSetlistEditorDisabledOnSmallDisplays || !canEditSetlist)
+
+                            if isSetlistEditorDisabledOnSmallDisplays {
+                                Text("Setlisten-Editor ist auf kleinen Displays nicht verfuegbar.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else if !canEditSetlist {
+                                Label("Bearbeitung nur bis 7 Tage nach dem Gig möglich.", systemImage: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            if vm.liveModeAvailability?.available == true {
+                                NavigationLink {
+                                    LiveModeView(gig: currentGig)
                                 } label: {
-                                    Label("GEMA-Liste herunterladen", systemImage: "tablecells.badge.ellipsis")
-                                }
-                                .disabled(!hasSongsInSetlist)
-
-
-                                if canEdit {
-                                    Button {
-                                        showSetlistEditor = true
-                                    } label: {
-                                        Label("Setliste bearbeiten", systemImage: "square.and.pencil")
-                                    }
-                                    .disabled(isSetlistEditorDisabledOnSmallDisplays || !canEditSetlist)
-
-                                    if isSetlistEditorDisabledOnSmallDisplays {
-                                        Text("Setlisten-Editor ist auf kleinen Displays nicht verfuegbar.")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    } else if !canEditSetlist {
-                                        Label("Bearbeitung nur bis 7 Tage nach dem Gig möglich.", systemImage: "lock.fill")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    if vm.liveModeAvailability?.available == true {
-                                        NavigationLink {
-                                            LiveModeView(gig: currentGig)
-                                        } label: {
-                                            HStack {
-                                                Label("Live-Modus starten", systemImage: "bolt.fill")
-                                                    .font(.headline)
-                                                    .foregroundStyle(.white)
-                                                Spacer()
-                                                if vm.liveModeAvailability?.forced == true {
-                                                    Text("🔓")
-                                                }
-                                            }
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 8)
+                                    HStack {
+                                        Label("Live-Modus starten", systemImage: "bolt.fill")
+                                            .font(.headline)
+                                            .foregroundStyle(.white)
+                                        Spacer()
+                                        if vm.liveModeAvailability?.forced == true {
+                                            Text("🔓")
                                         }
-                                        .listRowBackground(Color.accentColor)
-                                    } else if vm.liveModeAvailability?.can_force == true {
-                                        Button {
-                                            Task { await vm.loadLiveModeAvailability(gigId: gig.id, force: true) }
-                                        } label: {
-                                            Label("Live Mode entsperren", systemImage: "lock.open")
-                                        }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.orange)
-                                    } else {
-                                        Label("Live-Modus aktuell nicht verfügbar", systemImage: "lock.fill")
-                                            .foregroundStyle(.secondary)
                                     }
-
-                                    if let reason = vm.liveModeAvailability?.reason {
-                                        Text(liveModeReasonText(reason))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
                                 }
-                            }
-                            .listRowBackground(AppTheme.rowBackground(for: colorScheme))
-
-                            // MARK: Setlist
-                            ForEach(Array(setlist.sets.enumerated()), id: \.offset) { setIndex, set in
-                                let setKey = setPositionKey(for: set, index: setIndex)
-                                Section(set.setlist_name ?? set.set_name ?? "Set") {
-                                    if let setSummary = setTimeSummary(for: setlist, setKey: setKey, setIndex: setIndex) {
-                                        LabeledContent("Zeitkalkulation", value: setSummary)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    ForEach(Array(set.songs.enumerated()), id: \.element.id) { idx, song in
-                                        Button {
-                                            selectedSongForDetails = GigSongDetailSheetItem(id: song.song_id, title: song.title)
-                                        } label: {
-                                            SetlistSongRow(index: idx + 1, song: song)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    if let pauseLabel = pauseLabelAfterSet(for: setlist, setIndex: setIndex) {
-                                        Label(pauseLabel, systemImage: "pause.circle")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
+                                .listRowBackground(Color.accentColor)
+                            } else if vm.liveModeAvailability?.can_force == true {
+                                Button {
+                                    Task { await vm.loadLiveModeAvailability(gigId: gig.id, force: true) }
+                                } label: {
+                                    Label("Live Mode entsperren", systemImage: "lock.open")
                                 }
-                                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                                .buttonStyle(.borderedProminent)
+                                .tint(.orange)
+                            } else {
+                                Label("Live-Modus aktuell nicht verfügbar", systemImage: "lock.fill")
+                                    .foregroundStyle(.secondary)
                             }
 
-                            if let totalSummary = totalSetlistTimeSummary(for: setlist) {
-                                Section("Gesamt") {
-                                    LabeledContent("Zeitkalkulation", value: totalSummary)
-                                    if let endDelta = setlistEndDeltaToPlannedGigEnd(for: setlist, gig: currentGig) {
-                                        HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                            Text("Differenz zu geplantem Ende")
-                                            Spacer(minLength: 8)
-                                            Text(endDelta.value)
-                                                .font(.body.monospacedDigit())
-                                                .foregroundStyle(endDelta.isReached ? .green : .red)
-                                        }
-                                    }
-                                }
-                                .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                            if let reason = vm.liveModeAvailability?.reason {
+                                Text(liveModeReasonText(reason))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
-
                         }
-                        .softCardContainer()
-                        .refreshable {
-                            await vm.loadSetlist(gigId: gig.id)
-                            await vm.loadLiveModeAvailability(gigId: gig.id)
+                    }
+                    .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+
+                    // MARK: Setlist
+                    ForEach(Array(setlist.sets.enumerated()), id: \.offset) { setIndex, set in
+                        let setKey = setPositionKey(for: set, index: setIndex)
+                        Section(set.setlist_name ?? set.set_name ?? "Set") {
+                            if let setSummary = setTimeSummary(for: setlist, setKey: setKey, setIndex: setIndex) {
+                                LabeledContent("Zeitkalkulation", value: setSummary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            ForEach(Array(set.songs.enumerated()), id: \.element.id) { idx, song in
+                                Button {
+                                    selectedSongForDetails = GigSongDetailSheetItem(id: song.song_id, title: song.title)
+                                } label: {
+                                    SetlistSongRow(index: idx + 1, song: song)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            if let pauseLabel = pauseLabelAfterSet(for: setlist, setIndex: setIndex) {
+                                Label(pauseLabel, systemImage: "pause.circle")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                    } else {
-                        ContentUnavailableView("Keine Setlist", systemImage: "music.note.list")
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
+                    }
+
+                    if let totalSummary = totalSetlistTimeSummary(for: setlist) {
+                        Section("Gesamt") {
+                            LabeledContent("Zeitkalkulation", value: totalSummary)
+                            if let endDelta = setlistEndDeltaToPlannedGigEnd(for: setlist, gig: currentGig) {
+                                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                    Text("Differenz zu geplantem Ende")
+                                    Spacer(minLength: 8)
+                                    Text(endDelta.value)
+                                        .font(.body.monospacedDigit())
+                                        .foregroundStyle(endDelta.isReached ? .green : .red)
+                                }
+                            }
+                        }
+                        .listRowBackground(AppTheme.rowBackground(for: colorScheme))
                     }
                 }
-                .appShellBackground()
-                .navigationTitle(currentGig.name ?? "Gig")
-                .navigationBarTitleDisplayMode(.inline)
-                .headerBodyBlend()
-                .errorBanner($vm.error)
-                .task {
-                    if editableGig == nil {
-                        editableGig = gig
-                        draft = GigDetailsDraft(gig: gig)
-                    }
-                    await vm.loadGigFieldConfig()
+                .scrollContentBackground(.hidden)
+                .background(.clear)
+                .listStyle(.insetGrouped)
+                .listSectionSpacing(14)
+                .refreshable {
                     await vm.loadSetlist(gigId: gig.id)
-                    if canEdit {
-                        await vm.loadLiveModeAvailability(gigId: gig.id)
-                    }
-                    await vm.loadAvailability(gigId: gig.id)
-                    await vm.loadChecklist(gigId: gig.id)
+                    await vm.loadLiveModeAvailability(gigId: gig.id)
                 }
-                .fullScreenCover(isPresented: $showSetlistEditor) {
-                    AppModalContainer {
-                        SetlistEditorSheet(
-                            gigId: currentGig.id,
-                            gigName: currentGig.name ?? "Gig",
-                            onSaved: { updated in
-                                vm.setlist = updated
-                            }
-                        )
-                    }
-                }
-                .sheet(item: $shareItem) { item in
-#if canImport(UIKit)
-                    ShareSheet(activityItems: [item.url])
-#else
-                    Text("Datei heruntergeladen: \(item.url.lastPathComponent)")
-                        .padding()
-#endif
-                }
-                .fullScreenCover(item: $selectedSongForDetails) { item in
-                    NavigationStack {
-                        SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
-                    }
-                }
-                .fullScreenCover(isPresented: $showGigStats) {
-                    AppModalContainer {
-                        GigStatisticsSheet(vm: vm, gig: currentGig)
-                    }
-                }
-                .fullScreenCover(isPresented: $showGigSchedule) {
-                    AppModalContainer {
-                        GigScheduleSheet(vm: vm, gig: currentGig, canEdit: canEdit)
-                    }
-                }
-                .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
-                    Button("OK", role: .cancel) {}
-                } message: {
-                    Text(downloadErrorMessage)
-                }
-                .sheet(isPresented: $showAvailability) {
-                    GigAvailabilityView(gig: currentGig, vm: vm)
-                        .environment(authManager)
-                }
-                .sheet(isPresented: $showChecklist) {
-                    GigChecklistView(gig: currentGig, vm: vm)
-                        .environment(authManager)
-                }
-                .navigationSubpage()
+            } else {
+                ContentUnavailableView("Keine Setlist", systemImage: "music.note.list")
+            }
         }
+        .navigationTitle(currentGig.name ?? "Gig")
+        .navigationBarTitleDisplayMode(.inline)
+        .headerBodyBlend()
+        .errorBanner($vm.error)
+        .task {
+            if editableGig == nil {
+                editableGig = gig
+                draft = GigDetailsDraft(gig: gig)
+            }
+            await vm.loadGigFieldConfig()
+            await vm.loadSetlist(gigId: gig.id)
+            if canEdit {
+                await vm.loadLiveModeAvailability(gigId: gig.id)
+            }
+            await vm.loadAvailability(gigId: gig.id)
+            await vm.loadChecklist(gigId: gig.id)
+        }
+        .fullScreenCover(isPresented: $showSetlistEditor) {
+            AppModalContainer {
+                SetlistEditorSheet(
+                    gigId: currentGig.id,
+                    gigName: currentGig.name ?? "Gig",
+                    onSaved: { updated in
+                        vm.setlist = updated
+                    }
+                )
+            }
+        }
+        .sheet(item: $shareItem) { item in
+#if canImport(UIKit)
+            ShareSheet(activityItems: [item.url])
+#else
+            Text("Datei heruntergeladen: \(item.url.lastPathComponent)")
+                .padding()
+#endif
+        }
+        .fullScreenCover(item: $selectedSongForDetails) { item in
+            NavigationStack {
+                SongDetailsView(songId: item.id, initialTitle: item.title, modalPresentation: true)
+            }
+        }
+        .fullScreenCover(isPresented: $showGigStats) {
+            AppModalContainer {
+                GigStatisticsSheet(vm: vm, gig: currentGig)
+            }
+        }
+        .fullScreenCover(isPresented: $showGigSchedule) {
+            AppModalContainer {
+                GigScheduleSheet(vm: vm, gig: currentGig, canEdit: canEdit)
+            }
+        }
+        .alert("Download fehlgeschlagen", isPresented: $showDownloadErrorAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(downloadErrorMessage)
+        }
+        .sheet(isPresented: $showAvailability) {
+            GigAvailabilityView(gig: currentGig, vm: vm)
+                .environment(authManager)
+        }
+        .sheet(isPresented: $showChecklist) {
+            GigChecklistView(gig: currentGig, vm: vm)
+                .environment(authManager)
+        }
+        .navigationSubpage()
+    }
 
     @ViewBuilder
     private func availabilityRowLabel() -> some View {

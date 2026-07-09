@@ -10,7 +10,7 @@ struct DashboardView: View {
     @Environment(DashboardViewModel.self) private var vm
     @Environment(\.colorScheme) private var colorScheme
     @State private var showCandidatesSheet = false
-    @State private var selectedTodoTab: DashboardTodoTab = .open
+    @State private var expandedTabs: Set<DashboardTodoTab> = [.open]
     @State private var hasLoadedInitially = false
     @State private var isRefreshingDashboard = false
     @State private var isInSubpage = false
@@ -37,9 +37,39 @@ struct DashboardView: View {
                     } else if let list = vm.todoList {
                         List {
                             Section {
-                                todoTabHeader(list: list)
-
-                                todoSectionContent(for: selectedTodoTab, list: list)
+                                ForEach(DashboardTodoTab.allCases) { tab in
+                                    let count = tab.count(in: list)
+                                    DisclosureGroup(
+                                        isExpanded: Binding(
+                                            get: { expandedTabs.contains(tab) },
+                                            set: { isOpen in
+                                                withAnimation(.easeInOut(duration: 0.22)) {
+                                                    expandedTabs = isOpen ? [tab] : []
+                                                }
+                                            }
+                                        )
+                                    ) {
+                                        todoSectionContent(for: tab, list: list)
+                                    } label: {
+                                        HStack(spacing: 10) {
+                                            Image(systemName: tab.systemImage)
+                                                .font(.subheadline)
+                                                .foregroundStyle(tab.tint)
+                                                .frame(width: 22)
+                                            Text(tab.title)
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundStyle(.primary)
+                                            if tab != .done && count > 0 {
+                                                Text("\(count)")
+                                                    .font(.caption2.weight(.bold))
+                                                    .foregroundStyle(.white)
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.red, in: Capsule())
+                                            }
+                                        }
+                                    }
+                                }
                             } header: {
                                 dashboardSectionHeader("Deine Todos", systemImage: "checklist", tint: .blue)
                             }
@@ -125,9 +155,6 @@ struct DashboardView: View {
                 guard !isPresented else { return }
                 Task { await refreshDashboard() }
             }
-            .onChange(of: vm.totalBadgeCount) { _, _ in
-                ensureValidTodoTab()
-            }
         }
         .onPreferenceChange(NavigationSubpagePreferenceKey.self) { isInSubpage = $0 }
 
@@ -140,49 +167,6 @@ struct DashboardView: View {
 }
 
     @ViewBuilder
-    private func todoTabHeader(list: UserTodoList) -> some View {
-        HStack(spacing: 8) {
-            ForEach(DashboardTodoTab.allCases) { tab in
-                let count = tab.count(in: list)
-                Button {
-                    selectedTodoTab = tab
-                } label: {
-                    HStack(spacing: 6) {
-                        Text(tab.title)
-                            .font(.subheadline.weight(selectedTodoTab == tab ? .semibold : .regular))
-                            .foregroundStyle(
-                                selectedTodoTab == tab
-                                ? (colorScheme == .dark ? .white : Color(red: 0.07, green: 0.22, blue: 0.54))
-                                : .primary
-                            )
-
-                        if tab != .done && count > 0 {
-                            Text("\(count)")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color.red, in: Capsule())
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 6)
-                    .dashboardTabGlassStyle(isActive: selectedTodoTab == tab)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(4)
-        .background(AppTheme.dashboardTileBackground(for: colorScheme), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(AppTheme.tileBorder(for: colorScheme), lineWidth: 1)
-        )
-    }
-
-    @ViewBuilder
     private func todoSectionContent(for tab: DashboardTodoTab, list: UserTodoList) -> some View {
         switch tab {
         case .open:
@@ -193,10 +177,7 @@ struct DashboardView: View {
             } else {
                 ForEach(openTodos) { todo in
                     TodoRow(todo: todo) {
-                        Task {
-                            await vm.markDone(todo)
-                            ensureValidTodoTab()
-                        }
+                        Task { await vm.markDone(todo) }
                     }
                 }
             }
@@ -208,10 +189,7 @@ struct DashboardView: View {
             } else {
                 ForEach(list.gig_checklist_todos) { item in
                     GigChecklistTodoRow(item: item) {
-                        Task {
-                            await vm.markChecklistItemDone(gigId: item.gig_id, itemId: item.id)
-                            ensureValidTodoTab()
-                        }
+                        Task { await vm.markChecklistItemDone(gigId: item.gig_id, itemId: item.id) }
                     }
                 }
             }
@@ -307,20 +285,13 @@ struct DashboardView: View {
         .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
     }
 
-    private func ensureValidTodoTab() {
-        guard let list = vm.todoList else { return }
-        if selectedTodoTab.count(in: list) > 0 { return }
-
-        selectedTodoTab = DashboardTodoTab.allCases.first(where: { $0.count(in: list) > 0 }) ?? .open
-    }
-
     private func refreshDashboard() async {
         guard !isRefreshingDashboard else { return }
         isRefreshingDashboard = true
         defer { isRefreshingDashboard = false }
 
         await vm.load()
-        selectedTodoTab = .open
+        withAnimation { expandedTabs = [.open] }
     }
 
     private func formatDateTime(
@@ -382,6 +353,28 @@ private enum DashboardTodoTab: String, CaseIterable, Identifiable {
         case .surveys:      return "Umfragen"
         case .pendingGigs:  return "Auftritte"
         case .done:         return "Erledigt"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .open:         return "checkmark.circle"
+        case .gigChecklist: return "list.bullet.clipboard"
+        case .songs:        return "music.note.list"
+        case .surveys:      return "chart.bar.doc.horizontal"
+        case .pendingGigs:  return "music.mic"
+        case .done:         return "checkmark.circle.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .open:         return .blue
+        case .gigChecklist: return .orange
+        case .songs:        return .pink
+        case .surveys:      return .teal
+        case .pendingGigs:  return .purple
+        case .done:         return .green
         }
     }
 
