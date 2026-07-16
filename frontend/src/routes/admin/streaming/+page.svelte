@@ -8,43 +8,17 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { API_URL } from '$lib/api.js';
   import {
+    API_URL,
     getUser,
     getStreamingOAuthStatus,
     disconnectStreamingPlatform,
     triggerPlaylistSync,
     getPlaylistSyncLog,
+    getPlaylistCredentials,
+    savePlaylistCredentials,
   } from '$lib/api.js';
   import { toastState } from '$lib/toast.js';
-
-  // ── new: credentials API ───────────────────────────────────────────────────
-  async function fetchCredentials() {
-    const res = await fetch(`${API_URL}/playlist/credentials`, { credentials: 'include' });
-    if (!res.ok) throw new Error('Zugangsdaten konnten nicht geladen werden');
-    return res.json();
-  }
-
-  async function saveCredentials(platform, data) {
-    const res = await fetch(`${API_URL}/playlist/credentials/${platform}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail ?? 'Speichern fehlgeschlagen');
-    }
-    return res.json();
-  }
-
-  function getCsrfToken() {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; csrf_token=`);
-    if (parts.length === 2) return parts.pop().split(';').shift() ?? '';
-    return '';
-  }
   // ── State ──────────────────────────────────────────────────────────────────
   let user = $state({ user_name: null, user_group: null });
   let oauthStatus = $state({ spotify: { connected: false }, tidal: { connected: false } });
@@ -79,7 +53,7 @@
         return;
       }
       // Load stored credentials (without secrets)
-      const creds = await fetchCredentials();
+      const creds = await getPlaylistCredentials();
       spotifyForm.client_id    = creds.spotify?.client_id    ?? '';
       spotifyForm.playlist_id  = creds.spotify?.playlist_id  ?? '';
       spotifySecretSet          = creds.spotify?.client_secret_set ?? false;
@@ -96,7 +70,7 @@
   async function saveSpotify() {
     savingSpotify = true;
     try {
-      await saveCredentials('spotify', {
+      await savePlaylistCredentials('spotify', {
         client_id: spotifyForm.client_id,
         client_secret: spotifyForm.client_secret || undefined,
         playlist_id: spotifyForm.playlist_id,
@@ -114,7 +88,7 @@
   async function saveTidal() {
     savingTidal = true;
     try {
-      await saveCredentials('tidal', {
+      await savePlaylistCredentials('tidal', {
         client_id: tidalForm.client_id,
         client_secret: tidalForm.client_secret || undefined,
         playlist_id: tidalForm.playlist_id,
@@ -403,6 +377,9 @@
 
 </div>
 {/if}
+
+
+
 
 
 

@@ -1450,3 +1450,25 @@ export async function disconnectStreamingPlatform(platform) {
     }
     return res.json();
 }
+
+export async function getPlaylistCredentials() {
+    const res = await fetchWithAuth(`${API_URL}/playlist/credentials`, { method: 'GET' });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Zugangsdaten konnten nicht geladen werden');
+    }
+    return res.json();
+}
+
+export async function savePlaylistCredentials(platform, data) {
+    const res = await fetchWithAuth(`${API_URL}/playlist/credentials/${platform}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? 'Speichern fehlgeschlagen');
+    }
+    return res.json();
+}
