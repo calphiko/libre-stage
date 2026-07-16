@@ -3,6 +3,73 @@
 Änderungsprotokoll
 ==================
 
+0.5.28 (2026-07-16)
+-------------------
+
+Added
+~~~~~
+
+* **Session-Limit pro Benutzer**: Jeder Benutzer darf maximal **5 gleichzeitig
+  aktive Sessions** haben. Beim Login oder Token-Refresh wird geprüft, ob
+  bereits 5 nicht-widerrufene, nicht abgelaufene Refresh-Tokens existieren.
+  Ist die Grenze erreicht, wird die **älteste aktive Session automatisch
+  widerrufen**, bevor die neue angelegt wird. Die Konstante
+  ``MAX_ACTIVE_SESSIONS = 5`` in ``auth.py`` steuert den Schwellwert zentral.
+
+* **Cross-Tab-Koordination für Token-Refresh (Frontend)**: Mehrere Browser-
+  Tabs derselben App koordinieren sich nun über ``BroadcastChannel`` und
+  ``localStorage``, damit nur ein Tab gleichzeitig einen ``/refresh``-Request
+  stellt. Bisher konnten zwei Tabs denselben Refresh-Token gleichzeitig
+  verwenden, was die Replay-Detection triggerte und alle Sessions sperrte.
+
+  * ``BroadcastChannel('libre_stage_auth')`` informiert andere Tabs nach
+    erfolgreichem Refresh (``token_refreshed``) und nach Logout (``auth_logout``).
+  * ``localStorage['libre_stage_last_token_refresh']`` speichert den Zeitstempel
+    des letzten Refreshes. Innerhalb von 8 Sekunden starten andere Tabs
+    keinen eigenen Refresh-Request (``anotherTabRefreshedRecently()``).
+
+* **iCal-Token: Ablaufdatum** (``exp``-Claim): iCal-Tokens haben nun eine
+  Laufzeit von **365 Tagen** (``ICAL_TOKEN_EXPIRE_DAYS = 365``). Ablauf wird
+  standardmäßig durch die JWT-Library beim Decode geprüft – kein manueller
+  Timestamp-Vergleich mehr.
+
+Changed
+~~~~~~~
+
+* **Refresh-Token-Laufzeit verlängert**: ``REFRESH_TOKEN_EXPIRE_DAYS`` von
+  30 auf **90 Tage** erhöht. Benutzer müssen sich damit nur noch ca. alle
+  3 Monate neu einloggen, sofern sie die App regelmäßig nutzen.
+
+* **Password-Reset-Token: Standard-``exp``-Claim**: ``create_password_reset_token``
+  setzt nun einen echten JWT-``exp``-Claim statt des bisherigen manuellen
+  ``ts``-Timestamps. ``verify_password_reset_token`` entfernt die redundante
+  Ablaufprüfung – die JWT-Library wirft automatisch eine ``ExpiredSignatureError``
+  bei abgelaufenen Tokens.
+
+* **Legacy-SHA1-Passwort-Hash-Unterstützung entfernt**: Die
+  ``LEGACY_HASH_DEADLINE`` (2026-04-30) ist abgelaufen. Der gesamte SHA-1-
+  Pfad in ``verify_password`` sowie der Auto-Upgrade-Code in
+  ``authenticate_user`` wurden entfernt. ``verify_password`` prüft
+  ausschließlich bcrypt-Hashes (``$2b$``, ``$2a$``, ``$2y$``).
+  Der nicht mehr benötigte ``import base64`` wurde ebenfalls entfernt.
+
+* **iCal-Token-Verifikation bereinigt**: ``verify_ical_token`` nutzt nun den
+  Standard-``exp``-Claim statt manuellem ``ts``-Check. Ein Format-String-Bug
+  (``"iCal token verified!".format(...)`` ohne Platzhalter) wurde behoben
+  (``logger.info("...", user.user_name)``).
+
+Fixed
+~~~~~
+
+* **Parallele Sessions**: Ein neuer Login von einem Gerät/Tab entzieht anderen
+  aktiven Sessions nicht mehr die Authentifizierung. Jede Session hält einen
+  eigenen Refresh-Token; die Cross-Tab-Koordination verhindert race-condition-
+  bedingte Logout-Kaskaden.
+
+* Chore: Projektversion auf ``0.5.28`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.28`` ergänzt.
+
 0.5.27 (2026-07-09)
 -------------------
 
