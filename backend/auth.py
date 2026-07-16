@@ -18,17 +18,18 @@
 Authentication and authorisation utilities.
 
 Provides JWT-based access and refresh token handling, password hashing
-(bcrypt with legacy SHA-1 fallback), user lookup and all FastAPI
-dependency helpers required by the API routers.
+(bcrypt), user lookup and all FastAPI dependency helpers required by the
+API routers.
 
 Constants:
     ACCESS_TOKEN_EXPIRE_MINUTES (int): Lifetime of an access token in minutes (15).
-    REFRESH_TOKEN_EXPIRE_DAYS (int): Lifetime of a refresh token in days (30).
+    REFRESH_TOKEN_EXPIRE_DAYS (int): Lifetime of a refresh token in days (90).
     RESET_PASSWORD_TOKEN_EXPIRE_MINUTES (int): Lifetime of a password-reset token (15).
+    ICAL_TOKEN_EXPIRE_DAYS (int): Lifetime of an iCal token in days (365).
     ALGORITHM (str): JWT signing algorithm (``HS256``).
+    MAX_ACTIVE_SESSIONS (int): Maximum number of concurrent active sessions per user (5).
 """
 
-import base64
 import hashlib
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -42,11 +43,6 @@ import bcrypt
 
 logger = logging.getLogger("uvicorn.error")
 
-
-
-# Deadline für alte Hash-Formate
-LEGACY_HASH_DEADLINE = datetime(2026, 4, 30, 23, 59, 59, tzinfo=timezone.utc)
-
 import os
 from dotenv import load_dotenv
 
@@ -55,8 +51,9 @@ load_dotenv(".env")
 SECRET_KEY = os.getenv("SECRET_KEY")
 RESET_PASSWORD_TOKEN_EXPIRE_MINUTES = 15
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_DAYS = 30
+REFRESH_TOKEN_EXPIRE_DAYS = 90  # ~3 Monate
 ALGORITHM = "HS256"
+MAX_ACTIVE_SESSIONS = 5
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 oauth2_password_reset_scheme = OAuth2PasswordBearer(tokenUrl="password_reset", auto_error=False)
 
@@ -104,45 +101,26 @@ def hash_pw(plain_pw: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     """
-    Verify a plain-text password against a stored hash.
-
-    Supports bcrypt hashes (``$2b$``, ``$2a$``, ``$2y$`` prefix) and,
-    until :data:`LEGACY_HASH_DEADLINE`, LDAP-style SHA-1 hashes
-    (``{SHA}`` prefix).
+    Verify a plain-text password against a stored bcrypt hash.
 
     Args:
         plain (str): The plain-text password provided by the user.
-        hashed (str): The stored password hash.
+        hashed (str): The stored bcrypt password hash.
 
     Returns:
         bool: ``True`` if the password matches, ``False`` otherwise.
     """
-    # New bcrypt-Format
-    if hashed.startswith(('$2b$', '$2a$', '$2y$')):
-        try:
-            return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
-        except Exception:
-            return False
-
-    # Accept old formats only until the deadline
-    if datetime.now(timezone.utc) > LEGACY_HASH_DEADLINE:
-        logger.warning("Legacy hash format rejected - deadline exceeded")
+    if not hashed.startswith(('$2b$', '$2a$', '$2y$')):
+        logger.warning("Unsupported password hash format – rejecting login")
         return False
-
-    # LDAP-Style SHA1: {SHA}Base64EncodedHash
-    if hashed.startswith('{SHA}'):
-        sha1_b64 = hashed[5:]  # Entferne "{SHA}" Prefix
-        computed = base64.b64encode(hashlib.sha1(plain.encode()).digest()).decode()
-        return computed == sha1_b64
-
-    return False
+    try:
+        return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
+    except Exception:
+        return False
 
 def authenticate_user(db: Session, username: str, password: str):
     """
     Look up a user by username and verify their password.
-
-    If the stored hash uses a legacy format it is automatically
-    upgraded to bcrypt on successful login.
 
     Args:
         db (Session): Active database session.
@@ -163,12 +141,6 @@ def authenticate_user(db: Session, username: str, password: str):
     if user.status == "deactivated":
         logger.warning(f"Login attempt by deactivated user: {username}")
         return None
-
-    # Auto-Upgrade: convert old hash to bycrypt on successful login (only if not already bcrypt)
-    if not user.user_pw.startswith(('$2b$', '$2a$', '$2y$')):
-        logger.info(f"Upgrading password hash for user {username}")
-        user.user_pw = hash_pw(password)
-        db.commit()
 
     return user
 
@@ -193,14 +165,37 @@ def create_access_token(data: dict):
 def _create_refresh_token_record(user_id: int, db: Session) -> str:
     import secrets
 
+    # Enforce session limit: revoke oldest active token(s) if limit is reached
+    now = datetime.now(timezone.utc)
+    active_tokens = (
+        db.query(models.RefreshToken)
+        .filter(
+            models.RefreshToken.user_id == user_id,
+            models.RefreshToken.revoked == False,
+            models.RefreshToken.expires_at > now,
+        )
+        .order_by(models.RefreshToken.created_at.asc())
+        .all()
+    )
+
+    if len(active_tokens) >= MAX_ACTIVE_SESSIONS:
+        oldest_to_revoke = active_tokens[: len(active_tokens) - MAX_ACTIVE_SESSIONS + 1]
+        for old_token in oldest_to_revoke:
+            old_token.revoked = True
+            logger.info(
+                "Session limit reached for user_id=%s – revoking oldest session (token id=%s)",
+                user_id,
+                old_token.id,
+            )
+
     token = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(token.encode()).hexdigest()
-    expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expires_at = now + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
     db_token = models.RefreshToken(
         token_hash=token_hash,
         user_id=user_id,
-        expires_at=expires_at
+        expires_at=expires_at,
     )
     db.add(db_token)
     return token
@@ -365,14 +360,18 @@ def create_password_reset_token(user_name: str):
     """
     Create a short-lived JWT token scoped to password reset.
 
+    The token expires after :data:`RESET_PASSWORD_TOKEN_EXPIRE_MINUTES` minutes.
+    Expiry is enforced via the standard JWT ``exp`` claim so the library
+    validates it automatically on decode.
+
     Args:
         user_name (str): The username for which the reset is requested.
 
     Returns:
         str: The encoded JWT string with ``scope="password_reset_token"``.
     """
-    current_ts = datetime.now(timezone.utc).isoformat()
-    data = {"sub": user_name, "ts": current_ts, "scope": "password_reset_token"}
+    expire = datetime.now(timezone.utc) + timedelta(minutes=RESET_PASSWORD_TOKEN_EXPIRE_MINUTES)
+    data = {"sub": user_name, "scope": "password_reset_token", "exp": expire}
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_db():
@@ -487,6 +486,8 @@ def verify_password_reset_token(token: str = Depends(oauth2_password_reset_schem
     """
     Validate a password-reset token and ensure it has not been used before.
 
+    Expiry is enforced by the JWT library via the standard ``exp`` claim.
+
     Args:
         token (str): The raw password-reset JWT.
         db (Session): Active database session.
@@ -499,60 +500,78 @@ def verify_password_reset_token(token: str = Depends(oauth2_password_reset_schem
             scope or has already been used.
     """
     try:
+        # jwt.decode raises ExpiredSignatureError (subclass of JWTError) if exp is in the past
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
         if payload.get("scope") != "password_reset_token":
             raise HTTPException(status_code=400, detail="Invalid token scope")
-
-        if payload.get("ts") is None:
-            raise HTTPException(status_code=400, detail="Invalid token timestamp")
-        ts = datetime.fromisoformat(payload.get("ts"))
-        if ts < (datetime.now(timezone.utc) - timedelta(minutes=int(RESET_PASSWORD_TOKEN_EXPIRE_MINUTES))):
-            raise HTTPException(status_code=400, detail="Token has expired")
         if payload.get("sub") is None:
             raise HTTPException(status_code=400, detail="Invalid token subject")
 
         # Check if token already used
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         used_token = db.query(models.UsedPasswordResetToken).filter(
-        models.UsedPasswordResetToken.token_hash == token_hash).first()
+            models.UsedPasswordResetToken.token_hash == token_hash).first()
 
         if used_token:
             raise HTTPException(status_code=400, detail="Token has already been used")
 
         return payload.get("sub"), token
     except JWTError:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+ICAL_TOKEN_EXPIRE_DAYS = 7200  # iCal-Abonnements sind langlebig
+
 
 def generate_ical_token(user_name) -> str:
     """
-    Create a short-lived JWT token scoped to access internal ical.
+    Create a long-lived JWT token scoped to the internal iCal feed.
+
+    The token expires after :data:`ICAL_TOKEN_EXPIRE_DAYS` days.
+    Expiry is enforced via the standard JWT ``exp`` claim.
 
     Args:
-        user_name (str): The username for which the reset is requested.
+        user_name (str): The username the iCal feed belongs to.
 
     Returns:
         str: The encoded JWT string with ``scope="internal_ical_token"``.
     """
-    current_ts = datetime.now(timezone.utc).isoformat()
-    data = {"sub": user_name, "ts": current_ts, "scope": "internal_ical_token"}
+    expire = datetime.now(timezone.utc) + timedelta(days=ICAL_TOKEN_EXPIRE_DAYS)
+    data = {"sub": user_name, "scope": "internal_ical_token", "exp": expire}
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def verify_ical_token(token: str, db: Session) -> bool:
+    """
+    Validate an iCal token and return True if it is valid.
+
+    Expiry is enforced by the JWT library via the standard ``exp`` claim.
+
+    Args:
+        token (str): The raw iCal JWT string.
+        db (Session): Active database session.
+
+    Returns:
+        bool: ``True`` if the token is valid.
+
+    Raises:
+        HTTPException 400: If the token is invalid, expired or has the wrong scope.
+        HTTPException 404: If the user referenced in the token does not exist.
+    """
     try:
+        # jwt.decode raises ExpiredSignatureError automatically if exp is in the past
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
         if payload.get("scope") != "internal_ical_token":
             raise HTTPException(status_code=400, detail="Invalid token scope")
-
-        if payload.get("ts") is None:
-            raise HTTPException(status_code=400, detail="Invalid token timestamp")
         if payload.get("sub") is None:
             raise HTTPException(status_code=400, detail="Invalid token subject")
 
         user = db.query(models.User).filter(models.User.user_name == payload.get("sub")).first()
-        if user == None:
+        if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        logger.info("iCal token verified!".format(user.user_name))
+
+        logger.info("iCal token verified for user: %s", user.user_name)
         return True
 
     except JWTError:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(status_code=400, detail="Invalid or expired token")

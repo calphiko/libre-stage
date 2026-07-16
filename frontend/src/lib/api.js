@@ -14,6 +14,51 @@ let csrfTokenCache = null;
 let isRedirecting = false;
 let authenticationFailed = false; // Blockiert alle weiteren Requests
 
+// ---- Cross-Tab-Koordination ------------------------------------------------
+// Verhindert, dass mehrere Tabs gleichzeitig einen /refresh-Request stellen
+// und dabei die Replay-Detection triggern.
+const LAST_REFRESH_KEY = 'libre_stage_last_token_refresh';
+const RECENT_REFRESH_WINDOW_MS = 8000; // 8 s – innerhalb dieser Zeit kein 2. Refresh
+
+let _refreshChannel = null;
+
+function getRefreshChannel() {
+  if (typeof window === 'undefined') return null;
+  if (_refreshChannel) return _refreshChannel;
+  try {
+    _refreshChannel = new BroadcastChannel('libre_stage_auth');
+    _refreshChannel.onmessage = (event) => {
+      const { type, csrfToken } = event.data ?? {};
+      if (type === 'token_refreshed') {
+        // Ein anderer Tab hat erfolgreich refresht → Zustand zurücksetzen
+        refreshFailedRecently = false;
+        authenticationFailed = false;
+        isRedirecting = false;
+        if (csrfToken) rememberCsrfToken(csrfToken);
+      } else if (type === 'auth_logout') {
+        authenticationFailed = true;
+      }
+    };
+  } catch (_) {
+    // BroadcastChannel nicht verfügbar (ältere Browser) – kein Problem
+  }
+  return _refreshChannel;
+}
+
+/** Gibt true zurück, wenn ein anderer Tab in den letzten RECENT_REFRESH_WINDOW_MS schon refresht hat. */
+function anotherTabRefreshedRecently() {
+  if (typeof localStorage === 'undefined') return false;
+  const ts = parseInt(localStorage.getItem(LAST_REFRESH_KEY) || '0', 10);
+  return Date.now() - ts < RECENT_REFRESH_WINDOW_MS;
+}
+
+function markRefreshDone() {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(LAST_REFRESH_KEY, String(Date.now()));
+  }
+}
+// ---------------------------------------------------------------------------
+
 // Legacy-Aufräumhilfe: entfernt alte localStorage-Tokenreste
 function clearTokens() {
   csrfTokenCache = null;
@@ -93,6 +138,14 @@ async function refreshTokens() {
     throw new Error('Refresh recently failed, waiting for cooldown');
   }
 
+  // Cross-Tab-Schutz: Hat ein anderer Tab gerade schon refresht?
+  // Dann nutzen wir dessen frische Cookies, ohne selbst einen Request zu machen.
+  if (anotherTabRefreshedRecently()) {
+    refreshFailedRecently = false;
+    authenticationFailed = false;
+    return true;
+  }
+
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
   }
@@ -119,6 +172,11 @@ async function refreshTokens() {
 
       refreshFailedRecently = false;
       authenticationFailed = false;
+
+      // Andere Tabs informieren, damit sie keinen eigenen Refresh starten
+      markRefreshDone();
+      getRefreshChannel()?.postMessage({ type: 'token_refreshed', csrfToken: getCsrfToken() });
+
       return true;
     } catch (e) {
       refreshFailedRecently = true;
@@ -153,6 +211,9 @@ function redirectToLogin() {
  */
 async function fetchWithAuth(url, options = {}, retryCount = 0) {
   const MAX_RETRIES = 1;
+
+  // Channel sicherstellen (lazy, idempotent)
+  getRefreshChannel();
 
   if (authenticationFailed) {
     throw new Error('Authentication failed - please login again');
@@ -245,6 +306,9 @@ async function fetchWithAuth(url, options = {}, retryCount = 0) {
 }
 
 export async function login(username, password) {
+  // Channel beim ersten Login-Versuch initialisieren
+  getRefreshChannel();
+
   refreshFailedRecently = false;
   isRedirecting = false;
   authenticationFailed = false;
@@ -293,6 +357,8 @@ export async function logout() {
     console.error('Logout request failed:', e);
   } finally {
     clearTokens();
+    // Andere Tabs über Logout informieren
+    getRefreshChannel()?.postMessage({ type: 'auth_logout' });
   }
 
   return { message: 'Logged out' };
