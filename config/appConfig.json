@@ -292,5 +292,12 @@
     {
       "DEFAULT_SET_PAUSE_SECONDS": 600
     }
-  ]
+  ],
+  "playlist": {
+    "enabled": true,
+    "spotify": { "enabled": true },
+    "tidal":   { "enabled": false },
+    "min_rating_for_sync": 3.5,
+    "max_playlist_size": 50
+  }
 }
