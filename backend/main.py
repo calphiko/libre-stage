@@ -59,7 +59,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode, availability, gig_checklist, playlist
+from backend.routers import gigs, songs, rehearsals, surveys, cal, admin, password_reset, public, gigs_livemode, availability, gig_checklist
 from backend.utils.token_cleanup import cleanup_expired_tokens
 from backend.utils.password_validator import validate_password
 
@@ -228,27 +228,6 @@ async def periodic_token_cleanup():
 async def start_background_tasks():
     """Starte Background Tasks"""
     asyncio.create_task(periodic_token_cleanup())
-    asyncio.create_task(periodic_playlist_sync())
-
-
-async def periodic_playlist_sync():
-    """Background Task: Playlist alle 24 h synchronisieren (nur wenn aktiviert)."""
-    while True:
-        await asyncio.sleep(86400)  # 24 Stunden
-        from backend.app_config import get_config
-        cfg = get_config()
-        pcfg = cfg.get("playlist", {})
-        if not pcfg.get("enabled", False):
-            continue
-        logger.info("Running periodic playlist sync...")
-        from backend.services import playlist_service as ps
-        db = database.SessionLocal()
-        try:
-            ps.sync_playlists(db, pcfg)
-        except Exception as exc:
-            logger.error("Periodic playlist sync failed: %s", exc)
-        finally:
-            db.close()
 
 def get_todo_list(user_name: str, db: Session):
     user = db.query(models.User).filter_by(user_name=user_name).first()
@@ -367,8 +346,7 @@ AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "lax")
 AUTH_COOKIE_DOMAIN = os.getenv("AUTH_COOKIE_DOMAIN")
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "X-CSRF-Token"
-CSRF_EXEMPT_PATHS = {"/login", "/refresh", "/health", "/version", "/csrf",
-                    "/playlist/oauth/spotify/callback", "/playlist/oauth/tidal/callback"}
+CSRF_EXEMPT_PATHS = {"/login", "/refresh", "/health", "/version", "/csrf"}
 
 
 def _normalize_origin(origin: str | None) -> str | None:
@@ -698,4 +676,3 @@ app.include_router(public.router)
 app.include_router(gigs_livemode.router)
 app.include_router(availability.router)
 app.include_router(gig_checklist.router)
-app.include_router(playlist.router)
