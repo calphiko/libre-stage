@@ -28,7 +28,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { getUser, getVersionJson, logout as apiLogout, getAppLogo } from '$lib/api.js';
+	import { getUser, getVersionJson, logout as apiLogout, getAppLogo, getPlaylistConfig } from '$lib/api.js';
 	import { loadAppConfig } from '$lib/appConfig.js';
 
 	let { children } = $props();
@@ -46,6 +46,7 @@
 	});
 
 	let sidebarOpen = $state(false);
+	let playlistEnabled = $state(false);
 
 	const publicPaths = ['/', '/login', '/password_reset'];
 	function isPublicPath(pathname: string) {
@@ -85,6 +86,13 @@
 
 		try {
 			await loadAppConfig();
+			// Playlist-Feature-Flag laden
+			try {
+				const pcfg = await getPlaylistConfig();
+				playlistEnabled = pcfg?.enabled ?? false;
+			} catch (_) {
+				playlistEnabled = false;
+			}
 		} catch (e) {
 			console.error('Could not load app config', e);
 		}
@@ -123,8 +131,14 @@
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/songs" onclick={closeOnNavigate}>Songs</a>
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/proben" onclick={closeOnNavigate}>Proben</a>
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/abstimmungen" onclick={closeOnNavigate}>Abstimmungen</a>
+				{#if playlistEnabled}
+					<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/playlist" onclick={closeOnNavigate}>🎵 Playlist</a>
+				{/if}
 				{#if user.user_group === 'admin'}
 					<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
+					{#if playlistEnabled}
+						<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/streaming" onclick={closeOnNavigate}>⚙ Streaming</a>
+					{/if}
 				{/if}
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
