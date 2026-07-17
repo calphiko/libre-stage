@@ -60,7 +60,7 @@ Saison-Statistiken
 Das Widget **Saison** zeigt aggregierte Auswertungen des laufenden Jahres:
 
 * Gespielte vs. geplante Gigs (Fortschrittsring)
-* Songs gesamt vs. einzigartige Songs
+* Gespielte Songs vs. einzigartige Songs (übersprungene Songs werden nicht gezählt)
 * Feedback-Durchschnitt (Gauge)
 * Top-5-Genres im Repertoire
 

@@ -87,8 +87,11 @@ Die Pausenlänge kann für jeden Übergang im Editor angepasst werden.
 Sänger-Farb-Kodierung
 ----------------------
 
-Jeder Sänger erhält automatisch eine eigene Farbe als farbiger Balken
-links neben dem Song-Titel.
+Jeder Sänger erhält automatisch eine eigene Farbe, die als Textfarbe des
+Songtitels angezeigt wird – sowohl in der Setlist als auch in der Song-Liste.
+Die Farbzuordnung wird dynamisch vom Backend geladen und bei jeder Änderung
+der Setlist automatisch aktualisiert, sodass Anpassungen aus anderen Tabs
+oder durch andere Nutzer sofort sichtbar sind.
 
 Tastaturkürzel
 --------------
