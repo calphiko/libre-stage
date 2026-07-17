@@ -717,6 +717,7 @@ class SeasonStatistics(BaseModel):
     gig_count: int = 0
     played_gig_count: int = 0     # Anzahl gespielter (vergangener) Gigs
     total_songs: int = 0          # Gesamtzahl Song-Einträge in allen Sets
+    played_songs: int = 0         # Tatsächlich gespielte Songs (total_songs - skipped_count)
     unique_songs: int = 0         # Anzahl unique Songs
     skipped_count: int = 0
     inserted_count: int = 0

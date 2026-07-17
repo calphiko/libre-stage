@@ -87,8 +87,8 @@
           <div class="text-xs text-on-surface-variant">Gigs</div>
         </div>
         <div class="card variant-ghost-secondary p-3 text-center rounded-lg">
-          <div class="text-2xl font-bold text-secondary-500">{statistics.total_songs}</div>
-          <div class="text-xs text-on-surface-variant">Songs gesamt</div>
+          <div class="text-2xl font-bold text-secondary-500">{statistics.played_songs ?? statistics.total_songs}</div>
+          <div class="text-xs text-on-surface-variant">Songs gespielt</div>
         </div>
         <div class="card variant-ghost-tertiary p-3 text-center rounded-lg">
           <div class="text-2xl font-bold text-tertiary-500">{statistics.unique_songs}</div>
