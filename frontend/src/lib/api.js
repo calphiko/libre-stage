@@ -1365,3 +1365,16 @@ export async function deleteChecklistItem(token, gigId, itemId) {
     return res.json();
 }
 
+export async function exportAllSetlists() {
+    const res = await fetchWithAuth(`${API_URL}/gigs/export/setlists`, {
+        method: 'GET',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const blob = await res.blob();
+    // Dateinamen aus Content-Disposition-Header lesen, Fallback auf generischen Namen
+    const disposition = res.headers.get('content-disposition') ?? '';
+    const match = disposition.match(/filename="?([^";\n]+)"?/);
+    const filename = match ? match[1] : `setlists_export_${new Date().toISOString().slice(0, 10)}.json`;
+    return { blob, filename };
+}
+
