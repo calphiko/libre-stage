@@ -19,7 +19,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs, toggleChecklistItemDone } from '$lib/api.js';
+  import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs, toggleChecklistItemDone, exportAllSetlists } from '$lib/api.js';
   import { modalState } from '$lib/modalState.js';
   import ChecklistItemDetailModal from '$lib/components/ChecklistItemDetailModal.svelte';
   import SeasonGigProgressPlot from '$lib/plots/seasonGigProgressPlot.svelte';
@@ -52,6 +52,27 @@
 
   let tabsBasic = 0;
   let showSeasonStats = true;
+  let exportingSetlists = false;
+
+  async function downloadAllSetlists() {
+    exportingSetlists = true;
+    try {
+      const { blob, filename } = await exportAllSetlists();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showSuccess('Setlisten erfolgreich exportiert.');
+    } catch (e) {
+      showError('Fehler beim Exportieren der Setlisten: ' + e.message);
+    } finally {
+      exportingSetlists = false;
+    }
+  }
 
   function parseDateSafe(value) {
     if (!value) return null;
@@ -588,6 +609,29 @@
             </p>
             <button class="ui-btn ui-btn-ghost" onclick={() => showHelp = !showHelp}>
               {showHelp ? 'Anleitung ausblenden' : 'Anleitung anzeigen'}
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h2 class="text-xl font-semibold my-2 text-on-surface">Daten-Export</h2>
+          <div class="ui-card-muted p-4 border border-secondary-200 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-on-surface mb-1">Alle Setlisten exportieren</h3>
+              <p class="text-sm text-on-surface-variant">
+                Exportiert alle Gig-Setlisten der Datenbank als JSON-Datei (inkl. Sets, Songs und Timing).
+              </p>
+            </div>
+            <button
+              class="ui-btn ui-btn-secondary shrink-0"
+              onclick={downloadAllSetlists}
+              disabled={exportingSetlists}
+            >
+              {#if exportingSetlists}
+                <span class="animate-spin mr-2">⏳</span> Exportiere…
+              {:else}
+                ⬇ Setlisten herunterladen
+              {/if}
             </button>
           </div>
         </div>
