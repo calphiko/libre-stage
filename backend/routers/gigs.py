@@ -1797,3 +1797,35 @@ def is_setlist_available(
     is_available = set_available and setsong_available
     logger.info(f"Setlist availability for gig_id={gig_id}: {is_available}")
     return {"setlist_available": is_available}
+
+
+@router.get("/export/setlists", response_class=Response)
+def export_all_setlists(
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    """Exportiert alle Setlisten der Datenbank als herunterladbare JSON-Datei.
+
+    Returns:
+        Response: JSON-Datei mit allen Gig-Setlisten, sortiert nach Datum (absteigend).
+    """
+    logger.info("Exporting all setlists as JSON")
+    gigs = db.query(models.Gig).order_by(models.Gig.datum.desc()).all()
+
+    export_data = []
+    for gig in gigs:
+        try:
+            payload = _build_setlist_payload(gig)
+            export_data.append(payload)
+        except Exception as e:
+            logger.warning(f"Failed to build setlist payload for gig_id={gig.id}: {e}")
+
+    json_content = json.dumps(export_data, ensure_ascii=False, indent=2, default=str)
+    filename = f"setlists_export_{date.today().isoformat()}.json"
+
+    return Response(
+        content=json_content,
+        media_type="application/json",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
