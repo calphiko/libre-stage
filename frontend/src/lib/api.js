@@ -659,6 +659,15 @@ export async function getSetlistPDF(token, gigId, design = 'dark') {
     return res.blob();                   // <—— liefert einen echten Blob
 }
 
+export async function getSingerColors(token, gigId) {
+    const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/singer_colors`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
 export async function getSetlist(token, gigId) {
     const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/setlist`, {
       method: 'GET',

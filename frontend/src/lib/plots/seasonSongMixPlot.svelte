@@ -73,7 +73,7 @@
             },
             yAxis: {
                 type: 'category',
-                data: ['Songs gesamt'],
+                data: ['Gespielte Songs'],
                 axisLabel: { color: chartTheme.textColor },
                 axisLine: { lineStyle: { color: chartTheme.axisLineColor } }
             },

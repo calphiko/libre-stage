@@ -30,7 +30,8 @@
     setlist = $bindable(),
     canUndo = $bindable(false),
     canRedo = $bindable(false),
-    isUpdatingSpinner = $bindable(false)
+    isUpdatingSpinner = $bindable(false),
+    singerColors = {},
   } = $props();
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -893,11 +894,10 @@
       >
         {#each set.songs as song, songIdx (song.setsong_id)}
           {@const isDuplicateSong = duplicateSongKeys.has(getSongDuplicateKey(song))}
-          {@const singerColor = getColorBySinger(getFirstSinger(song.singer_lead))}
-          <div class="song-in-set shadow-sm hover:shadow transition-shadow duration-150 {getReadableTextClass(singerColor)}" data-song-id={song.setsong_id}
+          {@const singerColor = singerColors[getFirstSinger(song.singer_lead)] ?? getColorBySinger(getFirstSinger(song.singer_lead))}
+          <div class="song-in-set shadow-sm hover:shadow transition-shadow duration-150" data-song-id={song.setsong_id}
           class:song-removing={deletingSongIds.has(song.setsong_id)}
           class:song-duplicate={isDuplicateSong}
-          style="--song-singer-color:{singerColor};"
           animate:flip={{ duration: 180 }}
           >
             <span class="flex items-center gap-1.5 min-w-0 flex-grow py-0.5">
@@ -905,7 +905,7 @@
               {#if song.brass === 1}
                 <span class="text-base flex-shrink-0" title="Bläser">🎺</span>
               {/if}
-              <span class="font-semibold text-xs truncate mr-1">{song.title}</span>
+              <span class="font-semibold text-xs truncate mr-1" style="color:{singerColor};">{song.title}</span>
               {#if isDuplicateSong}
                 <span class="duplicate-badge" title="Song kommt mehrfach in der Setliste vor">!</span>
               {/if}
@@ -1174,25 +1174,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--song-singer-color);
-  background:
-    linear-gradient(145deg,
-      color-mix(in oklab, var(--song-singer-color) 92%, white) 0%,
-      color-mix(in oklab, var(--song-singer-color) 82%, white) 100%) !important;
   margin-bottom: 4px;
   padding: 0.3rem 0.6rem;
   border-radius: 12px;
   border: 1px solid color-mix(in oklab, light-dark(black, white) 14%, transparent);
+  background: color-mix(in oklab, light-dark(var(--color-surface-100), var(--color-surface-800)) 90%, transparent);
   transition: transform 170ms ease, opacity 170ms ease, margin 170ms ease, padding 170ms ease;
   transform-origin: left center;
   will-change: transform, opacity;
 }
 
 :global(.dark) .song-in-set {
-  background:
-    linear-gradient(145deg,
-      color-mix(in oklab, var(--song-singer-color) 86%, #0f172a) 0%,
-      color-mix(in oklab, var(--song-singer-color) 74%, #020617) 100%) !important;
+  background: color-mix(in oklab, var(--color-surface-800) 90%, transparent);
 }
 
 .song-removing {

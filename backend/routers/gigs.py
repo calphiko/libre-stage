@@ -181,6 +181,26 @@ def _calculate_setlist_version(payload: dict) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
 
 
+SINGER_COLOR_PALETTE = [
+    "#29B619", "#227FFF", "#E644C3", "#FF8C00", "#8B5CF6",
+    "#059669", "#DC2626", "#CA8A04", "#0891B2", "#6366F1",
+]
+
+
+def _build_singer_colors(gig: models.Gig) -> dict[str, str]:
+    """Weise jedem Leadsänger deterministisch eine Farbe aus der Palette zu."""
+    singers = sorted({
+        (setsong.song.singer_lead or "").replace("+", " ").replace(",", " ").split(" ")[0]
+        for gs in gig.sets
+        for setsong in gs.set.songs
+        if setsong.song and setsong.song.singer_lead
+    })
+    return {
+        singer: SINGER_COLOR_PALETTE[i % len(SINGER_COLOR_PALETTE)]
+        for i, singer in enumerate(singers)
+    }
+
+
 def _build_setlist_payload(gig: models.Gig) -> dict:
     payload = gig.to_dict()
     payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
@@ -670,7 +690,8 @@ def get_season_statistics(
         jahr=jahr,
         gig_count=gig_count,
         played_gig_count=played_gig_count,
-        total_songs=total_songs,
+        total_songs=total_songs - skipped_count,
+        planned_songs=total_songs,
         unique_songs=len(unique_song_ids),
         skipped_count=skipped_count,
         inserted_count=inserted_count,
@@ -1408,23 +1429,7 @@ def download_setlist(
 
     service.dump_gig_struct(gig)
 
-    # Dynamische Sänger-Farben: Farben werden aus einer Palette zugewiesen
-    SINGER_COLOR_PALETTE = [
-        "#29B619", "#227FFF", "#E644C3", "#FF8C00", "#8B5CF6",
-        "#059669", "#DC2626", "#CA8A04", "#0891B2", "#6366F1",
-    ]
-
-    singers = sorted({
-        (setsong.song.singer_lead or "").replace("+"," ").replace(",", " ").split(" ")[0]
-        for gs in gig.sets
-        for setsong in gs.set.songs
-        if setsong.song.singer_lead
-    })
-
-    singer_colors = {
-        singer: SINGER_COLOR_PALETTE[i % len(SINGER_COLOR_PALETTE)]
-        for i, singer in enumerate(singers)
-    }
+    singer_colors = _build_singer_colors(gig)
 
     pdf_bytes = SetlistPDF(
         gig,
@@ -1440,6 +1445,19 @@ def download_setlist(
         media_type="application/pdf",
         headers=headers
     )
+
+
+@router.get("/{gig_id}/singer_colors", response_model=dict[str, str])
+def get_singer_colors(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    """Gibt eine deterministisch berechnete Sänger→Farbe-Zuordnung für den Gig zurück."""
+    gig = db.query(models.Gig).get(gig_id)
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+    return _build_singer_colors(gig)
 
 
 @router.get("/{gig_id}/setlist", response_model=schemas.GigSetlistOut)
