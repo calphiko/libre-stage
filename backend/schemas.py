@@ -716,7 +716,8 @@ class SeasonStatistics(BaseModel):
     jahr: Optional[int] = None
     gig_count: int = 0
     played_gig_count: int = 0     # Anzahl gespielter (vergangener) Gigs
-    total_songs: int = 0          # Gesamtzahl Song-Einträge in allen Sets
+    total_songs: int = 0          # Tatsächlich gespielte Gesamtzahl Song-Einträge in allen Sets
+    planned_songs: int = 0         #  Ursprünglich geplante Songs (total_songs - skipped_count)
     unique_songs: int = 0         # Anzahl unique Songs
     skipped_count: int = 0
     inserted_count: int = 0

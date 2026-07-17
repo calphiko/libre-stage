@@ -529,9 +529,9 @@
 
             <div class="ui-card-muted p-3 md:p-4 min-h-[240px] md:min-h-[260px] overflow-hidden">
               <SeasonSongMixPlot
-                totalSongs={seasonStats.total_songs}
+                totalSongs={seasonStats.played_songs}
                 uniqueSongs={seasonStats.unique_songs}
-                titlePrefix="Songs gesamt vs. Unique"
+                titlePrefix="Gespielte Songs"
               />
             </div>
 

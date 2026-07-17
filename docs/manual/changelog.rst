@@ -3,6 +3,54 @@
 Änderungsprotokoll
 ==================
 
+0.5.29 (2026-07-17)
+-------------------
+
+Fixed
+~~~~~
+
+* **Gespielte Songs – Übersprungene Songs werden abgezogen**: Die Statistik-
+  Kachel „Gespielte Songs" im Dashboard und im Saison-Statistik-Modal zeigte
+  bisher alle Song-Einträge in Setlisten – unabhängig davon, ob ein Song
+  tatsächlich gespielt oder übersprungen wurde. Ab sofort wird
+  ``played_songs = total_songs − skipped_count`` berechnet und angezeigt.
+  Das Feld ``played_songs`` wurde dem Schema ``SeasonStatistics`` hinzugefügt;
+  ``total_songs`` (Gesamtzahl inkl. übersprungener Songs) bleibt weiterhin
+  intern vorhanden.
+
+Changed
+~~~~~~~
+
+* **Setlist-Editor – Sänger-Farbgebung überarbeitet**: Die farbigen
+  Hintergrundgradienten der Song-Kacheln im Setlist-Editor und in der
+  Song-Liste wurden durch eine subtilere Variante ersetzt. Die Sängerfarbe
+  wird nun ausschließlich als Textfarbe des Songtitels angezeigt; die
+  Kacheln selbst bleiben einfarbig im Surface-Ton der jeweiligen Theme-
+  Variante. Dadurch ist der Editor bei dunklem Theme besser lesbar und
+  wirkt insgesamt ruhiger.
+
+* **Setlist-Editor – Sänger-Farben werden dynamisch vom Backend geladen**:
+  Statt die Farben ausschließlich clientseitig zu berechnen, lädt der
+  Setlist-Editor die Sänger-Farb-Zuordnung jetzt über den Endpoint
+  ``GET /gigs/{gig_id}/singer_colors``. Die Farben werden bei jeder
+  Änderung der Setlist-Version (``setlist_version``-Reaktivität) automatisch
+  neu abgerufen, sodass externe Änderungen (z. B. durch andere Tabs oder
+  Nutzer) sofort berücksichtigt werden.
+
+Removed
+~~~~~~~
+
+* **Playlist- und Streaming-Funktionalität entfernt**: Die kurzzeitig
+  implementierte Playlist-Verwaltung (inkl. Streaming-Zugangsdaten-
+  Administration) wurde vollständig aus dem Projekt entfernt. Betroffen sind
+  der Backend-Router ``playlist.py``, der ``playlist_service.py``, die
+  zugehörigen Datenbankmodelle und Alembic-Migrationen sowie die
+  Frontend-Seiten ``/playlist`` und ``/admin/streaming``.
+
+* Chore: Projektversion auf ``0.5.29`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``).
+* Manual: Changelog für Release ``0.5.29`` ergänzt.
+
 0.5.28 (2026-07-16)
 -------------------
 
