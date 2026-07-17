@@ -24,7 +24,7 @@
   import { getFirstSinger, getColorBySinger } from '$lib/common.js';
 
 
-  let { songs = [], addSongToSetListEnd, addSongToSet = null, setlist = null } = $props();
+  let { songs = [], addSongToSetListEnd, addSongToSet = null, setlist = null, singerColors = {} } = $props();
 
 
   let genreFilter = $state('');
@@ -105,7 +105,8 @@
   }
 
   function getSingerColor(singerLead, singerLeadFallback = '') {
-    return getColorBySinger(getFirstSinger(singerLead || singerLeadFallback));
+    const first = getFirstSinger(singerLead || singerLeadFallback);
+    return singerColors[first] ?? getColorBySinger(first);
   }
 
   function getReadableTextClass(backgroundColor) {
@@ -236,8 +237,7 @@
       {#each dndItems as song (song.setsong_id)}
         {@const singerColor = getSingerColor(song.singer_lead_short, song.singer_lead)}
         <div
-          class="card rounded-xl song-item w-full {getReadableTextClass(singerColor)} transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
-          style="--song-singer-color:{singerColor}; border-left: 6px solid {singerColor};"
+          class="card rounded-xl song-item w-full transition-all duration-200 hover:scale-[1.01] {open.has(song.id) ? 'ring-2 ring-primary-500' : ''} py-0"
         >
           <div class="p-2.5 py-1.5">
             <!-- Header -->
@@ -246,7 +246,7 @@
                 <div
                   class="flex-grow min-w-0 text-left cursor-grab active:cursor-grabbing p-1 touch-manipulation"
                 >
-                  <p class="text-sm leading-tight font-semibold">{song.title}</p>
+                  <p class="text-sm leading-tight font-semibold" style="color:{singerColor};">{song.title}</p>
                   <p class="text-xs opacity-75">{song.interpret}</p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -360,19 +360,11 @@
   }
 
   .song-item {
-    background:
-      linear-gradient(145deg,
-        color-mix(in oklab, var(--song-singer-color) 92%, white) 0%,
-        color-mix(in oklab, var(--song-singer-color) 82%, white) 100%) !important;
     border: 1px solid color-mix(in oklab, light-dark(black, white) 12%, transparent);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :global(.dark) .song-item {
-    background:
-      linear-gradient(145deg,
-        color-mix(in oklab, var(--song-singer-color) 86%, #0f172a) 0%,
-        color-mix(in oklab, var(--song-singer-color) 74%, #020617) 100%) !important;
     border-color: color-mix(in oklab, white 20%, transparent);
   }
 

@@ -21,7 +21,7 @@
   import SongList from './SongList.svelte';
   import { get } from 'svelte/store';
   import { gigIdForEditor } from '$lib/stores.js';
-  import { getSetlist, updateGigSetlist, getSongs, getUser, getSong } from '$lib/api.js';
+  import { getSetlist, updateGigSetlist, getSongs, getUser, getSong, getSingerColors } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
@@ -36,6 +36,7 @@
 
   let songs = $state([]);
   let setlist = $state(null);
+  let singerColors = $state({});
   let error = $state('');
   let user = $state(null);
   let showHelp = $state(false);
@@ -61,6 +62,14 @@
 
   const gigId = get(gigIdForEditor);
   console.log("gigId:", gigId);
+
+  // Sänger-Farben bei Setlist-Änderungen automatisch aktualisieren
+  $effect(() => {
+    if (!setlist?.setlist_version) return;
+    getSingerColors(null, gigId)
+      .then(colors => { singerColors = colors; })
+      .catch(e => console.warn('Could not refresh singer colors:', e));
+  });
 
   async function pollForNewerSetlistVersion() {
     if (!setlist?.id || isSetlistPollingInFlight) return;
@@ -337,7 +346,7 @@
       </div>
       <div class="card-body pt-1 flex-1 min-h-0 flex flex-col">
         {#if songs.length}
-          <SongList {songs} {addSongToSetListEnd} {addSongToSet} setlist={setlist} />
+          <SongList {songs} {addSongToSetListEnd} {addSongToSet} setlist={setlist} {singerColors} />
         {:else}
           <div class="flex flex-col items-center justify-center py-6 opacity-60">
             <div class="animate-pulse">
@@ -363,7 +372,7 @@
       </div>
       <div class="card-body pt-1 flex-1 min-h-0 overflow-y-auto">
         {#if setlist}
-          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} bind:isUpdatingSpinner/>
+          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} bind:isUpdatingSpinner {singerColors}/>
           <div bind:this={setlistEndAnchor}></div>
         {:else}
           <div class="flex flex-col items-center justify-center py-6 opacity-60">
