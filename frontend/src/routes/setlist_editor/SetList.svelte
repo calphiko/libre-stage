@@ -242,7 +242,7 @@
       const currentGigId = Number(setlist?.id);
       const options = (gigs ?? [])
         .filter((gig) => Number(gig.id) !== currentGigId)
-        .filter((gig) => isGigInPast(gig.datum))
+        //.filter((gig) => isGigInPast(gig.datum))
         .sort((a, b) => String(b.datum ?? '').localeCompare(String(a.datum ?? '')))
         .map((gig) => ({
           id: Number(gig.id),
@@ -999,7 +999,7 @@
     onclick={togglePastSetImport}
     disabled={isUpdating}
   >
-    {showPastSetImport ? 'Import schliessen' : 'Set aus vergangenem Gig'}
+    {showPastSetImport ? 'Import schliessen' : 'Set aus anderem Gig'}
   </button>
   <button class="btn variant-filled-secondary hover:variant-filled-primary min-h-[38px] px-5 font-bold shadow-md transition-all duration-150 touch-manipulation rounded-lg" onclick={addSetAtEnd} disabled={isUpdating}>
     + Weiteres Set hinzufügen
