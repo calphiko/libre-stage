@@ -111,6 +111,12 @@
     }
 
     try {
+      singerColors = await getSingerColors(null, gigId);
+    } catch (e) {
+      console.warn('Could not load initial singer colors:', e);
+    }
+
+    try {
       setlist = await getSetlist(null, gigId);
       console.log(setlist);
       setlistPollingIntervalId = setInterval(pollForNewerSetlistVersion, SETLIST_POLL_INTERVAL_MS);
