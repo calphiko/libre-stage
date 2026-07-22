@@ -201,6 +201,26 @@ def _build_singer_colors(gig: models.Gig) -> dict[str, str]:
     }
 
 
+def _build_singer_colors_from_songs(db: Session) -> dict[str, str]:
+    """Weise jedem Leadsänger aus dem gesamten Song-Repertoire deterministisch eine Farbe zu.
+
+    Im Gegensatz zu :func:`_build_singer_colors` ist diese Funktion nicht auf die
+    Songs beschränkt, die aktuell in der Setliste eines Gigs enthalten sind. So
+    stehen die Sänger-Farben bereits vor dem Befüllen einer (leeren) Setliste zur
+    Verfügung, z. B. für die Songliste im Setlist-Editor.
+    """
+    rows = db.query(models.Song.singer_lead).filter(models.Song.singer_lead.isnot(None)).all()
+    singers = sorted({
+        (singer_lead or "").replace("+", " ").replace(",", " ").split(" ")[0]
+        for (singer_lead,) in rows
+        if singer_lead
+    })
+    return {
+        singer: SINGER_COLOR_PALETTE[i % len(SINGER_COLOR_PALETTE)]
+        for i, singer in enumerate(singers)
+    }
+
+
 def _build_setlist_payload(gig: models.Gig) -> dict:
     payload = gig.to_dict()
     payload["timing"] = serialize_timing_for_api(calculate_setlist_timing(gig))
@@ -1457,7 +1477,7 @@ def get_singer_colors(
     gig = db.query(models.Gig).get(gig_id)
     if not gig:
         raise HTTPException(status_code=404, detail="Gig not found")
-    return _build_singer_colors(gig)
+    return _build_singer_colors_from_songs(db)
 
 
 @router.get("/{gig_id}/setlist", response_model=schemas.GigSetlistOut)
