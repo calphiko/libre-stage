@@ -2,6 +2,15 @@ export  function getFirstSinger(lead) {
     if (!lead) return '';
     return lead.split(/[,+]/)[0].trim();
 }
+
+// Erkennt, ob das aktuelle Gerät primär über Touch bedient wird (kein Maus-/Trackpad-Pointer).
+// Wird u.a. genutzt, um Drag&Drop-Griffzonen nur auf Touch-Geräten zu aktivieren.
+export function isTouchDevice() {
+  if (typeof window === 'undefined') return false;
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return true;
+  return 'ontouchstart' in window || (navigator?.maxTouchPoints ?? 0) > 0;
+}
+
 export  function getColorBySinger(singer) {
     // Dynamische Farbzuweisung basierend auf dem Sänger-Namen
     const palette = [
