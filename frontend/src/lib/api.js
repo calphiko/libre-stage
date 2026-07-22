@@ -1016,6 +1016,19 @@ export async function insertSongBefore(token, gigId, beforeSetSongId, songId) {
   return res.json();
 }
 
+export async function moveSetLiveMode(token, gigId, position, direction) {
+  const res = await fetchWithAuth(`${API_URL}/gigs_lm/${gigId}/move-set?position=${position}&direction=${direction}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
 export async function getLiveModeAvailability(token, gigId, force = false) {
   const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/livemode_available?force=${force}`, {
     method: 'GET',

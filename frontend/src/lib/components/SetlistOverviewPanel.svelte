@@ -19,22 +19,26 @@
 <script>
   import { tick } from 'svelte';
 
-  let { allSongs = [], currentIndex = 0, onJump, onClose, open = false } = $props();
+  let { allSongs = [], currentIndex = 0, onJump, onClose, open = false, sets = [], onMoveSet } = $props();
 
   // Gruppiere Songs nach Set-Name
   let groupedSets = $derived(() => {
-    const sets = [];
+    const result = [];
     let currentSet = null;
     for (let i = 0; i < allSongs.length; i++) {
       const song = allSongs[i];
-      if (!currentSet || currentSet.name !== song.setName) {
-        currentSet = { name: song.setName, songs: [] };
-        sets.push(currentSet);
+      if (!currentSet || currentSet.name !== song.setName || currentSet.position !== song.setPosition) {
+        currentSet = { name: song.setName, position: song.setPosition, songs: [] };
+        result.push(currentSet);
       }
       currentSet.songs.push({ ...song, globalIndex: i });
     }
-    return sets;
+    return result;
   });
+
+  function moveSet(position, direction) {
+    onMoveSet?.(position, direction);
+  }
 
   // Ref auf das aktive Element zum Scrollen
   let activeElement = $state(null);
@@ -116,16 +120,38 @@
 
     <!-- Song-Liste -->
     <div class="flex-1 overflow-y-auto py-2">
-      {#each groupedSets() as set}
+      {#each groupedSets() as set, setIdx}
         {@const stats = setStats(set.songs)}
         <!-- Set-Überschrift -->
-        <div class="sticky top-0 z-10 px-4 py-1.5 bg-surface-200 dark:bg-surface-700 border-b border-surface-300 dark:border-surface-600 flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wide text-surface-600 dark:text-surface-300">
+        <div class="sticky top-0 z-10 px-4 py-1.5 bg-surface-200 dark:bg-surface-700 border-b border-surface-300 dark:border-surface-600 flex items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase tracking-wide text-surface-600 dark:text-surface-300 truncate">
             {set.name}
           </span>
-          <span class="text-xs text-surface-500 dark:text-surface-400">
-            {stats.done}/{stats.total}
-          </span>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <span class="text-xs text-surface-500 dark:text-surface-400">
+              {stats.done}/{stats.total}
+            </span>
+            {#if onMoveSet}
+              <button
+                class="btn-icon btn-icon-sm variant-ghost"
+                onclick={() => moveSet(set.position, 'up')}
+                disabled={setIdx === 0}
+                aria-label={`Set "${set.name}" nach vorne verschieben`}
+                title="Set nach vorne verschieben"
+              >
+                ▲
+              </button>
+              <button
+                class="btn-icon btn-icon-sm variant-ghost"
+                onclick={() => moveSet(set.position, 'down')}
+                disabled={setIdx === groupedSets().length - 1}
+                aria-label={`Set "${set.name}" nach hinten verschieben`}
+                title="Set nach hinten verschieben"
+              >
+                ▼
+              </button>
+            {/if}
+          </div>
         </div>
 
         <!-- Songs des Sets -->
