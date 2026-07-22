@@ -21,7 +21,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { flip } from 'svelte/animate';
   import { dndzone } from 'svelte-dnd-action';
-  import {getFirstSinger, getColorBySinger } from '$lib/common.js';
+  import {getFirstSinger, getColorBySinger, isTouchDevice } from '$lib/common.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { updateGigSetlist, getSong, getGigs, getSetlist } from '$lib/api.js';
 
@@ -474,6 +474,31 @@
     return items.filter(item => !item._dndShadowItem);
   }
 
+  // Auf Touch-Geräten soll das Ziehen von Songs innerhalb eines Sets nur über eine
+  // dedizierte Griffzone starten, damit die restliche Kartenfläche normal gescrollt werden kann.
+  // Auf Nicht-Touch-Geräten (Maus/Trackpad) bleibt das Verhalten wie zuvor: der ganze Eintrag ist ziehbar.
+  let songsTouchOnlyHandle = $state(false);
+  let songsDragDisabled = $state(false);
+
+  $effect(() => {
+    songsTouchOnlyHandle = isTouchDevice();
+    songsDragDisabled = songsTouchOnlyHandle;
+  });
+
+  function startSongDrag(e) {
+    if (!songsTouchOnlyHandle) return;
+    e.preventDefault();
+    songsDragDisabled = false;
+  }
+
+  function handleSongDragHandleKeydown(e) {
+    if (!songsTouchOnlyHandle) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      songsDragDisabled = false;
+    }
+  }
+
   function moveSetInArray(sets, fromIdx, toIdx) {
     const next = [...sets];
     const [moved] = next.splice(fromIdx, 1);
@@ -580,6 +605,7 @@
   }
 
   async function handleSongsFinalize(setIdx, { detail }) {
+    if (songsTouchOnlyHandle) songsDragDisabled = true;
     if (isUpdating) return;
     try {
       const processedSongs = cleanDnDItems(detail.items).map(song => {
@@ -884,7 +910,7 @@
           items: set.songs,
           type: 'song-in-set',
           flipDurationMs: 220,
-          dragDisabled: isUpdating,
+          dragDisabled: isUpdating || songsDragDisabled,
           dropFromOthersDisabled: isUpdating
         }}
         onconsider={e => handleSongsConsider(setIdx, e)}
@@ -898,9 +924,24 @@
           <div class="song-in-set shadow-sm hover:shadow transition-shadow duration-150" data-song-id={song.setsong_id}
           class:song-removing={deletingSongIds.has(song.setsong_id)}
           class:song-duplicate={isDuplicateSong}
+          class:song-in-set-draggable={!songsTouchOnlyHandle}
           animate:flip={{ duration: 180 }}
           >
             <span class="flex items-center gap-1.5 min-w-0 flex-grow py-0.5">
+              {#if songsTouchOnlyHandle}
+                <button
+                  type="button"
+                  class="song-in-set-drag-handle flex-shrink-0 flex items-center justify-center p-1 -ml-0.5 rounded cursor-grab active:cursor-grabbing touch-none"
+                  aria-label="Song verschieben"
+                  onmousedown={startSongDrag}
+                  ontouchstart={startSongDrag}
+                  onkeydown={handleSongDragHandleKeydown}
+                >
+                  <svg class="w-3.5 h-3.5 opacity-60" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M7 4a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm6-10a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2z"></path>
+                  </svg>
+                </button>
+              {/if}
               <small class="song-time bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded font-bold text-xs">{getSongStartTime(setIdx, songIdx) || '--:--'}</small>
               {#if song.brass === 1}
                 <span class="text-base flex-shrink-0" title="Bläser">🎺</span>
@@ -1188,6 +1229,14 @@
   background: color-mix(in oklab, var(--color-surface-800) 90%, transparent);
 }
 
+.song-in-set-draggable {
+  cursor: grab;
+}
+
+.song-in-set-draggable:active {
+  cursor: grabbing;
+}
+
 .song-removing {
   transform: translateX(28px);
   opacity: 0;
@@ -1245,6 +1294,17 @@
 .song-time {
   display: inline-block;
   color: inherit;
+}
+
+.song-in-set-drag-handle {
+  background: transparent;
+  border: none;
+  color: inherit;
+  touch-action: none;
+}
+
+.song-in-set-drag-handle:active {
+  background: color-mix(in oklab, light-dark(black, white) 8%, transparent);
 }
 
 .pause-label {

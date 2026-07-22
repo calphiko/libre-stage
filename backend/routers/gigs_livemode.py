@@ -54,30 +54,8 @@ class LogFilter(logging.Filter):  # pragma: no cover
 uvicorn_logger = logging.getLogger("uvicorn.access")
 uvicorn_logger.addFilter(LogFilter())
 
-@router.get("/{gig_id}", response_model=schemas.GigSetListLiveMode)
-def get_gigs_lm(
-    gig_id: int,
-    db: Session = Depends(auth.get_db),
-    current_user: models.User = Depends(auth.get_current_user_dep)
-):
-    if not check_editor(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    gig = db.query(models.Gig).filter(models.Gig.id == gig_id).first()
-    if not gig:
-        raise HTTPException(status_code=404, detail="Gig not found")
-
-    # Prüfe auf korrupte SetSongs (ohne Song-Referenz) und entferne sie
-    for gigset in gig.sets:
-        set_obj = gigset.set
-        corrupted_setsongs = [ss for ss in set_obj.songs if not ss.song]
-        if corrupted_setsongs:
-            logger.warning(f"Found {len(corrupted_setsongs)} corrupted SetSongs in Set {set_obj.id}, removing them")
-            for ss in corrupted_setsongs:
-                db.delete(ss)
-            db.commit()
-
-    # Manuell serialisieren um Live-Mode-Felder einzuschließen
+def _serialize_gig_lm(gig: models.Gig) -> dict:
+    """Serialisiert einen Gig inkl. Sets/Songs für den Live-Mode-Endpunkt."""
     sets_data = []
     for gigset in sorted(gig.sets, key=lambda x: x.position):
         set_obj = gigset.set
@@ -115,6 +93,67 @@ def get_gigs_lm(
         "end": gig.end.strftime('%H:%M:%S') if gig.end else None,
         "sets": sets_data
     }
+
+
+@router.get("/{gig_id}", response_model=schemas.GigSetListLiveMode)
+def get_gigs_lm(
+    gig_id: int,
+    db: Session = Depends(auth.get_db),
+    current_user: models.User = Depends(auth.get_current_user_dep)
+):
+    if not check_editor(current_user):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).filter(models.Gig.id == gig_id).first()
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    # Prüfe auf korrupte SetSongs (ohne Song-Referenz) und entferne sie
+    for gigset in gig.sets:
+        set_obj = gigset.set
+        corrupted_setsongs = [ss for ss in set_obj.songs if not ss.song]
+        if corrupted_setsongs:
+            logger.warning(f"Found {len(corrupted_setsongs)} corrupted SetSongs in Set {set_obj.id}, removing them")
+            for ss in corrupted_setsongs:
+                db.delete(ss)
+            db.commit()
+
+    return _serialize_gig_lm(gig)
+
+
+@router.post("/{gig_id}/move-set", response_model=schemas.GigSetListLiveMode)
+def move_set_lm(
+    gig_id: int,
+    position: int = Query(..., description="Aktuelle Position (1-basiert) des zu verschiebenden Sets"),
+    direction: str = Query(..., pattern="^(up|down)$", description="Richtung: 'up' oder 'down'"),
+    db: Session = Depends(auth.get_db),
+    current_user: models.User = Depends(auth.get_current_user_dep)
+):
+    if not check_editor(current_user):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    gig = db.query(models.Gig).filter(models.Gig.id == gig_id).first()
+    if not gig:
+        raise HTTPException(status_code=404, detail="Gig not found")
+
+    ordered_gigsets = sorted(gig.sets, key=lambda x: x.position)
+    current_idx = next((i for i, gs in enumerate(ordered_gigsets) if gs.position == position), None)
+    if current_idx is None:
+        raise HTTPException(status_code=404, detail="Set an angegebener Position nicht gefunden")
+
+    target_idx = current_idx - 1 if direction == "up" else current_idx + 1
+    if target_idx < 0 or target_idx >= len(ordered_gigsets):
+        # Bereits am Anfang/Ende – nichts zu tun
+        return _serialize_gig_lm(gig)
+
+    current_gigset = ordered_gigsets[current_idx]
+    target_gigset = ordered_gigsets[target_idx]
+    current_gigset.position, target_gigset.position = target_gigset.position, current_gigset.position
+
+    db.commit()
+    db.refresh(gig)
+
+    return _serialize_gig_lm(gig)
 
 @router.put("/{gig_id}/", response_model=schemas.SongInSetLM)
 def update_songs_lm(

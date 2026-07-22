@@ -19,7 +19,7 @@
 <script>
   import { modalState } from '$lib/modalState.js';
 import { onMount, onDestroy } from 'svelte';
-	import { getGigLiveMode, updateSongLiveMode, insertSongBefore, getSongs } from '$lib/api.js';
+	import { getGigLiveMode, updateSongLiveMode, insertSongBefore, getSongs, moveSetLiveMode } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import SetlistOverviewPanel from '$lib/components/SetlistOverviewPanel.svelte';
 
@@ -321,6 +321,21 @@ import { onMount, onDestroy } from 'svelte';
 
     } catch (e) {
       showError(e.message ?? 'Update fehlgeschlagen');
+    }
+  }
+
+  async function handleMoveSet(position, direction) {
+    const currentSongId = currentSong?.id ?? null;
+    try {
+      await moveSetLiveMode(null, gigId, position, direction);
+      await loadGigData(true);
+
+      if (currentSongId != null) {
+        const newIndex = allSongs.findIndex(s => s.id === currentSongId);
+        if (newIndex !== -1) currentIndex = newIndex;
+      }
+    } catch (e) {
+      showError(e.message ?? 'Fehler beim Verschieben des Sets');
     }
   }
 
@@ -808,8 +823,10 @@ import { onMount, onDestroy } from 'svelte';
   <SetlistOverviewPanel
     {allSongs}
     {currentIndex}
+    sets={gig?.sets ?? []}
     open={showSetlistOverview}
     onJump={(index) => jumpToSong(index)}
+    onMoveSet={handleMoveSet}
     onClose={() => { showSetlistOverview = false; }}
   />
 </div>

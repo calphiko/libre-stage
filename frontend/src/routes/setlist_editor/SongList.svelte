@@ -21,7 +21,7 @@
 
   import { modalState } from '$lib/modalState.js';
   import SongDetailsModal from '$lib/components/SongDetailsModal.svelte';
-  import { getFirstSinger, getColorBySinger } from '$lib/common.js';
+  import { getFirstSinger, getColorBySinger, isTouchDevice } from '$lib/common.js';
 
 
   let { songs = [], addSongToSetListEnd, addSongToSet = null, setlist = null, singerColors = {} } = $props();
@@ -55,6 +55,17 @@
   ));
 
   let dndItems = $state([]);
+  // Auf Touch-Geräten soll nur über eine dedizierte Griffzone gezogen werden können,
+  // damit der Rest der Karte (Titel, Buttons) weiterhin normal gescrollt/bedient werden kann.
+  // Auf Nicht-Touch-Geräten (Maus/Trackpad) bleibt das Verhalten wie zuvor: die ganze Karte ist ziehbar.
+  let touchOnlyHandle = $state(false);
+  let dragDisabled = $state(false);
+
+  $effect(() => {
+    touchOnlyHandle = isTouchDevice();
+    dragDisabled = touchOnlyHandle;
+  });
+
   $effect(() => {
     dndItems = filtered.map(song => ({
       ...song,
@@ -67,11 +78,26 @@
   }
 
   function handleDndFinalize(e) {
+    if (touchOnlyHandle) dragDisabled = true;
     // Regeneriere die Liste der Dnd-Elemente mit neuen IDs, damit sie erneut gezogen werden können
     dndItems = filtered.map(song => ({
       ...song,
       setsong_id: `new-${song.id}-${Math.floor(Math.random() * 1000000)}`
     }));
+  }
+
+  function startDrag(e) {
+    if (!touchOnlyHandle) return;
+    e.preventDefault();
+    dragDisabled = false;
+  }
+
+  function handleDragHandleKeydown(e) {
+    if (!touchOnlyHandle) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      dragDisabled = false;
+    }
   }
 
   function openModal(id) {
@@ -227,7 +253,7 @@
       use:dndzone={{
         items: dndItems,
         type: 'song-in-set',
-        dragDisabled: false,
+        dragDisabled,
         dropTargetDisabled: true,
         flipDurationMs: 150
       }}
@@ -243,9 +269,22 @@
             <!-- Header -->
             <div>
               <div class="flex justify-between items-center gap-2">
-                <div
-                  class="flex-grow min-w-0 text-left cursor-grab active:cursor-grabbing p-1 touch-manipulation"
-                >
+                {#if touchOnlyHandle}
+                  <!-- Griffzone: Nur hier startet das Ziehen, damit der Rest der Karte auf Touch-Geräten normal scrollt -->
+                  <button
+                    type="button"
+                    class="song-drag-handle flex-shrink-0 flex items-center justify-center p-1.5 -ml-1 rounded-md cursor-grab active:cursor-grabbing touch-none"
+                    aria-label="Song verschieben"
+                    onmousedown={startDrag}
+                    ontouchstart={startDrag}
+                    onkeydown={handleDragHandleKeydown}
+                  >
+                    <svg class="w-4 h-4 opacity-60" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M7 4a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm6-10a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2zm0 5a1 1 0 110 2 1 1 0 010-2z"></path>
+                    </svg>
+                  </button>
+                {/if}
+                <div class="flex-grow min-w-0 text-left p-1 {touchOnlyHandle ? '' : 'cursor-grab active:cursor-grabbing touch-manipulation'}">
                   <p class="text-sm leading-tight font-semibold" style="color:{singerColor};">{song.title}</p>
                   <p class="text-xs opacity-75">{song.interpret}</p>
                 </div>
@@ -375,6 +414,17 @@
 
   .song-item:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .song-drag-handle {
+    background: transparent;
+    border: none;
+    color: inherit;
+    touch-action: none;
+  }
+
+  .song-drag-handle:active {
+    background: color-mix(in oklab, light-dark(black, white) 8%, transparent);
   }
 
   .songlist-btn-surface {
