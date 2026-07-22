@@ -53,7 +53,7 @@ RESET_PASSWORD_TOKEN_EXPIRE_MINUTES = 15
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 90  # ~3 Monate
 ALGORITHM = "HS256"
-MAX_ACTIVE_SESSIONS = 5
+MAX_ACTIVE_SESSIONS = 10
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 oauth2_password_reset_scheme = OAuth2PasswordBearer(tokenUrl="password_reset", auto_error=False)
 
