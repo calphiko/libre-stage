@@ -324,4 +324,4 @@ libreStage is free software: you can redistribute it and/or modify it under the 
 
 ## 📧 Contact
 
-[Add your contact information here]
+Carl Philipp Koppen (cp+pakleds@biggemail.org)
