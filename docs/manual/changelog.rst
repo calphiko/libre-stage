@@ -3,6 +3,55 @@
 Änderungsprotokoll
 ==================
 
+0.5.30 (2026-07-31)
+-------------------
+
+Added
+~~~~~
+
+* **Setlisten-Export (alle Gigs) als JSON**: Neue Export-Funktion über
+  ``GET /gigs/export/setlists``. Im Frontend kann die vollständige Setlisten-
+  Historie nun als Datei heruntergeladen werden (Dateiname aus
+  ``Content-Disposition`` mit Fallback).
+
+* **Live-Mode – Sets verschieben**: Neuer Endpoint
+  ``POST /gigs_lm/{gig_id}/move-set`` inkl. Frontend-Integration, um Sets im
+  laufenden Live-Mode gezielt nach oben/unten zu verschieben.
+
+* **Touch-Unterstützung für Setlist-Drag&Drop**: ``SetList`` und ``SongList``
+  unterstützen Touch-Geräte jetzt robuster (u. a. Handle-basiertes Dragging),
+  damit die Reihenfolge auch mobil zuverlässig angepasst werden kann.
+
+Changed
+~~~~~~~
+
+* **Sängerfarben bereits vor Setlist-Befüllung verfügbar**:
+  ``GET /gigs/{gig_id}/singer_colors`` liefert die Farbzuordnung jetzt auf
+  Basis des gesamten Song-Repertoires statt nur der aktuell befüllten
+  Gig-Setliste. Dadurch sind Farben im Setlist-Editor sofort konsistent
+  verfügbar.
+
+* **Session-Limit erhöht**: ``MAX_ACTIVE_SESSIONS`` wurde von 5 auf **10**
+  angehoben.
+
+* **Set-Import aus vergangenen Gigs verbessert**: Filterlogik und
+  Beschriftungen im Setlist-Editor wurden für den Import aus vergangenen Gigs
+  präzisiert.
+
+* **README-Kontaktdaten aktualisiert**.
+
+Fixed
+~~~~~
+
+* **New Song Modal (Svelte 5 Bindings)**: Beim Öffnen von ``NewSongModal``
+  konnte ein ``props_invalid_value`` auftreten, wenn ``multi_select``-Felder
+  initial ``undefined`` waren. Die Initialisierung erfolgt nun bereits vor dem
+  ersten Render als Array, sodass ``bind:selected`` stabil funktioniert.
+
+* Chore: Projektversion auf ``0.5.30`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``, ``README.md`` Badge).
+* Manual: Changelog für Release ``0.5.30`` ergänzt.
+
 0.5.29 (2026-07-17)
 -------------------
 
