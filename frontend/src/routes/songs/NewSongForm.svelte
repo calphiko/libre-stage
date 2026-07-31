@@ -28,11 +28,16 @@
   // Diese Props werden vom Modal übergeben
   let { response = () => {}, parent, existingSongs = [] } = $props();
 
-  
+  function buildInitialSong(fields) {
+      const initial = {};
+      for (const f of fields ?? []) {
+        if (f.type === 'multi_select') initial[f.key] = [];
+      }
+      return initial;
+  }
 
   let songFieldsDetails = $derived(getSongFieldsDetails($appConfig));
-
-  let song = $state({});
+  let song = $state(buildInitialSong(getSongFieldsDetails($appConfig)));
 
   // multi_select-Felder müssen als Array initialisiert sein, da SingersList kein null/undefined verarbeitet
   $effect(() => {
@@ -141,7 +146,6 @@
       }
     });
     modalState.close(dataToSend)
-    modalState.close();
   }
 
 </script>
