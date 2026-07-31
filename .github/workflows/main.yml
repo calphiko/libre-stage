@@ -37,82 +37,62 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-and-coverage
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+  
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
+  
       - name: Install uv
         run: pip install uv
-
+  
       - name: Install docs dependencies
         run: uv sync --group docs
-
+  
       - name: Get version
         id: version
         run: echo "version=$(python3 -c "import json; print(json.load(open('version.json'))['release'])")" >> $GITHUB_OUTPUT
-
+  
       - name: Build German docs
         run: |
           uv run sphinx-build -b html -D language=de docs/manual docs/manual/_build/html/de
           mkdir -p public/de public/${{ steps.version.outputs.version }}/de
           cp -r docs/manual/_build/html/de/. public/de/
           cp -r docs/manual/_build/html/de/. public/${{ steps.version.outputs.version }}/de/
-
+  
       - name: Build English docs
         run: |
           uv run sphinx-build -b html -D language=en docs/manual docs/manual/_build/html/en
           mkdir -p public/en public/${{ steps.version.outputs.version }}/en
           cp -r docs/manual/_build/html/en/. public/en/
           cp -r docs/manual/_build/html/en/. public/${{ steps.version.outputs.version }}/en/
-
+  
       - name: Create language redirect page
         run: |
-          printf '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+          cat > public/index.html << 'HTMLEOF'
+          <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
           <meta http-equiv="refresh" content="0; url=de/">
           <title>libreStage Docs</title>
           <style>body{font-family:sans-serif;max-width:600px;margin:4rem auto;text-align:center}
           a{display:inline-block;margin:1rem;padding:.75rem 2rem;background:#2980b9;color:#fff;
           text-decoration:none;border-radius:4px}a:hover{background:#1a5276}</style></head>
           <body><h1>libreStage Documentation</h1><p>Please select your language:</p>
-          <a href="de/">Deutsch</a> <a href="en/">English</a></body></html>'
-          > public/index.html
-
-      - name: Setup SSH
-        env:
-          PAGES_SSH_KEY: ${{ secrets.PAGES_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$PAGES_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan codeberg.org >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Configure git
-        run: |
-          git config --global user.email "ci@librestage"
-          git config --global user.name "libreStage CI"
-          git config --global --add safe.directory '*'
-
-      - name: Deploy docs to pages branch
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          ORIGIN=$(git remote get-url origin)
-          SSH_ORIGIN=$(echo "$ORIGIN" | sed 's|https://github.com/[^/]*/[^/]*|git@github.com:librestage/librestage|')
-          # Oder direkt den Repo-Namen hardcoden:
-          # SSH_ORIGIN="git@github.com:DEIN_USER/DEIN_REPO.git"
-          echo "Deploy target: $SSH_ORIGIN branch=pages"
-
-          git clone --depth=1 --branch=pages "$SSH_ORIGIN" pages-repo || git clone --depth=1 "$SSH_ORIGIN" pages-repo
-          cd pages-repo
-          git checkout pages 2>/dev/null || git checkout --orphan pages
-          git rm -rf . 2>/dev/null || true
-          cp -r ../public/. .
-          git add -A
-          git diff --cached --quiet || git commit -m "docs: deploy $VERSION [skip ci]"
-          git push origin pages
+          <a href="de/">Deutsch</a> <a href="en/">English</a></body></html>
+          HTMLEOF
+  
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          commit_message: "docs: deploy ${{ steps.version.outputs.version }} [skip ci]"
+          user_name: libreStage CI
+          user_email: ci@librestage
+  
