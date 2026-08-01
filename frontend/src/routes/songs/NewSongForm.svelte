@@ -153,7 +153,9 @@
 <div class="card p-6 space-y-4 max-w-4xl w-[90vw] max-h-[90vh] flex flex-col modal-base">
     <header class="flex justify-between items-center flex-shrink-0">
       <h4 class="h5 mb-3">Neuer Song</h4>
+      <button class="btn-icon btn-icon-sm variant-ghost" onclick={modalState.close}>✕</button>
     </header>
+    <!-- Header -->
     <div class="overflow-y-auto flex-grow">
         <form class=" card bg-surface-1 p-4 rounded shadow mb-4" onsubmit={submit}>
           {#each songFieldsDetails as songField}
