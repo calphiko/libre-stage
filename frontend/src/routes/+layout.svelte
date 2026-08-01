@@ -127,7 +127,7 @@
 					<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/admin/config" onclick={closeOnNavigate}>Konfiguration</a>
 				{/if}
 				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="/benutzer" onclick={closeOnNavigate}>Einstellungen</a>
-				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.codeberg.page/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
+				<a class="block py-1.5 px-2.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700" href="https://calphiko.github.io/libre-stage/de/benutzerhandbuch/" target="_blank" onclick={closeOnNavigate}>Benutzerhandbuch</a>
 				<button class="ui-btn ui-btn-ghost w-full justify-start" onclick={() => { logout(); closeOnNavigate(); }}>Logout</button>
 			</nav>
 		</aside>
