@@ -4,8 +4,20 @@ import { writable, get } from 'svelte/store';
 
 const { subscribe, set } = writable(null);
 
+let _modalStack = [];
 let _responseCallback = null;
 let _onCloseCallback = null;
+
+function withBackState(modalData) {
+  if (!modalData) return null;
+  return {
+    ...modalData,
+    props: {
+      ...(modalData.props || {}),
+      canGoBack: _modalStack.length > 0,
+    },
+  };
+}
 
 export const modalState = {
   subscribe,
@@ -19,12 +31,21 @@ export const modalState = {
    * @param {function} [opts.onClose] - Callback always called when modal closes
    */
   trigger({ component, props, response, meta, title, onClose }) {
+    const current = get({ subscribe });
+    if (current) {
+      _modalStack.push({
+        modalData: current,
+        responseCallback: _responseCallback,
+        onCloseCallback: _onCloseCallback,
+      });
+    }
+
     _responseCallback = response || null;
     _onCloseCallback = onClose || null;
-    set({
+    set(withBackState({
       component,
       props: { ...(props || {}), meta: meta || {}, title: title || '' }
-    });
+    }));
   },
 
   /**
@@ -37,6 +58,15 @@ export const modalState = {
     if (_onCloseCallback) {
       _onCloseCallback();
     }
+
+    const previous = _modalStack.pop();
+    if (previous) {
+      _responseCallback = previous.responseCallback || null;
+      _onCloseCallback = previous.onCloseCallback || null;
+      set(withBackState(previous.modalData));
+      return;
+    }
+
     _responseCallback = null;
     _onCloseCallback = null;
     set(null);

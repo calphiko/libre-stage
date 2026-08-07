@@ -17,7 +17,7 @@
 
   const { showError, showSuccess } = createMessageHelpers();
 
-  let { meta = {} } = $props();
+  let { meta = {}, canGoBack = false } = $props();
   const {
     item: initialItem,
     canEdit = false,
@@ -154,7 +154,31 @@
         </span>
       {/if}
     </div>
-    <button class="btn-icon btn-icon-sm variant-ghost flex-shrink-0" onclick={() => modalState.close()}>✕</button>
+    {#if editMode}
+      <button
+        class="btn-icon btn-icon-sm variant-ghost flex-shrink-0"
+        type="button"
+        aria-label="Zurück zur Checkliste"
+        title="Zurück"
+        onclick={cancelEdit}
+      >←</button>
+    {:else if canGoBack}
+      <button
+        class="btn-icon btn-icon-sm variant-ghost flex-shrink-0"
+        type="button"
+        aria-label="Zurück"
+        title="Zurück"
+        onclick={() => modalState.close()}
+      >←</button>
+    {:else}
+      <button
+        class="btn-icon btn-icon-sm variant-ghost flex-shrink-0"
+        type="button"
+        aria-label="Modal schließen"
+        title="Schließen"
+        onclick={() => modalState.close()}
+      >✕</button>
+    {/if}
   </header>
 
   {#if loading}
