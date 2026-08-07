@@ -3,6 +3,44 @@
 Änderungsprotokoll
 ==================
 
+0.5.31 (2026-08-07)
+-------------------
+
+Added
+~~~~~
+
+* **Neuer Gig - Stammdatenvorlage**: Im ``NewGigForm`` kann jetzt ein
+  bestehender Gig als Vorlage gewählt werden. Per Dropdown + Button
+  **"Übernehmen"** werden Stammdaten in das Formular kopiert; ``Name`` und
+  ``Datum`` bleiben dabei bewusst unberührt.
+
+Changed
+~~~~~~~
+
+* **Vorlagenauswahl erweitert**: Die Vorlagenliste im ``NewGigForm`` ist nicht
+  mehr auf vergangene Gigs beschränkt, sondern zeigt alle Gigs.
+
+* **New-Gig-Modal UX**: Das Modal besitzt nun ein ``✕`` oben rechts im Header
+  für ein schnelles Schließen.
+
+* **Vorlagenbereich einklappbar**: Die Übernahme von Stammdaten ist in einen
+  aufklappbaren Bereich ausgelagert, um das Formular kompakter zu halten.
+
+Fixed
+~~~~~
+
+* **Checklisten-Detail im Gig-Details-Modal**: Beim Bearbeiten eines
+  Checklisten-Items führt der Header-Button jetzt korrekt als ``←`` zurück in
+  die Checklisten-Übersicht statt das komplette Modal zu schließen.
+
+* **Verschachtelte Modals**: ``modalState`` unterstützt nun einen Stack, sodass
+  Unter-Modals sauber zum übergeordneten Modal zurückkehren.
+
+* Chore: Projektversion auf ``0.5.31`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``, ``frontend/package-lock.json``,
+  ``README.md`` Badge).
+* Manual: Changelog für Release ``0.5.31`` ergänzt.
+
 0.5.30 (2026-07-31)
 -------------------
 
