@@ -770,6 +770,13 @@ class RehListElem(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class RehPastPage(BaseModel):
+    items: List[RehListElem] = Field(default_factory=list)
+    total: int
+    skip: int
+    limit: int
+    has_more: bool
+
 class NewRehDict(BaseModel):
     begin: datetime
     end: Optional[datetime] = None
@@ -965,5 +972,4 @@ class PendingAvailabilityGigOut(BaseModel):
     kind_of_gig: Optional[str] = None
 
     model_config = {"from_attributes": True}
-
 

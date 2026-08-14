@@ -19,6 +19,7 @@ from pprint import pprint
 import pytest
 from datetime import datetime, timedelta
 from backend.models import Rehearsal, RehSong, Song, RehTodo, User
+from backend import auth
 
 
 def test_get_rehearsals(client, auth_headers, db_session):
@@ -46,6 +47,72 @@ def test_get_rehearsals(client, auth_headers, db_session):
     assert len(data) == 2
     assert data[1]["comment"] == "First Rehearsal"
     assert data[0]["comment"] == "Second Rehearsal"
+
+def test_get_rehearsals_with_skip_and_limit(client, auth_headers, db_session):
+    for idx in range(5):
+        db_session.add(
+            Rehearsal(
+                comment=f"Rehearsal {idx}",
+                begin=datetime(2024, 12, 1 + idx, 18, 0),
+                end=datetime(2024, 12, 1 + idx, 21, 0),
+                ical=f"ical_{idx}",
+            )
+        )
+    db_session.commit()
+
+    response = client.get("/reh/?skip=1&limit=2", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert data[0]["comment"] == "Rehearsal 3"
+    assert data[1]["comment"] == "Rehearsal 2"
+
+def test_get_past_rehearsals_pagination_and_search(client, auth_headers, db_session):
+    now = datetime.now()
+
+    old_rehearsals = []
+    for idx in range(25):
+        day = datetime(2023, 1, 1) + timedelta(days=idx)
+        comment = "Needle rehearsal" if idx == 0 else f"Past rehearsal {idx}"
+        old_rehearsals.append(
+            Rehearsal(
+                comment=comment,
+                begin=day.replace(hour=18, minute=0),
+                end=day.replace(hour=21, minute=0),
+                ical=f"old_{idx}",
+            )
+        )
+
+    recent_rehearsal = Rehearsal(
+        comment="Too recent for past bucket",
+        begin=now - timedelta(hours=2),
+        end=now + timedelta(hours=1),
+        ical="recent_now",
+    )
+
+    db_session.add_all(old_rehearsals + [recent_rehearsal])
+    db_session.commit()
+
+    first_page = client.get("/reh/past?skip=0&limit=20", headers=auth_headers)
+    assert first_page.status_code == 200
+    first_data = first_page.json()
+    assert first_data["total"] == 25
+    assert len(first_data["items"]) == 20
+    assert first_data["has_more"] is True
+
+    second_page = client.get("/reh/past?skip=20&limit=20", headers=auth_headers)
+    assert second_page.status_code == 200
+    second_data = second_page.json()
+    assert second_data["total"] == 25
+    assert len(second_data["items"]) == 5
+    assert second_data["has_more"] is False
+
+    search = client.get("/reh/past?q=needle&limit=20", headers=auth_headers)
+    assert search.status_code == 200
+    search_data = search.json()
+    assert search_data["total"] == 1
+    assert len(search_data["items"]) == 1
+    assert search_data["items"][0]["comment"] == "Needle rehearsal"
 
 def test_get_with_no_rehearsals(client, auth_headers):
     """Test getting rehearsals when none exist."""
@@ -136,6 +203,43 @@ def test_update_rehearsal(client, auth_headers, db_session):
     assert response.status_code == 200
     data = response.json()[0]
     assert data["comment"] == "Updated Comment"
+
+def test_update_rehearsal_stammdaten_as_editor(client, auth_headers, db_session):
+    reh = Rehearsal(
+        comment="Original Stammdaten",
+        begin=datetime(2024, 12, 10, 18, 0),
+        end=datetime(2024, 12, 10, 21, 0),
+        ical="original_ical"
+    )
+    editor = User(
+        user_name="editoruser",
+        user_pw=auth.hash_pw("editorpassword123"),
+        user_group="editor",
+        musician=True,
+        clear_name="Editor User",
+        email="editor@example.com",
+        status="active"
+    )
+    db_session.add_all([reh, editor])
+    db_session.commit()
+
+    editor_token = auth.create_access_token({"sub": editor.user_name, "role": editor.user_group})
+    editor_headers = {"Authorization": f"Bearer {editor_token}"}
+
+    response = client.get("/reh/", headers=editor_headers)
+    assert response.status_code == 200
+    reh_data = response.json()[0]
+
+    reh_data["begin"] = "2024-12-10T19:15:00"
+    reh_data["end"] = "2024-12-10T22:30:00"
+    reh_data["comment"] = "Bearbeitet durch Editor"
+
+    response = client.put("/reh/", json=reh_data, headers=editor_headers)
+    assert response.status_code == 200
+    data = response.json()[0]
+    assert data["begin"] == "2024-12-10T19:15:00"
+    assert data["end"] == "2024-12-10T22:30:00"
+    assert data["comment"] == "Bearbeitet durch Editor"
 
 def test_update_nonexistent_rehearsal(client, auth_headers, db_session):
     """Test updating an existing rehearsal."""
@@ -601,4 +705,3 @@ def test_add_todo_to_song(client, auth_headers, db_session):
     assert len(data["songs"]) == 2
     assert len(data["songs"][1]["song_todos"]) == 1
     assert data["songs"][1]["song_todos"][0]["todo"] == "Practise solo more"
-

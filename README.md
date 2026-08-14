@@ -2,7 +2,7 @@
 
 **A comprehensive internal management platform for bands and music ensembles**
 
-![Version](https://img.shields.io/badge/version-v0.5.31-blue)
+![Version](https://img.shields.io/badge/version-v0.5.32-blue)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.135.0-teal)
 ![Svelte](https://img.shields.io/badge/Svelte-5.29.0-orange)
@@ -130,7 +130,7 @@ python backend/migrations/init_demo_db.py /path/to/my.db
 | `carol` | `Demo1234!` | user (musician) |
 | `dave` | `Demo1234!` | user (musician) |
 
-The demo database contains 20 songs, 3 rehearsals, 3 gigs, and 1 survey with example data.
+The demo database contains 20 songs, 24 rehearsals, 3 gigs, and 2 surveys with example data.
 
 ## ⚙️ Configuration
 

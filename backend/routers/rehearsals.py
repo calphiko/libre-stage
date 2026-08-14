@@ -28,10 +28,11 @@ Prefix: ``/rehearsals``  |  Tag: ``rehearsals``
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query, Path
-from datetime import time, timedelta
+from datetime import datetime, time, timedelta
 import logging
 
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, cast, func, or_, String
 from typing import List
 
 from backend import models, schemas, auth
@@ -45,13 +46,15 @@ router = APIRouter(
 )
 
 def get_reh_list(db, limit=20, offset=0):
-    return (
+    query = (
         db.query(models.Rehearsal)
         .order_by(models.Rehearsal.begin.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
     )
+    if offset:
+        query = query.offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    return query.all()
 
 logger = logging.getLogger("uvicorn.error")
 load_dotenv(".env")
@@ -60,15 +63,90 @@ MM_CHANNEL = os.getenv("MM_CHANNEL_REH")
 
 @router.get("/", response_model = List[schemas.RehListElem])
 def get_rehearsal_list(
+    skip: int = 0,
+    limit: int = Query(20, ge=1, le=200),
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user)
 ):
-    reh_db = get_reh_list(db)
+    reh_db = get_reh_list(db, limit=limit, offset=skip)
 
     if not reh_db:
         raise HTTPException(status_code=404, detail="No rehearsals found")
 
     return reh_db
+
+def _past_rehearsal_cutoff() -> datetime:
+    # Align with frontend logic (a rehearsal stays "current" until end of next day).
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+
+@router.get("/past", response_model=schemas.RehPastPage)
+def get_past_rehearsals(
+    q: str = Query(default="", max_length=200),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    cutoff = _past_rehearsal_cutoff()
+    search = q.strip()
+
+    id_begin_query = db.query(
+        models.Rehearsal.id.label("reh_id"),
+        models.Rehearsal.begin.label("reh_begin"),
+    ).filter(models.Rehearsal.begin < cutoff)
+
+    if search:
+        like = f"%{search}%"
+        id_begin_query = (
+            id_begin_query
+            .outerjoin(models.RehSong, models.RehSong.id_rehearsal == models.Rehearsal.id)
+            .outerjoin(models.Song, models.Song.id == models.RehSong.id_song)
+            .outerjoin(
+                models.RehTodo,
+                and_(
+                    models.RehTodo.id_reh == models.RehSong.id_rehearsal,
+                    models.RehTodo.id_song == models.RehSong.id_song,
+                ),
+            )
+            .filter(
+                or_(
+                    models.Rehearsal.comment.ilike(like),
+                    cast(models.Rehearsal.begin, String).ilike(like),
+                    models.RehSong.comment.ilike(like),
+                    models.RehSong.todo.ilike(like),
+                    models.Song.title.ilike(like),
+                    models.Song.interpret.ilike(like),
+                    models.RehTodo.todo.ilike(like),
+                )
+            )
+        )
+
+    distinct_ids = id_begin_query.distinct().subquery()
+    total = db.query(func.count()).select_from(distinct_ids).scalar() or 0
+
+    page_ids = [
+        row.reh_id
+        for row in db.query(distinct_ids.c.reh_id)
+        .order_by(distinct_ids.c.reh_begin.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    ]
+
+    if not page_ids:
+        return schemas.RehPastPage(items=[], total=total, skip=skip, limit=limit, has_more=False)
+
+    items = db.query(models.Rehearsal).filter(models.Rehearsal.id.in_(page_ids)).all()
+    items_by_id = {item.id: item for item in items}
+    ordered_items = [items_by_id[reh_id] for reh_id in page_ids if reh_id in items_by_id]
+
+    return schemas.RehPastPage(
+        items=ordered_items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=(skip + len(ordered_items)) < total,
+    )
 
 @router.post("/", response_model = List[schemas.RehListElem])
 def create_new_rehearsal(

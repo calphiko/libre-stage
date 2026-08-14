@@ -815,14 +815,34 @@ export async function getGenrePalette() {
     return res.json();
 }
 
-export async function getRehearsalList(token) {
-    const res = await fetchWithAuth(`${API_URL}/reh/`, {
+export async function getRehearsalList(token, { skip = 0, limit = 20 } = {}) {
+    const params = new URLSearchParams({
+        skip: String(skip),
+        limit: String(limit)
+    });
+    const res = await fetchWithAuth(`${API_URL}/reh/?${params.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
         },
     });
     if (!res.ok) throw new Error('Rehearsals');
+    return res.json();
+}
+
+export async function getPastRehearsals(token, { query = '', skip = 0, limit = 20 } = {}) {
+    const params = new URLSearchParams({
+        q: query,
+        skip: String(skip),
+        limit: String(limit)
+    });
+    const res = await fetchWithAuth(`${API_URL}/reh/past?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    if (!res.ok) throw new Error('Vergangene Proben konnten nicht geladen werden');
     return res.json();
 }
 
@@ -1390,4 +1410,3 @@ export async function exportAllSetlists() {
     const filename = match ? match[1] : `setlists_export_${new Date().toISOString().slice(0, 10)}.json`;
     return { blob, filename };
 }
-

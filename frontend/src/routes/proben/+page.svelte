@@ -18,6 +18,7 @@
 
 <script>
   import { getRehearsalList,
+           getPastRehearsals,
            getSongs, getUserList,
            updateRehearsals,
            createNewRehearsal,
@@ -37,6 +38,8 @@
 
 
   let rehearsals = $state([]);
+  let pastRehearsals = $state([]);
+  let pastTotal = $state(0);
   let songs = $state([]);
   let users = $state([]);
   let user = $state({ user_name: null, user_group: null });
@@ -61,22 +64,50 @@
   let upcomingRehearsals = $derived(rehearsals
     .filter(r => endOfNextDay(r.begin) >= now)
     .sort((a, b) => new Date(a.begin) - new Date(b.begin)));
-  let pastRehearsals = $derived(rehearsals
-    .filter(r => endOfNextDay(r.begin) < now)
-    .sort((a, b) => new Date(b.begin) - new Date(a.begin)));
 
   let pastRehearsalsFilter = $state('');
-  let filteredPastRehearsals = $derived(pastRehearsals.filter(reh => {
-    if (!pastRehearsalsFilter.trim()) return true;
-    const q = pastRehearsalsFilter.toLowerCase();
-    const dateStr = new Date(reh.begin).toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toLowerCase();
-    const commentMatch = reh.comment?.toLowerCase().includes(q);
-    const songMatch = reh.songs?.some(s =>
-      s.title?.toLowerCase().includes(q) ||
-      s.interpret?.toLowerCase().includes(q)
-    );
-    return dateStr.includes(q) || commentMatch || songMatch;
-  }));
+  let isLoadingPast = $state(false);
+  const pastPageLimit = 20;
+  let hasMorePast = $derived(pastRehearsals.length < pastTotal);
+  let pastSearchTimer = null;
+
+  async function loadPastRehearsals({ reset = false } = {}) {
+    if (isLoadingPast) return;
+    isLoadingPast = true;
+    try {
+      const skip = reset ? 0 : pastRehearsals.length;
+      const page = await getPastRehearsals(null, {
+        query: pastRehearsalsFilter.trim(),
+        skip,
+        limit: pastPageLimit
+      });
+      if (reset) {
+        pastRehearsals = page.items ?? [];
+      } else {
+        pastRehearsals = [...pastRehearsals, ...(page.items ?? [])];
+      }
+      pastTotal = page.total ?? 0;
+    } catch (e) {
+      showError('Vergangene Proben konnten nicht geladen werden');
+      console.error('Vergangene Proben load error:', e);
+    } finally {
+      isLoadingPast = false;
+    }
+  }
+
+  function queuePastSearch() {
+    if (pastSearchTimer) clearTimeout(pastSearchTimer);
+    pastSearchTimer = setTimeout(() => {
+      loadPastRehearsals({ reset: true });
+    }, 250);
+  }
+
+  async function openPastTab() {
+    tabSet = 1;
+    if (pastRehearsals.length === 0) {
+      await loadPastRehearsals({ reset: true });
+    }
+  }
 
 
   function buildSongsForSearch() {
@@ -97,10 +128,11 @@
     }
 
     try {
-      rehearsals = await getRehearsalList();
+      rehearsals = await getRehearsalList(null, { limit: 200 });
       songs = await getSongs();
       songsForSearch = buildSongsForSearch();
       users = await getUserList();
+      await loadPastRehearsals({ reset: true });
     } catch(e) {
       error = 'Probenliste konnte nicht geladen werden';
       console.error('Probenliste load error:', e);
@@ -113,19 +145,10 @@
     isUpdating = true;
 
     try {
-      const updatedRehearsals = await updateRehearsals(null, data);
-
-      // Update only the changed rehearsal to preserve local state
-      const index = rehearsals.findIndex(r => r.id === data.id);
-      if (index !== -1) {
-        const updatedReh = updatedRehearsals.find(r => r.id === data.id);
-        if (updatedReh) {
-          Object.assign(data, updatedReh);
-          rehearsals[index] = data;
-          rehearsals = [...rehearsals];
-        }
-      } else {
-        rehearsals = updatedRehearsals;
+      await updateRehearsals(null, data);
+      rehearsals = await getRehearsalList(null, { limit: 200 });
+      if (tabSet === 1) {
+        await loadPastRehearsals({ reset: true });
       }
     } finally {
       isUpdating = false;
@@ -133,7 +156,11 @@
   }
 
   async function addRehearsal(data) {
-    rehearsals = await createNewRehearsal(null, data);
+    await createNewRehearsal(null, data);
+    rehearsals = await getRehearsalList(null, { limit: 200 });
+    if (tabSet === 1) {
+      await loadPastRehearsals({ reset: true });
+    }
   }
 
   async function delRehearsal(rehId, rehDate) {
@@ -150,7 +177,11 @@
       response: async (confirmed) => {
         if (confirmed) {
           try {
-            rehearsals = await deleteRehearsal(null, rehId);
+            await deleteRehearsal(null, rehId);
+            rehearsals = await getRehearsalList(null, { limit: 200 });
+            if (tabSet === 1) {
+              await loadPastRehearsals({ reset: true });
+            }
             modalState.close();
             showSuccess('Probe erfolgreich gelöscht');
           } catch (e) {
@@ -292,9 +323,9 @@
             <span class="hidden md:inline">Aktuelle Proben ({upcomingRehearsals.length})</span>
             <span class="md:hidden">📅 ({upcomingRehearsals.length})</span>
           </button>
-          <button onclick={() => tabSet = 1} class="px-3 py-1.5 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
-            <span class="hidden md:inline">Vergangene Proben ({pastRehearsals.length})</span>
-            <span class="md:hidden">🕐 ({pastRehearsals.length})</span>
+          <button onclick={openPastTab} class="px-3 py-1.5 rounded-t-lg transition-colors {tabSet === 1 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+            <span class="hidden md:inline">Vergangene Proben ({pastTotal})</span>
+            <span class="md:hidden">🕐 ({pastTotal})</span>
           </button>
         </div>
 
@@ -315,7 +346,7 @@
               </div>
             {/if}
           {:else}
-            {#if pastRehearsals.length === 0}
+            {#if pastTotal === 0}
               <div class="rounded-xl bg-surface-100 text-surface-900 p-3 mt-4 shadow text-center text-sm">
                 Keine vergangenen Proben vorhanden.
               </div>
@@ -329,22 +360,23 @@
                   <input
                     type="search"
                     bind:value={pastRehearsalsFilter}
+                    oninput={queuePastSearch}
                     placeholder="Suche nach Datum, Song oder Kommentar..."
                     class="input input-sm border-none bg-transparent flex-1 p-0 text-sm focus:ring-0"
                   />
                 </div>
-                {#if pastRehearsalsFilter && filteredPastRehearsals.length !== pastRehearsals.length}
+                {#if pastRehearsalsFilter}
                   <p class="text-xs text-on-surface-variant mt-1.5">
-                    {filteredPastRehearsals.length} von {pastRehearsals.length} Probe{pastRehearsals.length !== 1 ? 'n' : ''}
+                    {pastRehearsals.length} von {pastTotal} Probe{pastTotal !== 1 ? 'n' : ''}
                   </p>
                 {/if}
               </div>
 
-              {#if filteredPastRehearsals.length === 0}
+              {#if pastRehearsals.length === 0}
                 <p class="text-on-surface-variant italic text-sm mt-3">Keine Proben gefunden.</p>
               {:else}
                 <div class="mt-2">
-                  {#each filteredPastRehearsals as reh (reh.id)}
+                  {#each pastRehearsals as reh (reh.id)}
                     <RehearsalCard
                       {reh}
                       isPast={true}
@@ -352,6 +384,13 @@
                     />
                   {/each}
                 </div>
+                {#if hasMorePast}
+                  <div class="mt-3 text-center">
+                    <button class="btn variant-ghost-surface btn-sm" onclick={() => loadPastRehearsals()}>
+                      Mehr laden
+                    </button>
+                  </div>
+                {/if}
               {/if}
             {/if}
           {/if}
@@ -374,5 +413,3 @@
     font-size: 0.78rem;
   }
 </style>
-
-
