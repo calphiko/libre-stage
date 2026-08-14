@@ -42,6 +42,16 @@ Zeitraum in der Listenansicht
 
 Jede Probe wird als Zeitbereich angezeigt (z. B. ``18:00-20:30 Uhr``).
 
+Stammdaten einer Probe bearbeiten
+---------------------------------
+
+Editoren und Admins können in einer geöffneten Probe im Bereich
+**Stammdaten** die Felder **Beginn** und **Ende** nachträglich anpassen.
+
+* **Beginn** ist ein Pflichtfeld.
+* **Ende** ist optional, muss aber (falls gesetzt) nach dem Beginn liegen.
+* Änderungen werden beim Verlassen des Felds gespeichert.
+
 Songs und Todos in Proben
 -------------------------
 
@@ -88,7 +98,8 @@ Das Protokoll zeigt:
 Suche in vergangenen Proben
 ---------------------------
 
-Das Suchfeld oberhalb der Liste filtert vergangene Proben nach:
+Das Suchfeld oberhalb der Liste durchsucht die komplette Historie vergangener
+Proben serverseitig (nicht nur die aktuell sichtbaren Einträge) nach:
 
 * Datum
 * Song-Titel
@@ -96,6 +107,8 @@ Das Suchfeld oberhalb der Liste filtert vergangene Proben nach:
 * Probenkommentar
 
 Treffer werden in der aufgeklappten Protokollansicht farblich hervorgehoben.
+Falls viele Treffer vorhanden sind, kann die Liste über **Mehr laden**
+seitenweise erweitert werden.
 
 iCal-Export
 -----------
@@ -113,5 +126,3 @@ Jedes Mitglied kann dort seinen Status (✅ Dabei, ❓ Vielleicht, ❌ Nicht dab
 eintragen sowie bei Abwesenheit eine Aushilfe benennen.
 
 Vollständige Dokumentation: :ref:`verfuegbarkeit`.
-
-

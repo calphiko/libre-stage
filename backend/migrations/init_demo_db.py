@@ -198,7 +198,25 @@ def run():
         comment="Vorbereitung auf den Auftritt nächsten Monat.",
         ical="",
     )
-    db.add_all([reh1, reh2, reh3])
+    reh4 = Rehearsal(
+        begin=today - timedelta(weeks=10),
+        end=today - timedelta(weeks=10) + timedelta(hours=3),
+        comment="Jahresauftakt: Grobe Songauswahl und Tempofragen geklärt.",
+        ical="",
+    )
+    reh5 = Rehearsal(
+        begin=today - timedelta(weeks=8),
+        end=today - timedelta(weeks=8) + timedelta(hours=3),
+        comment="Detailprobe Bläsersätze, Übergänge zwischen Set 1 und Set 2.",
+        ical="",
+    )
+    reh6 = Rehearsal(
+        begin=today - timedelta(weeks=6),
+        end=today - timedelta(weeks=6) + timedelta(hours=3),
+        comment="Generalproben-Charakter mit Fokus auf Moderation und Endings.",
+        ical="",
+    )
+    db.add_all([reh1, reh2, reh3, reh4, reh5, reh6])
     db.flush()
 
     # Songs in Proben
@@ -249,6 +267,130 @@ def run():
     ]
     db.add_all(reh3_songs)
     db.flush()
+
+    # Probe 4 (vergangen)
+    reh4_songs = [
+        RehSong(id_rehearsal=reh4.id, id_song=song_objs[1].id,   # Superstition
+                comment="Timing in den Strophen schwankt noch", todo="Click mitlaufen lassen", done=False),
+        RehSong(id_rehearsal=reh4.id, id_song=song_objs[5].id,   # Black Velvet
+                comment="Dynamik im Refrain deutlich verbessert", todo="", done=True),
+        RehSong(id_rehearsal=reh4.id, id_song=song_objs[13].id,  # Sunny
+                comment="Bridge harmonisch unsauber", todo="Akkordwechsel langsam üben", done=False),
+    ]
+    db.add_all(reh4_songs)
+    db.flush()
+    db.add_all([
+        RehTodo(
+            id_song=song_objs[1].id, id_reh=reh4.id,
+            id_user=carol.id, todo="Backbeat im Refrain stabilisieren", done=False,
+            dt=reh4.begin,
+        ),
+        RehTodo(
+            id_song=song_objs[13].id, id_reh=reh4.id,
+            id_user=bob.id, todo="Bridge in drei Tempi mit Metronom", done=True,
+            dt=reh4.begin,
+        ),
+    ])
+
+    # Probe 5 (vergangen)
+    reh5_songs = [
+        RehSong(id_rehearsal=reh5.id, id_song=song_objs[2].id,   # Valerie
+                comment="Outro-Länge final auf 4 Takte festgelegt", todo="", done=True),
+        RehSong(id_rehearsal=reh5.id, id_song=song_objs[4].id,   # September
+                comment="Bläsereinsatz in Takt 33 noch unsauber", todo="Cue im Intro klären", done=False),
+        RehSong(id_rehearsal=reh5.id, id_song=song_objs[10].id,  # Mustang Sally
+                comment="Call-and-response sitzt, aber zweite Strophe zu laut", todo="Lautstärke diszipliniert halten", done=False),
+    ]
+    db.add_all(reh5_songs)
+    db.flush()
+    db.add_all([
+        RehTodo(
+            id_song=song_objs[4].id, id_reh=reh5.id,
+            id_user=alice.id, todo="Bläser-Cue vor Takt 33 ansagen", done=False,
+            dt=reh5.begin,
+        ),
+        RehTodo(
+            id_song=song_objs[10].id, id_reh=reh5.id,
+            id_user=dave.id, todo="2. Strophe leiser spielen", done=False,
+            dt=reh5.begin,
+        ),
+    ])
+
+    # Probe 6 (vergangen)
+    reh6_songs = [
+        RehSong(id_rehearsal=reh6.id, id_song=song_objs[4].id,   # September
+                comment="Break nach Solo sauber, End-Stab sitzt", todo="", done=True),
+        RehSong(id_rehearsal=reh6.id, id_song=song_objs[15].id,  # Rolling in the Deep
+                comment="Intro-Riff rhythmisch stabil, Solo noch Baustelle", todo="Solo in Phrasen aufteilen", done=False),
+        RehSong(id_rehearsal=reh6.id, id_song=song_objs[17].id,  # Shallow
+                comment="Duett-Parts harmonisch deutlich besser", todo="Bridge textlich sichern", done=False),
+    ]
+    db.add_all(reh6_songs)
+    db.flush()
+    db.add_all([
+        RehTodo(
+            id_song=song_objs[15].id, id_reh=reh6.id,
+            id_user=bob.id, todo="Solo in 3 Abschnitten separat üben", done=False,
+            dt=reh6.begin,
+        ),
+        RehTodo(
+            id_song=song_objs[17].id, id_reh=reh6.id,
+            id_user=alice.id, todo="Bridge-Text ohne Spickzettel", done=True,
+            dt=reh6.begin,
+        ),
+    ])
+
+    # Zusätzliche Archiv-Proben (vergangen), damit Historie > 20 testbar ist
+    extra_past_count = 18
+    archive_song_pool = list(range(18))  # keine Vorschlag-Songs
+    archive_users = [alice, bob, carol, dave]
+    for idx in range(extra_past_count):
+        weeks_ago = 12 + idx
+        archive_reh = Rehearsal(
+            begin=today - timedelta(weeks=weeks_ago),
+            end=today - timedelta(weeks=weeks_ago) + timedelta(hours=3),
+            comment=f"Archivprobe #{idx + 1}: Schwerpunkt Timing, Übergänge und Bühnenablauf.",
+            ical="",
+        )
+        db.add(archive_reh)
+        db.flush()
+
+        i1 = archive_song_pool[idx % len(archive_song_pool)]
+        i2 = archive_song_pool[(idx + 5) % len(archive_song_pool)]
+        i3 = archive_song_pool[(idx + 9) % len(archive_song_pool)]
+
+        db.add_all([
+            RehSong(
+                id_rehearsal=archive_reh.id,
+                id_song=song_objs[i1].id,
+                comment=f"Archiv-Notiz A{idx + 1}: Intro und Groove prüfen",
+                todo="Einstieg sauber zählen",
+                done=(idx % 2 == 0),
+            ),
+            RehSong(
+                id_rehearsal=archive_reh.id,
+                id_song=song_objs[i2].id,
+                comment=f"Archiv-Notiz B{idx + 1}: Dynamik im Refrain",
+                todo="Refrain leiser anfahren",
+                done=(idx % 3 == 0),
+            ),
+            RehSong(
+                id_rehearsal=archive_reh.id,
+                id_song=song_objs[i3].id,
+                comment=f"Archiv-Notiz C{idx + 1}: Ending eindeutig festlegen",
+                todo="Ending gemeinsam stoppen",
+                done=False,
+            ),
+        ])
+
+        db.add(RehTodo(
+            id_song=song_objs[i2].id,
+            id_reh=archive_reh.id,
+            id_user=archive_users[idx % len(archive_users)].id,
+            todo=f"Archiv-Todo #{idx + 1}: Übergang zwischen Strophe und Refrain festigen",
+            done=(idx % 4 == 0),
+            dt=archive_reh.begin,
+        ))
 
     # ── SETS & GIGS ──────────────────────────────────────────────────────────
     def make_set(name, setlist_name, pause_min, song_indices):
@@ -571,10 +713,9 @@ def run():
     print(f"   bob    / Demo1234!   (Rolle: editor, Sänger)")
     print(f"   carol  / Demo1234!   (Rolle: user, Musikerin)")
     print(f"   dave   / Demo1234!   (Rolle: user, Musiker)")
-    print(f"\n🎵 {len(song_objs)} Songs, 3 Proben, 3 Gigs, 2 Umfragen angelegt.")
+    print(f"\n🎵 {len(song_objs)} Songs, {6 + extra_past_count} Proben, 3 Gigs, 2 Umfragen angelegt.")
     print(f"📅 Availability-Einträge: Gig1 (4×✅), Gig2 (2×✅ 1×❌), Gig3 (1×✅ 1×❓), Probe3 (2×✅ 1×❌ 1×❓)")
 
 
 if __name__ == "__main__":
     run()
-
