@@ -88,7 +88,8 @@ Das Protokoll zeigt:
 Suche in vergangenen Proben
 ---------------------------
 
-Das Suchfeld oberhalb der Liste filtert vergangene Proben nach:
+Das Suchfeld oberhalb der Liste durchsucht die komplette Historie vergangener
+Proben serverseitig (nicht nur die aktuell sichtbaren Einträge) nach:
 
 * Datum
 * Song-Titel
@@ -96,6 +97,8 @@ Das Suchfeld oberhalb der Liste filtert vergangene Proben nach:
 * Probenkommentar
 
 Treffer werden in der aufgeklappten Protokollansicht farblich hervorgehoben.
+Falls viele Treffer vorhanden sind, kann die Liste über **Mehr laden**
+seitenweise erweitert werden.
 
 iCal-Export
 -----------
@@ -113,5 +116,4 @@ Jedes Mitglied kann dort seinen Status (✅ Dabei, ❓ Vielleicht, ❌ Nicht dab
 eintragen sowie bei Abwesenheit eine Aushilfe benennen.
 
 Vollständige Dokumentation: :ref:`verfuegbarkeit`.
-
 

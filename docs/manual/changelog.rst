@@ -3,6 +3,41 @@
 Änderungsprotokoll
 ==================
 
+0.5.32 (2026-08-14)
+-------------------
+
+Added
+~~~~~
+
+* **Proben-Historie – API für vergangene Proben**: Neuer Endpoint
+  ``GET /reh/past`` mit ``q``, ``skip`` und ``limit``. Die Antwort enthält
+  ``items``, ``total`` und ``has_more`` für paginierte Historienansichten.
+
+Changed
+~~~~~~~
+
+* **Vergangene Proben vollständig durchsuchbar**: Die Suche im Tab
+  **Vergangene Proben** läuft jetzt serverseitig und durchsucht die komplette
+  Historie (u. a. Probenkommentar, Songtitel, Interpret sowie Proben-/Todo-
+  Kommentare) statt nur lokal geladener Einträge.
+
+* **Pagination für Protokoll-Historie**: Im Proben-Frontend werden vergangene
+  Proben seitenweise geladen (Button **Mehr laden**), damit auch große
+  Historien performant bedienbar bleiben.
+
+* **Demo-Daten für Historientests erweitert**: ``init_demo_db.py`` erzeugt nun
+  24 Proben (davon >20 vergangen) mit zusätzlichen Protokoll- und Todo-Daten,
+  sodass Suche und Pagination realistisch getestet werden können.
+
+Fixed
+~~~~~
+
+* Chore: Projektversion auf ``0.5.32`` erhöht (``version.json``,
+  ``pyproject.toml``, ``uv.lock``, ``frontend/package.json`` und
+  ``README.md`` Badge).
+* Manual: Benutzerhandbuch **Proben** und Changelog für Release ``0.5.32``
+  ergänzt.
+
 0.5.31 (2026-08-07)
 -------------------
 
