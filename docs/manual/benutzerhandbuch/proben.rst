@@ -42,6 +42,16 @@ Zeitraum in der Listenansicht
 
 Jede Probe wird als Zeitbereich angezeigt (z. B. ``18:00-20:30 Uhr``).
 
+Stammdaten einer Probe bearbeiten
+---------------------------------
+
+Editoren und Admins können in einer geöffneten Probe im Bereich
+**Stammdaten** die Felder **Beginn** und **Ende** nachträglich anpassen.
+
+* **Beginn** ist ein Pflichtfeld.
+* **Ende** ist optional, muss aber (falls gesetzt) nach dem Beginn liegen.
+* Änderungen werden beim Verlassen des Felds gespeichert.
+
 Songs und Todos in Proben
 -------------------------
 
@@ -116,4 +126,3 @@ Jedes Mitglied kann dort seinen Status (✅ Dabei, ❓ Vielleicht, ❌ Nicht dab
 eintragen sowie bei Abwesenheit eine Aushilfe benennen.
 
 Vollständige Dokumentation: :ref:`verfuegbarkeit`.
-

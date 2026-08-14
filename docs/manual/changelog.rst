@@ -25,6 +25,11 @@ Changed
   Proben seitenweise geladen (Button **Mehr laden**), damit auch große
   Historien performant bedienbar bleiben.
 
+* **Proben-Stammdaten editierbar für Bearbeiter/Admins**: In der
+  Proben-Detailansicht können Nutzer mit Rolle **editor** oder **admin**
+  nun **Beginn** und **Ende** einer Probe direkt im Bereich **Stammdaten**
+  bearbeiten.
+
 * **Demo-Daten für Historientests erweitert**: ``init_demo_db.py`` erzeugt nun
   24 Proben (davon >20 vergangen) mit zusätzlichen Protokoll- und Todo-Daten,
   sodass Suche und Pagination realistisch getestet werden können.

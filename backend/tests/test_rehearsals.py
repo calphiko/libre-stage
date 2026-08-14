@@ -19,6 +19,7 @@ from pprint import pprint
 import pytest
 from datetime import datetime, timedelta
 from backend.models import Rehearsal, RehSong, Song, RehTodo, User
+from backend import auth
 
 
 def test_get_rehearsals(client, auth_headers, db_session):
@@ -202,6 +203,43 @@ def test_update_rehearsal(client, auth_headers, db_session):
     assert response.status_code == 200
     data = response.json()[0]
     assert data["comment"] == "Updated Comment"
+
+def test_update_rehearsal_stammdaten_as_editor(client, auth_headers, db_session):
+    reh = Rehearsal(
+        comment="Original Stammdaten",
+        begin=datetime(2024, 12, 10, 18, 0),
+        end=datetime(2024, 12, 10, 21, 0),
+        ical="original_ical"
+    )
+    editor = User(
+        user_name="editoruser",
+        user_pw=auth.hash_pw("editorpassword123"),
+        user_group="editor",
+        musician=True,
+        clear_name="Editor User",
+        email="editor@example.com",
+        status="active"
+    )
+    db_session.add_all([reh, editor])
+    db_session.commit()
+
+    editor_token = auth.create_access_token({"sub": editor.user_name, "role": editor.user_group})
+    editor_headers = {"Authorization": f"Bearer {editor_token}"}
+
+    response = client.get("/reh/", headers=editor_headers)
+    assert response.status_code == 200
+    reh_data = response.json()[0]
+
+    reh_data["begin"] = "2024-12-10T19:15:00"
+    reh_data["end"] = "2024-12-10T22:30:00"
+    reh_data["comment"] = "Bearbeitet durch Editor"
+
+    response = client.put("/reh/", json=reh_data, headers=editor_headers)
+    assert response.status_code == 200
+    data = response.json()[0]
+    assert data["begin"] == "2024-12-10T19:15:00"
+    assert data["end"] == "2024-12-10T22:30:00"
+    assert data["comment"] == "Bearbeitet durch Editor"
 
 def test_update_nonexistent_rehearsal(client, auth_headers, db_session):
     """Test updating an existing rehearsal."""
