@@ -228,6 +228,15 @@ def _build_setlist_payload(gig: models.Gig) -> dict:
     return payload
 
 
+def _delete_set_if_orphaned(db: Session, set_id: int) -> None:
+    has_gig_links = db.query(models.GigSet).filter_by(id_set=set_id).first() is not None
+    has_repertoire_links = db.query(models.RepertoireSetlistSet).filter_by(set_id=set_id).first() is not None
+    if has_gig_links or has_repertoire_links:
+        return
+    db.query(models.SetSong).filter_by(id_set=set_id).delete()
+    db.query(models.Set).filter_by(id=set_id).delete()
+
+
 def _raise_if_schedule_conflict(
     db: Session,
     gig: models.Gig,
@@ -1474,9 +1483,6 @@ def get_singer_colors(
     current=Depends(auth.get_current_user),
 ):
     """Gibt eine deterministisch berechnete Sänger→Farbe-Zuordnung für den Gig zurück."""
-    gig = db.query(models.Gig).get(gig_id)
-    if not gig:
-        raise HTTPException(status_code=404, detail="Gig not found")
     return _build_singer_colors_from_songs(db)
 
 
@@ -1629,11 +1635,12 @@ def update_gig_setlist(
             if gigset.set.id not in input_set_ids:
                 db.delete(gigset)
 
-        # 2. Sets löschen, die nicht mehr genutzt werden
+        db.flush()
+
+        # 2. Sets löschen, die nicht mehr genutzt werden und nirgends mehr verknüpft sind
         for set_id in existing_sets:
             if set_id not in input_set_ids:
-                db.query(models.SetSong).filter_by(id_set=set_id).delete()
-                db.query(models.Set).filter_by(id=set_id).delete()
+                _delete_set_if_orphaned(db, set_id)
 
         # 3. Update/Erstelle Sets und Songs
         for set_pos, set_data in enumerate(gig.sets, start=1):
@@ -1848,4 +1855,3 @@ def export_all_setlists(
         media_type="application/json",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
-
