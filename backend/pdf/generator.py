@@ -164,6 +164,13 @@ class SetlistPDF:
         minutes, seconds = divmod(total_seconds, 60)
         return f"{minutes:02}:{seconds:02}"
 
+    def _build_pdf_title(self) -> str:
+        gig_name = (getattr(self.gig, "name", "") or "").strip() or "Setliste"
+        gig_date = getattr(self.gig, "datum", None)
+        if gig_date:
+            return f"Setliste - {gig_name} ({gig_date:%d.%m.%Y})"
+        return f"Setliste - {gig_name}"
+
     def build(self) -> BytesIO:
         """
         Render the setlist to an in-memory PDF and return it.
@@ -177,6 +184,9 @@ class SetlistPDF:
         """
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4, bottomup=0)
+        c.setTitle(self._build_pdf_title())
+        c.setSubject("Setliste")
+        c.setCreator("libre-stage")
         width, height = A4
 
         try:
