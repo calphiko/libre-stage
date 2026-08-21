@@ -463,6 +463,10 @@ class Set(Base):
     setlist_name: Mapped[str | None] = mapped_column(String(1024))
 
     gig_links: Mapped[list["GigSet"]] = relationship("GigSet", back_populates="set")
+    repertoire_links: Mapped[list["RepertoireSetlistSet"]] = relationship(
+        "RepertoireSetlistSet",
+        back_populates="set",
+    )
 
     songs: Mapped[list["SetSong"]] = relationship(
         "SetSong",
@@ -582,6 +586,47 @@ class GigSet(Base):
 
     gig: Mapped["Gig"] = relationship("Gig", back_populates="sets")
     set: Mapped["Set"] = relationship("Set", back_populates="gig_links")
+
+
+class RepertoireSetlist(Base):
+    """Named setlist template independent from gigs."""
+
+    __tablename__ = "repertoire_setlists"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(512), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+    sets: Mapped[list["RepertoireSetlistSet"]] = relationship(
+        "RepertoireSetlistSet",
+        back_populates="repertoire_setlist",
+        order_by="RepertoireSetlistSet.position",
+        cascade="all, delete-orphan",
+    )
+
+
+class RepertoireSetlistSet(Base):
+    """Ordered link between a repertoire setlist and a set."""
+
+    __tablename__ = "repertoire_setlist_sets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    repertoire_setlist_id: Mapped[int] = mapped_column(
+        ForeignKey("repertoire_setlists.id"),
+        nullable=False,
+    )
+    set_id: Mapped[int] = mapped_column(ForeignKey("sets.id"), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    repertoire_setlist: Mapped["RepertoireSetlist"] = relationship(
+        "RepertoireSetlist",
+        back_populates="sets",
+    )
+    set: Mapped["Set"] = relationship("Set", back_populates="repertoire_links")
 
 
 class GigScheduleItem(Base):
