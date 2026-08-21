@@ -89,6 +89,35 @@ Filtern und Suchen
 * Sänger
 * Freitextsuche (Titel / Interpret)
 
+CSV-Export der aktuellen Songtabelle
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Im Songs-Tab steht ein CSV-Export zur Verfügung, der den **aktuellen Tabellenstand**
+exportiert:
+
+* aktive Filter
+* aktuelle Sortierung
+* aktuell sichtbare Spalten
+
+Dadurch entspricht die exportierte Datei genau der gerade angezeigten Ansicht.
+
+Repertoire-Listen
+-----------------
+
+Im zusätzlichen Tab **Repertoire-Listen** können unabhängige Listen aus dem
+Song-Repertoire angelegt und verwaltet werden.
+
+Funktionen:
+
+* Liste anlegen und löschen
+* Liste im Setlist-Editor öffnen
+* Liste direkt im Songs-Bereich anzeigen
+* Export als **PDF** (gleiches Setlisten-Template wie Gig-Setlisten)
+* Export als **CSV**
+
+Repertoire-Listen sind nicht an einen Gig gekoppelt und werden separat in der
+Datenbank gespeichert.
+
 Song-Details und Statistiken
 -----------------------------
 
