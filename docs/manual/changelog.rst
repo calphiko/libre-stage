@@ -3,6 +3,51 @@
 Änderungsprotokoll
 ==================
 
+0.5.33 (2026-08-21)
+-------------------
+
+Added
+~~~~~
+
+* **Repertoire-Listen (gig-unabhängig)**: Im Bereich **Songs** gibt es einen
+  zusätzlichen Tab **Repertoire-Listen**. Dort können eigene Listen aus dem
+  Repertoire angelegt, geöffnet und gelöscht werden.
+
+* **Setlist-Editor für Repertoire-Listen**: Der bestehende Setlist-Editor kann
+  nun neben Gig-Setlisten auch Repertoire-Listen direkt bearbeiten.
+
+* **Repertoire-Listen Export**: Für Repertoire-Listen stehen jetzt Exporte als
+  **PDF** und **CSV** zur Verfügung.
+
+* **Songtabelle CSV-Export (aktueller Stand)**: Der CSV-Export der Songtabelle
+  übernimmt den aktuell sichtbaren Zustand inklusive Filter, Sortierung und
+  sichtbarer Spalten.
+
+Changed
+~~~~~~~
+
+* **Repertoire-PDF im Setlisten-Template**: Der PDF-Export für Repertoire-
+  Listen nutzt jetzt dasselbe Template wie reguläre Setlisten.
+
+* **Repertoire-PDF ohne Timing**: Repertoire-Listen werden im PDF bewusst ohne
+  Timing-/Startzeitberechnung ausgegeben.
+
+* **PDF-Metadaten verbessert**: Setlisten-PDFs setzen jetzt einen sauberen
+  Dokumenttitel (Title), sodass Browser/Viewer nicht mehr „Unbekannt“
+  anzeigen.
+
+Fixed
+~~~~~
+
+* **Songs-Frontend**: Ein Laufzeitfehler
+  ``ReferenceError: createRepertoireList is not defined`` wurde behoben.
+
+* Chore: Projektversion auf ``0.5.33`` erhöht (``version.json``,
+  ``pyproject.toml``, ``uv.lock``, ``frontend/package.json``,
+  ``frontend/package-lock.json`` und ``README.md`` Badge).
+* Manual: Benutzerhandbuch (**Songs**, **Setlist-Editor**) und Changelog für
+  Release ``0.5.33`` ergänzt.
+
 0.5.32 (2026-08-14)
 -------------------
 

@@ -719,6 +719,131 @@ export async function updateGigSetlist(token, gigId, data) {
     return res.json();
 }
 
+export async function getRepertoireSetlists(token) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+}
+
+export async function createRepertoireSetlist(token, data) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      throw new Error(detail?.detail || `HTTP ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+}
+
+export async function deleteRepertoireSetlist(token, setlistId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      throw new Error(detail?.detail || `HTTP ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+}
+
+export async function getRepertoireSetlist(token, setlistId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}/setlist`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+}
+
+export async function getRepertoireSetlistPDF(token, setlistId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}/setlist.pdf`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('content-disposition') ?? '';
+    const match = disposition.match(/filename="?([^";\n]+)"?/);
+    const filename = match ? match[1] : `repertoire_setlist_${setlistId}.pdf`;
+    return { blob, filename };
+}
+
+export async function getRepertoireSetlistCSV(token, setlistId) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}/setlist.csv`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('content-disposition') ?? '';
+    const match = disposition.match(/filename="?([^";\n]+)"?/);
+    const filename = match ? match[1] : `repertoire_setlist_${setlistId}.csv`;
+    return { blob, filename };
+}
+
+export async function updateRepertoireSetlist(token, setlistId, data) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}/setlist`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      let responseBody = null;
+      try {
+        responseBody = await res.json();
+      } catch (_err) {
+        responseBody = null;
+      }
+
+      const detail = responseBody?.detail;
+      if (res.status === 409 && detail?.code === 'SETLIST_CONFLICT') {
+        const conflictError = new Error(detail?.message || 'Setlist-Konflikt erkannt');
+        conflictError.code = 'SETLIST_CONFLICT';
+        conflictError.status = 409;
+        conflictError.currentSetlist = detail?.current_setlist ?? null;
+        throw conflictError;
+      }
+
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : detail?.message || responseBody?.message || `HTTP ${res.status}: ${res.statusText}`;
+      throw new Error(message || 'Update fehlgeschlagen');
+    }
+
+    return res.json();
+}
+
 export async function getGigSetlistAvailability(token, gigId) {
     const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/setlist_available`, {
       method: 'GET',

@@ -31,7 +31,14 @@
     createNewSong,
     getSongsCandidates,
     updateSongCandidateFeedback,
-    acceptSongApproach, logout as apiLogout} from '$lib/api.js';
+    acceptSongApproach,
+    getRepertoireSetlists,
+    createRepertoireSetlist,
+    deleteRepertoireSetlist,
+    getRepertoireSetlist,
+    getRepertoireSetlistPDF,
+    getRepertoireSetlistCSV,
+    logout as apiLogout} from '$lib/api.js';
 
   import { createMessageHelpers } from '$lib/Messages.svelte';
 
@@ -61,10 +68,15 @@
 
   let rulesVisible = $state(false);
   let showHelp = $state(false);
-  let tabSet = $state(1); // Tab-Steuerung: 0 = Songs, 1 = Vorschläge
+  let tabSet = $state(1); // Tab-Steuerung: 0 = Songs, 1 = Vorschläge, 2 = Repertoire-Listen
   let gridApi;
   let gridContainerEl = $state(null);
   let desktopGridHeight = $state(600);
+  let repertoireSetlists = $state([]);
+  let newRepertoireSetlistName = $state('');
+  let repertoireSetlistDetailsById = $state({});
+  let expandedRepertoireSetlistId = $state(null);
+  let loadingRepertoireSetlistId = $state(null);
 
   let expandedSongId = $state(null);
   let editSongId = $state(null);
@@ -568,6 +580,61 @@
     syncGridColumnVisibility();
   }
 
+  function csvCell(value) {
+    if (value === null || value === undefined) return '';
+    if (Array.isArray(value)) value = value.join(', ');
+    if (typeof value === 'object') value = JSON.stringify(value);
+    const raw = String(value);
+    if (/[;"\n\r]/.test(raw)) {
+      return `"${raw.replace(/"/g, '""')}"`;
+    }
+    return raw;
+  }
+
+  function exportCurrentSongTableAsCsv() {
+    if (!gridApi || typeof gridApi.forEachNodeAfterFilterAndSort !== 'function') {
+      showWarning('Songtabelle ist noch nicht bereit.');
+      return;
+    }
+
+    let exportColumns = [];
+    if (typeof gridApi.getAllDisplayedColumns === 'function') {
+      exportColumns = (gridApi.getAllDisplayedColumns() ?? [])
+        .map((col) => {
+          const def = col?.getColDef?.() ?? {};
+          const field = def.field;
+          if (!field) return null;
+          return { field, label: def.headerName || field };
+        })
+        .filter(Boolean);
+    }
+
+    if (!exportColumns.length) {
+      const visibleSet = new Set(visibleColumnKeys);
+      exportColumns = allSongColumns
+        .filter((column) => visibleSet.has(column.key))
+        .map((column) => ({ field: column.key, label: column.label || column.key }));
+    }
+
+    if (!exportColumns.length) {
+      showWarning('Keine sichtbaren Spalten für den Export.');
+      return;
+    }
+
+    const rows = [];
+    rows.push(exportColumns.map((column) => csvCell(column.label)).join(';'));
+    gridApi.forEachNodeAfterFilterAndSort((node) => {
+      const data = node?.data ?? {};
+      const line = exportColumns.map((column) => csvCell(data[column.field])).join(';');
+      rows.push(line);
+    });
+
+    const csvContent = `\uFEFF${rows.join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    downloadBlob(blob, `songs_tabelle_${timestamp}.csv`);
+  }
+
   // Wird aufgerufen sobald die ersten Daten im Grid gerendert sind
   function onFirstDataRendered(params) {
     refreshGridHeight();
@@ -887,6 +954,7 @@ let filteredSongs = $derived(songs
     } catch(e) {
       console.error('Konnte Musikerliste nicht laden:', e);
     }
+    await refreshRepertoireSetlists();
     mobileFilter();
     if (vorschlaegeSongs.length === 0 ) { tabSet = 0; } else {tabSet = 1;}
   });
@@ -981,6 +1049,109 @@ let filteredSongs = $derived(songs
       }
   }
 
+  async function refreshRepertoireSetlists() {
+    try {
+      repertoireSetlists = await getRepertoireSetlists(null);
+      const validIds = new Set(repertoireSetlists.map(entry => String(entry.id)));
+      const nextDetails = {};
+      for (const [id, value] of Object.entries(repertoireSetlistDetailsById)) {
+        if (validIds.has(id)) nextDetails[id] = value;
+      }
+      repertoireSetlistDetailsById = nextDetails;
+      if (expandedRepertoireSetlistId != null && !validIds.has(String(expandedRepertoireSetlistId))) {
+        expandedRepertoireSetlistId = null;
+      }
+    } catch (e) {
+      repertoireSetlists = [];
+      showError(e.message ?? 'Repertoire-Listen konnten nicht geladen werden');
+    }
+  }
+
+  async function createRepertoireList() {
+    const name = (newRepertoireSetlistName ?? '').trim();
+    if (!name) {
+      showWarning('Bitte einen Namen für die Liste eingeben.');
+      return;
+    }
+    try {
+      const created = await createRepertoireSetlist(null, { name });
+      newRepertoireSetlistName = '';
+      await refreshRepertoireSetlists();
+      showSuccess(`Liste "${created.name}" angelegt.`);
+    } catch (e) {
+      showError(e.message ?? 'Liste konnte nicht angelegt werden');
+    }
+  }
+
+  async function removeRepertoireList(setlistEntry) {
+    try {
+      await deleteRepertoireSetlist(null, setlistEntry.id);
+      delete repertoireSetlistDetailsById[String(setlistEntry.id)];
+      await refreshRepertoireSetlists();
+      showSuccess(`Liste "${setlistEntry.name}" gelöscht.`);
+    } catch (e) {
+      showError(e.message ?? 'Liste konnte nicht gelöscht werden');
+    }
+  }
+
+  function openRepertoireSetlistEditor(setlistEntry) {
+    goto(`/setlist_editor?repertoire_setlist_id=${setlistEntry.id}`);
+  }
+
+  async function toggleRepertoireSetlistPreview(setlistEntry) {
+    const id = setlistEntry.id;
+    if (expandedRepertoireSetlistId === id) {
+      expandedRepertoireSetlistId = null;
+      return;
+    }
+
+    expandedRepertoireSetlistId = id;
+    if (repertoireSetlistDetailsById[String(id)]) return;
+
+    loadingRepertoireSetlistId = id;
+    try {
+      const details = await getRepertoireSetlist(null, id);
+      repertoireSetlistDetailsById = {
+        ...repertoireSetlistDetailsById,
+        [String(id)]: details
+      };
+    } catch (e) {
+      showError(e.message ?? 'Liste konnte nicht geladen werden');
+    } finally {
+      loadingRepertoireSetlistId = null;
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  async function exportRepertoireSetlistPdf(setlistEntry) {
+    try {
+      const { blob, filename } = await getRepertoireSetlistPDF(null, setlistEntry.id);
+      downloadBlob(blob, filename);
+    } catch (e) {
+      showError(e.message ?? 'PDF-Export fehlgeschlagen');
+    }
+  }
+
+  async function exportRepertoireSetlistCsv(setlistEntry) {
+    try {
+      const { blob, filename } = await getRepertoireSetlistCSV(null, setlistEntry.id);
+      downloadBlob(blob, filename);
+    } catch (e) {
+      showError(e.message ?? 'CSV-Export fehlgeschlagen');
+    }
+  }
+
   function canEdit() {
     return user && (user.user_group === 'admin' || user.user_group === 'editor');
   }
@@ -1036,12 +1207,13 @@ let filteredSongs = $derived(songs
             </ul>
           </div>
 
-          <!-- Die zwei Tabs -->
+          <!-- Die Tabs -->
           <div>
-            <h4 class="font-semibold text-secondary-500 mb-2">📂 Die zwei Tabs</h4>
+            <h4 class="font-semibold text-secondary-500 mb-2">📂 Die Tabs</h4>
             <ul class="list-disc list-inside space-y-1 text-sm">
               <li><strong>Songs ({filteredSongs.length}):</strong> Alle regulären Songs in der Datenbank</li>
               <li><strong>Vorschläge ({vorschlaegeSongs.length}):</strong> Neue Song-Vorschläge, über die abgestimmt werden kann</li>
+              <li><strong>Repertoire-Listen ({repertoireSetlists.length}):</strong> Gig-unabhängige Setlisten aus dem Song-Repertoire</li>
             </ul>
           </div>
 
@@ -1097,6 +1269,10 @@ let filteredSongs = $derived(songs
       <button onclick={() => { tabSet = 0; refreshGridHeight(); }} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 0 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
         <span>Songs ({filteredSongs.length})</span>
       </button>
+
+      <button onclick={() => { tabSet = 2; refreshGridHeight(); }} class="px-4 py-2 rounded-t-lg transition-colors {tabSet === 2 ? 'bg-surface-200 dark:bg-surface-700 font-bold border-b-2 border-primary-500' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}">
+        <span>Repertoire-Listen ({repertoireSetlists.length})</span>
+      </button>
     </div>
     <div class="flex-1 min-h-0 flex flex-col">
 
@@ -1123,6 +1299,11 @@ let filteredSongs = $derived(songs
                     class="btn btn-sm variant-soft-secondary"
                     onclick={resetToDefaultColumns}
                   >Standardansicht</button>
+                  <button
+                    type="button"
+                    class="btn btn-sm variant-soft-secondary"
+                    onclick={exportCurrentSongTableAsCsv}
+                  >CSV Export (aktueller Filter)</button>
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {#each allSongColumns as column}
@@ -1292,6 +1473,94 @@ let filteredSongs = $derived(songs
             {/if}
           </div>
 
+        {:else if tabSet === 2}
+          <div class="space-y-4">
+            {#if canEdit()}
+              <div class="card variant-ghost-surface p-3">
+                <h4 class="font-semibold mb-2">Neue Repertoire-Liste anlegen</h4>
+                <div class="flex flex-col md:flex-row gap-2">
+                  <input
+                    class="input flex-1"
+                    type="text"
+                    placeholder="Name der Liste"
+                    bind:value={newRepertoireSetlistName}
+                    onkeydown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createRepertoireList();
+                      }
+                    }}
+                  />
+                  <button class="btn variant-filled-primary" onclick={createRepertoireList}>
+                    Anlegen
+                  </button>
+                </div>
+              </div>
+            {/if}
+
+            {#if repertoireSetlists.length === 0}
+              <p class="text-on-surface-variant italic">Noch keine Repertoire-Listen vorhanden.</p>
+            {:else}
+              <div class="divide-y divide-surface-200 dark:divide-surface-700 rounded-xl overflow-hidden border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
+                {#each repertoireSetlists as setlistEntry (setlistEntry.id)}
+                  <div class="px-4 py-3 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="font-semibold truncate">{setlistEntry.name}</p>
+                      <p class="text-xs text-surface-500 dark:text-surface-400">{setlistEntry.set_count} Sets</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <button class="btn btn-sm variant-soft-primary" onclick={() => toggleRepertoireSetlistPreview(setlistEntry)}>
+                        {expandedRepertoireSetlistId === setlistEntry.id ? 'Ausblenden' : 'Anzeigen'}
+                      </button>
+                      <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistPdf(setlistEntry)}>
+                        PDF
+                      </button>
+                      <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistCsv(setlistEntry)}>
+                        CSV
+                      </button>
+                      <button class="btn btn-sm variant-filled-primary" onclick={() => openRepertoireSetlistEditor(setlistEntry)}>
+                        Im Editor öffnen
+                      </button>
+                      {#if canEdit()}
+                        <button class="btn btn-sm variant-filled-error" onclick={() => removeRepertoireList(setlistEntry)}>
+                          Löschen
+                        </button>
+                      {/if}
+                    </div>
+                  </div>
+                  {#if expandedRepertoireSetlistId === setlistEntry.id}
+                    <div class="px-4 pb-4">
+                      {#if loadingRepertoireSetlistId === setlistEntry.id}
+                        <p class="text-sm text-surface-500 dark:text-surface-400">Lade Liste…</p>
+                      {:else if repertoireSetlistDetailsById[String(setlistEntry.id)]}
+                        {@const details = repertoireSetlistDetailsById[String(setlistEntry.id)]}
+                        {#if (details.sets ?? []).length === 0}
+                          <p class="text-sm text-surface-500 dark:text-surface-400">Keine Sets in dieser Liste.</p>
+                        {:else}
+                          <div class="space-y-2">
+                            {#each details.sets as setData, setIdx}
+                              <div class="rounded-lg border border-surface-300 dark:border-surface-600 p-3">
+                                <p class="font-semibold text-sm mb-1">{setData.setlist_name || setData.set_name || `Set ${setIdx + 1}`}</p>
+                                {#if (setData.songs ?? []).length === 0}
+                                  <p class="text-xs text-surface-500 dark:text-surface-400">Keine Songs</p>
+                                {:else}
+                                  <ul class="text-sm list-disc list-inside">
+                                    {#each setData.songs as songData, songIdx}
+                                      <li>{songIdx + 1}. {songData.interpret ? `${songData.interpret} - ` : ''}{songData.title}</li>
+                                    {/each}
+                                  </ul>
+                                {/if}
+                              </div>
+                            {/each}
+                          </div>
+                        {/if}
+                      {/if}
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            {/if}
+          </div>
         {:else if tabSet === 1}
           <!-- Tab 2: Vorschläge -->
           {#if vorschlaegeSongs.length === 0}
@@ -1553,4 +1822,3 @@ let filteredSongs = $derived(songs
 
 
 </style>
-

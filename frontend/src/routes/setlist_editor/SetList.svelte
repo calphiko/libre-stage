@@ -32,6 +32,7 @@
     canRedo = $bindable(false),
     isUpdatingSpinner = $bindable(false),
     singerColors = {},
+    persistSetlist = updateGigSetlist,
   } = $props();
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -387,6 +388,10 @@
 
   function getSetPositionByIndex(setIdx) {
     return String(setIdx + 1);
+  }
+
+  function getSetRenderKey(set, setIdx) {
+    return set?.gigset_id ?? set?.listset_id ?? set?.set_id ?? `new-set-${setIdx}`;
   }
 
   function getSetStartTime(setIdx) {
@@ -745,7 +750,7 @@
     isUpdatingSpinner = true;
     updateError = null;
     try {
-      const result = await updateGigSetlist(null, data.id, data);
+      const result = await persistSetlist(null, data.id, data);
       return result;
     } catch (error) {
       if (error?.code === 'SETLIST_CONFLICT' && error?.currentSetlist) {
@@ -831,7 +836,7 @@
   });
 </script>
 
-{#each setlist.sets as set, setIdx (set.gigset_id)}
+{#each setlist.sets as set, setIdx (getSetRenderKey(set, setIdx))}
   <div
     class="set-item"
     animate:flip={{ duration: 260 }}

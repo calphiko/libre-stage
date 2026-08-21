@@ -3,8 +3,9 @@
 Setlist-Editor
 ==============
 
-Der Setlist-Editor ermöglicht es, Setlists für Gigs zu erstellen und zu bearbeiten.
-Er unterstützt mehrere Sets, Drag & Drop sowie automatische Zeitberechnung.
+Der Setlist-Editor ermöglicht es, Setlists für Gigs **und** Repertoire-Listen zu
+erstellen und zu bearbeiten. Er unterstützt mehrere Sets und Drag & Drop.
+Für Gig-Setlisten ist zusätzlich eine automatische Zeitberechnung verfügbar.
 
 .. image:: ../_static/screenshots/gigs_setlist_editor.png
    :alt: Gigs Detail Screenshot
@@ -65,6 +66,20 @@ Nicht übernommen werden Live-/Nachbereitungsdaten:
 
 Nach erfolgreichem Import zeigt die Oberfläche eine Toast-Bestätigung an.
 
+Repertoire-Listen bearbeiten
+----------------------------
+
+Neben Gig-Setlisten kann der Editor auch gig-unabhängige Repertoire-Listen
+bearbeiten. Diese Listen werden im Tab **Songs → Repertoire-Listen** angelegt
+und von dort über **Im Setlist-Editor öffnen** geladen.
+
+Eigenschaften dieses Modus:
+
+* Speicherung unabhängig von Gigs in eigenen Datenbanktabellen
+* Gleiche Drag&Drop- und Set-Bearbeitungslogik wie bei Gig-Setlisten
+* Gleiches PDF-Template wie bei regulären Setlisten
+* PDF-Ausgabe ohne Timing-/Startzeitberechnung
+
 Drag & Drop
 -----------
 
@@ -76,6 +91,10 @@ Zeitberechnung
 
 libreStage berechnet die Spielzeit automatisch aus den hinterlegten Song-Dauern.
 Die Gesamtdauer und geplante Endzeit werden in Echtzeit aktualisiert.
+
+.. note::
+   Die Zeitberechnung gilt für **Gig-Setlisten**. Repertoire-Listen werden ohne
+   Timing-Ansicht bzw. Timing-Druck geführt.
 
 Pausen
 ~~~~~~

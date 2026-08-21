@@ -45,7 +45,6 @@ node_modules/
 # Legacy frontend
 API.log
 /frontend/src/routes/setlist_editor_test/
-/frontend/package-lock.json
 /frontend/.npmrc
 /frontend/src/routes/page_old.svelte
 
