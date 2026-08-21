@@ -527,6 +527,17 @@ class GigSetlistOut(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+class RepertoireSetlistSummaryOut(BaseModel):
+    id: int
+    name: str
+    set_count: int = 0
+
+
+class RepertoireSetlistCreateIn(BaseModel):
+    name: str
+
+
 class SongInSetLM(BaseModel):
     id: int
     title: str
@@ -972,4 +983,3 @@ class PendingAvailabilityGigOut(BaseModel):
     kind_of_gig: Optional[str] = None
 
     model_config = {"from_attributes": True}
-

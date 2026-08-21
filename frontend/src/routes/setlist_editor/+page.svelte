@@ -17,11 +17,21 @@
 
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
+  import { page } from '$app/stores';
   import SetList from './SetList.svelte';
   import SongList from './SongList.svelte';
   import { get } from 'svelte/store';
   import { gigIdForEditor } from '$lib/stores.js';
-  import { getSetlist, updateGigSetlist, getSongs, getUser, getSong, getSingerColors } from '$lib/api.js';
+  import {
+    getSetlist,
+    updateGigSetlist,
+    getSongs,
+    getUser,
+    getSong,
+    getSingerColors,
+    getRepertoireSetlist,
+    updateRepertoireSetlist,
+  } from '$lib/api.js';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 
@@ -60,13 +70,34 @@
     return JSON.parse(JSON.stringify(value));
   }
 
-  const gigId = get(gigIdForEditor);
-  console.log("gigId:", gigId);
+  const routeUrl = get(page).url;
+  const repertoireSetlistIdRaw = routeUrl.searchParams.get('repertoire_setlist_id');
+  const parsedRepertoireSetlistId = repertoireSetlistIdRaw ? Number(repertoireSetlistIdRaw) : NaN;
+  const repertoireSetlistId = Number.isFinite(parsedRepertoireSetlistId) && parsedRepertoireSetlistId > 0
+    ? parsedRepertoireSetlistId
+    : null;
+  const isRepertoireMode = repertoireSetlistId !== null;
+  const gigId = isRepertoireMode ? null : get(gigIdForEditor);
+  console.log("gigId:", gigId, "repertoireSetlistId:", repertoireSetlistId);
+
+  async function fetchCurrentSetlist() {
+    if (isRepertoireMode) {
+      return getRepertoireSetlist(null, repertoireSetlistId);
+    }
+    return getSetlist(null, gigId);
+  }
+
+  async function persistCurrentSetlist(token, id, payload) {
+    if (isRepertoireMode) {
+      return updateRepertoireSetlist(token, id, payload);
+    }
+    return updateGigSetlist(token, id, payload);
+  }
 
   // Sänger-Farben bei Setlist-Änderungen automatisch aktualisieren
   $effect(() => {
     if (!setlist?.setlist_version) return;
-    getSingerColors(null, gigId)
+    getSingerColors(null, gigId ?? 0)
       .then(colors => { singerColors = colors; })
       .catch(e => console.warn('Could not refresh singer colors:', e));
   });
@@ -77,7 +108,7 @@
 
     isSetlistPollingInFlight = true;
     try {
-      const latest = await getSetlist(null, gigId);
+      const latest = await fetchCurrentSetlist();
       if (!latest) return;
 
       const localVersion = setlist?.setlist_version ?? null;
@@ -111,13 +142,17 @@
     }
 
     try {
-      singerColors = await getSingerColors(null, gigId);
+      singerColors = await getSingerColors(null, gigId ?? 0);
     } catch (e) {
       console.warn('Could not load initial singer colors:', e);
     }
 
     try {
-      setlist = await getSetlist(null, gigId);
+      if (!isRepertoireMode && (!gigId || Number(gigId) <= 0)) {
+        error = 'Kein Gig für den Setlisten-Editor ausgewählt.';
+        return;
+      }
+      setlist = await fetchCurrentSetlist();
       console.log(setlist);
       setlistPollingIntervalId = setInterval(pollForNewerSetlistVersion, SETLIST_POLL_INTERVAL_MS);
     } catch (e) {
@@ -175,7 +210,7 @@
 
         console.log("Setlist nach Import:", setlist);
         // API-Call wie in handleDragOverSet
-        setlist = await updateGigSetlist(null, setlist.id, newSetlist);
+        setlist = await persistCurrentSetlist(null, setlist.id, newSetlist);
         setListRef?.registerExternalHistorySnapshot(previousSetlist);
         console.log("Setlist nach API Call:", setlist);
       } catch (e) {
@@ -198,7 +233,7 @@
     <div class="flex items-center justify-between">
       <h1 class="h2 font-bold">
         {#if setlist}
-          Setliste: <span class="text-primary-500">{setlist.name}</span>
+          {isRepertoireMode ? 'Repertoire-Liste' : 'Setliste'}: <span class="text-primary-500">{setlist.name}</span>
         {:else}
           <span class="opacity-50">Lade Setliste...</span>
         {/if}
@@ -378,7 +413,7 @@
       </div>
       <div class="card-body pt-1 flex-1 min-h-0 overflow-y-auto">
         {#if setlist}
-          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} bind:isUpdatingSpinner {singerColors}/>
+          <SetList bind:setlist bind:canUndo bind:canRedo bind:this={setListRef} bind:isUpdatingSpinner {singerColors} persistSetlist={persistCurrentSetlist}/>
           <div bind:this={setlistEndAnchor}></div>
         {:else}
           <div class="flex flex-col items-center justify-center py-6 opacity-60">
