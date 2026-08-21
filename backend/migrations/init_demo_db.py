@@ -30,13 +30,14 @@ from datetime import date, time, datetime, timedelta, timezone
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import bcrypt
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from backend.models import (
     Base, User, Song, SongCandidateFeedback,
     Rehearsal, RehSong, RehTodo,
     Gig, Set, SetSong, GigSet, GigScheduleItem,
+    RepertoireSetlist, RepertoireSetlistSet,
     Surveys, SurveyFields, SurveyFeedback,
     Availability,
 )
@@ -52,6 +53,7 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 Session = sessionmaker(bind=engine)
+ALEMBIC_HEAD_REVISION = "9a4e7f6b2c11"
 
 
 def hash_pw(plain: str) -> str:
@@ -410,6 +412,65 @@ def run():
         db.flush()
         return s
 
+    def make_repertoire_setlist(name, set_specs):
+        repertoire = RepertoireSetlist(name=name)
+        db.add(repertoire)
+        db.flush()
+
+        for set_pos, spec in enumerate(set_specs, start=1):
+            set_obj = make_set(
+                spec["name"],
+                spec.get("setlist_name", spec["name"]),
+                spec.get("pause_min", 10),
+                spec.get("song_indices", []),
+            )
+            db.add(
+                RepertoireSetlistSet(
+                    repertoire_setlist_id=repertoire.id,
+                    set_id=set_obj.id,
+                    position=set_pos,
+                )
+            )
+        db.flush()
+        return repertoire
+
+    # Repertoire-Beispiellisten (gig-unabhaengig)
+    make_repertoire_setlist(
+        "Probensongs",
+        [
+            {
+                "name": "Warm-up und Basics",
+                "setlist_name": "Warm-up",
+                "pause_min": 5,
+                "song_indices": [10, 11, 13],  # Mustang Sally, Brown Eyed Girl, Sunny
+            },
+            {
+                "name": "Feinschliff fuer Auftritt",
+                "setlist_name": "Feinschliff",
+                "pause_min": 10,
+                "song_indices": [12, 17, 4],  # Proud Mary, Shallow, September
+            },
+        ],
+    )
+
+    make_repertoire_setlist(
+        "Prioritaetenliste neue Songs (Probenplanung)",
+        [
+            {
+                "name": "Hohe Prioritaet",
+                "setlist_name": "Prio A",
+                "pause_min": 5,
+                "song_indices": [18, 19],  # Blinding Lights, As It Was (vorschlag)
+            },
+            {
+                "name": "Naechste Schritte",
+                "setlist_name": "Prio B",
+                "pause_min": 8,
+                "song_indices": [15, 16],  # Rolling in the Deep, Uptown Funk
+            },
+        ],
+    )
+
     # Gig 1 – vergangener Gig mit Live-Mode Daten
     set1a = make_set("Set 1 – Stadtfest",   "1. Set",  20, [0, 3, 6, 2, 8])   # 5 Songs
     set1b = make_set("Set 2 – Stadtfest",   "2. Set",  15, [1, 5, 7, 4, 9])   # 5 Songs
@@ -702,6 +763,19 @@ def run():
         Availability(user_id=dave.id,  event_type="rehearsal", event_id=reh3.id,
                      status="maybe", comment="Wahrscheinlich, aber nicht sicher."),
     ])
+
+    # Alembic-Version passend zum aktuellen Schema der Demo-Datenbank setzen.
+    db.execute(
+        text(
+            "CREATE TABLE IF NOT EXISTS alembic_version ("
+            "version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
+        )
+    )
+    db.execute(text("DELETE FROM alembic_version"))
+    db.execute(
+        text("INSERT INTO alembic_version (version_num) VALUES (:revision)"),
+        {"revision": ALEMBIC_HEAD_REVISION},
+    )
 
     db.commit()
     db.close()
