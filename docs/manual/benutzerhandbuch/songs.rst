@@ -107,9 +107,21 @@ Repertoire-Listen
 Im zusätzlichen Tab **Repertoire-Listen** können unabhängige Listen aus dem
 Song-Repertoire angelegt und verwaltet werden.
 
+Jeder Benutzer kann eigene Repertoire-Listen anlegen. Jede Liste ist dabei
+einem Benutzer zugeordnet und besitzt zusätzlich eine Sichtbarkeitseigenschaft:
+
+* **öffentlich** – alle Nutzer können die Liste sehen und bearbeiten
+* **privat** – nur der Eigentümer (und Admins) kann die Liste sehen und
+  bearbeiten
+
+Beim Anlegen einer Liste kann der Benutzer den Namen der Liste direkt festlegen
+sowie mit einem Haken entscheiden, ob die Liste öffentlich oder privat sein soll.
+Der Name und die Sichtbarkeit können nachträglich jederzeit geändert werden.
+
 Funktionen:
 
-* Liste anlegen und löschen
+* Liste anlegen, umbenennen und löschen
+* Sichtbarkeit nachträglich zwischen **öffentlich** und **privat** umschalten
 * Liste im Setlist-Editor öffnen
 * Liste direkt im Songs-Bereich anzeigen
 * Export als **PDF** (gleiches Setlisten-Template wie Gig-Setlisten)
@@ -117,6 +129,11 @@ Funktionen:
 
 Repertoire-Listen sind nicht an einen Gig gekoppelt und werden separat in der
 Datenbank gespeichert.
+
+.. note::
+    Eine öffentlich sichtbare Liste kann von jedem Benutzer bearbeitet werden.
+    Eine private Liste bleibt nur für den Eigentümer sichtbar; andere Nutzer
+    sehen sie nicht und können sie auch nicht ändern.
 
 Song-Details und Statistiken
 -----------------------------
