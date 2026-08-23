@@ -13,6 +13,14 @@ Added
   zusätzlichen Tab **Repertoire-Listen**. Dort können eigene Listen aus dem
   Repertoire angelegt, geöffnet und gelöscht werden.
 
+* **Eigentümer- und Sichtbarkeitsmodell**: Jede Repertoire-Liste ist einem
+  Benutzer zugeordnet. Beim Anlegen kann der User festlegen, ob die Liste
+  **öffentlich** oder **privat** ist. Öffentliche Listen sind für alle sichtbar
+  und bearbeitbar, private Listen nur für den Eigentümer bzw. Admins.
+
+* **Nachträgliche Metadatenpflege**: Name und Sichtbarkeit einer Repertoire-
+  Liste können nach dem Anlegen jederzeit angepasst werden.
+
 * **Setlist-Editor für Repertoire-Listen**: Der bestehende Setlist-Editor kann
   nun neben Gig-Setlisten auch Repertoire-Listen direkt bearbeiten.
 
@@ -25,6 +33,10 @@ Added
 
 Changed
 ~~~~~~~
+
+* **Repertoire-Listen-UX**: Beim Anlegen und Bearbeiten wurde die
+  Freigabe- und Namenslogik ergänzt, damit der Benutzer die Visibilität und den
+  Namen seiner Liste auch im Nachhinein gezielt steuern kann.
 
 * **Repertoire-PDF im Setlisten-Template**: Der PDF-Export für Repertoire-
   Listen nutzt jetzt dasselbe Template wie reguläre Setlisten.

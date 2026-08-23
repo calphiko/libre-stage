@@ -302,6 +302,7 @@
 <li class="toctree-l4"><a class="reference internal" href="models.html#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="models.html#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.User.repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">User.repertoire_setlists</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -547,7 +548,10 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.created_at"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.owner"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.owner</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="models.html#backend.models.RepertoireSetlist.sets"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.sets</span></code></a></li>
 </ul>
 </li>
@@ -1100,13 +1104,22 @@
 <li class="toctree-l3"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.set_count"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.set_count</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistSummaryOut.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#backend.schemas.RepertoireSetlistCreateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistCreateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistCreateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistCreateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#backend.schemas.RepertoireSetlistUpdateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistUpdateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistUpdateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.is_public</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.schemas.RepertoireSetlistUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#backend.schemas.SongInSetLM"><code class="docutils literal notranslate"><span class="pre">SongInSetLM</span></code></a><ul>
@@ -1632,6 +1645,7 @@
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_song_candidates"><code class="docutils literal notranslate"><span class="pre">get_song_candidates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlists()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.create_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">create_repertoire_setlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata"><code class="docutils literal notranslate"><span class="pre">update_repertoire_setlist_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.delete_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">delete_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.export_repertoire_setlist_pdf"><code class="docutils literal notranslate"><span class="pre">export_repertoire_setlist_pdf()</span></code></a></li>
@@ -3862,7 +3876,7 @@ grouped by domain:</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistSummaryOut">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.schemas.</span></span><span class="sig-name descname"><span class="pre">RepertoireSetlistSummaryOut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backend/schemas.html#RepertoireSetlistSummaryOut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.schemas.</span></span><span class="sig-name descname"><span class="pre">RepertoireSetlistSummaryOut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_public</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backend/schemas.html#RepertoireSetlistSummaryOut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pydantic.dev/docs/validation/latest/api/pydantic/base_model/#pydantic.BaseModel" title="(in Pydantic v0.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
 <dl class="field-list simple">
 </dl>
@@ -3877,13 +3891,23 @@ grouped by domain:</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistSummaryOut.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut.user_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistSummaryOut.is_public">
+<span class="sig-name descname"><span class="pre">is_public</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut.is_public" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistSummaryOut.set_count">
 <span class="sig-name descname"><span class="pre">set_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut.set_count" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistSummaryOut.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut.model_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'from_attributes':</span> <span class="pre">True}</span></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistSummaryOut.model_config" title="Link to this definition"></a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
@@ -3891,7 +3915,7 @@ grouped by domain:</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistCreateIn">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.schemas.</span></span><span class="sig-name descname"><span class="pre">RepertoireSetlistCreateIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backend/schemas.html#RepertoireSetlistCreateIn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.schemas.RepertoireSetlistCreateIn" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.schemas.</span></span><span class="sig-name descname"><span class="pre">RepertoireSetlistCreateIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_public</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backend/schemas.html#RepertoireSetlistCreateIn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.schemas.RepertoireSetlistCreateIn" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pydantic.dev/docs/validation/latest/api/pydantic/base_model/#pydantic.BaseModel" title="(in Pydantic v0.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
 <dl class="field-list simple">
 </dl>
@@ -3901,8 +3925,37 @@ grouped by domain:</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistCreateIn.is_public">
+<span class="sig-name descname"><span class="pre">is_public</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistCreateIn.is_public" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistCreateIn.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistCreateIn.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistUpdateIn">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.schemas.</span></span><span class="sig-name descname"><span class="pre">RepertoireSetlistUpdateIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_public</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backend/schemas.html#RepertoireSetlistUpdateIn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.schemas.RepertoireSetlistUpdateIn" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pydantic.dev/docs/validation/latest/api/pydantic/base_model/#pydantic.BaseModel" title="(in Pydantic v0.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistUpdateIn.name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistUpdateIn.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistUpdateIn.is_public">
+<span class="sig-name descname"><span class="pre">is_public</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistUpdateIn.is_public" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.schemas.RepertoireSetlistUpdateIn.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#backend.schemas.RepertoireSetlistUpdateIn.model_config" title="Link to this definition"></a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 

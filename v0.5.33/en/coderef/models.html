@@ -302,6 +302,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.models.User.repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">User.repertoire_setlists</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -547,7 +548,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#backend.models.RepertoireSetlist"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.created_at"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.owner"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.owner</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backend.models.RepertoireSetlist.sets"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.sets</span></code></a></li>
 </ul>
 </li>
@@ -1100,13 +1104,22 @@
 <li class="toctree-l3"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.set_count"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.set_count</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistSummaryOut.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistCreateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistCreateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistCreateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistCreateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistUpdateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistUpdateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistUpdateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.is_public</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="schemas.html#backend.schemas.RepertoireSetlistUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="schemas.html#backend.schemas.SongInSetLM"><code class="docutils literal notranslate"><span class="pre">SongInSetLM</span></code></a><ul>
@@ -1632,6 +1645,7 @@
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_song_candidates"><code class="docutils literal notranslate"><span class="pre">get_song_candidates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlists()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.create_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">create_repertoire_setlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata"><code class="docutils literal notranslate"><span class="pre">update_repertoire_setlist_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.delete_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">delete_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.get_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="routers/songs.html#backend.routers.songs.export_repertoire_setlist_pdf"><code class="docutils literal notranslate"><span class="pre">export_repertoire_setlist_pdf()</span></code></a></li>
@@ -2127,6 +2141,11 @@ a table inherits from <code class="xref py py-data docutils literal notranslate"
 <dl class="py attribute">
 <dt class="sig sig-object py" id="backend.models.User.status">
 <span class="sig-name descname"><span class="pre">status</span></span><a class="headerlink" href="#backend.models.User.status" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.models.User.repertoire_setlists">
+<span class="sig-name descname"><span class="pre">repertoire_setlists</span></span><a class="headerlink" href="#backend.models.User.repertoire_setlists" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3884,8 +3903,23 @@ has been deleted.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="backend.models.RepertoireSetlist.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.Mapped" title="(in SQLAlchemy v2.0)"><span class="pre">Mapped</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#backend.models.RepertoireSetlist.user_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.models.RepertoireSetlist.is_public">
+<span class="sig-name descname"><span class="pre">is_public</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.Mapped" title="(in SQLAlchemy v2.0)"><span class="pre">Mapped</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#backend.models.RepertoireSetlist.is_public" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="backend.models.RepertoireSetlist.created_at">
 <span class="sig-name descname"><span class="pre">created_at</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.Mapped" title="(in SQLAlchemy v2.0)"><span class="pre">Mapped</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.14)"><span class="pre">datetime</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#backend.models.RepertoireSetlist.created_at" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="backend.models.RepertoireSetlist.owner">
+<span class="sig-name descname"><span class="pre">owner</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.Mapped" title="(in SQLAlchemy v2.0)"><span class="pre">Mapped</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#backend.models.User" title="backend.models.User"><span class="pre">User</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#backend.models.RepertoireSetlist.owner" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

@@ -302,6 +302,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.User.repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">User.repertoire_setlists</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../coderef/models.html#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -547,7 +548,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.created_at"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.owner"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.owner</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/models.html#backend.models.RepertoireSetlist.sets"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.sets</span></code></a></li>
 </ul>
 </li>
@@ -1100,13 +1104,22 @@
 <li class="toctree-l3"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.set_count"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.set_count</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.is_public</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../coderef/schemas.html#backend.schemas.SongInSetLM"><code class="docutils literal notranslate"><span class="pre">SongInSetLM</span></code></a><ul>
@@ -1632,6 +1645,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.get_song_candidates"><code class="docutils literal notranslate"><span class="pre">get_song_candidates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlists()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.create_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">create_repertoire_setlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata"><code class="docutils literal notranslate"><span class="pre">update_repertoire_setlist_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.delete_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">delete_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/songs.html#backend.routers.songs.export_repertoire_setlist_pdf"><code class="docutils literal notranslate"><span class="pre">export_repertoire_setlist_pdf()</span></code></a></li>
@@ -2086,9 +2100,20 @@ exportiert:</p>
 <h2>Repertoire-Listen<a class="headerlink" href="#repertoire-listen" title="Link to this heading"></a></h2>
 <p>Im zusätzlichen Tab <strong>Repertoire-Listen</strong> können unabhängige Listen aus dem
 Song-Repertoire angelegt und verwaltet werden.</p>
+<p>Jeder Benutzer kann eigene Repertoire-Listen anlegen. Jede Liste ist dabei
+einem Benutzer zugeordnet und besitzt zusätzlich eine Sichtbarkeitseigenschaft:</p>
+<ul class="simple">
+<li><p><strong>öffentlich</strong> – alle Nutzer können die Liste sehen und bearbeiten</p></li>
+<li><p><strong>privat</strong> – nur der Eigentümer (und Admins) kann die Liste sehen und
+bearbeiten</p></li>
+</ul>
+<p>Beim Anlegen einer Liste kann der Benutzer den Namen der Liste direkt festlegen
+sowie mit einem Haken entscheiden, ob die Liste öffentlich oder privat sein soll.
+Der Name und die Sichtbarkeit können nachträglich jederzeit geändert werden.</p>
 <p>Funktionen:</p>
 <ul class="simple">
-<li><p>Liste anlegen und löschen</p></li>
+<li><p>Liste anlegen, umbenennen und löschen</p></li>
+<li><p>Sichtbarkeit nachträglich zwischen <strong>öffentlich</strong> und <strong>privat</strong> umschalten</p></li>
 <li><p>Liste im Setlist-Editor öffnen</p></li>
 <li><p>Liste direkt im Songs-Bereich anzeigen</p></li>
 <li><p>Export als <strong>PDF</strong> (gleiches Setlisten-Template wie Gig-Setlisten)</p></li>
@@ -2096,6 +2121,12 @@ Song-Repertoire angelegt und verwaltet werden.</p>
 </ul>
 <p>Repertoire-Listen sind nicht an einen Gig gekoppelt und werden separat in der
 Datenbank gespeichert.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Eine öffentlich sichtbare Liste kann von jedem Benutzer bearbeitet werden.
+Eine private Liste bleibt nur für den Eigentümer sichtbar; andere Nutzer
+sehen sie nicht und können sie auch nicht ändern.</p>
+</div>
 </section>
 <section id="song-details-und-statistiken">
 <h2>Song details and statistics<a class="headerlink" href="#song-details-und-statistiken" title="Link to this heading"></a></h2>

@@ -300,6 +300,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.User.repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">User.repertoire_setlists</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/models.html#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -545,7 +546,10 @@
 <li class="toctree-l3"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.created_at"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.owner"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.owner</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/models.html#backend.models.RepertoireSetlist.sets"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.sets</span></code></a></li>
 </ul>
 </li>
@@ -1098,13 +1102,22 @@
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.set_count"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.set_count</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.is_public</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="coderef/schemas.html#backend.schemas.SongInSetLM"><code class="docutils literal notranslate"><span class="pre">SongInSetLM</span></code></a><ul>
@@ -1630,6 +1643,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.get_song_candidates"><code class="docutils literal notranslate"><span class="pre">get_song_candidates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlists()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.create_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">create_repertoire_setlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata"><code class="docutils literal notranslate"><span class="pre">update_repertoire_setlist_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.delete_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">delete_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/songs.html#backend.routers.songs.export_repertoire_setlist_pdf"><code class="docutils literal notranslate"><span class="pre">export_repertoire_setlist_pdf()</span></code></a></li>
@@ -3266,6 +3280,16 @@
 </li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.is_livemode_available">is_livemode_available() (im Modul backend.routers.gigs)</a>
 </li>
+      <li><a href="coderef/models.html#backend.models.RepertoireSetlist.is_public">is_public (Attribut von backend.models.RepertoireSetlist)</a>
+
+      <ul>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.is_public">(Attribut von backend.schemas.RepertoireSetlistCreateIn)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.is_public">(Attribut von backend.schemas.RepertoireSetlistSummaryOut)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.is_public">(Attribut von backend.schemas.RepertoireSetlistUpdateIn)</a>
+</li>
+      </ul></li>
       <li><a href="coderef/routers/gigs.html#backend.routers.gigs.is_setlist_available">is_setlist_available() (im Modul backend.routers.gigs)</a>
 </li>
       <li><a href="coderef/models.html#backend.models.User.is_singer">is_singer (Attribut von backend.models.User)</a>, <a href="coderef/models.html#id7">[1]</a>
@@ -3489,6 +3513,8 @@
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.model_config">(Attribut von backend.schemas.RepertoireSetlistSummaryOut)</a>
 </li>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.model_config">(Attribut von backend.schemas.RepertoireSetlistUpdateIn)</a>
+</li>
         <li><a href="coderef/schemas.html#backend.schemas.SeasonStatistics.model_config">(Attribut von backend.schemas.SeasonStatistics)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.SetInGigLM.model_config">(Attribut von backend.schemas.SetInGigLM)</a>
@@ -3667,14 +3693,16 @@
       </ul></li>
       <li><a href="coderef/schemas.html#backend.schemas.PublicDate.Name">Name (Attribut von backend.schemas.PublicDate)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.name">name (Attribut von backend.schemas.RepertoireSetlistCreateIn)</a>
 
       <ul>
         <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.name">(Attribut von backend.schemas.RepertoireSetlistSummaryOut)</a>
 </li>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.name">(Attribut von backend.schemas.RepertoireSetlistUpdateIn)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/schemas.html#backend.schemas.PasswordResetRequest.new_password">new_password (Attribut von backend.schemas.PasswordResetRequest)</a>
 
       <ul>
@@ -3724,6 +3752,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coderef/schemas.html#backend.schemas.PublicDate.Ort">Ort (Attribut von backend.schemas.PublicDate)</a>
+</li>
+      <li><a href="coderef/models.html#backend.models.RepertoireSetlist.owner">owner (Attribut von backend.models.RepertoireSetlist)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -3905,6 +3935,8 @@
 </li>
       <li><a href="coderef/models.html#backend.models.RepertoireSetlistSet.repertoire_setlist_id">repertoire_setlist_id (Attribut von backend.models.RepertoireSetlistSet)</a>
 </li>
+      <li><a href="coderef/models.html#backend.models.User.repertoire_setlists">repertoire_setlists (Attribut von backend.models.User)</a>
+</li>
       <li><a href="coderef/models.html#backend.models.RepertoireSetlist">RepertoireSetlist (Klasse in backend.models)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn">RepertoireSetlistCreateIn (Klasse in backend.schemas)</a>
@@ -3912,6 +3944,8 @@
       <li><a href="coderef/models.html#backend.models.RepertoireSetlistSet">RepertoireSetlistSet (Klasse in backend.models)</a>
 </li>
       <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut">RepertoireSetlistSummaryOut (Klasse in backend.schemas)</a>
+</li>
+      <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn">RepertoireSetlistUpdateIn (Klasse in backend.schemas)</a>
 </li>
       <li><a href="coderef/auth.html#backend.auth.revoke_all_refresh_tokens_for_user">revoke_all_refresh_tokens_for_user() (im Modul backend.auth)</a>
 </li>
@@ -4491,6 +4525,8 @@
 </li>
       <li><a href="coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist">update_repertoire_setlist() (im Modul backend.routers.songs)</a>
 </li>
+      <li><a href="coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata">update_repertoire_setlist_metadata() (im Modul backend.routers.songs)</a>
+</li>
       <li><a href="coderef/app_config.html#backend.app_config.update_soft_config">update_soft_config() (im Modul backend.app_config)</a>
 </li>
       <li><a href="coderef/routers/songs.html#backend.routers.songs.update_song">update_song() (im Modul backend.routers.songs)</a>
@@ -4548,11 +4584,15 @@
       <ul>
         <li><a href="coderef/models.html#backend.models.RefreshToken.user_id">(Attribut von backend.models.RefreshToken)</a>, <a href="coderef/models.html#id14">[1]</a>
 </li>
+        <li><a href="coderef/models.html#backend.models.RepertoireSetlist.user_id">(Attribut von backend.models.RepertoireSetlist)</a>
+</li>
         <li><a href="coderef/models.html#backend.models.SongCandidateFeedback.user_id">(Attribut von backend.models.SongCandidateFeedback)</a>, <a href="coderef/models.html#id78">[1]</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.AvailabilityOut.user_id">(Attribut von backend.schemas.AvailabilityOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.PasswordUpdateRequest.user_id">(Attribut von backend.schemas.PasswordUpdateRequest)</a>
+</li>
+        <li><a href="coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.user_id">(Attribut von backend.schemas.RepertoireSetlistSummaryOut)</a>
 </li>
         <li><a href="coderef/schemas.html#backend.schemas.SongFeedbackBase.user_id">(Attribut von backend.schemas.SongFeedbackBase)</a>
 </li>

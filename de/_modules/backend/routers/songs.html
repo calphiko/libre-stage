@@ -300,6 +300,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#id7"><code class="docutils literal notranslate"><span class="pre">User.is_singer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#id8"><code class="docutils literal notranslate"><span class="pre">User.mm_username</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.User.status"><code class="docutils literal notranslate"><span class="pre">User.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.User.repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">User.repertoire_setlists</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../coderef/models.html#backend.models.UsedPasswordResetToken"><code class="docutils literal notranslate"><span class="pre">UsedPasswordResetToken</span></code></a><ul>
@@ -545,7 +546,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.created_at"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.created_at</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.owner"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.owner</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/models.html#backend.models.RepertoireSetlist.sets"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlist.sets</span></code></a></li>
 </ul>
 </li>
@@ -1098,13 +1102,22 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.user_id"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.user_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.set_count"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.set_count</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistSummaryOut.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistSummaryOut.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.is_public</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistCreateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistCreateIn.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.name"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.is_public"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.is_public</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.RepertoireSetlistUpdateIn.model_config"><code class="docutils literal notranslate"><span class="pre">RepertoireSetlistUpdateIn.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../coderef/schemas.html#backend.schemas.SongInSetLM"><code class="docutils literal notranslate"><span class="pre">SongInSetLM</span></code></a><ul>
@@ -1630,6 +1643,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.get_song_candidates"><code class="docutils literal notranslate"><span class="pre">get_song_candidates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlists"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlists()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.create_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">create_repertoire_setlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata"><code class="docutils literal notranslate"><span class="pre">update_repertoire_setlist_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.delete_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">delete_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.get_repertoire_setlist"><code class="docutils literal notranslate"><span class="pre">get_repertoire_setlist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../coderef/routers/songs.html#backend.routers.songs.export_repertoire_setlist_pdf"><code class="docutils literal notranslate"><span class="pre">export_repertoire_setlist_pdf()</span></code></a></li>
@@ -1997,6 +2011,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">or_</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">joinedload</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span>
 
@@ -2073,6 +2088,40 @@
         <span class="k">return</span>
     <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">SetSong</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">id_set</span><span class="o">=</span><span class="n">set_id</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
     <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Set</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">set_id</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_current_user</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">models</span><span class="o">.</span><span class="n">User</span><span class="p">:</span>
+    <span class="n">current_user_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s2">&quot;user_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">current</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_name&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">current_user_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Could not validate credentials&quot;</span><span class="p">)</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">User</span><span class="o">.</span><span class="n">user_name</span> <span class="o">==</span> <span class="n">current_user_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;User not found&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">user</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_repertoire_access</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">current_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">current_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">current_id</span> <span class="o">=</span> <span class="n">current_user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">is_public</span>
+        <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="s2">&quot;user_group&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;admin&quot;</span>
+        <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">current_user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_group&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_id</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">:</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">_resolve_current_user</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_repertoire_access</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Not enough permissions&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">entry</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_filename</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -2179,8 +2228,15 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">_resolve_current_user</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
     <span class="n">setlists</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">or_</span><span class="p">(</span>
+                <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="o">.</span><span class="n">is_public</span><span class="o">.</span><span class="n">is_</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">asc</span><span class="p">(),</span> <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="o">.</span><span class="n">id</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span>
         <span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="p">)</span>
@@ -2188,6 +2244,8 @@
         <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span>
             <span class="nb">id</span><span class="o">=</span><span class="n">setlist</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">setlist</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="n">setlist</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+            <span class="n">is_public</span><span class="o">=</span><span class="n">setlist</span><span class="o">.</span><span class="n">is_public</span><span class="p">,</span>
             <span class="n">set_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">setlist</span><span class="o">.</span><span class="n">sets</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">setlist</span> <span class="ow">in</span> <span class="n">setlists</span>
@@ -2203,18 +2261,61 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_editor</span><span class="p">(</span><span class="n">current</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Not enough permissions&quot;</span><span class="p">)</span>
-
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">_resolve_current_user</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
     <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Name darf nicht leer sein&quot;</span><span class="p">)</span>
 
-    <span class="n">entry</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">current_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">is_public</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">is_public</span><span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">set_count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+        <span class="n">is_public</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">is_public</span><span class="p">,</span>
+        <span class="n">set_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="update_repertoire_setlist_metadata">
+<a class="viewcode-back" href="../../../coderef/routers/songs.html#backend.routers.songs.update_repertoire_setlist_metadata">[Doku]</a>
+<span class="nd">@router</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;/repertoire_setlists/</span><span class="si">{setlist_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_repertoire_setlist_metadata</span><span class="p">(</span>
+    <span class="n">setlist_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">repertoire_setlist</span><span class="p">:</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistUpdateIn</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
+    <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">_resolve_current_user</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Name darf nicht leer sein&quot;</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">if</span> <span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">is_public</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="o">.</span><span class="n">id</span> <span class="ow">and</span> <span class="n">current_user</span><span class="o">.</span><span class="n">user_group</span> <span class="o">!=</span> <span class="s2">&quot;admin&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Not enough permissions&quot;</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">is_public</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">repertoire_setlist</span><span class="o">.</span><span class="n">is_public</span><span class="p">)</span>
+
+    <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+        <span class="n">is_public</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">is_public</span><span class="p">,</span>
+        <span class="n">set_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">sets</span><span class="p">),</span>
+    <span class="p">)</span></div>
 
 
 
@@ -2226,12 +2327,7 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_editor</span><span class="p">(</span><span class="n">current</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Not enough permissions&quot;</span><span class="p">)</span>
-
-    <span class="n">entry</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
 
     <span class="n">linked_set_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">link</span><span class="o">.</span><span class="n">set_id</span> <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">sets</span><span class="p">]</span>
     <span class="n">db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
@@ -2240,7 +2336,13 @@
         <span class="n">_delete_set_if_orphaned</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">set_id</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">set_count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">schemas</span><span class="o">.</span><span class="n">RepertoireSetlistSummaryOut</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+        <span class="n">is_public</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">is_public</span><span class="p">,</span>
+        <span class="n">set_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -2252,9 +2354,7 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="n">entry</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_build_repertoire_setlist_payload</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span></div>
 
 
@@ -2271,9 +2371,7 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="n">entry</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
 
     <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;repertoire_setlist_</span><span class="si">{</span><span class="n">_sanitize_filename</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">.pdf&quot;</span>
     <span class="n">pdf_bytes</span> <span class="o">=</span> <span class="n">_build_repertoire_setlist_pdf</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">design</span><span class="o">=</span><span class="n">design</span><span class="p">)</span>
@@ -2293,9 +2391,7 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="n">entry</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
 
     <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;repertoire_setlist_</span><span class="si">{</span><span class="n">_sanitize_filename</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">.csv&quot;</span>
     <span class="n">csv_content</span> <span class="o">=</span> <span class="n">_build_repertoire_setlist_csv</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
@@ -2316,12 +2412,7 @@
     <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_db</span><span class="p">),</span>
     <span class="n">current</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_editor</span><span class="p">(</span><span class="n">current</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Not enough permissions&quot;</span><span class="p">)</span>
-
-    <span class="n">db_setlist</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">RepertoireSetlist</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">setlist_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">db_setlist</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repertoire setlist not found&quot;</span><span class="p">)</span>
+    <span class="n">db_setlist</span> <span class="o">=</span> <span class="n">_get_accessible_repertoire_setlist</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">setlist_id</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
 
     <span class="n">current_payload</span> <span class="o">=</span> <span class="n">_build_repertoire_setlist_payload</span><span class="p">(</span><span class="n">db_setlist</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span>
