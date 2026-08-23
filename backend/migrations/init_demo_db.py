@@ -53,7 +53,7 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 Session = sessionmaker(bind=engine)
-ALEMBIC_HEAD_REVISION = "9a4e7f6b2c11"
+ALEMBIC_HEAD_REVISION = "3a9d7f1e2b54"
 
 
 def hash_pw(plain: str) -> str:
@@ -412,8 +412,12 @@ def run():
         db.flush()
         return s
 
-    def make_repertoire_setlist(name, set_specs):
-        repertoire = RepertoireSetlist(name=name)
+    def make_repertoire_setlist(name, set_specs, owner, is_public):
+        repertoire = RepertoireSetlist(
+            name=name,
+            user_id=owner.id,
+            is_public=is_public,
+        )
         db.add(repertoire)
         db.flush()
 
@@ -435,8 +439,10 @@ def run():
         return repertoire
 
     # Repertoire-Beispiellisten (gig-unabhaengig)
+    # Öffentlich: jeder darf lesen/bearbeiten.
+    # Privat: nur der Eigentümer darf sie sehen/bearbeiten.
     make_repertoire_setlist(
-        "Probensongs",
+        "Alice – öffentliches Repertoire",
         [
             {
                 "name": "Warm-up und Basics",
@@ -451,24 +457,68 @@ def run():
                 "song_indices": [12, 17, 4],  # Proud Mary, Shallow, September
             },
         ],
+        owner=alice,
+        is_public=True,
     )
 
     make_repertoire_setlist(
-        "Prioritaetenliste neue Songs (Probenplanung)",
+        "Alice – private Notizliste",
+        [
+            {
+                "name": "Hausaufgaben",
+                "setlist_name": "Privat 1",
+                "pause_min": 5,
+                "song_indices": [18, 19],  # Blinding Lights, As It Was (vorschlag)
+            },
+            {
+                "name": "Kleine Fixes",
+                "setlist_name": "Privat 2",
+                "pause_min": 8,
+                "song_indices": [15, 16],  # Rolling in the Deep, Uptown Funk
+            },
+        ],
+        owner=alice,
+        is_public=False,
+    )
+
+    make_repertoire_setlist(
+        "Bob – öffentliche Probenliste",
         [
             {
                 "name": "Hohe Prioritaet",
                 "setlist_name": "Prio A",
                 "pause_min": 5,
-                "song_indices": [18, 19],  # Blinding Lights, As It Was (vorschlag)
+                "song_indices": [0, 3, 6],  # Rockin' in the Free World, Mr. Brightside, Dancing Queen
             },
             {
                 "name": "Naechste Schritte",
                 "setlist_name": "Prio B",
                 "pause_min": 8,
-                "song_indices": [15, 16],  # Rolling in the Deep, Uptown Funk
+                "song_indices": [7, 14, 15],  # I Will Survive, Shallow, Rolling in the Deep
             },
         ],
+        owner=bob,
+        is_public=True,
+    )
+
+    make_repertoire_setlist(
+        "Carol – private Ideenliste",
+        [
+            {
+                "name": "Solo-Workshop",
+                "setlist_name": "Carol 1",
+                "pause_min": 5,
+                "song_indices": [2, 5, 11],  # Valerie, Superstition, Brown Eyed Girl
+            },
+            {
+                "name": "Stimmen-Checks",
+                "setlist_name": "Carol 2",
+                "pause_min": 10,
+                "song_indices": [17, 10, 13],  # Shallow, Mustang Sally, Sunny
+            },
+        ],
+        owner=carol,
+        is_public=False,
     )
 
     # Gig 1 – vergangener Gig mit Live-Mode Daten

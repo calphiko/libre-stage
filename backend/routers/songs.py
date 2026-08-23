@@ -37,6 +37,7 @@ import csv
 from io import StringIO
 from types import SimpleNamespace
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Literal
 
@@ -113,6 +114,40 @@ def _delete_set_if_orphaned(db: Session, set_id: int) -> None:
         return
     db.query(models.SetSong).filter_by(id_set=set_id).delete()
     db.query(models.Set).filter_by(id=set_id).delete()
+
+
+def _resolve_current_user(db: Session, current) -> models.User:
+    current_user_name = getattr(current, "user_name", None) or current.get("user_name") if isinstance(current, dict) else None
+    if not current_user_name:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    user = db.query(models.User).filter(models.User.user_name == current_user_name).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
+def _has_repertoire_access(current_user, entry: models.RepertoireSetlist) -> bool:
+    if not entry:
+        return False
+    current_id = getattr(current_user, "id", None)
+    if current_id is None and isinstance(current_user, dict):
+        current_id = current_user.get("id")
+    return bool(
+        entry.is_public
+        or getattr(current_user, "user_group", None) == "admin"
+        or (isinstance(current_user, dict) and current_user.get("user_group") == "admin")
+        or entry.user_id == current_id
+    )
+
+
+def _get_accessible_repertoire_setlist(db: Session, setlist_id: int, current) -> models.RepertoireSetlist:
+    current_user = _resolve_current_user(db, current)
+    entry = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    if not _has_repertoire_access(current_user, entry):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return entry
 
 
 def _sanitize_filename(name: str) -> str:
@@ -214,8 +249,15 @@ def get_repertoire_setlists(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
+    current_user = _resolve_current_user(db, current)
     setlists = (
         db.query(models.RepertoireSetlist)
+        .filter(
+            or_(
+                models.RepertoireSetlist.is_public.is_(True),
+                models.RepertoireSetlist.user_id == current_user.id,
+            )
+        )
         .order_by(models.RepertoireSetlist.name.asc(), models.RepertoireSetlist.id.asc())
         .all()
     )
@@ -223,6 +265,8 @@ def get_repertoire_setlists(
         schemas.RepertoireSetlistSummaryOut(
             id=setlist.id,
             name=setlist.name,
+            user_id=setlist.user_id,
+            is_public=setlist.is_public,
             set_count=len(setlist.sets),
         )
         for setlist in setlists
@@ -235,18 +279,58 @@ def create_repertoire_setlist(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    if not check_editor(current):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
+    current_user = _resolve_current_user(db, current)
     name = (repertoire_setlist.name or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Name darf nicht leer sein")
 
-    entry = models.RepertoireSetlist(name=name)
+    entry = models.RepertoireSetlist(
+        name=name,
+        user_id=current_user.id,
+        is_public=bool(repertoire_setlist.is_public),
+    )
     db.add(entry)
     db.commit()
     db.refresh(entry)
-    return schemas.RepertoireSetlistSummaryOut(id=entry.id, name=entry.name, set_count=0)
+    return schemas.RepertoireSetlistSummaryOut(
+        id=entry.id,
+        name=entry.name,
+        user_id=entry.user_id,
+        is_public=entry.is_public,
+        set_count=0,
+    )
+
+
+@router.patch("/repertoire_setlists/{setlist_id}", response_model=schemas.RepertoireSetlistSummaryOut)
+def update_repertoire_setlist_metadata(
+    setlist_id: int,
+    repertoire_setlist: schemas.RepertoireSetlistUpdateIn,
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+):
+    entry = _get_accessible_repertoire_setlist(db, setlist_id, current)
+    current_user = _resolve_current_user(db, current)
+
+    if repertoire_setlist.name is not None:
+        name = repertoire_setlist.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Name darf nicht leer sein")
+        entry.name = name
+
+    if repertoire_setlist.is_public is not None:
+        if entry.user_id != current_user.id and current_user.user_group != "admin":
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        entry.is_public = bool(repertoire_setlist.is_public)
+
+    db.commit()
+    db.refresh(entry)
+    return schemas.RepertoireSetlistSummaryOut(
+        id=entry.id,
+        name=entry.name,
+        user_id=entry.user_id,
+        is_public=entry.is_public,
+        set_count=len(entry.sets),
+    )
 
 
 @router.delete("/repertoire_setlists/{setlist_id}", response_model=schemas.RepertoireSetlistSummaryOut)
@@ -255,12 +339,7 @@ def delete_repertoire_setlist(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    if not check_editor(current):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    entry = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
-    if not entry:
-        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    entry = _get_accessible_repertoire_setlist(db, setlist_id, current)
 
     linked_set_ids = [link.set_id for link in entry.sets]
     db.delete(entry)
@@ -269,7 +348,13 @@ def delete_repertoire_setlist(
         _delete_set_if_orphaned(db, set_id)
     db.commit()
 
-    return schemas.RepertoireSetlistSummaryOut(id=setlist_id, name=entry.name, set_count=0)
+    return schemas.RepertoireSetlistSummaryOut(
+        id=setlist_id,
+        name=entry.name,
+        user_id=entry.user_id,
+        is_public=entry.is_public,
+        set_count=0,
+    )
 
 
 @router.get("/repertoire_setlists/{setlist_id}/setlist", response_model=schemas.GigSetlistOut)
@@ -278,9 +363,7 @@ def get_repertoire_setlist(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    entry = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
-    if not entry:
-        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    entry = _get_accessible_repertoire_setlist(db, setlist_id, current)
     return _build_repertoire_setlist_payload(entry)
 
 
@@ -294,9 +377,7 @@ def export_repertoire_setlist_pdf(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    entry = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
-    if not entry:
-        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    entry = _get_accessible_repertoire_setlist(db, setlist_id, current)
 
     filename = f"repertoire_setlist_{_sanitize_filename(entry.name)}.pdf"
     pdf_bytes = _build_repertoire_setlist_pdf(entry, design=design)
@@ -313,9 +394,7 @@ def export_repertoire_setlist_csv(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    entry = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
-    if not entry:
-        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    entry = _get_accessible_repertoire_setlist(db, setlist_id, current)
 
     filename = f"repertoire_setlist_{_sanitize_filename(entry.name)}.csv"
     csv_content = _build_repertoire_setlist_csv(entry)
@@ -333,12 +412,7 @@ def update_repertoire_setlist(
     db: Session = Depends(auth.get_db),
     current=Depends(auth.get_current_user),
 ):
-    if not check_editor(current):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    db_setlist = db.query(models.RepertoireSetlist).filter_by(id=setlist_id).first()
-    if not db_setlist:
-        raise HTTPException(status_code=404, detail="Repertoire setlist not found")
+    db_setlist = _get_accessible_repertoire_setlist(db, setlist_id, current)
 
     current_payload = _build_repertoire_setlist_payload(db_setlist)
     if (

@@ -531,11 +531,21 @@ class GigSetlistOut(BaseModel):
 class RepertoireSetlistSummaryOut(BaseModel):
     id: int
     name: str
+    user_id: int
+    is_public: bool = False
     set_count: int = 0
+
+    model_config = {"from_attributes": True}
 
 
 class RepertoireSetlistCreateIn(BaseModel):
     name: str
+    is_public: bool = False
+
+
+class RepertoireSetlistUpdateIn(BaseModel):
+    name: Optional[str] = None
+    is_public: Optional[bool] = None
 
 
 class SongInSetLM(BaseModel):

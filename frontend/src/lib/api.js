@@ -747,6 +747,21 @@ export async function createRepertoireSetlist(token, data) {
     return res.json();
 }
 
+export async function updateRepertoireSetlistMetadata(token, setlistId, data) {
+    const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      throw new Error(detail?.detail || `HTTP ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+}
+
 export async function deleteRepertoireSetlist(token, setlistId) {
     const res = await fetchWithAuth(`${API_URL}/songs/repertoire_setlists/${setlistId}`, {
       method: 'DELETE',
