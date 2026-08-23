@@ -34,6 +34,7 @@
     acceptSongApproach,
     getRepertoireSetlists,
     createRepertoireSetlist,
+    updateRepertoireSetlistMetadata,
     deleteRepertoireSetlist,
     getRepertoireSetlist,
     getRepertoireSetlistPDF,
@@ -74,9 +75,13 @@
   let desktopGridHeight = $state(600);
   let repertoireSetlists = $state([]);
   let newRepertoireSetlistName = $state('');
+  let newRepertoireSetlistIsPublic = $state(false);
   let repertoireSetlistDetailsById = $state({});
   let expandedRepertoireSetlistId = $state(null);
   let loadingRepertoireSetlistId = $state(null);
+  let editingRepertoireSetlistId = $state(null);
+  let editingRepertoireSetlistName = $state('');
+  let editingRepertoireSetlistIsPublic = $state(false);
 
   let expandedSongId = $state(null);
   let editSongId = $state(null);
@@ -1074,12 +1079,49 @@ let filteredSongs = $derived(songs
       return;
     }
     try {
-      const created = await createRepertoireSetlist(null, { name });
+      const created = await createRepertoireSetlist(null, {
+        name,
+        is_public: !!newRepertoireSetlistIsPublic,
+      });
       newRepertoireSetlistName = '';
+      newRepertoireSetlistIsPublic = false;
       await refreshRepertoireSetlists();
       showSuccess(`Liste "${created.name}" angelegt.`);
     } catch (e) {
       showError(e.message ?? 'Liste konnte nicht angelegt werden');
+    }
+  }
+
+  function beginEditRepertoireSetlist(setlistEntry) {
+    editingRepertoireSetlistId = setlistEntry.id;
+    editingRepertoireSetlistName = setlistEntry.name ?? '';
+    editingRepertoireSetlistIsPublic = !!setlistEntry.is_public;
+  }
+
+  function cancelEditRepertoireSetlist() {
+    editingRepertoireSetlistId = null;
+    editingRepertoireSetlistName = '';
+    editingRepertoireSetlistIsPublic = false;
+  }
+
+  async function saveRepertoireSetlistMetadata(setlistEntry) {
+    const name = (editingRepertoireSetlistName ?? '').trim();
+    if (!name) {
+      showWarning('Bitte einen Namen für die Liste eingeben.');
+      return;
+    }
+    try {
+      const updated = await updateRepertoireSetlistMetadata(null, setlistEntry.id, {
+        name,
+        is_public: !!editingRepertoireSetlistIsPublic,
+      });
+      await refreshRepertoireSetlists();
+      editingRepertoireSetlistId = null;
+      editingRepertoireSetlistName = '';
+      editingRepertoireSetlistIsPublic = false;
+      showSuccess(`Liste "${updated.name}" gespeichert.`);
+    } catch (e) {
+      showError(e.message ?? 'Liste konnte nicht gespeichert werden');
     }
   }
 
@@ -1154,6 +1196,12 @@ let filteredSongs = $derived(songs
 
   function canEdit() {
     return user && (user.user_group === 'admin' || user.user_group === 'editor');
+  }
+
+  function canManageRepertoireList(setlistEntry) {
+    if (!user?.id || !setlistEntry) return false;
+    if (setlistEntry.is_public) return true;
+    return user.user_group === 'admin' || setlistEntry.user_id === user.id;
   }
 </script>
 
@@ -1475,7 +1523,7 @@ let filteredSongs = $derived(songs
 
         {:else if tabSet === 2}
           <div class="space-y-4">
-            {#if canEdit()}
+            {#if user?.id}
               <div class="card variant-ghost-surface p-3">
                 <h4 class="font-semibold mb-2">Neue Repertoire-Liste anlegen</h4>
                 <div class="flex flex-col md:flex-row gap-2">
@@ -1491,6 +1539,10 @@ let filteredSongs = $derived(songs
                       }
                     }}
                   />
+                  <label class="flex items-center gap-2 text-sm whitespace-nowrap">
+                    <input type="checkbox" bind:checked={newRepertoireSetlistIsPublic} />
+                    Öffentlich für alle
+                  </label>
                   <button class="btn variant-filled-primary" onclick={createRepertoireList}>
                     Anlegen
                   </button>
@@ -1503,31 +1555,61 @@ let filteredSongs = $derived(songs
             {:else}
               <div class="divide-y divide-surface-200 dark:divide-surface-700 rounded-xl overflow-hidden border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
                 {#each repertoireSetlists as setlistEntry (setlistEntry.id)}
-                  <div class="px-4 py-3 flex items-center justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="font-semibold truncate">{setlistEntry.name}</p>
-                      <p class="text-xs text-surface-500 dark:text-surface-400">{setlistEntry.set_count} Sets</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                      <button class="btn btn-sm variant-soft-primary" onclick={() => toggleRepertoireSetlistPreview(setlistEntry)}>
-                        {expandedRepertoireSetlistId === setlistEntry.id ? 'Ausblenden' : 'Anzeigen'}
-                      </button>
-                      <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistPdf(setlistEntry)}>
-                        PDF
-                      </button>
-                      <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistCsv(setlistEntry)}>
-                        CSV
-                      </button>
-                      <button class="btn btn-sm variant-filled-primary" onclick={() => openRepertoireSetlistEditor(setlistEntry)}>
-                        Im Editor öffnen
-                      </button>
-                      {#if canEdit()}
-                        <button class="btn btn-sm variant-filled-error" onclick={() => removeRepertoireList(setlistEntry)}>
-                          Löschen
+                  {#if editingRepertoireSetlistId === setlistEntry.id}
+                    <div class="px-4 py-3 space-y-3">
+                      <div class="flex flex-col md:flex-row gap-2">
+                        <input
+                          class="input flex-1"
+                          type="text"
+                          bind:value={editingRepertoireSetlistName}
+                          placeholder="Name der Liste"
+                        />
+                        <label class="flex items-center gap-2 text-sm whitespace-nowrap">
+                          <input type="checkbox" bind:checked={editingRepertoireSetlistIsPublic} />
+                          Öffentlich für alle
+                        </label>
+                      </div>
+                      <div class="flex gap-2">
+                        <button class="btn btn-sm variant-filled-primary" onclick={() => saveRepertoireSetlistMetadata(setlistEntry)}>
+                          Speichern
                         </button>
-                      {/if}
+                        <button class="btn btn-sm variant-ghost" onclick={cancelEditRepertoireSetlist}>
+                          Abbrechen
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  {:else}
+                    <div class="px-4 py-3 flex items-center justify-between gap-3">
+                      <div class="min-w-0">
+                        <p class="font-semibold truncate">{setlistEntry.name}</p>
+                        <p class="text-xs text-surface-500 dark:text-surface-400">
+                          {setlistEntry.set_count} Sets · {setlistEntry.is_public ? 'Öffentlich' : 'Privat'}
+                        </p>
+                      </div>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <button class="btn btn-sm variant-soft-primary" onclick={() => toggleRepertoireSetlistPreview(setlistEntry)}>
+                          {expandedRepertoireSetlistId === setlistEntry.id ? 'Ausblenden' : 'Anzeigen'}
+                        </button>
+                        <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistPdf(setlistEntry)}>
+                          PDF
+                        </button>
+                        <button class="btn btn-sm variant-soft-secondary" onclick={() => exportRepertoireSetlistCsv(setlistEntry)}>
+                          CSV
+                        </button>
+                        <button class="btn btn-sm variant-filled-primary" onclick={() => openRepertoireSetlistEditor(setlistEntry)}>
+                          Im Editor öffnen
+                        </button>
+                        {#if canManageRepertoireList(setlistEntry)}
+                          <button class="btn btn-sm variant-soft-secondary" onclick={() => beginEditRepertoireSetlist(setlistEntry)}>
+                            Bearbeiten
+                          </button>
+                          <button class="btn btn-sm variant-filled-error" onclick={() => removeRepertoireList(setlistEntry)}>
+                            Löschen
+                          </button>
+                        {/if}
+                      </div>
+                    </div>
+                  {/if}
                   {#if expandedRepertoireSetlistId === setlistEntry.id}
                     <div class="px-4 pb-4">
                       {#if loadingRepertoireSetlistId === setlistEntry.id}

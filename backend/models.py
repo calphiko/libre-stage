@@ -46,6 +46,7 @@ class User(Base):
     is_singer = Column(Boolean)
     mm_username = Column(String(512))
     status = Column(String(32), nullable=False, default="active", server_default="active")
+    repertoire_setlists = relationship("RepertoireSetlist", back_populates="owner")
 
 
 class UsedPasswordResetToken(Base):
@@ -595,12 +596,15 @@ class RepertoireSetlist(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, default=0)
+    is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         default=datetime.utcnow,
     )
 
+    owner: Mapped["User"] = relationship("User", back_populates="repertoire_setlists")
     sets: Mapped[list["RepertoireSetlistSet"]] = relationship(
         "RepertoireSetlistSet",
         back_populates="repertoire_setlist",

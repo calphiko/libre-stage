@@ -145,6 +145,29 @@ def test_update_repertoire_setlist_rejects_stale_setlist_version(client, auth_he
     assert detail.get("code") == "SETLIST_CONFLICT"
 
 
+def test_repertoire_setlist_metadata_update(client, auth_headers):
+    created = client.post(
+        "/songs/repertoire_setlists",
+        json={"name": "Alt", "is_public": False},
+        headers=auth_headers,
+    )
+    assert created.status_code == 200
+    setlist_id = created.json()["id"]
+
+    updated = client.patch(
+        f"/songs/repertoire_setlists/{setlist_id}",
+        json={"name": "Neu", "is_public": True},
+        headers=auth_headers,
+    )
+    assert updated.status_code == 200
+    updated_data = updated.json()
+    assert updated_data["name"] == "Neu"
+    assert updated_data["is_public"] is True
+
+    listing = client.get("/songs/repertoire_setlists", headers=auth_headers)
+    assert any(entry["id"] == setlist_id and entry["name"] == "Neu" and entry["is_public"] is True for entry in listing.json())
+
+
 def test_repertoire_setlist_export_pdf_and_csv(client, auth_headers):
     created = client.post(
         "/songs/repertoire_setlists",
@@ -170,3 +193,48 @@ def test_repertoire_setlist_export_pdf_and_csv(client, auth_headers):
     assert csv_response.headers["content-type"].startswith("text/csv")
     csv_text = csv_response.content.decode("utf-8")
     assert "Set;Position;Interpret;Titel;Dauer;Lead-Sänger;Kommentar" in csv_text
+
+
+def test_repertoire_setlist_privacy_and_public_access(client, test_user, test_user2, auth_headers, auth_headers2):
+    private_creation = client.post(
+        "/songs/repertoire_setlists",
+        json={"name": "Meine private Liste", "is_public": False},
+        headers=auth_headers,
+    )
+    assert private_creation.status_code == 200
+    private_id = private_creation.json()["id"]
+
+    public_creation = client.post(
+        "/songs/repertoire_setlists",
+        json={"name": "Öffentliche Liste", "is_public": True},
+        headers=auth_headers2,
+    )
+    assert public_creation.status_code == 200
+    public_id = public_creation.json()["id"]
+
+    listing = client.get("/songs/repertoire_setlists", headers=auth_headers2)
+    assert listing.status_code == 200
+    ids = {entry["id"] for entry in listing.json()}
+    assert public_id in ids
+    assert private_id not in ids
+
+    private_access = client.get(
+        f"/songs/repertoire_setlists/{private_id}/setlist",
+        headers=auth_headers2,
+    )
+    assert private_access.status_code == 403
+
+    public_access = client.get(
+        f"/songs/repertoire_setlists/{public_id}/setlist",
+        headers=auth_headers2,
+    )
+    assert public_access.status_code == 200
+    assert public_access.json()["name"] == "Öffentliche Liste"
+
+    public_update = client.put(
+        f"/songs/repertoire_setlists/{public_id}/setlist",
+        json={**public_access.json(), "name": "Geänderte öffentliche Liste"},
+        headers=auth_headers2,
+    )
+    assert public_update.status_code == 200
+    assert public_update.json()["name"] == "Geänderte öffentliche Liste"
