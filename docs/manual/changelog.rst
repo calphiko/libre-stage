@@ -3,6 +3,46 @@
 Änderungsprotokoll
 ==================
 
+0.5.34 (2026-10-04)
+-------------------
+
+Added
+~~~~~
+
+* **Proben-Statistiken**: Im Bereich **Proben** gibt es jetzt einen eigenen
+  Tab **Statistiken** mit Kennzahlen zu Gesamtzahl, Songs, Dauer und
+  jährlichem Durchschnitt.
+
+* **Trend-Visualisierung**: Die Rehearsal-Statistiken zeigen jetzt
+  Monats-/Jahres-Trends für die Anzahl der Proben und die durchschnittliche
+  Songs-pro-Probe-Rate mit direkter Vergleichsangabe zum vorherigen Zeitraum.
+
+* **Top-Songs-Paginierung**: Die Häufigkeitsliste der häufigsten Songs wird bei
+  vielen Einträgen nun sauber paginiert und kann durchsteuert werden.
+
+Changed
+~~~~~~~
+
+* **Proben-Statistiken UX**: Die Diagramme lassen sich zwischen Monats- und
+  Jahresansicht umschalten, sodass die Entwicklung kompakt und vergleichbar
+  dargestellt wird.
+
+* **Statistik-Layout**: Die beiden Diagramme sind als übereinander gestapelte
+  Subplots angeordnet und bleiben damit auch auf kleineren Displays gut lesbar.
+
+Fixed
+~~~~~
+
+* **Top-Songs-Steuerung sichtbar gemacht**: Die Seitenschaltflächen für die
+  Top-Songs-Liste waren im UI nicht klar erkennbar; sie wurden damit nun als
+  explizite Steuerung ergänzt.
+
+* Chore: Projektversion auf ``0.5.34`` erhöht (``version.json``,
+  ``pyproject.toml``, ``frontend/package.json``, ``frontend/package-lock.json``
+  und ``README.md`` Badge).
+* Manual: Benutzerhandbuch **Proben** und Changelog für Release ``0.5.34``
+  ergänzt.
+
 0.5.33 (2026-08-21)
 -------------------
 
