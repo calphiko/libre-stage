@@ -75,7 +75,9 @@
 	const pastPageLimit = 20;
 	let hasMorePast = $derived(pastRehearsals.length < pastTotal);
 	let pastSearchTimer = null;
-	let allRehearsals = $derived([...rehearsals, ...pastRehearsals]);
+	let allRehearsals = $derived([
+		...new Map([...rehearsals, ...pastRehearsals].map((reh) => [String(reh.id), reh])).values()
+	]);
 	let rehearsalStats = $derived(getRehearsalStats(allRehearsals));
 	let topSongsPage = $state(0);
 	const topSongsPageSize = 5;
@@ -309,8 +311,7 @@
 
 		const topSongs = [...songCounts.entries()]
 			.map(([name, count]) => ({ name, count }))
-			.sort((a, b) => b.count - a.count)
-			.slice(0, 5);
+			.sort((a, b) => b.count - a.count);
 
 		const mostActiveMonth = [...monthCounts.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
 		const yearlyAverages = new Map();
