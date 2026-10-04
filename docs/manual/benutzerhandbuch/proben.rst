@@ -110,6 +110,34 @@ Treffer werden in der aufgeklappten Protokollansicht farblich hervorgehoben.
 Falls viele Treffer vorhanden sind, kann die Liste über **Mehr laden**
 seitenweise erweitert werden.
 
+Statistiken
+-----------
+
+Im Tab **Statistiken** werden Kennzahlen und Trends zu den Probenübersichten
+berechnet und grafisch dargestellt.
+
+Der Bereich enthält unter anderem:
+
+* Gesamtzahl der Proben und Songs
+* durchschnittliche Songs pro Probe
+* durchschnittliche Songs pro Probe pro Jahr
+* durchschnittliche Proben-Dauer
+* Top-Songs-Liste mit paginierter Übersicht
+
+Darüber hinaus gibt es zwei aussagekräftige Diagramme:
+
+* **Proben / Monat** bzw. **Proben / Jahr**
+* **Songs pro Probe / Monat** bzw. **Songs pro Probe / Jahr**
+
+Mit dem Schalter **Monat / Jahr** kann die Zeitachse je nach gewünschter Sicht
+umgeschaltet werden. Die Trendanzeige vergleicht den aktuellen Wert mit dem
+vorherigen Zeitraum und zeigt die prozentuale Veränderung an.
+
+.. note::
+
+   Die Statistik wird auf Basis der bereits geladenen Proben berechnet und ist
+   damit direkt im Frontend ohne zusätzlichen Server-Request verfügbar.
+
 iCal-Export
 -----------
 
