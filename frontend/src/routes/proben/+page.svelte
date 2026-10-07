@@ -835,6 +835,7 @@
 									period={rehearsalPeriod}
 									title={rehearsalPeriod === 'year' ? 'Proben / Jahr' : 'Proben / Monat'}
 									valueFormatter={(value) => `${value} Proben`}
+									valueLabelFormatter={(value) => String(Math.round(value))}
 									color="#22c55e"
 								/>
 								{#if rehearsalTrend}
@@ -856,6 +857,7 @@
 										? 'Songs pro Probe / Jahr'
 										: 'Songs pro Probe / Monat'}
 									valueFormatter={(value) => `${value.toFixed(1)} Songs/Probe`}
+									valueLabelFormatter={(value) => value.toFixed(1)}
 									color="#3b82f6"
 								/>
 								{#if songsPerRehearsalTrend}
