@@ -12,6 +12,8 @@
 		title = 'Proben / Monat',
 		valueKey = 'Proben',
 		valueFormatter = (value) => `${value} Proben`,
+		valueLabelFormatter = (value) =>
+			Number.isInteger(value) ? String(value) : value.toFixed(1),
 		color = '#22c55e'
 	} = $props();
 
@@ -64,7 +66,7 @@
 				top: 18,
 				left: 32,
 				right: 18,
-				bottom: 36,
+				bottom: 56,
 				containLabel: true
 			},
 			xAxis: {
@@ -72,7 +74,7 @@
 				data: values.map((item) => item.label ?? item.month ?? item.year ?? '—'),
 				axisLabel: {
 					color: chartTheme.textColor,
-					rotate: 0,
+					rotate: 45,
 					interval: 0
 				},
 				axisLine: { lineStyle: { color: chartTheme.axisLineColor } }
@@ -97,7 +99,7 @@
 						show: true,
 						position: 'top',
 						color: chartTheme.textColor,
-						formatter: '{c}'
+						formatter: ({ value }) => valueLabelFormatter(Number(value ?? 0))
 					}
 				}
 			]
