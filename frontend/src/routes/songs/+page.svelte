@@ -970,8 +970,17 @@
 			console.error('Songs load error:', e);
 			return; // Bei Auth-Fehlern wird automatisch von api.js umgeleitet
 		}
-		songs = await getSongs();
-		vorschlaegeSongs = await getSongsCandidates();
+		try {
+		    songs = await getSongs();
+        } catch (e) {
+		    console.error("Keine Songs gefunden!");
+		}
+
+		try {
+		    vorschlaegeSongs = await getSongsCandidates();
+        }  catch (e) {
+            console.error("Keine Songkandidaten gefunden!");
+        }
 		try {
 			const musicianList = await getUserList(null);
 			totalMusicians = Array.isArray(musicianList) ? musicianList.length : 0;
