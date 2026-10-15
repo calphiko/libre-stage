@@ -16,7 +16,25 @@ struct RehearsalSongDetailView: View {
     @State private var setlistCommentDraft = ""
     @State private var todoDraft = ""
     @State private var selectedSongForDetails: RehearsalSongDetailSheetItem?
+    @State private var showSavedFeedback = false
+    @State private var feedbackTask: Task<Void, Never>?
+    @State private var lastSaved: FieldSnapshot?
+    @FocusState private var focusedField: Field?
     @Environment(\.colorScheme) private var colorScheme
+
+    private enum Field: Hashable {
+        case todo, setlistComment, comment
+    }
+
+    private struct FieldSnapshot: Equatable {
+        let todo: String?
+        let setlistComment: String?
+        let comment: String?
+    }
+
+    private var currentSnapshot: FieldSnapshot {
+        FieldSnapshot(todo: song.todo, setlistComment: song.setlist_comment, comment: song.comment)
+    }
 
     var body: some View {
         List {
@@ -77,7 +95,7 @@ struct RehearsalSongDetailView: View {
             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
             // MARK: - Felder
-            Section("Felder") {
+            Section {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Todo").font(.caption).foregroundStyle(.secondary)
                     TextField("Was gibts zu tun?", text: Binding(
@@ -85,7 +103,9 @@ struct RehearsalSongDetailView: View {
                         set: { song.todo = $0.isEmpty ? nil : $0 }
                     ))
                     .formFieldSurface()
-                    .onSubmit { onUpdate() }
+                    .focused($focusedField, equals: .todo)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .setlistComment }
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -95,7 +115,9 @@ struct RehearsalSongDetailView: View {
                         set: { song.setlist_comment = $0.isEmpty ? nil : $0 }
                     ))
                     .formFieldSurface()
-                    .onSubmit { onUpdate() }
+                    .focused($focusedField, equals: .setlistComment)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .comment }
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -106,11 +128,19 @@ struct RehearsalSongDetailView: View {
                     ), axis: .vertical)
                     .lineLimit(2...5)
                     .formFieldSurface()
-                    .onSubmit { onUpdate() }
+                    .focused($focusedField, equals: .comment)
                 }
-
-                Button("Felder speichern") { onUpdate() }
-                    .font(.caption)
+            } header: {
+                HStack {
+                    Text("Felder")
+                    Spacer()
+                    if showSavedFeedback {
+                        Label("Gespeichert", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                            .transition(.opacity)
+                    }
+                }
             }
             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
@@ -178,6 +208,12 @@ struct RehearsalSongDetailView: View {
         }
         .softCardContainer()
         .appShellBackground()
+        .onAppear { lastSaved = currentSnapshot }
+        .onChange(of: focusedField) { oldValue, newValue in
+            guard oldValue != nil, oldValue != newValue else { return }
+            saveFieldsIfNeeded()
+        }
+        .onDisappear { saveFieldsIfNeeded() }
         .navigationTitle("\(song.interpret) – \(song.title)")
         .navigationBarTitleDisplayMode(.inline)
         .headerBodyBlend()
@@ -189,6 +225,22 @@ struct RehearsalSongDetailView: View {
     }
 
     // MARK: - Hilfsmethoden
+
+    private func saveFieldsIfNeeded() {
+        let snapshot = currentSnapshot
+        guard snapshot != lastSaved else { return }
+        lastSaved = snapshot
+        onUpdate()
+        feedbackTask?.cancel()
+        withAnimation { showSavedFeedback = true }
+        feedbackTask = Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation { showSavedFeedback = false }
+            }
+        }
+    }
 
     private func statusColor(_ status: String) -> Color {
         switch status.lowercased() {

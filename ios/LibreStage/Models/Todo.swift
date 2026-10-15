@@ -12,6 +12,22 @@ struct UserTodo: Codable, Identifiable {
     let song_interpret: String
     let done: Bool
     let dt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, todo, user_name, song_title, song_interpret, done, dt
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(todo, forKey: .todo)
+        try c.encode(user_name, forKey: .user_name)
+        try c.encode(song_title, forKey: .song_title)
+        try c.encode(song_interpret, forKey: .song_interpret)
+        try c.encode(done, forKey: .done)
+        // Backend requires the "dt" key, so always send it (null if missing)
+        try c.encode(dt, forKey: .dt)
+    }
 }
 
 struct SongForFeedback: Codable, Identifiable {

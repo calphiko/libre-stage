@@ -256,6 +256,13 @@ final class APIClient {
             let result = try await session.data(for: request)
             if Self.debugNetworkLogging, let http = result.1 as? HTTPURLResponse {
                 print("[API] <- \(http.statusCode) \(request.url?.path ?? "")")
+                if http.statusCode == 422, let body = String(data: result.0, encoding: .utf8) {
+                    print("[API] 422 detail: \(body)")
+                }
+                if http.statusCode == 422, let sent = request.httpBody,
+                   let sentBody = String(data: sent, encoding: .utf8) {
+                    print("[API] 422 request body: \(sentBody)")
+                }
             }
             return result
         } catch {

@@ -13,6 +13,8 @@ struct RehearsalDetailView: View {
     @State private var localReh: RehListElem
     @State private var showSongPicker = false
     @State private var showDeleteConfirm = false
+    @State private var lastSavedComment: String?
+    @FocusState private var commentFocused: Bool
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -116,11 +118,7 @@ struct RehearsalDetailView: View {
                 ), axis: .vertical)
                 .lineLimit(3...8)
                 .formFieldSurface()
-                .onSubmit { save() }
-                if localReh.comment?.isEmpty == false {
-                    Button("Speichern") { save() }
-                        .font(.caption)
-                }
+                .focused($commentFocused)
             }
             .listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
@@ -158,6 +156,11 @@ struct RehearsalDetailView: View {
             }
         }
         .softCardContainer()
+        .onAppear { lastSavedComment = localReh.comment }
+        .onChange(of: commentFocused) { _, focused in
+            if !focused { saveCommentIfNeeded() }
+        }
+        .onDisappear { saveCommentIfNeeded() }
         .fullScreenCover(isPresented: $showSongPicker) {
             AppModalContainer {
                 SongPickerSheet(
@@ -181,6 +184,12 @@ struct RehearsalDetailView: View {
     }
 
     // MARK: - Aktionen
+
+    private func saveCommentIfNeeded() {
+        guard localReh.comment != lastSavedComment else { return }
+        lastSavedComment = localReh.comment
+        save()
+    }
 
     private func save() {
         Task {

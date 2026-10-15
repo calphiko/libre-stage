@@ -13,6 +13,7 @@ struct SongDetailsView: View {
 	@State private var selectedTab: SongDetailsTab = .details
 	@State private var isEditing = false
 	@State private var draft = SongDetailsDraft()
+	@FocusState private var focusedField: String?
 
 	@Environment(AuthManager.self) private var authManager
 	@Environment(\.dismiss) private var dismiss
@@ -61,6 +62,9 @@ struct SongDetailsView: View {
 			}
 		}
 		.errorBanner($vm.error)
+		.onChange(of: focusedField) { old, new in
+			if old != nil, old != new { autoSave() }
+		}
 		.task {
 			await vm.loadSongFieldConfig()
 			await vm.loadSingerOptions()
@@ -130,13 +134,14 @@ struct SongDetailsView: View {
 				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 			} else if let song = vm.song {
 				Section("Details") {
-					SongDetailLine(label: "Tanzstil", value: song.dance_styles)
-
 					ForEach(vm.songFields) { field in
 						SongDetailLine(
 							label: field.label,
-							value: displayValue(for: field)
+							value: displayValue(for: field) ?? "–"
 						)
+						if field.key == "singer_background" {
+							SongDetailLine(label: "Tanzart", value: song.dance_styles ?? "–")
+						}
 					}
 				}
 				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
@@ -164,6 +169,7 @@ struct SongDetailsView: View {
 				options: vm.singerOptions,
 				selection: singerBinding(for: field.key)
 			)
+			.onChange(of: draft.value(for: field.key)) { _, _ in autoSave() }
 			.listAlignedFieldSurface()
 		case .option:
 			Picker(field.required ? "\(field.label) *" : field.label, selection: binding(for: field.key)) {
@@ -175,6 +181,7 @@ struct SongDetailsView: View {
 				}
 			}
 			.pickerStyle(.menu)
+			.onChange(of: draft.value(for: field.key)) { _, _ in autoSave() }
 			.listAlignedFieldSurface()
 		case .time:
 			TextField(
@@ -182,6 +189,7 @@ struct SongDetailsView: View {
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
+			.focused($focusedField, equals: field.key)
 			.listAlignedFieldSurface()
 		case .date:
 			TextField(
@@ -189,6 +197,7 @@ struct SongDetailsView: View {
 				text: binding(for: field.key)
 			)
 			.textInputAutocapitalization(.never)
+			.focused($focusedField, equals: field.key)
 			.listAlignedFieldSurface()
 		case .text:
 			if field.key == "text" || field.key == "comment" {
@@ -198,12 +207,23 @@ struct SongDetailsView: View {
 					axis: .vertical
 				)
 				.lineLimit(3...8)
+				.focused($focusedField, equals: field.key)
 				.listAlignedFieldSurface()
 			} else {
 				TextField(field.required ? "\(field.label) *" : field.label, text: binding(for: field.key))
+					.focused($focusedField, equals: field.key)
 					.listAlignedFieldSurface()
 			}
 		}
+	}
+
+	/// Speichert Aenderungen im Edit-Modus, sobald ein Feld verlassen wird.
+	private func autoSave() {
+		guard isEditing, !vm.isSaving, let song = vm.song else { return }
+		let saved = SongDetailsDraft(song: song)
+		let changed = vm.songFields.contains { draft.value(for: $0.key) != saved.value(for: $0.key) }
+		guard changed else { return }
+		Task { _ = await vm.save(songId: songId, draft: draft) }
 	}
 
 	private func binding(for key: String) -> Binding<String> {
@@ -261,12 +281,53 @@ struct SongDetailsView: View {
 				}
 				.listRowBackground(AppTheme.rowBackground(for: colorScheme))
 
+				if stats.feedback_count > 0 {
+					Section("Live-Bewertungen") {
+						ForEach([3, 2, 1], id: \.self) { rating in
+							let count = stats.feedback_distribution[String(rating)] ?? 0
+							let pct = Int((Double(count) / Double(stats.feedback_count) * 100).rounded())
+							SongDetailLine(
+								label: rating == 3 ? "😍 Super" : rating == 2 ? "😊 OK" : "😐 Schwach",
+								value: "\(count)× (\(pct)%)"
+							)
+						}
+					}
+					.listRowBackground(AppTheme.rowBackground(for: colorScheme))
+				}
+
 				if !stats.gigs_played.isEmpty {
 					Section("Gespielte Gigs") {
 						ForEach(stats.gigs_played) { gig in
-							VStack(alignment: .leading, spacing: 2) {
-								Text(gig.gig_name).font(.body)
-								Text(gig.gig_date).font(.caption).foregroundStyle(.secondary)
+							HStack {
+								VStack(alignment: .leading, spacing: 2) {
+									Text(gig.gig_name).font(.body)
+									Text(gig.gig_date).font(.caption).foregroundStyle(.secondary)
+								}
+								Spacer()
+								if gig.uebersprungen == true {
+									Text("⏭")
+								} else if gig.eingeschoben == true {
+									Text("📌")
+								}
+								if let fb = gig.feedback {
+									Text(fb == 3 ? "😍" : fb == 2 ? "😊" : "😐")
+								}
+							}
+						}
+					}
+					.listRowBackground(AppTheme.rowBackground(for: colorScheme))
+				}
+
+				if !stats.companion_songs.isEmpty {
+					Section("Häufig zusammen im Set") {
+						ForEach(stats.companion_songs) { comp in
+							HStack {
+								VStack(alignment: .leading, spacing: 2) {
+									Text(comp.title).font(.body)
+									Text(comp.interpret).font(.caption).foregroundStyle(.secondary)
+								}
+								Spacer()
+								Text("\(comp.count)×").foregroundStyle(.secondary)
 							}
 						}
 					}

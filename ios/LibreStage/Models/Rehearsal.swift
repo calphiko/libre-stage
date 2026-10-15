@@ -58,7 +58,12 @@ struct TodoInSongRequest: Encodable {
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encodeIfPresent(id, forKey: .id)
+        // Backend: `id: Optional[int]` ohne Default -> Feld muss vorhanden sein (ggf. null)
+        if let id {
+            try c.encode(id, forKey: .id)
+        } else {
+            try c.encodeNil(forKey: .id)
+        }
         try c.encode(id_song, forKey: .id_song)
         try c.encode(id_reh, forKey: .id_reh)
         try c.encode(id_user, forKey: .id_user)
