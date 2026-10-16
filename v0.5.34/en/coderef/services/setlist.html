@@ -1992,7 +1992,7 @@ durations and set-break durations.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="backend.services.setlist.SetlistService">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">backend.services.setlist.</span></span><span class="sig-name descname"><span class="pre">SetlistService</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/backend/services/setlist.html#SetlistService"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#backend.services.setlist.SetlistService" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Business-logic service for setlist operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2011,7 +2011,7 @@ durations and set-break durations.</p>
 eagerly loaded in a single query.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>gig_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Primary key of the gig to load.</p>
+<dd class="field-odd"><p><strong>gig_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Primary key of the gig to load.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The gig object with all relationships populated,
@@ -2041,7 +2041,7 @@ and then adds the full set-break duration between sets.</p>
 <code class="docutils literal notranslate"><span class="pre">{set_position:</span> <span class="pre">[song_start_datetime,</span> <span class="pre">...]}</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a>[datetime]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[datetime]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2055,7 +2055,7 @@ structure including live-mode annotations to stdout.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gig</strong> – A fully-loaded gig object.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> | </em><em>None</em>) – Optional schedule dict as returned by
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em> | </em><em>None</em>) – Optional schedule dict as returned by
 <a class="reference internal" href="#backend.services.setlist.SetlistService.calc_schedule" title="backend.services.setlist.SetlistService.calc_schedule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_schedule()</span></code></a>.  If supplied, song start times are
 printed next to each song.</p></li>
 </ul>

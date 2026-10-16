@@ -2012,7 +2012,7 @@ compatible fallback.</p>
 <dd class="field-even"><p>The raw JWT string, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if no token was found.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a> | None</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a> | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2023,13 +2023,13 @@ compatible fallback.</p>
 <dd><p>Hash a plain-text password using bcrypt.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>plain_pw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The plain-text password to hash.</p>
+<dd class="field-odd"><p><strong>plain_pw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The plain-text password to hash.</p>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p>The bcrypt hash string.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2041,15 +2041,15 @@ compatible fallback.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plain</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The plain-text password provided by the user.</p></li>
-<li><p><strong>hashed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The stored bcrypt password hash.</p></li>
+<li><p><strong>plain</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The plain-text password provided by the user.</p></li>
+<li><p><strong>hashed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The stored bcrypt password hash.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the password matches, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2062,8 +2062,8 @@ compatible fallback.</p>
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
-<li><p><strong>username</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The username to look up.</p></li>
-<li><p><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The plain-text password to verify.</p></li>
+<li><p><strong>username</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The username to look up.</p></li>
+<li><p><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The plain-text password to verify.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
@@ -2083,13 +2083,13 @@ the credentials are invalid.</p>
 <p>The token expires after <code class="xref py py-data docutils literal notranslate"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></code> minutes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Payload to encode (must contain at least <code class="docutils literal notranslate"><span class="pre">sub</span></code> and <code class="docutils literal notranslate"><span class="pre">role</span></code>).</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Payload to encode (must contain at least <code class="docutils literal notranslate"><span class="pre">sub</span></code> and <code class="docutils literal notranslate"><span class="pre">role</span></code>).</p>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p>The encoded JWT string.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2110,7 +2110,7 @@ the raw token string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>user_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Primary key of the user the token belongs to.</p></li>
+<li><p><strong>user_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Primary key of the user the token belongs to.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2118,7 +2118,7 @@ the raw token string.</p>
 <dd class="field-even"><p>The raw (unhashed) refresh token.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2140,7 +2140,7 @@ are revoked (replay detection).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw refresh token string.</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw refresh token string.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2163,7 +2163,7 @@ are revoked (replay detection).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw refresh token string.</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw refresh token string.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2180,7 +2180,7 @@ tokens are silently ignored.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw JWT access token string.</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw JWT access token string.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2196,13 +2196,13 @@ Expiry is enforced via the standard JWT <code class="docutils literal notranslat
 validates it automatically on decode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>user_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The username for which the reset is requested.</p>
+<dd class="field-odd"><p><strong>user_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The username for which the reset is requested.</p>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p>The encoded JWT string with <code class="docutils literal notranslate"><span class="pre">scope=&quot;password_reset_token&quot;</span></code>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2235,7 +2235,7 @@ current user’s payload.</p>
 <dd class="field-even"><p>A dictionary with keys <code class="docutils literal notranslate"><span class="pre">user_name</span></code> and <code class="docutils literal notranslate"><span class="pre">user_group</span></code>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 <dt class="field-even">Verursacht<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>HTTPException 401</strong> – If the token is missing, invalid or blacklisted.</p>
@@ -2258,7 +2258,7 @@ current user’s payload.</p>
 <dd class="field-even"><p>A dictionary with keys <code class="docutils literal notranslate"><span class="pre">user_name</span></code> and <code class="docutils literal notranslate"><span class="pre">user_group</span></code>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2270,15 +2270,15 @@ current user’s payload.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw JWT string.</p></li>
-<li><p><strong>expected_role</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The role to check against (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;admin&quot;</span></code>).</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw JWT string.</p></li>
+<li><p><strong>expected_role</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The role to check against (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;admin&quot;</span></code>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the token’s <code class="docutils literal notranslate"><span class="pre">role</span></code> claim matches <em>expected_role</em>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 <dt class="field-even">Verursacht<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>HTTPException 401</strong> – If the token cannot be decoded.</p>
@@ -2294,7 +2294,7 @@ current user’s payload.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw password-reset JWT.</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw password-reset JWT.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2302,7 +2302,7 @@ current user’s payload.</p>
 <dd class="field-even"><p>A tuple of <code class="docutils literal notranslate"><span class="pre">(username,</span> <span class="pre">raw_token)</span></code>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 <dt class="field-even">Verursacht<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>HTTPException 400</strong> – If the token is invalid, expired, has the wrong
@@ -2319,13 +2319,13 @@ current user’s payload.</p>
 Expiry is enforced via the standard JWT <code class="docutils literal notranslate"><span class="pre">exp</span></code> claim.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>user_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The username the iCal feed belongs to.</p>
+<dd class="field-odd"><p><strong>user_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The username the iCal feed belongs to.</p>
 </dd>
 <dt class="field-even">Rückgabe<span class="colon">:</span></dt>
 <dd class="field-even"><p>The encoded JWT string with <code class="docutils literal notranslate"><span class="pre">scope=&quot;internal_ical_token&quot;</span></code>.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2338,7 +2338,7 @@ Expiry is enforced via the standard JWT <code class="docutils literal notranslat
 <dl class="field-list simple">
 <dt class="field-odd">Parameter<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw iCal JWT string.</p></li>
+<li><p><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The raw iCal JWT string.</p></li>
 <li><p><strong>db</strong> (<em>Session</em>) – Active database session.</p></li>
 </ul>
 </dd>
@@ -2346,7 +2346,7 @@ Expiry is enforced via the standard JWT <code class="docutils literal notranslat
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the token is valid.</p>
 </dd>
 <dt class="field-odd">Rückgabetyp<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 <dt class="field-even">Verursacht<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">

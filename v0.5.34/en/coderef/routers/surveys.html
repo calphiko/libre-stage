@@ -1999,15 +1999,15 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<em>Session</em>) – Active SQLAlchemy database session.</p></li>
-<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of rows to skip (for pagination).</p></li>
-<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of rows to return.</p></li>
+<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of rows to skip (for pagination).</p></li>
+<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of rows to return.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of survey objects.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference internal" href="../models.html#backend.models.Surveys" title="backend.models.Surveys">models.Surveys</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference internal" href="../models.html#backend.models.Surveys" title="backend.models.Surveys">models.Surveys</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2020,8 +2020,8 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>sqlalchemy.orm.Session</em></a>) – Database session (injected automatically)</p></li>
-<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of entries to skip (pagination)</p></li>
-<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of surveys to return (max. 100)</p></li>
+<li><p><strong>skip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of entries to skip (pagination)</p></li>
+<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of surveys to return (max. 100)</p></li>
 <li><p><strong>current</strong> (<a class="reference internal" href="../models.html#backend.models.User" title="backend.models.User"><em>User</em></a>) – Currently authenticated user (injected automatically)</p></li>
 </ul>
 </dd>
@@ -2053,7 +2053,7 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The ID of the survey</p></li>
+<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The ID of the survey</p></li>
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>sqlalchemy.orm.Session</em></a>) – Database session (injected automatically)</p></li>
 <li><p><strong>current</strong> (<a class="reference internal" href="../models.html#backend.models.User" title="backend.models.User"><em>User</em></a>) – Currently authenticated user (injected automatically)</p></li>
 </ul>
@@ -2077,8 +2077,8 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The ID of the survey</p></li>
-<li><p><strong>feedbacks</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference internal" href="../schemas.html#backend.schemas.SurveyFeedbackOut" title="backend.schemas.SurveyFeedbackOut"><em>SurveyFeedbackOut</em></a><em>]</em>) – List of feedback entries to update or create</p></li>
+<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The ID of the survey</p></li>
+<li><p><strong>feedbacks</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><em>List</em></a><em>[</em><a class="reference internal" href="../schemas.html#backend.schemas.SurveyFeedbackOut" title="backend.schemas.SurveyFeedbackOut"><em>SurveyFeedbackOut</em></a><em>]</em>) – List of feedback entries to update or create</p></li>
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>Session</em></a>) – Database session (injected automatically)</p></li>
 <li><p><strong>current</strong> – Currently authenticated user (injected automatically)</p></li>
 </ul>
@@ -2107,7 +2107,7 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The ID of the survey to delete</p></li>
+<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The ID of the survey to delete</p></li>
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>Session</em></a>) – Database session (injected automatically)</p></li>
 <li><p><strong>current</strong> – Currently authenticated user (injected automatically)</p></li>
 </ul>
@@ -2128,7 +2128,7 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The ID of the survey to close</p></li>
+<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The ID of the survey to close</p></li>
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>Session</em></a>) – Database session (injected automatically)</p></li>
 <li><p><strong>current</strong> – Currently authenticated user (injected automatically)</p></li>
 </ul>
@@ -2149,7 +2149,7 @@ require the <code class="docutils literal notranslate"><span class="pre">editor<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The ID of</p></li>
+<li><p><strong>survey_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The ID of</p></li>
 <li><p><strong>db</strong> (<a class="reference external" href="https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session" title="(in SQLAlchemy v2.0)"><em>Session</em></a>) – Database session (injected automatically)</p></li>
 <li><p><strong>current</strong> – Currently authenticated user (injected automatically)</p></li>
 </ul>
