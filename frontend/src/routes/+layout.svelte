@@ -27,7 +27,7 @@
 
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { getUser, getVersionJson, logout as apiLogout, getAppLogo } from '$lib/api.js';
 	import { loadAppConfig } from '$lib/appConfig.js';
 
@@ -38,7 +38,7 @@
 	let version_date = $state('1970-01-01T00:00:00Z');
 	let version_branch = $state('');
 	let version_description = $state('');
-	let logoUrl = null;
+	let logoUrl = $state<string | null>(null);
 
 	let user = $state({
 		user_name: null,
@@ -77,10 +77,18 @@
 			version_date = data.date;
 			version_branch = data.release_branch;
 			version_description = data.description;
-			const blob = await getAppLogo();
-            logoUrl = URL.createObjectURL(blob);
+			
 		} catch (e) {
 			console.error('Could not load version', e);
+		}
+
+		try {
+			const blob = await getAppLogo();
+			console.log('Loaded app logo blob:', blob);
+            logoUrl = URL.createObjectURL(blob);
+			
+		} catch (e) {
+			console.error('Could not load app logo', e);
 		}
 
 		try {
@@ -103,6 +111,11 @@
 	function closeOnNavigate() {
 		sidebarOpen = false;
 	}
+
+	onDestroy(() => {
+        if (logoUrl) URL.revokeObjectURL(logoUrl);
+    });
+
 </script>
 
 <ToastOverlay />
@@ -144,14 +157,14 @@
 				<!-- Desktop -->
 				<a href="/dashboard" class="hidden md:flex items-center gap-2">
                     <div class="logo-container flex-shrink-0 ">
-						<img src="{logoUrl}" alt="Logo" style="height:34px"/>
+						<img src={logoUrl} alt="Logo" style="height:34px"/>
                     </div>
 					<strong class="text-base uppercase leading-none">{version_title}</strong>
 				</a>
 				<!-- Mobile -->
 				<a href="/dashboard" class="md:hidden flex items-center gap-1.5 min-w-0">
                     <div class="logo-container flex-shrink-0 ">
-						<img src="{logoUrl}" alt="Logo" style="height:30px"/>
+						<img src={logoUrl} alt="Logo" style="height:34px"/>
                     </div>
 					<strong class="text-sm uppercase leading-none truncate">{version_title}</strong>
 				</a>

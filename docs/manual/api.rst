@@ -72,6 +72,9 @@ Endpunkt-Übersicht
      - ``/surveys``
      - Alle Abstimmungen abrufen
    * - GET
+     - ``/ical/internal?month=YYYY-MM``
+     - Gigs und Proben eines Monats als JSON (Login erforderlich)
+   * - GET
      - ``/cal/ical/{token}``
      - Persönlicher iCal-Kalender-Feed
    * - GET

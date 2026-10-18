@@ -197,6 +197,38 @@ def get_iCal_Abo(
         }
     )
 
+@router.get("/internal")
+def get_internal_calender_json_for_frontend(
+    db: Session = Depends(auth.get_db),
+    current=Depends(auth.get_current_user),
+    month: str = Query(None, description="Month as YYYY-MM, defaults to the current month"),
+):
+    """Get internal calendar data (gigs and rehearsals of one month) as JSON."""
+    try:
+        month_dt = datetime.strptime(month or datetime.now().strftime('%Y-%m'), '%Y-%m')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid month format. Use YYYY-MM.")
+    next_month_dt = (month_dt.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+    gigs = db.query(models.Gig).filter(
+        models.Gig.datum >= month_dt.date(),
+        models.Gig.datum < next_month_dt.date()
+    ).order_by(models.Gig.datum.asc()).all()
+
+    reh = db.query(models.Rehearsal).filter(
+        models.Rehearsal.begin >= month_dt,
+        models.Rehearsal.begin < next_month_dt
+    ).order_by(models.Rehearsal.begin.asc()).all()
+
+    return {
+        "gigs": [schemas.GigOut.model_validate(g).model_dump(mode="json") for g in gigs],
+        "rehearsals": [
+            schemas.RehListElem.model_validate(r).model_dump(mode="json")
+            for r in reh
+        ],
+    }
+
+
 @router.get("/{token}")
 def get_internal_iCal_Abo(
     token:str,

@@ -49,6 +49,20 @@ Sind alle Bereiche leer, erscheint eine Erfolgsmeldung.
 Nächste Termine
 ---------------
 
+Der **Kalender** zeigt alle Proben und Gigs des gewählten Monats:
+
+* **Piktogramme**: Proben sind mit einem grünen Equalizer-Symbol, Gigs mit
+  einem roten Mikrofon-Symbol markiert. Bei mehreren Terminen an einem Tag
+  werden bis zu vier Symbole nebeneinander gezeigt. Der heutige Tag ist blau
+  hervorgehoben.
+* **Blättern**: Mit den Pfeilen links und rechts neben dem Monatsnamen wird
+  ein Monat vor- bzw. zurückgeblättert, **Heute** springt zurück zum
+  aktuellen Monat. Die Termine werden dabei automatisch geladen.
+* **Details**: Fährt man mit der Maus über ein Piktogramm (am Handy: antippen),
+  erscheint ein Tooltip. Bei Gigs enthält er Name, Einlass, Beginn, Ende, Ort,
+  Veranstalter, Art, Status und Notizen, bei Proben den Zeitraum, den
+  Kommentar und die Songliste.
+
 Die Kacheln **Nächste Probe** und **Nächster Auftritt** zeigen den jeweils
 nächsten bevorstehenden Termin mit Datum und ggf. Kommentar.
 Über die Schaltflächen **Zu Proben** und **Zu Gigs** gelangt man direkt zur

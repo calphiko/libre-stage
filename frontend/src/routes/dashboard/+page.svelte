@@ -26,6 +26,7 @@
   import SeasonSongMixPlot from '$lib/plots/seasonSongMixPlot.svelte';
   import SeasonFeedbackGaugePlot from '$lib/plots/seasonFeedbackGaugePlot.svelte';
   import SeasonGenreTopPlot from '$lib/plots/seasonGenreTopPlot.svelte';
+  import CalendarPlot from '$lib/plots/calendarPlot.svelte';
   import { createMessageHelpers } from '$lib/Messages.svelte';
   const { showError, showSuccess } = createMessageHelpers();
 
@@ -493,6 +494,9 @@
 
       <div>
         <h2 class="text-xl font-semibold mb-2 text-on-surface">Nächste Termine</h2>
+        <div>
+            <CalendarPlot />
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
           <div class="ui-card-muted p-4">
             <div class="text-sm text-on-surface-variant mb-1">Nächste Probe</div>
