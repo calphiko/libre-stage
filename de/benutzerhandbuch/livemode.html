@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live-Modus &mdash; libreStage v0.5.34 v0.5.34 Dokumentation</title>
+  <title>Live-Modus &mdash; libreStage v0.5.35 v0.5.35 Dokumentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1259c6cb"></script>
+      <script src="../_static/documentation_options.js?v=b62142d2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -37,7 +37,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            libreStage v0.5.34
+            libreStage v0.5.35
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -1580,6 +1580,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/cal.html#backend.routers.cal.LogFilter"><code class="docutils literal notranslate"><span class="pre">LogFilter</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/cal.html#backend.routers.cal.get_iCal_url"><code class="docutils literal notranslate"><span class="pre">get_iCal_url()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/cal.html#backend.routers.cal.get_iCal_Abo"><code class="docutils literal notranslate"><span class="pre">get_iCal_Abo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coderef/routers/cal.html#backend.routers.cal.get_internal_calender_json_for_frontend"><code class="docutils literal notranslate"><span class="pre">get_internal_calender_json_for_frontend()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../coderef/routers/cal.html#backend.routers.cal.get_internal_iCal_Abo"><code class="docutils literal notranslate"><span class="pre">get_internal_iCal_Abo()</span></code></a></li>
 </ul>
 </li>
@@ -1735,209 +1736,214 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Änderungsprotokoll</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id1">0.5.34 (2026-10-04)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id1">0.5.35 (2026-10-18)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id2">0.5.33 (2026-08-21)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id2">0.5.34 (2026-10-04)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id3">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id4">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id5">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id6">0.5.32 (2026-08-14)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id7">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id8">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id9">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id5">0.5.33 (2026-08-21)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id10">0.5.31 (2026-08-07)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id11">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id12">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id13">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id9">0.5.32 (2026-08-14)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id14">0.5.30 (2026-07-31)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id13">0.5.31 (2026-08-07)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id18">0.5.29 (2026-07-17)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id19">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id20">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id17">0.5.30 (2026-07-31)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id21">0.5.29 (2026-07-17)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id22">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id23">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#removed">Removed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id21">0.5.28 (2026-07-16)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id22">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id23">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id24">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id24">0.5.28 (2026-07-16)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id25">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id26">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id27">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id25">0.5.27 (2026-07-09)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id26">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id27">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id28">0.5.26 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id28">0.5.27 (2026-07-09)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id29">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id30">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id31">0.5.25 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id31">0.5.26 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id32">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id33">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id34">0.5.24 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id34">0.5.25 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id35">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id36">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id37">0.5.23 (2026-07-03)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id37">0.5.24 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id38">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id39">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id40">0.5.22 (2026-07-02)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id40">0.5.23 (2026-07-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id41">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id42">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id43">0.5.21 (2026-06-30)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id43">0.5.22 (2026-07-02)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id44">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id45">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id46">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id47">0.5.20 (2026-06-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id48">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id49">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id50">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id46">0.5.21 (2026-06-30)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id47">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id48">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id49">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id51">0.5.19 (2026-06-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id54">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id50">0.5.20 (2026-06-23)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id55">0.5.18 (2026-06-18)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id56">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id57">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id58">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id54">0.5.19 (2026-06-23)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id55">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id56">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id57">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id59">0.5.17 (2026-06-16)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id60">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id61">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id58">0.5.18 (2026-06-18)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id59">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id60">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id61">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id62">0.5.16 (2026-06-14)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id62">0.5.17 (2026-06-16)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id63">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id64">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id65">0.5.15 (2026-06-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id66">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id65">0.5.16 (2026-06-14)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id66">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id67">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id67">0.5.14 (2026-06-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id68">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id68">0.5.15 (2026-06-11)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id69">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id69">0.5.13 (2026-06-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id70">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id70">0.5.14 (2026-06-11)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id71">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id71">0.5.12 (2026-06-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id72">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id72">0.5.13 (2026-06-10)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id73">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id73">0.5.11 (2026-06-09)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id74">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id74">0.5.12 (2026-06-10)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id75">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id75">0.5.10 (2026-06-08)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id76">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id76">0.5.11 (2026-06-09)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id77">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id77">0.5.9 (2026-06-08)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id78">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id78">0.5.10 (2026-06-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id79">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id79">0.5.8 (2026-06-05)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id80">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id80">0.5.9 (2026-06-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id81">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id81">0.5.7 (2026-06-04)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id82">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id82">0.5.8 (2026-06-05)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id83">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id83">0.5.6 (2026-06-03)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id84">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id84">0.5.7 (2026-06-04)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id85">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id85">0.5.5 (2026-06-03)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id86">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id86">0.5.6 (2026-06-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id87">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id88">0.5.4 (2026-06-02)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id88">0.5.5 (2026-06-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id89">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id90">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id91">0.5.3 (2026-05-28)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id91">0.5.4 (2026-06-02)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id92">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id93">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id94">0.5.2 (2026-05-27)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id94">0.5.3 (2026-05-28)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id95">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id96">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id97">0.5.1 (2026-05-26)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id97">0.5.2 (2026-05-27)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id98">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id99">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id100">0.5.0 (2026-05-26)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id100">0.5.1 (2026-05-26)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id101">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id102">Changed</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id103">0.5.0 (2026-05-26)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id104">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id105">Changed</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../changelog.html#a-2026-05-23">0.4.6a (2026-05-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id103">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id104">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id106">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id107">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id105">0.4.6 (2026-05-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id106">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id107">0.4.5 (2026-05-22)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id108">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id108">0.4.6 (2026-05-23)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id109">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id110">0.4.4 (2026-05-19)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id110">0.4.5 (2026-05-22)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id111">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id112">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id113">0.4.3 (2026-05-18)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id113">0.4.4 (2026-05-19)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id114">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id115">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id116">0.4.2 (2026-05-17)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id116">0.4.3 (2026-05-18)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id117">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../changelog.html#id118">Changed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id119">0.4.2 (2026-05-17)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id120">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../changelog.html#id121">Changed</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../changelog.html#v0-4-1-2026-05-15">v0.4.1 (2026-05-15)</a></li>
@@ -1963,7 +1969,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">libreStage v0.5.34</a>
+          <a href="../index.html">libreStage v0.5.35</a>
       </nav>
 
       <div class="wy-nav-content">

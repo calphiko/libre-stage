@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Änderungsprotokoll &mdash; libreStage v0.5.34 v0.5.34 Dokumentation</title>
+  <title>Änderungsprotokoll &mdash; libreStage v0.5.35 v0.5.35 Dokumentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=1259c6cb"></script>
+      <script src="_static/documentation_options.js?v=b62142d2"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -36,7 +36,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            libreStage v0.5.34
+            libreStage v0.5.35
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1579,6 +1579,7 @@
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/cal.html#backend.routers.cal.LogFilter"><code class="docutils literal notranslate"><span class="pre">LogFilter</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/cal.html#backend.routers.cal.get_iCal_url"><code class="docutils literal notranslate"><span class="pre">get_iCal_url()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/cal.html#backend.routers.cal.get_iCal_Abo"><code class="docutils literal notranslate"><span class="pre">get_iCal_Abo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="coderef/routers/cal.html#backend.routers.cal.get_internal_calender_json_for_frontend"><code class="docutils literal notranslate"><span class="pre">get_internal_calender_json_for_frontend()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="coderef/routers/cal.html#backend.routers.cal.get_internal_iCal_Abo"><code class="docutils literal notranslate"><span class="pre">get_internal_iCal_Abo()</span></code></a></li>
 </ul>
 </li>
@@ -1734,209 +1735,214 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Änderungsprotokoll</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">0.5.34 (2026-10-04)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.5.35 (2026-10-18)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">0.5.33 (2026-08-21)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">0.5.34 (2026-10-04)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id3">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">0.5.32 (2026-08-14)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id8">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">0.5.33 (2026-08-21)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id10">0.5.31 (2026-08-07)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id11">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id12">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id13">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">0.5.32 (2026-08-14)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id14">0.5.30 (2026-07-31)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">0.5.31 (2026-08-07)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id18">0.5.29 (2026-07-17)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id19">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id20">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">0.5.30 (2026-07-31)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">0.5.29 (2026-07-17)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id22">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id23">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#removed">Removed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id21">0.5.28 (2026-07-16)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id22">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id23">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id24">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id24">0.5.28 (2026-07-16)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id25">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id26">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id25">0.5.27 (2026-07-09)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id26">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id27">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#id28">0.5.26 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id28">0.5.27 (2026-07-09)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id29">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id30">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id31">0.5.25 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id31">0.5.26 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id32">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id33">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id34">0.5.24 (2026-07-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id34">0.5.25 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id35">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id36">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id37">0.5.23 (2026-07-03)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id37">0.5.24 (2026-07-07)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id38">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id39">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id40">0.5.22 (2026-07-02)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id40">0.5.23 (2026-07-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id41">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id42">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id43">0.5.21 (2026-06-30)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id43">0.5.22 (2026-07-02)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id44">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id45">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id46">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id47">0.5.20 (2026-06-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id48">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id49">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id50">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id46">0.5.21 (2026-06-30)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id47">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id48">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id49">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id51">0.5.19 (2026-06-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id54">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id50">0.5.20 (2026-06-23)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id55">0.5.18 (2026-06-18)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id56">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id57">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id58">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id54">0.5.19 (2026-06-23)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id55">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id56">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id57">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id59">0.5.17 (2026-06-16)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id60">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id61">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id58">0.5.18 (2026-06-18)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id59">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id60">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id61">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id62">0.5.16 (2026-06-14)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id62">0.5.17 (2026-06-16)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id63">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id64">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id65">0.5.15 (2026-06-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id66">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id65">0.5.16 (2026-06-14)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id66">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id67">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id67">0.5.14 (2026-06-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id68">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id68">0.5.15 (2026-06-11)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id69">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id69">0.5.13 (2026-06-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id70">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id70">0.5.14 (2026-06-11)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id71">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id71">0.5.12 (2026-06-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id72">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id72">0.5.13 (2026-06-10)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id73">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id73">0.5.11 (2026-06-09)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id74">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id74">0.5.12 (2026-06-10)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id75">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id75">0.5.10 (2026-06-08)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id76">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id76">0.5.11 (2026-06-09)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id77">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id77">0.5.9 (2026-06-08)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id78">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id78">0.5.10 (2026-06-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id79">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id79">0.5.8 (2026-06-05)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id80">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id80">0.5.9 (2026-06-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id81">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id81">0.5.7 (2026-06-04)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id82">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id82">0.5.8 (2026-06-05)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id83">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id83">0.5.6 (2026-06-03)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id84">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id84">0.5.7 (2026-06-04)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id85">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id85">0.5.5 (2026-06-03)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id86">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id86">0.5.6 (2026-06-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id87">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id88">0.5.4 (2026-06-02)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id88">0.5.5 (2026-06-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id89">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id90">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id91">0.5.3 (2026-05-28)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id91">0.5.4 (2026-06-02)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id92">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id93">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id94">0.5.2 (2026-05-27)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id94">0.5.3 (2026-05-28)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id95">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id96">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id97">0.5.1 (2026-05-26)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id97">0.5.2 (2026-05-27)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id98">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id99">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id100">0.5.0 (2026-05-26)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id100">0.5.1 (2026-05-26)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id101">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id102">Changed</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#id103">0.5.0 (2026-05-26)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id104">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id105">Changed</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#a-2026-05-23">0.4.6a (2026-05-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id103">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id104">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id106">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id107">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id105">0.4.6 (2026-05-23)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id106">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#id107">0.4.5 (2026-05-22)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id108">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id108">0.4.6 (2026-05-23)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id109">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id110">0.4.4 (2026-05-19)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id110">0.4.5 (2026-05-22)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id111">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id112">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id113">0.4.3 (2026-05-18)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id113">0.4.4 (2026-05-19)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id114">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id115">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id116">0.4.2 (2026-05-17)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id116">0.4.3 (2026-05-18)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id117">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id118">Changed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id119">0.4.2 (2026-05-17)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id120">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id121">Changed</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#v0-4-1-2026-05-15">v0.4.1 (2026-05-15)</a></li>
@@ -1962,7 +1968,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">libreStage v0.5.34</a>
+          <a href="index.html">libreStage v0.5.35</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -1983,9 +1989,44 @@
   <section id="anderungsprotokoll">
 <span id="changelog"></span><h1>Änderungsprotokoll<a class="headerlink" href="#anderungsprotokoll" title="Link to this heading"></a></h1>
 <section id="id1">
-<h2>0.5.34 (2026-10-04)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<h2>0.5.35 (2026-10-18)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <section id="added">
 <h3>Added<a class="headerlink" href="#added" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Dashboard-Kalender</strong>: Im Bereich <strong>Nächste Termine</strong> zeigt das Dashboard
+jetzt einen Monatskalender mit allen Proben und Gigs. Proben (grün,
+Equalizer-Symbol) und Gigs (rot, Mikrofon-Symbol) sind durch eigene
+Piktogramme unterscheidbar; die Legende steht unter dem Kalender.</p></li>
+<li><p><strong>Monatsnavigation</strong>: Mit den Pfeilen oben lässt sich monatsweise vor- und
+zurückblättern, <strong>Heute</strong> springt zum aktuellen Monat. Die Daten werden beim
+Blättern selbstständig von der API nachgeladen.</p></li>
+<li><p><strong>Tooltip mit Details</strong>: Beim Überfahren eines Piktogramms erscheinen die
+Details des Termins – bei Gigs Name, Einlass/Beginn/Ende, Ort, Veranstalter,
+Art, Status und Notizen, bei Proben Zeitraum, Kommentar und Songliste.</p></li>
+<li><p><strong>API</strong>: Der Endpunkt <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ical/internal?month=YYYY-MM</span></code> liefert die Gigs
+und Proben eines Monats als JSON (inklusive Songs der Proben).</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Kalender-Endpunkt</strong> <code class="docutils literal notranslate"><span class="pre">/ical/internal</span></code>: Der Endpunkt war wegen der
+Routen-Reihenfolge nie erreichbar (<code class="docutils literal notranslate"><span class="pre">/{token}</span></code> hatte Vorrang) und nutzte
+nicht existierende Schemas. Der Monatsbereich wird jetzt exakt begrenzt und
+der Standardmonat bei jedem Aufruf neu bestimmt.</p></li>
+<li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.35</span></code> erhöht (<code class="docutils literal notranslate"><span class="pre">version.json</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code>, <code class="docutils literal notranslate"><span class="pre">frontend/package.json</span></code>,
+<code class="docutils literal notranslate"><span class="pre">frontend/package-lock.json</span></code> und <code class="docutils literal notranslate"><span class="pre">README.md</span></code> Badge).</p></li>
+<li><p>Manual: Benutzerhandbuch <strong>Dashboard</strong>, API-Referenz und Changelog für
+Release <code class="docutils literal notranslate"><span class="pre">0.5.35</span></code> ergänzt.</p></li>
+<li><p>Tests: Test für den Monats-Kalender-Endpunkt ergänzt.</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>0.5.34 (2026-10-04)<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>Added<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Proben-Statistiken</strong>: Im Bereich <strong>Proben</strong> gibt es jetzt einen eigenen
 Tab <strong>Statistiken</strong> mit Kennzahlen zu Gesamtzahl, Songs, Dauer und
@@ -2007,8 +2048,8 @@ dargestellt wird.</p></li>
 Subplots angeordnet und bleiben damit auch auf kleineren Displays gut lesbar.</p></li>
 </ul>
 </section>
-<section id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading"></a></h3>
+<section id="id4">
+<h3>Fixed<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Top-Songs-Steuerung sichtbar gemacht</strong>: Die Seitenschaltflächen für die
 Top-Songs-Liste waren im UI nicht klar erkennbar; sie wurden damit nun als
@@ -2021,10 +2062,10 @@ ergänzt.</p></li>
 </ul>
 </section>
 </section>
-<section id="id2">
-<h2>0.5.33 (2026-08-21)<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
-<section id="id3">
-<h3>Added<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id5">
+<h2>0.5.33 (2026-08-21)<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3>Added<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Repertoire-Listen (gig-unabhängig)</strong>: Im Bereich <strong>Songs</strong> gibt es einen
 zusätzlichen Tab <strong>Repertoire-Listen</strong>. Dort können eigene Listen aus dem
@@ -2044,8 +2085,8 @@ nun neben Gig-Setlisten auch Repertoire-Listen direkt bearbeiten.</p></li>
 sichtbarer Spalten.</p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>Changed<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<section id="id7">
+<h3>Changed<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Repertoire-Listen-UX</strong>: Beim Anlegen und Bearbeiten wurde die
 Freigabe- und Namenslogik ergänzt, damit der Benutzer die Visibilität und den
@@ -2059,8 +2100,8 @@ Dokumenttitel (Title), sodass Browser/Viewer nicht mehr „Unbekannt“
 anzeigen.</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Fixed<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<section id="id8">
+<h3>Fixed<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Songs-Frontend</strong>: Ein Laufzeitfehler
 <code class="docutils literal notranslate"><span class="pre">ReferenceError:</span> <span class="pre">createRepertoireList</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">defined</span></code> wurde behoben.</p></li>
@@ -2072,18 +2113,18 @@ Release <code class="docutils literal notranslate"><span class="pre">0.5.33</spa
 </ul>
 </section>
 </section>
-<section id="id6">
-<h2>0.5.32 (2026-08-14)<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
-<section id="id7">
-<h3>Added<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<section id="id9">
+<h2>0.5.32 (2026-08-14)<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3>Added<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Proben-Historie – API für vergangene Proben</strong>: Neuer Endpoint
 <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/reh/past</span></code> mit <code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">skip</span></code> und <code class="docutils literal notranslate"><span class="pre">limit</span></code>. Die Antwort enthält
 <code class="docutils literal notranslate"><span class="pre">items</span></code>, <code class="docutils literal notranslate"><span class="pre">total</span></code> und <code class="docutils literal notranslate"><span class="pre">has_more</span></code> für paginierte Historienansichten.</p></li>
 </ul>
 </section>
-<section id="id8">
-<h3>Changed<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<section id="id11">
+<h3>Changed<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Vergangene Proben vollständig durchsuchbar</strong>: Die Suche im Tab
 <strong>Vergangene Proben</strong> läuft jetzt serverseitig und durchsucht die komplette
@@ -2101,8 +2142,8 @@ bearbeiten.</p></li>
 sodass Suche und Pagination realistisch getestet werden können.</p></li>
 </ul>
 </section>
-<section id="id9">
-<h3>Fixed<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<section id="id12">
+<h3>Fixed<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.32</span></code> erhöht (<code class="docutils literal notranslate"><span class="pre">version.json</span></code>,
 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code>, <code class="docutils literal notranslate"><span class="pre">frontend/package.json</span></code> und
@@ -2112,10 +2153,10 @@ ergänzt.</p></li>
 </ul>
 </section>
 </section>
-<section id="id10">
-<h2>0.5.31 (2026-08-07)<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
-<section id="id11">
-<h3>Added<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<section id="id13">
+<h2>0.5.31 (2026-08-07)<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<section id="id14">
+<h3>Added<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Neuer Gig - Stammdatenvorlage</strong>: Im <code class="docutils literal notranslate"><span class="pre">NewGigForm</span></code> kann jetzt ein
 bestehender Gig als Vorlage gewählt werden. Per Dropdown + Button
@@ -2123,8 +2164,8 @@ bestehender Gig als Vorlage gewählt werden. Per Dropdown + Button
 <code class="docutils literal notranslate"><span class="pre">Datum</span></code> bleiben dabei bewusst unberührt.</p></li>
 </ul>
 </section>
-<section id="id12">
-<h3>Changed<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<section id="id15">
+<h3>Changed<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Vorlagenauswahl erweitert</strong>: Die Vorlagenliste im <code class="docutils literal notranslate"><span class="pre">NewGigForm</span></code> ist nicht
 mehr auf vergangene Gigs beschränkt, sondern zeigt alle Gigs.</p></li>
@@ -2134,8 +2175,8 @@ für ein schnelles Schließen.</p></li>
 aufklappbaren Bereich ausgelagert, um das Formular kompakter zu halten.</p></li>
 </ul>
 </section>
-<section id="id13">
-<h3>Fixed<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<section id="id16">
+<h3>Fixed<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Checklisten-Detail im Gig-Details-Modal</strong>: Beim Bearbeiten eines
 Checklisten-Items führt der Header-Button jetzt korrekt als <code class="docutils literal notranslate"><span class="pre">←</span></code> zurück in
@@ -2149,10 +2190,10 @@ Unter-Modals sauber zum übergeordneten Modal zurückkehren.</p></li>
 </ul>
 </section>
 </section>
-<section id="id14">
-<h2>0.5.30 (2026-07-31)<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
-<section id="id15">
-<h3>Added<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<section id="id17">
+<h2>0.5.30 (2026-07-31)<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<section id="id18">
+<h3>Added<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Setlisten-Export (alle Gigs) als JSON</strong>: Neue Export-Funktion über
 <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/gigs/export/setlists</span></code>. Im Frontend kann die vollständige Setlisten-
@@ -2166,8 +2207,8 @@ unterstützen Touch-Geräte jetzt robuster (u. a. Handle-basiertes Dragging),
 damit die Reihenfolge auch mobil zuverlässig angepasst werden kann.</p></li>
 </ul>
 </section>
-<section id="id16">
-<h3>Changed<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<section id="id19">
+<h3>Changed<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Sängerfarben bereits vor Setlist-Befüllung verfügbar</strong>:
 <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/gigs/{gig_id}/singer_colors</span></code> liefert die Farbzuordnung jetzt auf
@@ -2182,8 +2223,8 @@ präzisiert.</p></li>
 <li><p><strong>README-Kontaktdaten aktualisiert</strong>.</p></li>
 </ul>
 </section>
-<section id="id17">
-<h3>Fixed<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<section id="id20">
+<h3>Fixed<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>New Song Modal (Svelte 5 Bindings)</strong>: Beim Öffnen von <code class="docutils literal notranslate"><span class="pre">NewSongModal</span></code>
 konnte ein <code class="docutils literal notranslate"><span class="pre">props_invalid_value</span></code> auftreten, wenn <code class="docutils literal notranslate"><span class="pre">multi_select</span></code>-Felder
@@ -2195,10 +2236,10 @@ ersten Render als Array, sodass <code class="docutils literal notranslate"><span
 </ul>
 </section>
 </section>
-<section id="id18">
-<h2>0.5.29 (2026-07-17)<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
-<section id="id19">
-<h3>Fixed<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<section id="id21">
+<h2>0.5.29 (2026-07-17)<a class="headerlink" href="#id21" title="Link to this heading"></a></h2>
+<section id="id22">
+<h3>Fixed<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Gespielte Songs – Übersprungene Songs werden abgezogen</strong>: Die Statistik-
 Kachel „Gespielte Songs“ im Dashboard und im Saison-Statistik-Modal zeigte
@@ -2210,8 +2251,8 @@ Das Feld <code class="docutils literal notranslate"><span class="pre">played_son
 intern vorhanden.</p></li>
 </ul>
 </section>
-<section id="id20">
-<h3>Changed<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<section id="id23">
+<h3>Changed<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Setlist-Editor – Sänger-Farbgebung überarbeitet</strong>: Die farbigen
 Hintergrundgradienten der Song-Kacheln im Setlist-Editor und in der
@@ -2244,10 +2285,10 @@ Frontend-Seiten <code class="docutils literal notranslate"><span class="pre">/pl
 </ul>
 </section>
 </section>
-<section id="id21">
-<h2>0.5.28 (2026-07-16)<a class="headerlink" href="#id21" title="Link to this heading"></a></h2>
-<section id="id22">
-<h3>Added<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<section id="id24">
+<h2>0.5.28 (2026-07-16)<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
+<section id="id25">
+<h3>Added<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Session-Limit pro Benutzer</strong>: Jeder Benutzer darf maximal <strong>5 gleichzeitig
 aktive Sessions</strong> haben. Beim Login oder Token-Refresh wird geprüft, ob
@@ -2274,8 +2315,8 @@ standardmäßig durch die JWT-Library beim Decode geprüft – kein manueller
 Timestamp-Vergleich mehr.</p></li>
 </ul>
 </section>
-<section id="id23">
-<h3>Changed<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<section id="id26">
+<h3>Changed<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Refresh-Token-Laufzeit verlängert</strong>: <code class="docutils literal notranslate"><span class="pre">REFRESH_TOKEN_EXPIRE_DAYS</span></code> von
 30 auf <strong>90 Tage</strong> erhöht. Benutzer müssen sich damit nur noch ca. alle
@@ -2297,8 +2338,8 @@ Standard-<code class="docutils literal notranslate"><span class="pre">exp</span>
 (<code class="docutils literal notranslate"><span class="pre">logger.info(&quot;...&quot;,</span> <span class="pre">user.user_name)</span></code>).</p></li>
 </ul>
 </section>
-<section id="id24">
-<h3>Fixed<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<section id="id27">
+<h3>Fixed<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Parallele Sessions</strong>: Ein neuer Login von einem Gerät/Tab entzieht anderen
 aktiven Sessions nicht mehr die Authentifizierung. Jede Session hält einen
@@ -2310,10 +2351,10 @@ bedingte Logout-Kaskaden.</p></li>
 </ul>
 </section>
 </section>
-<section id="id25">
-<h2>0.5.27 (2026-07-09)<a class="headerlink" href="#id25" title="Link to this heading"></a></h2>
-<section id="id26">
-<h3>Added<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<section id="id28">
+<h2>0.5.27 (2026-07-09)<a class="headerlink" href="#id28" title="Link to this heading"></a></h2>
+<section id="id29">
+<h3>Added<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Kanban-Ansicht für die Gig-Checkliste</strong>: Die Checkliste im Tab
 <strong>✅ Checkliste</strong> des Gig-Detaildialogs bietet nun wahlweise eine
@@ -2355,8 +2396,8 @@ Proben nicht betroffen, GET weiterhin lesbar.</p></li>
 vergangener Gig → 403 mit Fehlermeldung, kein DB-Eintrag nach Ablehnung).</p></li>
 </ul>
 </section>
-<section id="id27">
-<h3>Changed<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<section id="id30">
+<h3>Changed<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>+ Eintrag-Button</strong>: Verwendet nun <code class="docutils literal notranslate"><span class="pre">variant-filled-primary</span></code> (ohne
 <code class="docutils literal notranslate"><span class="pre">border</span></code>) – konsistent mit anderen Hinzufügen-Buttons (z. B. im
@@ -2367,10 +2408,10 @@ Ablaufplan).</p></li>
 </ul>
 </section>
 </section>
-<section id="id28">
-<h2>0.5.26 (2026-07-07)<a class="headerlink" href="#id28" title="Link to this heading"></a></h2>
-<section id="id29">
-<h3>Added<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<section id="id31">
+<h2>0.5.26 (2026-07-07)<a class="headerlink" href="#id31" title="Link to this heading"></a></h2>
+<section id="id32">
+<h3>Added<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
 <ul>
 <li><p><strong>Kommentarfeld in der Gig-Checkliste</strong>: Jede Aufgabe erhält ein optionales
 Feld <strong>Kommentar / Ergebnis</strong>, um das Ergebnis oder Rückstände zu protokollieren.
@@ -2405,8 +2446,8 @@ Request mehr nötig.</p>
 weiterhin verfügbar (für externe Nutzung).</p></li>
 </ul>
 </section>
-<section id="id30">
-<h3>Changed<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<section id="id33">
+<h3>Changed<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Dashboard-Hilfetext aktualisiert: beschreibt jetzt alle sechs Todo-Tabs.</p></li>
 <li><p><a class="reference internal" href="benutzerhandbuch/checkliste.html#checkliste"><span class="std std-ref">Gig-Checkliste</span></a>: Neue Abschnitte <em>Kommentarfeld</em>, <em>Aufgaben-Detailansicht</em>
@@ -2417,10 +2458,10 @@ Nächste Termine, Saison-Statistiken und Kalender-Abo.</p></li>
 </ul>
 </section>
 </section>
-<section id="id31">
-<h2>0.5.25 (2026-07-07)<a class="headerlink" href="#id31" title="Link to this heading"></a></h2>
-<section id="id32">
-<h3>Added<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<section id="id34">
+<h2>0.5.25 (2026-07-07)<a class="headerlink" href="#id34" title="Link to this heading"></a></h2>
+<section id="id35">
+<h3>Added<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Gig-Checkliste</strong>: Jeder Gig erhält einen neuen Tab <strong>✅ Checkliste</strong> (Tab 6)
 mit einer strukturierten Aufgabenliste für die Gig-Vorbereitung.
@@ -2462,18 +2503,18 @@ kleinen Bildschirmen (&lt; <code class="docutils literal notranslate"><span clas
 ersetzt; auf größeren Bildschirmen bleiben die Tab-Buttons unverändert.</p></li>
 </ul>
 </section>
-<section id="id33">
-<h3>Changed<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<section id="id36">
+<h3>Changed<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.25</span></code> erhöht (<code class="docutils literal notranslate"><span class="pre">version.json</span></code>, <code class="docutils literal notranslate"><span class="pre">frontend/package.json</span></code>).</p></li>
 <li><p>Manual: Changelog für Release <code class="docutils literal notranslate"><span class="pre">0.5.25</span></code> ergänzt.</p></li>
 </ul>
 </section>
 </section>
-<section id="id34">
-<h2>0.5.24 (2026-07-07)<a class="headerlink" href="#id34" title="Link to this heading"></a></h2>
-<section id="id35">
-<h3>Added<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<section id="id37">
+<h2>0.5.24 (2026-07-07)<a class="headerlink" href="#id37" title="Link to this heading"></a></h2>
+<section id="id38">
+<h3>Added<a class="headerlink" href="#id38" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Verfügbarkeitsmanagement</strong>: Bandmitglieder können für jeden Gig und jede
 Probe ihren Teilnahmestatus hinterlegen (✅ Dabei / ❓ Vielleicht / ❌ Nicht dabei).
@@ -2503,18 +2544,18 @@ interne Aushilfen).</p></li>
 Querverweise in <a class="reference internal" href="benutzerhandbuch/gigs.html#gigs"><span class="std std-ref">Gigs</span></a> und <a class="reference internal" href="benutzerhandbuch/proben.html#proben"><span class="std std-ref">Proben</span></a> ergänzt.</p></li>
 </ul>
 </section>
-<section id="id36">
-<h3>Changed<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
+<section id="id39">
+<h3>Changed<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.24</span></code> erhöht (<code class="docutils literal notranslate"><span class="pre">version.json</span></code>, <code class="docutils literal notranslate"><span class="pre">frontend/package.json</span></code>).</p></li>
 <li><p>Manual: Changelog für Release <code class="docutils literal notranslate"><span class="pre">0.5.24</span></code> ergänzt.</p></li>
 </ul>
 </section>
 </section>
-<section id="id37">
-<h2>0.5.23 (2026-07-03)<a class="headerlink" href="#id37" title="Link to this heading"></a></h2>
-<section id="id38">
-<h3>Added<a class="headerlink" href="#id38" title="Link to this heading"></a></h3>
+<section id="id40">
+<h2>0.5.23 (2026-07-03)<a class="headerlink" href="#id40" title="Link to this heading"></a></h2>
+<section id="id41">
+<h3>Added<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Abstimmungen / Meinungsumfrage: User können zu ihrer gewählten Option einen <strong>Kommentar</strong> hinterlassen.
 Eine Inline-Textarea erscheint direkt unter der ausgewählten Option; der Kommentar wird beim Verlassen des Feldes (<code class="docutils literal notranslate"><span class="pre">onblur</span></code>) gespeichert.
@@ -2531,8 +2572,8 @@ steht ein Kommentarfeld bereit. Speichern erfolgt ebenfalls <code class="docutil
 das als Pflichtfeld in <code class="docutils literal notranslate"><span class="pre">SoftConfigUpdateIn</span></code> hinzugekommen war.</p></li>
 </ul>
 </section>
-<section id="id39">
-<h3>Changed<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<section id="id42">
+<h3>Changed<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Admin-Konfiguration: Das Frontend leitet <code class="docutils literal notranslate"><span class="pre">objectKeys</span></code> und <code class="docutils literal notranslate"><span class="pre">stringKeys</span></code> jetzt <strong>dynamisch aus der API-Antwort</strong> ab,
 statt sie hart zu kodieren. Neue Objekt-Keys im Backend erscheinen automatisch als editierbare Sektion;
@@ -2547,10 +2588,10 @@ eigene Kommentar-Drafts werden konsistent bei jedem API-Call mitgesendet.</p></l
 </ul>
 </section>
 </section>
-<section id="id40">
-<h2>0.5.22 (2026-07-02)<a class="headerlink" href="#id40" title="Link to this heading"></a></h2>
-<section id="id41">
-<h3>Added<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
+<section id="id43">
+<h2>0.5.22 (2026-07-02)<a class="headerlink" href="#id43" title="Link to this heading"></a></h2>
+<section id="id44">
+<h3>Added<a class="headerlink" href="#id44" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Konfiguration: <code class="docutils literal notranslate"><span class="pre">app_config.py</span></code> prüft beim Start, ob alle erwarteten Pflicht-Keys in der <code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code> vorhanden sind.
 Fehlende Keys werden automatisch mit leeren Listen (<code class="docutils literal notranslate"><span class="pre">[]</span></code>) bzw. – für <code class="docutils literal notranslate"><span class="pre">setlist_timing</span></code> – mit sinnvollen Standard-Werten befüllt.
@@ -2563,8 +2604,8 @@ bereinigt (erlaubte Tags: Überschriften, Textformatierung, Listen, Code, Links;
 ermöglicht sauberes typografisches Rendering von Markdown-Inhalten.</p></li>
 </ul>
 </section>
-<section id="id42">
-<h3>Changed<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
+<section id="id45">
+<h3>Changed<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig-Protokoll: Edit-Toggle im <code class="docutils literal notranslate"><span class="pre">GigDetailsModal</span></code> auf <strong>Checkbox</strong> umgestellt.
 Statt separater Bearbeiten/Abbrechen-Buttons im Tab-Bereich steuert eine <code class="docutils literal notranslate"><span class="pre">Edit-Mode</span></code>-Checkbox den Editiermodus;
@@ -2577,10 +2618,10 @@ die bei fehlenden Keys nicht mehr abbricht, sondern Standardwerte einsetzt und p
 </ul>
 </section>
 </section>
-<section id="id43">
-<h2>0.5.21 (2026-06-30)<a class="headerlink" href="#id43" title="Link to this heading"></a></h2>
-<section id="id44">
-<h3>Added<a class="headerlink" href="#id44" title="Link to this heading"></a></h3>
+<section id="id46">
+<h2>0.5.21 (2026-06-30)<a class="headerlink" href="#id46" title="Link to this heading"></a></h2>
+<section id="id47">
+<h3>Added<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig-Protokoll: Neuer Tab <strong>Protokoll</strong> im <code class="docutils literal notranslate"><span class="pre">GigDetailsModal</span></code> ermöglicht das Erfassen und Bearbeiten von Nachbesprechungsnotizen pro Gig.
 Inhalte werden als Markdown gespeichert und gerendert (<code class="docutils literal notranslate"><span class="pre">**fett**</span></code>, <em>kursiv</em>, Überschriften, Listen, <code class="docutils literal notranslate"><span class="pre">code</span></code>).</p></li>
@@ -2593,8 +2634,8 @@ X-Achse: Set-Namen; Y-Achse: Anzahl Songs farblich unterteilt in Gespielt (blau)
 Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie Dark-Mode.</p></li>
 </ul>
 </section>
-<section id="id45">
-<h3>Changed<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
+<section id="id48">
+<h3>Changed<a class="headerlink" href="#id48" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig-Statistik: Uebersprungene Songs werden als negativer Balken <strong>unterhalb der X-Achse</strong> dargestellt (divergierendes Balkendiagramm).</p></li>
 <li><p>Gig-Statistik: Chart-Design an den Genre-Verteilungs-Plot angeglichen (gleiche Grid-Abstände, <code class="docutils literal notranslate"><span class="pre">barMaxWidth:</span> <span class="pre">26</span></code>, Achsen-Styling, Legende oben, kompakte Zentrierung bei ≤ 8 Sets).</p></li>
@@ -2604,24 +2645,24 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Manual: Changelog fuer Release <code class="docutils literal notranslate"><span class="pre">0.5.21</span></code> ergaenzt.</p></li>
 </ul>
 </section>
-<section id="id46">
-<h3>Fixed<a class="headerlink" href="#id46" title="Link to this heading"></a></h3>
+<section id="id49">
+<h3>Fixed<a class="headerlink" href="#id49" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Public-Endpoint: Im Song-Histogramm-Endpoint (<code class="docutils literal notranslate"><span class="pre">/public/song_histogram</span></code>) wurde <code class="docutils literal notranslate"><span class="pre">kind_of_gig</span></code> faelschlicherweise gegen das globale statt das jahresspezifische Histogramm-Dict geprueft, was zu einem <code class="docutils literal notranslate"><span class="pre">KeyError</span></code> fuehren konnte. Korrektur: Pruefung erfolgt jetzt korrekt gegen <code class="docutils literal notranslate"><span class="pre">histogram[year]</span></code>.</p></li>
 </ul>
 </section>
 </section>
-<section id="id47">
-<h2>0.5.20 (2026-06-23)<a class="headerlink" href="#id47" title="Link to this heading"></a></h2>
-<section id="id48">
-<h3>Added<a class="headerlink" href="#id48" title="Link to this heading"></a></h3>
+<section id="id50">
+<h2>0.5.20 (2026-06-23)<a class="headerlink" href="#id50" title="Link to this heading"></a></h2>
+<section id="id51">
+<h3>Added<a class="headerlink" href="#id51" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig-Ablaufplan: Pro Eintrag kann jetzt ein optionaler Kommentar erfasst und gespeichert werden.</p></li>
 <li><p>Datenbank: Neue Spalte <code class="docutils literal notranslate"><span class="pre">gig_schedule_items.comment</span></code> inkl. Alembic-Migration <code class="docutils literal notranslate"><span class="pre">a1b2c3d4e5f6_add_comment_to_gig_schedule_items</span></code>.</p></li>
 </ul>
 </section>
-<section id="id49">
-<h3>Changed<a class="headerlink" href="#id49" title="Link to this heading"></a></h3>
+<section id="id52">
+<h3>Changed<a class="headerlink" href="#id52" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Ablaufplan-Ansicht: Kommentare werden im Ueberblick direkt unter dem Titel (<code class="docutils literal notranslate"><span class="pre">Was</span></code>) dargestellt.</p></li>
 <li><p>Ablaufplan-PDF: Kommentare werden in der zweiten Spalte unter dem Titel gerendert; Zeilenumbrueche im Kommentar werden dabei beibehalten.</p></li>
@@ -2630,23 +2671,23 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Manual: Changelog fuer Release <code class="docutils literal notranslate"><span class="pre">0.5.20</span></code> ergaenzt.</p></li>
 </ul>
 </section>
-<section id="id50">
-<h3>Fixed<a class="headerlink" href="#id50" title="Link to this heading"></a></h3>
+<section id="id53">
+<h3>Fixed<a class="headerlink" href="#id53" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Frontend: <code class="docutils literal notranslate"><span class="pre">Ablaufplan</span> <span class="pre">drucken</span></code> nutzt konsistent den <code class="docutils literal notranslate"><span class="pre">Blob</span></code> aus <code class="docutils literal notranslate"><span class="pre">getGigSchedulePDF</span></code> (statt Objekt), wodurch der Fehler <code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">execute</span> <span class="pre">'createObjectURL'</span> <span class="pre">on</span> <span class="pre">'URL'</span></code> behoben ist.</p></li>
 </ul>
 </section>
 </section>
-<section id="id51">
-<h2>0.5.19 (2026-06-23)<a class="headerlink" href="#id51" title="Link to this heading"></a></h2>
-<section id="id52">
-<h3>Added<a class="headerlink" href="#id52" title="Link to this heading"></a></h3>
+<section id="id54">
+<h2>0.5.19 (2026-06-23)<a class="headerlink" href="#id54" title="Link to this heading"></a></h2>
+<section id="id55">
+<h3>Added<a class="headerlink" href="#id55" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setup: Das Backend startet nicht mit dem standard-SECRET_KEY. Es muss einer vom Administrator definiert werden.</p></li>
 </ul>
 </section>
-<section id="id53">
-<h3>Changed<a class="headerlink" href="#id53" title="Link to this heading"></a></h3>
+<section id="id56">
+<h3>Changed<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Sets aus anderen Gigs koennen direkt in die aktuelle Setliste kopiert werden.</p></li>
 <li><p>Frontend: Persistenter Store behandelt <code class="docutils literal notranslate"><span class="pre">localStorage</span></code>-Fehler im Browser robust (z. B. bei deaktiviertem Storage).</p></li>
@@ -2656,25 +2697,25 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Manual: Changelog fuer Release <code class="docutils literal notranslate"><span class="pre">0.5.19</span></code> ergaenzt.</p></li>
 </ul>
 </section>
-<section id="id54">
-<h3>Fixed<a class="headerlink" href="#id54" title="Link to this heading"></a></h3>
+<section id="id57">
+<h3>Fixed<a class="headerlink" href="#id57" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Tests: Testkette fuer den neuen Auth-Flow korrigiert.</p></li>
 <li><p>Datenbank: <code class="docutils literal notranslate"><span class="pre">published</span></code>-Feld als <code class="docutils literal notranslate"><span class="pre">int</span></code> statt <code class="docutils literal notranslate"><span class="pre">bool</span></code> gespeichert (Datenbankkompatibilitaet).</p></li>
 </ul>
 </section>
 </section>
-<section id="id55">
-<h2>0.5.18 (2026-06-18)<a class="headerlink" href="#id55" title="Link to this heading"></a></h2>
-<section id="id56">
-<h3>Added<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
+<section id="id58">
+<h2>0.5.18 (2026-06-18)<a class="headerlink" href="#id58" title="Link to this heading"></a></h2>
+<section id="id59">
+<h3>Added<a class="headerlink" href="#id59" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Proben/Songs: Zusätzliche Berechtigungspruefungen fuer Bearbeitungen eingefuehrt, damit Editor-Rechte konsistent durchgesetzt werden.</p></li>
 <li><p>Setlisten-Editor: Hinzufügen von Sets von verganenen Gigs ermöglicht</p></li>
 </ul>
 </section>
-<section id="id57">
-<h3>Changed<a class="headerlink" href="#id57" title="Link to this heading"></a></h3>
+<section id="id60">
+<h3>Changed<a class="headerlink" href="#id60" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Proben-Details und Song-Management: Bearbeitungsrechte im UI ueberarbeitet und klarer gesteuert.</p></li>
 <li><p>Gig-Set-Management: Validierung beim Hinzufuegen/Bearbeiten von Songs erweitert und Fehlerbehandlung robuster gemacht.</p></li>
@@ -2684,17 +2725,17 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Manual: Changelog fuer Release <code class="docutils literal notranslate"><span class="pre">0.5.18</span></code> ergaenzt.</p></li>
 </ul>
 </section>
-<section id="id58">
-<h3>Fixed<a class="headerlink" href="#id58" title="Link to this heading"></a></h3>
+<section id="id61">
+<h3>Fixed<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Songs: Fehlende Funktion <code class="docutils literal notranslate"><span class="pre">getSongDetails</span></code> fuer das Nachladen von Song-Details ergaenzt.</p></li>
 </ul>
 </section>
 </section>
-<section id="id59">
-<h2>0.5.17 (2026-06-16)<a class="headerlink" href="#id59" title="Link to this heading"></a></h2>
-<section id="id60">
-<h3>Added<a class="headerlink" href="#id60" title="Link to this heading"></a></h3>
+<section id="id62">
+<h2>0.5.17 (2026-06-16)<a class="headerlink" href="#id62" title="Link to this heading"></a></h2>
+<section id="id63">
+<h3>Added<a class="headerlink" href="#id63" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Song-Details: Neuer Edit-Mode im <code class="docutils literal notranslate"><span class="pre">SongDetailsModal</span></code> mit Speichern/Abbrechen direkt im Modal.</p></li>
 <li><p>Song-Details: Manueller Button <code class="docutils literal notranslate"><span class="pre">Metadaten</span> <span class="pre">abrufen</span></code> im Edit-Mode; uebernimmt Dauer, Komponist, Texter und YouTube-Link ueber den bestehenden Scraper.</p></li>
@@ -2703,8 +2744,8 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Umfragen: Bestehende Umfragen koennen um neue Antwortoptionen erweitert werden.</p></li>
 </ul>
 </section>
-<section id="id61">
-<h3>Changed<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
+<section id="id64">
+<h3>Changed<a class="headerlink" href="#id64" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Live-Mode: Songs koennen gezielt vor einer bestehenden Position in die Setliste eingefuegt werden.</p></li>
 <li><p>Live-Mode: Unlock-Handling und zugehoerige UI-Rueckmeldungen verbessert.</p></li>
@@ -2715,10 +2756,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id62">
-<h2>0.5.16 (2026-06-14)<a class="headerlink" href="#id62" title="Link to this heading"></a></h2>
-<section id="id63">
-<h3>Added<a class="headerlink" href="#id63" title="Link to this heading"></a></h3>
+<section id="id65">
+<h2>0.5.16 (2026-06-14)<a class="headerlink" href="#id65" title="Link to this heading"></a></h2>
+<section id="id66">
+<h3>Added<a class="headerlink" href="#id66" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Backend: Neuer Endpoint <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/csrf</span></code> gibt fuer authentifizierte Clients ein CSRF-Token zurueck und erneuert das CSRF-Cookie.</p></li>
 <li><p>Setlist-Timing: Rueckgabe um <code class="docutils literal notranslate"><span class="pre">slot_durations</span></code> erweitert, um effektive Slotlaengen pro Song (inkl. Inter-Song-Pausen) explizit bereitzustellen.</p></li>
@@ -2726,8 +2767,8 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Backend: Neue Abhaengigkeit <code class="docutils literal notranslate"><span class="pre">pathvalidate</span></code> aufgenommen.</p></li>
 </ul>
 </section>
-<section id="id64">
-<h3>Changed<a class="headerlink" href="#id64" title="Link to this heading"></a></h3>
+<section id="id67">
+<h3>Changed<a class="headerlink" href="#id67" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Security/Auth: <code class="docutils literal notranslate"><span class="pre">/login</span></code> und <code class="docutils literal notranslate"><span class="pre">/refresh</span></code> liefern nun zusaetzlich <code class="docutils literal notranslate"><span class="pre">csrf_token</span></code> im Response-Payload fuer robustes CSRF-Handling im Frontend.</p></li>
 <li><p>Frontend-API: CSRF-Handling robustifiziert (Token-Cache, automatisches Nachladen ueber <code class="docutils literal notranslate"><span class="pre">/csrf</span></code>, Retry bei <code class="docutils literal notranslate"><span class="pre">CSRF</span> <span class="pre">validation</span> <span class="pre">failed</span></code>, konsistente Header-Setzung fuer mutierende Requests).</p></li>
@@ -2739,10 +2780,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id65">
-<h2>0.5.15 (2026-06-11)<a class="headerlink" href="#id65" title="Link to this heading"></a></h2>
-<section id="id66">
-<h3>Changed<a class="headerlink" href="#id66" title="Link to this heading"></a></h3>
+<section id="id68">
+<h2>0.5.15 (2026-06-11)<a class="headerlink" href="#id68" title="Link to this heading"></a></h2>
+<section id="id69">
+<h3>Changed<a class="headerlink" href="#id69" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Sicherheit: Logout-Blacklist-Decoding robustifiziert (korrekter <code class="docutils literal notranslate"><span class="pre">algorithms</span></code>-Parameter, Logging bei Decode-Fehlern).</p></li>
 <li><p>Sicherheit: Authentifizierung auf HttpOnly-Cookies umgestellt, inkl. CSRF-Schutz (Double-Submit + Origin/Referer-Pruefung).</p></li>
@@ -2753,20 +2794,20 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id67">
-<h2>0.5.14 (2026-06-11)<a class="headerlink" href="#id67" title="Link to this heading"></a></h2>
-<section id="id68">
-<h3>Changed<a class="headerlink" href="#id68" title="Link to this heading"></a></h3>
+<section id="id70">
+<h2>0.5.14 (2026-06-11)<a class="headerlink" href="#id70" title="Link to this heading"></a></h2>
+<section id="id71">
+<h3>Changed<a class="headerlink" href="#id71" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Loading Spinner hinzugefügt</p></li>
 <li><p>Top-Layout: Volles Logo in Kopfzeile</p></li>
 </ul>
 </section>
 </section>
-<section id="id69">
-<h2>0.5.13 (2026-06-10)<a class="headerlink" href="#id69" title="Link to this heading"></a></h2>
-<section id="id70">
-<h3>Changed<a class="headerlink" href="#id70" title="Link to this heading"></a></h3>
+<section id="id72">
+<h2>0.5.13 (2026-06-10)<a class="headerlink" href="#id72" title="Link to this heading"></a></h2>
+<section id="id73">
+<h3>Changed<a class="headerlink" href="#id73" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Optimistic Concurrency fuer Setlisten-Updates eingefuehrt. Vor dem Speichern wird jetzt die <code class="docutils literal notranslate"><span class="pre">setlist_version</span></code> geprueft.</p></li>
 <li><p>Setlist-Editor: Bei Konflikten (<code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">SETLIST_CONFLICT</span></code>) wird der veraltete Update-Versuch abgelehnt, eine Toast-Meldung gezeigt und die Ansicht auf den aktuellen DB-Stand aktualisiert.</p></li>
@@ -2777,10 +2818,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id71">
-<h2>0.5.12 (2026-06-10)<a class="headerlink" href="#id71" title="Link to this heading"></a></h2>
-<section id="id72">
-<h3>Changed<a class="headerlink" href="#id72" title="Link to this heading"></a></h3>
+<section id="id74">
+<h2>0.5.12 (2026-06-10)<a class="headerlink" href="#id74" title="Link to this heading"></a></h2>
+<section id="id75">
+<h3>Changed<a class="headerlink" href="#id75" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Undo/Redo im Editor ergaenzt (Buttons sowie Shortcuts <code class="docutils literal notranslate"><span class="pre">Strg/Cmd+Z</span></code> und <code class="docutils literal notranslate"><span class="pre">Strg/Cmd+Y</span></code>).</p></li>
 <li><p>Setlist-Editor: Fehler-Feedback ueber Toast-Meldungen bei fehlgeschlagenem Speichern sowie Undo/Redo ergaenzt.</p></li>
@@ -2789,29 +2830,29 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id73">
-<h2>0.5.11 (2026-06-09)<a class="headerlink" href="#id73" title="Link to this heading"></a></h2>
-<section id="id74">
-<h3>Changed<a class="headerlink" href="#id74" title="Link to this heading"></a></h3>
+<section id="id76">
+<h2>0.5.11 (2026-06-09)<a class="headerlink" href="#id76" title="Link to this heading"></a></h2>
+<section id="id77">
+<h3>Changed<a class="headerlink" href="#id77" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Nach dem Schliessen des Song-Details-Modals werden geaenderte Songdaten lokal uebernommen; Saengerfarben werden ohne kompletten Seiten-Reload neu gerendert.</p></li>
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.11</span></code> erhoeht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).</p></li>
 </ul>
 </section>
 </section>
-<section id="id75">
-<h2>0.5.10 (2026-06-08)<a class="headerlink" href="#id75" title="Link to this heading"></a></h2>
-<section id="id76">
-<h3>Changed<a class="headerlink" href="#id76" title="Link to this heading"></a></h3>
+<section id="id78">
+<h2>0.5.10 (2026-06-08)<a class="headerlink" href="#id78" title="Link to this heading"></a></h2>
+<section id="id79">
+<h3>Changed<a class="headerlink" href="#id79" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Song details Modal in Songlist.</p></li>
 </ul>
 </section>
 </section>
-<section id="id77">
-<h2>0.5.9 (2026-06-08)<a class="headerlink" href="#id77" title="Link to this heading"></a></h2>
-<section id="id78">
-<h3>Changed<a class="headerlink" href="#id78" title="Link to this heading"></a></h3>
+<section id="id80">
+<h2>0.5.9 (2026-06-08)<a class="headerlink" href="#id80" title="Link to this heading"></a></h2>
+<section id="id81">
+<h3>Changed<a class="headerlink" href="#id81" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Song-Details: Die Saenger-Vorschlagsliste wurde visuell verstaerkt (deutlicher Kontrast, nahezu deckender Hintergrund), damit Eintraege im Modal besser lesbar sind.</p></li>
 <li><p>Songs-Liste: Laufzeitfehler beim Grid-Layout behoben (<code class="docutils literal notranslate"><span class="pre">gridApi.doLayout</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">a</span> <span class="pre">function</span></code>); Layout-Aufrufe sind jetzt API-kompatibel abgesichert.</p></li>
@@ -2819,10 +2860,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id79">
-<h2>0.5.8 (2026-06-05)<a class="headerlink" href="#id79" title="Link to this heading"></a></h2>
-<section id="id80">
-<h3>Changed<a class="headerlink" href="#id80" title="Link to this heading"></a></h3>
+<section id="id82">
+<h2>0.5.8 (2026-06-05)<a class="headerlink" href="#id82" title="Link to this heading"></a></h2>
+<section id="id83">
+<h3>Changed<a class="headerlink" href="#id83" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Editor: Neue Abstände für bessere Übersicht</p></li>
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.8</span></code> erhoeht (Backend/Frontend/Release-Metadaten/README-Badge).</p></li>
@@ -2830,10 +2871,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id81">
-<h2>0.5.7 (2026-06-04)<a class="headerlink" href="#id81" title="Link to this heading"></a></h2>
-<section id="id82">
-<h3>Changed<a class="headerlink" href="#id82" title="Link to this heading"></a></h3>
+<section id="id84">
+<h2>0.5.7 (2026-06-04)<a class="headerlink" href="#id84" title="Link to this heading"></a></h2>
+<section id="id85">
+<h3>Changed<a class="headerlink" href="#id85" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Frontend-UI: Seitenuebergreifend modernisierte und vereinheitlichte Komponentenstile (Cards, Buttons, Inputs, Tabs, Tabellen) inkl. konsistenter Light-/Dark-Mode-Darstellung.</p></li>
 <li><p>Frontend-UI: Globale Hintergrundverlaeufe fuer die App sowie abgestimmte Verlaufsflaechen in zentralen Dashboard-Bereichen ergaenzt.</p></li>
@@ -2843,10 +2884,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id83">
-<h2>0.5.6 (2026-06-03)<a class="headerlink" href="#id83" title="Link to this heading"></a></h2>
-<section id="id84">
-<h3>Changed<a class="headerlink" href="#id84" title="Link to this heading"></a></h3>
+<section id="id86">
+<h2>0.5.6 (2026-06-03)<a class="headerlink" href="#id86" title="Link to this heading"></a></h2>
+<section id="id87">
+<h3>Changed<a class="headerlink" href="#id87" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist-Timing: Uebersprungene Songs (<code class="docutils literal notranslate"><span class="pre">uebersprungen</span> <span class="pre">=</span> <span class="pre">true</span></code>) werden in der Zeitkalkulation nun mit <code class="docutils literal notranslate"><span class="pre">0</span></code> Sekunden beruecksichtigt.</p></li>
 <li><p>Setlist-Timing: Berechnung von <code class="docutils literal notranslate"><span class="pre">schedule</span></code>, <code class="docutils literal notranslate"><span class="pre">set_end</span></code> und set-uebergreifenden Pausen ist auf die neue Skip-Logik abgestimmt.</p></li>
@@ -2855,17 +2896,17 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id85">
-<h2>0.5.5 (2026-06-03)<a class="headerlink" href="#id85" title="Link to this heading"></a></h2>
-<section id="id86">
-<h3>Added<a class="headerlink" href="#id86" title="Link to this heading"></a></h3>
+<section id="id88">
+<h2>0.5.5 (2026-06-03)<a class="headerlink" href="#id88" title="Link to this heading"></a></h2>
+<section id="id89">
+<h3>Added<a class="headerlink" href="#id89" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Admin-Konfiguration: <code class="docutils literal notranslate"><span class="pre">setlist_timing</span></code> ist jetzt im Soft-Config-Editor direkt bearbeitbar.</p></li>
 <li><p>Admin-Konfiguration: Timing-Werte werden im Editor ueber besser lesbare Time-Picker (<code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code>) erfasst.</p></li>
 </ul>
 </section>
-<section id="id87">
-<h3>Changed<a class="headerlink" href="#id87" title="Link to this heading"></a></h3>
+<section id="id90">
+<h3>Changed<a class="headerlink" href="#id90" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Soft-Config-Backend validiert und normalisiert <code class="docutils literal notranslate"><span class="pre">setlist_timing</span></code> inklusive Pflicht-Keys und nicht-negativer Ganzzahlen.</p></li>
 <li><p>Setlist-Timing nutzt keine hartkodierten Defaults mehr, sondern liest die Standardwerte aus <code class="docutils literal notranslate"><span class="pre">appConfig.json</span></code> (mit sicheren Fallbacks).</p></li>
@@ -2873,16 +2914,16 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id88">
-<h2>0.5.4 (2026-06-02)<a class="headerlink" href="#id88" title="Link to this heading"></a></h2>
-<section id="id89">
-<h3>Added<a class="headerlink" href="#id89" title="Link to this heading"></a></h3>
+<section id="id91">
+<h2>0.5.4 (2026-06-02)<a class="headerlink" href="#id91" title="Link to this heading"></a></h2>
+<section id="id92">
+<h3>Added<a class="headerlink" href="#id92" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Proben/Songkarte: Neue Aktion <code class="docutils literal notranslate"><span class="pre">Letzte</span> <span class="pre">Probe</span></code> oeffnet ein Modal mit dem letzten verfuegbaren Protokoll des Songs vor der aktuellen Probe.</p></li>
 </ul>
 </section>
-<section id="id90">
-<h3>Changed<a class="headerlink" href="#id90" title="Link to this heading"></a></h3>
+<section id="id93">
+<h3>Changed<a class="headerlink" href="#id93" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Protokollansicht vergangener Proben: Lesbarkeit verbessert durch hoeheren Textkontrast, entspanntere Zeilenhoehe und klar getrennte Song-Bloecke.</p></li>
 <li><p>Status-Buttons in der Songkarte: nicht aktive Stati werden als Outline dargestellt; <code class="docutils literal notranslate"><span class="pre">retired</span></code> bleibt rot hervorgehoben.</p></li>
@@ -2892,10 +2933,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id91">
-<h2>0.5.3 (2026-05-28)<a class="headerlink" href="#id91" title="Link to this heading"></a></h2>
-<section id="id92">
-<h3>Added<a class="headerlink" href="#id92" title="Link to this heading"></a></h3>
+<section id="id94">
+<h2>0.5.3 (2026-05-28)<a class="headerlink" href="#id94" title="Link to this heading"></a></h2>
+<section id="id95">
+<h3>Added<a class="headerlink" href="#id95" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Song Tabelle im Webfrontend flexibler und Platzökonomischer gemacht</p></li>
 <li><p>Songs API: Neuer Endpoint <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/songs/crawler/metadata</span></code> liefert Song-Metadaten (Dauer, Komponist/Texter, YouTube-Link) fuer <code class="docutils literal notranslate"><span class="pre">interpret</span></code> + <code class="docutils literal notranslate"><span class="pre">title</span></code>.</p></li>
@@ -2903,8 +2944,8 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>Backend-Tests: Neue Testfaelle fuer den Metadata-Endpoint (200/404) und erweiterte <code class="docutils literal notranslate"><span class="pre">audioscrawler</span></code>-Tests inklusive YouTube-Link-Aufloesung ueber Release-Kette.</p></li>
 </ul>
 </section>
-<section id="id93">
-<h3>Changed<a class="headerlink" href="#id93" title="Link to this heading"></a></h3>
+<section id="id96">
+<h3>Changed<a class="headerlink" href="#id96" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">backend/utils/audioscrawler.py</span></code> wurde deutlich robustifiziert: besseres Matching/Scoring fuer Recordings/Works, Normalisierung von Personennamen, Fallbacks auf TheAudioDB bei MusicBrainz-Fehlern sowie YouTube-Link-Suche in Recording-, Release- und Release-Group-Relationen.</p></li>
 <li><p>Setlist-Editor: Loeschen von Songs nutzt eine ruhige zweistufige Exit-Animation (erst visuell ausblenden/nach rechts schieben, dann entfernen), um hektische Layout-Spruenge zu reduzieren.</p></li>
@@ -2913,16 +2954,16 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id94">
-<h2>0.5.2 (2026-05-27)<a class="headerlink" href="#id94" title="Link to this heading"></a></h2>
-<section id="id95">
-<h3>Added<a class="headerlink" href="#id95" title="Link to this heading"></a></h3>
+<section id="id97">
+<h2>0.5.2 (2026-05-27)<a class="headerlink" href="#id97" title="Link to this heading"></a></h2>
+<section id="id98">
+<h3>Added<a class="headerlink" href="#id98" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Dashboard: Neue Karten fuer <code class="docutils literal notranslate"><span class="pre">naechste</span> <span class="pre">Probe</span></code> und <code class="docutils literal notranslate"><span class="pre">naechsten</span> <span class="pre">Auftritt</span></code> mit Datum/Details und Direktlinks zu <code class="docutils literal notranslate"><span class="pre">/proben</span></code> bzw. <code class="docutils literal notranslate"><span class="pre">/gigs</span></code>.</p></li>
 </ul>
 </section>
-<section id="id96">
-<h3>Changed<a class="headerlink" href="#id96" title="Link to this heading"></a></h3>
+<section id="id99">
+<h3>Changed<a class="headerlink" href="#id99" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Bugfix: Im Setlist Editor wurde die Zeitberechnung für Datumsüberlauf sensibilisiert.</p></li>
 <li><p>Dashboard: Saisonstatistik-Block auf eCharts umgestellt (Gigs-Fortschritt, Song-Mix, Feedback-Gauge, Genre-Top-Liste).</p></li>
@@ -2930,16 +2971,16 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id97">
-<h2>0.5.1 (2026-05-26)<a class="headerlink" href="#id97" title="Link to this heading"></a></h2>
-<section id="id98">
-<h3>Added<a class="headerlink" href="#id98" title="Link to this heading"></a></h3>
+<section id="id100">
+<h2>0.5.1 (2026-05-26)<a class="headerlink" href="#id100" title="Link to this heading"></a></h2>
+<section id="id101">
+<h3>Added<a class="headerlink" href="#id101" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Neuer Gig-Endpoint <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/gigs/genre_palette</span></code> liefert eine globale, deterministische Genre-Farbpalette fuer konsistente Farben ueber alle Statistiken hinweg.</p></li>
 </ul>
 </section>
-<section id="id99">
-<h3>Changed<a class="headerlink" href="#id99" title="Link to this heading"></a></h3>
+<section id="id102">
+<h3>Changed<a class="headerlink" href="#id102" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Genre-Farben in den Gig-/Saison-Statistikplots werden nun backend-seitig vereinheitlicht und nicht mehr pro einzelnem Datensatz lokal abgeleitet.</p></li>
 <li><p>Genre-Palette auf bis zu 25 eindeutige Farben erweitert, bevor Farben zyklisch wiederverwendet werden.</p></li>
@@ -2947,18 +2988,18 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id100">
-<h2>0.5.0 (2026-05-26)<a class="headerlink" href="#id100" title="Link to this heading"></a></h2>
-<section id="id101">
-<h3>Added<a class="headerlink" href="#id101" title="Link to this heading"></a></h3>
+<section id="id103">
+<h2>0.5.0 (2026-05-26)<a class="headerlink" href="#id103" title="Link to this heading"></a></h2>
+<section id="id104">
+<h3>Added<a class="headerlink" href="#id104" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig- und Saison-Statistik: Neuer Feedback-Verteilungsplot (Donut) für Live-Bewertungen.</p></li>
 <li><p>Gig- und Saison-Statistik: Genre-Visualisierung mit relativer Verteilung und normalisiertem Stacked-Bar-Verlauf.</p></li>
 <li><p>Genre-Plot: Filter nach Veranstaltungsart in der Saisonstatistik.</p></li>
 </ul>
 </section>
-<section id="id102">
-<h3>Changed<a class="headerlink" href="#id102" title="Link to this heading"></a></h3>
+<section id="id105">
+<h3>Changed<a class="headerlink" href="#id105" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Stats-Plots visuell überarbeitet: kompaktere Diagrammbereiche, bessere Achsenbeschriftung, weniger Label-Überlappungen.</p></li>
 <li><p>Chore: Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.5.0</span></code> erhöht (Backend/Frontend/Lockfile/Release-Metadaten/README-Badge).</p></li>
@@ -2968,23 +3009,23 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </section>
 <section id="a-2026-05-23">
 <h2>0.4.6a (2026-05-23)<a class="headerlink" href="#a-2026-05-23" title="Link to this heading"></a></h2>
-<section id="id103">
-<h3>Fixed<a class="headerlink" href="#id103" title="Link to this heading"></a></h3>
+<section id="id106">
+<h3>Fixed<a class="headerlink" href="#id106" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlisteneditor: Beim Drag-and-Drop aus der Songliste in ein Set wurde der neue Song in bestimmten Fällen nicht persistiert. Der Speichern-Flow setzt nun die <code class="docutils literal notranslate"><span class="pre">song_id</span></code> robust, sodass der Eintrag zuverlässig gespeichert wird.</p></li>
 </ul>
 </section>
-<section id="id104">
-<h3>Changed<a class="headerlink" href="#id104" title="Link to this heading"></a></h3>
+<section id="id107">
+<h3>Changed<a class="headerlink" href="#id107" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Projektversion auf <code class="docutils literal notranslate"><span class="pre">0.4.6a</span></code> erhöht (Backend/Frontend/Release-Metadaten).</p></li>
 </ul>
 </section>
 </section>
-<section id="id105">
-<h2>0.4.6 (2026-05-23)<a class="headerlink" href="#id105" title="Link to this heading"></a></h2>
-<section id="id106">
-<h3>Changed<a class="headerlink" href="#id106" title="Link to this heading"></a></h3>
+<section id="id108">
+<h2>0.4.6 (2026-05-23)<a class="headerlink" href="#id108" title="Link to this heading"></a></h2>
+<section id="id109">
+<h3>Changed<a class="headerlink" href="#id109" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Live-Modus Layout wurde für bessere Bedienbarkeit auf Bühne/Tablet überarbeitet (stabileres Höhenlayout, größere Bewertungsschaltflächen, bessere Kontraste im Light/Dark-Mode).</p></li>
 <li><p>Song-Einfügen und Hilfe werden als Overlay dargestellt, damit die Hauptansicht ohne störendes Vertikal-Scrollen nutzbar bleibt.</p></li>
@@ -2994,34 +3035,34 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id107">
-<h2>0.4.5 (2026-05-22)<a class="headerlink" href="#id107" title="Link to this heading"></a></h2>
-<section id="id108">
-<h3>Added<a class="headerlink" href="#id108" title="Link to this heading"></a></h3>
+<section id="id110">
+<h2>0.4.5 (2026-05-22)<a class="headerlink" href="#id110" title="Link to this heading"></a></h2>
+<section id="id111">
+<h3>Added<a class="headerlink" href="#id111" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>New backend export endpoint <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/gigs/{gig_id}/forscore-setlist</span></code> generates forScore-compatible <code class="docutils literal notranslate"><span class="pre">.4ss</span></code> setlists (PLIST XML).</p></li>
 <li><p>Gig detail view in the iOS app now includes a dedicated action to download/share <code class="docutils literal notranslate"><span class="pre">forScore-Setliste</span> <span class="pre">(.4ss)</span></code> directly from <code class="docutils literal notranslate"><span class="pre">GigDetailView</span></code>.</p></li>
 <li><p>Backend tests now cover forScore setlist export success and <code class="docutils literal notranslate"><span class="pre">404</span></code> handling for unknown gigs.</p></li>
 </ul>
 </section>
-<section id="id109">
-<h3>Changed<a class="headerlink" href="#id109" title="Link to this heading"></a></h3>
+<section id="id112">
+<h3>Changed<a class="headerlink" href="#id112" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Project version metadata bumped to <code class="docutils literal notranslate"><span class="pre">0.4.5</span></code> across backend/frontend release files and README badge.</p></li>
 </ul>
 </section>
 </section>
-<section id="id110">
-<h2>0.4.4 (2026-05-19)<a class="headerlink" href="#id110" title="Link to this heading"></a></h2>
-<section id="id111">
-<h3>Added<a class="headerlink" href="#id111" title="Link to this heading"></a></h3>
+<section id="id113">
+<h2>0.4.4 (2026-05-19)<a class="headerlink" href="#id113" title="Link to this heading"></a></h2>
+<section id="id114">
+<h3>Added<a class="headerlink" href="#id114" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Shared utility <code class="docutils literal notranslate"><span class="pre">backend/utils/pdf_palette.py</span></code> now centralizes logo-based palette extraction for schedule and setlist PDFs.</p></li>
 <li><p>Setlist palette resolver now supports <code class="docutils literal notranslate"><span class="pre">druckfreundlich</span></code> as explicit mode switch (print-friendly light palette).</p></li>
 </ul>
 </section>
-<section id="id112">
-<h3>Changed<a class="headerlink" href="#id112" title="Link to this heading"></a></h3>
+<section id="id115">
+<h3>Changed<a class="headerlink" href="#id115" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist PDF and schedule PDF now use the same shared palette extraction pipeline.</p></li>
 <li><p>Palette resolvers now return robust default schemes when no logo is available.</p></li>
@@ -3029,16 +3070,16 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id113">
-<h2>0.4.3 (2026-05-18)<a class="headerlink" href="#id113" title="Link to this heading"></a></h2>
-<section id="id114">
-<h3>Added<a class="headerlink" href="#id114" title="Link to this heading"></a></h3>
+<section id="id116">
+<h2>0.4.3 (2026-05-18)<a class="headerlink" href="#id116" title="Link to this heading"></a></h2>
+<section id="id117">
+<h3>Added<a class="headerlink" href="#id117" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig edit forms now use a second-precision time picker (<code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code>) in desktop and mobile views.</p></li>
 </ul>
 </section>
-<section id="id115">
-<h3>Changed<a class="headerlink" href="#id115" title="Link to this heading"></a></h3>
+<section id="id118">
+<h3>Changed<a class="headerlink" href="#id118" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Gig time values are normalized to <code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code> during edit and save flows.</p></li>
 <li><p>Gig schedule fixed points (doors, begin, end) now support midnight rollover correctly.</p></li>
@@ -3046,10 +3087,10 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 </ul>
 </section>
 </section>
-<section id="id116">
-<h2>0.4.2 (2026-05-17)<a class="headerlink" href="#id116" title="Link to this heading"></a></h2>
-<section id="id117">
-<h3>Added<a class="headerlink" href="#id117" title="Link to this heading"></a></h3>
+<section id="id119">
+<h2>0.4.2 (2026-05-17)<a class="headerlink" href="#id119" title="Link to this heading"></a></h2>
+<section id="id120">
+<h3>Added<a class="headerlink" href="#id120" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist PDF supports a second, print-friendly style via <code class="docutils literal notranslate"><span class="pre">design=print</span></code>.</p></li>
 <li><p>Gig UI offers a dedicated download action for the print-friendly setlist PDF.</p></li>
@@ -3057,8 +3098,8 @@ Unterstuetzt kompakte Zentrierung bei ≤ 8 Sets, DataZoom ab &gt; 12 Sets sowie
 <li><p>New backend test for print-style setlist PDF export.</p></li>
 </ul>
 </section>
-<section id="id118">
-<h3>Changed<a class="headerlink" href="#id118" title="Link to this heading"></a></h3>
+<section id="id121">
+<h3>Changed<a class="headerlink" href="#id121" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Setlist PDF visual design was aligned with the schedule PDF style.</p></li>
 <li><p>Setlist PDF header was reduced in height to free more content space.</p></li>
