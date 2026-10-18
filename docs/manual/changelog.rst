@@ -3,6 +3,43 @@
 Änderungsprotokoll
 ==================
 
+0.5.35 (2026-10-18)
+-------------------
+
+Added
+~~~~~
+
+* **Dashboard-Kalender**: Im Bereich **Nächste Termine** zeigt das Dashboard
+  jetzt einen Monatskalender mit allen Proben und Gigs. Proben (grün,
+  Equalizer-Symbol) und Gigs (rot, Mikrofon-Symbol) sind durch eigene
+  Piktogramme unterscheidbar; die Legende steht unter dem Kalender.
+
+* **Monatsnavigation**: Mit den Pfeilen oben lässt sich monatsweise vor- und
+  zurückblättern, **Heute** springt zum aktuellen Monat. Die Daten werden beim
+  Blättern selbstständig von der API nachgeladen.
+
+* **Tooltip mit Details**: Beim Überfahren eines Piktogramms erscheinen die
+  Details des Termins – bei Gigs Name, Einlass/Beginn/Ende, Ort, Veranstalter,
+  Art, Status und Notizen, bei Proben Zeitraum, Kommentar und Songliste.
+
+* **API**: Der Endpunkt ``GET /ical/internal?month=YYYY-MM`` liefert die Gigs
+  und Proben eines Monats als JSON (inklusive Songs der Proben).
+
+Fixed
+~~~~~
+
+* **Kalender-Endpunkt** ``/ical/internal``: Der Endpunkt war wegen der
+  Routen-Reihenfolge nie erreichbar (``/{token}`` hatte Vorrang) und nutzte
+  nicht existierende Schemas. Der Monatsbereich wird jetzt exakt begrenzt und
+  der Standardmonat bei jedem Aufruf neu bestimmt.
+
+* Chore: Projektversion auf ``0.5.35`` erhöht (``version.json``,
+  ``pyproject.toml``, ``uv.lock``, ``frontend/package.json``,
+  ``frontend/package-lock.json`` und ``README.md`` Badge).
+* Manual: Benutzerhandbuch **Dashboard**, API-Referenz und Changelog für
+  Release ``0.5.35`` ergänzt.
+* Tests: Test für den Monats-Kalender-Endpunkt ergänzt.
+
 0.5.34 (2026-10-04)
 -------------------
 

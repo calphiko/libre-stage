@@ -441,6 +441,14 @@ export async function getGigs(token, jahr = '') {
   return res.json();
 }
 
+export async function getInternalCalendar(month) {
+  const res = await fetchWithAuth(`${API_URL}/ical/internal?month=${encodeURIComponent(month)}`, {
+    method: 'GET'
+  });
+  if (!res.ok) throw new Error('Could not get calendar');
+  return res.json();
+}
+
 export async function getGigSchedule(token, gigId) {
   const res = await fetchWithAuth(`${API_URL}/gigs/${gigId}/schedule/`, {
     method: 'GET',
