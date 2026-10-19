@@ -17,6 +17,7 @@
 -->
 
 <script>
+  import { env } from '$env/dynamic/public';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { getUser, getUserTodos, updateUserTodo, logout as apiLogout, getSeasonStatistics, getRehearsalList, getGigs, getICalURLs, toggleChecklistItemDone, exportAllSetlists } from '$lib/api.js';
@@ -125,7 +126,7 @@
       pendingAvailabilityGigs = todos.pendingAvailabilityGigs ?? [];
       setTabIndex();
       calUrls = await getICalURLs();
-      calendarUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`;
+      calendarUrl = `${env.PUBLIC_API_URL || 'http://localhost:8000'}`;
       calendarUrl = calendarUrl.replace(/^https:\/\//, 'webcal://');
 
 
