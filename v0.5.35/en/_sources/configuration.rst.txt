@@ -141,12 +141,13 @@ Frontend-Konfiguration
 -----------------------
 
 Das Frontend lädt die Konfiguration zur Laufzeit vom Backend-Endpoint ``/public/app_config``.
-Für den Entwicklungsmodus wird die API-URL über ``VITE_API_URL`` gesteuert:
+Für den Entwicklungsmodus wird die API-URL über ``PUBLIC_API_URL`` gesteuert.
+Im Docker-Container wird sie zur Laufzeit gesetzt (``docker run -e PUBLIC_API_URL=...``), ein Build-Arg ist nicht nötig:
 
 .. code-block:: bash
 
    # frontend/.env (für lokale Entwicklung)
-   VITE_API_URL=http://localhost:8000
+   PUBLIC_API_URL=http://localhost:8000
 
 Selbstheilung bei fehlenden Keys
 ---------------------------------

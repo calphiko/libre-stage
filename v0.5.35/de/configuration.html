@@ -2172,9 +2172,10 @@ Weboberflaeche unter <a class="reference internal" href="benutzerhandbuch/konfig
 <section id="frontend-konfiguration">
 <h2>Frontend-Konfiguration<a class="headerlink" href="#frontend-konfiguration" title="Link to this heading"></a></h2>
 <p>Das Frontend lädt die Konfiguration zur Laufzeit vom Backend-Endpoint <code class="docutils literal notranslate"><span class="pre">/public/app_config</span></code>.
-Für den Entwicklungsmodus wird die API-URL über <code class="docutils literal notranslate"><span class="pre">VITE_API_URL</span></code> gesteuert:</p>
+Für den Entwicklungsmodus wird die API-URL über <code class="docutils literal notranslate"><span class="pre">PUBLIC_API_URL</span></code> gesteuert.
+Im Docker-Container wird sie zur Laufzeit gesetzt (<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-e</span> <span class="pre">PUBLIC_API_URL=...</span></code>), ein Build-Arg ist nicht nötig:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># frontend/.env (für lokale Entwicklung)</span>
-<span class="nv">VITE_API_URL</span><span class="o">=</span>http://localhost:8000
+<span class="nv">PUBLIC_API_URL</span><span class="o">=</span>http://localhost:8000
 </pre></div>
 </div>
 </section>
