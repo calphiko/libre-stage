@@ -475,6 +475,6 @@ msgstr ""
 #: ../../configuration.rst:211
 msgid ""
 "Für den Entwicklungsmodus wird die API-URL über die Umgebungsvariable "
-"``VITE_API_URL`` gesteuert:"
+"``PUBLIC_API_URL`` gesteuert:"
 msgstr ""
 
