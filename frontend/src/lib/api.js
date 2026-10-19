@@ -1,7 +1,8 @@
 // src/lib/api.js
+import { env } from '$env/dynamic/public';
 
 // Basis-URL zu deinem Backend, manchmal ggf. anpassen
-export const API_URL = import.meta.env.VITE_API_URL;
+export const API_URL = env.PUBLIC_API_URL;
 
 let isRefreshing = false;
 let refreshPromise = null;

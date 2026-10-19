@@ -8,7 +8,7 @@ tasks:
 
   frontend-dev:
     env:
-      VITE_API_URL: "http://localhost:8000"
+      PUBLIC_API_URL: "http://localhost:8000"
     cmds:
       - echo "Starting Frontend Server..."
       - cd frontend && npm run dev
